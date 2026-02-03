@@ -1,55 +1,57 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
-import { 
-  Mail, 
-  Shield, 
-  CheckCircle2, 
-  AlertCircle, 
-  RefreshCw, 
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import {
+  Mail,
+  Shield,
+  CheckCircle2,
+  AlertCircle,
+  RefreshCw,
   ArrowLeft,
   Eye,
-  EyeOff
-} from 'lucide-react'
-import { supabase } from '@/lib/supabase'
-import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
-import { useReauthentication } from '@/hooks/useReauthentication'
+  EyeOff,
+} from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { useReauthentication } from "@/hooks/useReauthentication";
 
 const changeEmailSchema = z.object({
-  newEmail: z.string().email('Email inválido')
-})
+  newEmail: z.string().email("Email inválido"),
+});
 
-type ChangeEmailFormData = z.infer<typeof changeEmailSchema>
+type ChangeEmailFormData = z.infer<typeof changeEmailSchema>;
 
 interface ChangeEmailFormProps {
-  currentEmail: string
-  onSuccess?: () => void
-  onCancel?: () => void
-  className?: string
+  currentEmail: string;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+  className?: string;
 }
 
-export function ChangeEmailForm({ 
-  currentEmail, 
-  onSuccess, 
+export function ChangeEmailForm({
+  currentEmail,
+  onSuccess,
   onCancel,
-  className 
+  className,
 }: ChangeEmailFormProps) {
-  const [step, setStep] = useState<'form' | 'reauth' | 'verification' | 'success'>('form')
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [verificationCode, setVerificationCode] = useState('')
-  const [newEmail, setNewEmail] = useState('')
-  
+  const [step, setStep] = useState<
+    "form" | "reauth" | "verification" | "success"
+  >("form");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+
   const {
     isLoading: isReauthLoading,
     isReauthenticated,
@@ -58,191 +60,186 @@ export function ChangeEmailForm({
     requestReauthentication,
     verifyOTP,
     resetReauthentication,
-    checkReauthenticationRequired
-  } = useReauthentication()
+    checkReauthenticationRequired,
+  } = useReauthentication();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset
+    reset,
   } = useForm<ChangeEmailFormData>({
-    resolver: zodResolver(changeEmailSchema)
-  })
+    resolver: zodResolver(changeEmailSchema),
+  });
 
   const onSubmit = async (data: ChangeEmailFormData) => {
     try {
-      setIsLoading(true)
-      setError(null)
-      setNewEmail(data.newEmail)
+      setIsLoading(true);
+      setError(null);
+      setNewEmail(data.newEmail);
 
       // 1. Verificar se reautenticação é necessária
-      const needsReauth = await checkReauthenticationRequired('email')
-      
+      const needsReauth = await checkReauthenticationRequired("email");
+
       if (needsReauth) {
-        setStep('reauth')
-        setIsLoading(false)
-        return
+        setStep("reauth");
+        setIsLoading(false);
+        return;
       }
 
       // 2. Iniciar processo de troca de email
-      await initiateEmailChange(data.newEmail)
-
+      await initiateEmailChange(data.newEmail);
     } catch (err: any) {
-      console.error('Erro ao iniciar troca de email:', err)
-      setError(err.message || 'Erro ao iniciar troca de email')
-      toast.error('Erro ao trocar email', {
-        description: err.message
-      })
-      setIsLoading(false)
+      console.error("Erro ao iniciar troca de email:", err);
+      setError(err.message || "Erro ao iniciar troca de email");
+      toast.error("Erro ao trocar email", {
+        description: err.message,
+      });
+      setIsLoading(false);
     }
-  }
+  };
 
   const initiateEmailChange = async (email: string) => {
     // Usar nossa API que garante envio de OTP em vez de magic link
-    const response = await fetch('/api/auth/change-email-otp', {
-      method: 'POST',
+    const response = await fetch("/api/auth/change-email-otp", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ newEmail: email })
-    })
+      body: JSON.stringify({ newEmail: email }),
+    });
 
-    const data = await response.json()
+    const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Erro ao enviar código de verificação')
+      throw new Error(data.error || "Erro ao enviar código de verificação");
     }
 
-    setStep('verification')
-    toast.success('Código de verificação enviado!', {
-      description: `Verifique sua caixa de entrada em ${email}`
-    })
-    setIsLoading(false)
-  }
+    setStep("verification");
+    toast.success("Código de verificação enviado!", {
+      description: `Verifique sua caixa de entrada em ${email}`,
+    });
+    setIsLoading(false);
+  };
 
   const handleReauthentication = async () => {
     try {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
 
-      const { error } = await requestReauthentication()
+      const { error } = await requestReauthentication();
       if (error) {
-        throw new Error(error.message)
+        throw new Error(error.message);
       }
 
       // Código enviado com sucesso
-      setIsLoading(false)
-
+      setIsLoading(false);
     } catch (err: any) {
-      console.error('Erro na reautenticação:', err)
-      setError(err.message || 'Erro na reautenticação')
-      toast.error('Erro na reautenticação', {
-        description: err.message
-      })
-      setIsLoading(false)
+      console.error("Erro na reautenticação:", err);
+      setError(err.message || "Erro na reautenticação");
+      toast.error("Erro na reautenticação", {
+        description: err.message,
+      });
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleReauthOTP = async () => {
     try {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
 
-      const { error } = await verifyOTP(verificationCode)
+      const { error } = await verifyOTP(verificationCode);
       if (error) {
-        throw new Error(error.message)
+        throw new Error(error.message);
       }
 
       // Após reautenticação bem-sucedida, iniciar troca de email
-      await initiateEmailChange(newEmail)
-
+      await initiateEmailChange(newEmail);
     } catch (err: any) {
-      console.error('Erro ao verificar código de reautenticação:', err)
-      setError(err.message || 'Código inválido')
-      toast.error('Código inválido', {
-        description: err.message
-      })
-      setIsLoading(false)
+      console.error("Erro ao verificar código de reautenticação:", err);
+      setError(err.message || "Código inválido");
+      toast.error("Código inválido", {
+        description: err.message,
+      });
+      setIsLoading(false);
     }
-  }
+  };
 
   const verifyCode = async () => {
     try {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
 
       const { error: verifyError } = await supabase.auth.verifyOtp({
         email: newEmail,
         token: verificationCode,
-        type: 'email_change'
-      })
+        type: "email_change",
+      });
 
       if (verifyError) {
-        throw new Error('Código inválido ou expirado')
+        throw new Error("Código inválido ou expirado");
       }
 
-      setStep('success')
-      toast.success('Email alterado com sucesso!')
-      
+      setStep("success");
+      toast.success("Email alterado com sucesso!");
+
       if (onSuccess) {
-        onSuccess()
+        onSuccess();
       }
-
     } catch (err: any) {
-      console.error('Erro ao verificar código:', err)
-      setError(err.message || 'Erro ao verificar código')
-      toast.error('Código inválido', {
-        description: err.message
-      })
+      console.error("Erro ao verificar código:", err);
+      setError(err.message || "Erro ao verificar código");
+      toast.error("Código inválido", {
+        description: err.message,
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const resendCode = async () => {
     try {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
 
       // Usar nossa API para reenviar o código OTP
-      const response = await fetch('/api/auth/change-email-otp', {
-        method: 'POST',
+      const response = await fetch("/api/auth/change-email-otp", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ newEmail: newEmail })
-      })
+        body: JSON.stringify({ newEmail: newEmail }),
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Erro ao reenviar código')
+        throw new Error(data.error || "Erro ao reenviar código");
       }
 
-      toast.success('Código reenviado!', {
-        description: 'Verifique sua caixa de entrada'
-      })
-
+      toast.success("Código reenviado!", {
+        description: "Verifique sua caixa de entrada",
+      });
     } catch (err: any) {
-      console.error('Erro ao reenviar código:', err)
-      setError(err.message || 'Erro ao reenviar código')
-      toast.error('Erro ao reenviar código')
+      console.error("Erro ao reenviar código:", err);
+      setError(err.message || "Erro ao reenviar código");
+      toast.error("Erro ao reenviar código");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const resetForm = () => {
-    setStep('form')
-    setError(null)
-    setVerificationCode('')
-    setNewEmail('')
-    resetReauthentication()
-    reset()
-  }
+    setStep("form");
+    setError(null);
+    setVerificationCode("");
+    setNewEmail("");
+    resetReauthentication();
+    reset();
+  };
 
-  if (step === 'success') {
+  if (step === "success") {
     return (
       <Card className={className}>
         <CardContent className="p-6 text-center">
@@ -253,17 +250,18 @@ export function ChangeEmailForm({
             Email Alterado com Sucesso!
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Seu email foi alterado de <strong>{currentEmail}</strong> para <strong>{newEmail}</strong>
+            Seu email foi alterado de <strong>{currentEmail}</strong> para{" "}
+            <strong>{newEmail}</strong>
           </p>
           <Button onClick={resetForm} variant="outline">
             Alterar Novamente
           </Button>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  if (step === 'reauth') {
+  if (step === "reauth") {
     return (
       <Card className={className}>
         <CardHeader>
@@ -276,8 +274,9 @@ export function ChangeEmailForm({
           <Alert>
             <AlertCircle className="w-4 h-4" />
             <AlertDescription>
-              Para alterar seu email, precisamos confirmar sua identidade. 
-              Enviaremos um código de verificação para <strong>{currentEmail}</strong>.
+              Para alterar seu email, precisamos confirmar sua identidade.
+              Enviaremos um código de verificação para{" "}
+              <strong>{currentEmail}</strong>.
             </AlertDescription>
           </Alert>
 
@@ -294,13 +293,13 @@ export function ChangeEmailForm({
               disabled={isLoading || isReauthLoading}
               className="w-full"
             >
-              {(isLoading || isReauthLoading) ? (
+              {isLoading || isReauthLoading ? (
                 <>
                   <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
                   Enviando...
                 </>
               ) : (
-                'Enviar Código de Verificação'
+                "Enviar Código de Verificação"
               )}
             </Button>
           ) : (
@@ -329,26 +328,22 @@ export function ChangeEmailForm({
                     Verificando...
                   </>
                 ) : (
-                  'Verificar Código'
+                  "Verificar Código"
                 )}
               </Button>
             </div>
           )}
 
-          <Button
-            onClick={resetForm}
-            variant="ghost"
-            className="w-full"
-          >
+          <Button onClick={resetForm} variant="ghost" className="w-full">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Cancelar
           </Button>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  if (step === 'verification') {
+  if (step === "verification") {
     return (
       <Card className={className}>
         <CardHeader>
@@ -361,8 +356,8 @@ export function ChangeEmailForm({
           <Alert>
             <AlertCircle className="w-4 h-4" />
             <AlertDescription>
-              Enviamos um código de verificação para <strong>{newEmail}</strong>. 
-              Digite o código abaixo para confirmar a alteração.
+              Enviamos um código de verificação para <strong>{newEmail}</strong>
+              . Digite o código abaixo para confirmar a alteração.
             </AlertDescription>
           </Alert>
 
@@ -398,29 +393,21 @@ export function ChangeEmailForm({
                   Verificando...
                 </>
               ) : (
-                'Verificar Código'
+                "Verificar Código"
               )}
             </Button>
-            <Button
-              onClick={resendCode}
-              variant="outline"
-              disabled={isLoading}
-            >
+            <Button onClick={resendCode} variant="outline" disabled={isLoading}>
               Reenviar
             </Button>
           </div>
 
-          <Button
-            onClick={resetForm}
-            variant="ghost"
-            className="w-full"
-          >
+          <Button onClick={resetForm} variant="ghost" className="w-full">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar
           </Button>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -453,8 +440,8 @@ export function ChangeEmailForm({
               id="newEmail"
               type="email"
               placeholder="Digite seu novo email"
-              {...register('newEmail')}
-              className={cn(errors.newEmail && 'border-red-500')}
+              {...register("newEmail")}
+              className={cn(errors.newEmail && "border-red-500")}
             />
             {errors.newEmail && (
               <p className="text-sm text-red-600 dark:text-red-400">
@@ -466,7 +453,7 @@ export function ChangeEmailForm({
           <Alert>
             <Shield className="w-4 h-4" />
             <AlertDescription>
-              <strong>Segurança:</strong> Para alterar seu email, você precisará 
+              <strong>Segurança:</strong> Para alterar seu email, você precisará
               confirmar sua identidade e depois verificar o novo email.
             </AlertDescription>
           </Alert>
@@ -484,15 +471,11 @@ export function ChangeEmailForm({
                   Iniciando...
                 </>
               ) : (
-                'Alterar Email'
+                "Alterar Email"
               )}
             </Button>
             {onCancel && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-              >
+              <Button type="button" variant="outline" onClick={onCancel}>
                 Cancelar
               </Button>
             )}
@@ -500,5 +483,5 @@ export function ChangeEmailForm({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

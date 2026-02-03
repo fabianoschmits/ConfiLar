@@ -1,52 +1,51 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react";
 
 export function useScrollDirection() {
-  const [isVisible, setIsVisible] = useState(true)
-  const [lastScrollY, setLastScrollY] = useState(0)
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
-      const currentScrollY = window.scrollY
+      const currentScrollY = window.scrollY;
 
       // Se o usuário está no topo da página, mostrar o menu
       if (currentScrollY === 0) {
-        setIsVisible(true)
-        return
+        setIsVisible(true);
+        return;
       }
 
       // Detectar direção do scroll
       if (currentScrollY > lastScrollY) {
         // Rolando para baixo - esconder
-        setIsVisible(false)
+        setIsVisible(false);
       } else if (currentScrollY < lastScrollY) {
         // Rolando para cima - mostrar
-        setIsVisible(true)
+        setIsVisible(true);
       }
 
-      setLastScrollY(currentScrollY)
-    }
+      setLastScrollY(currentScrollY);
+    };
 
     // Throttle com requestAnimationFrame para melhor performance
-    let ticking = false
+    let ticking = false;
     const scrollHandler = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          handleScroll()
-          ticking = false
-        })
-        ticking = true
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
       }
-    }
+    };
 
-    window.addEventListener('scroll', scrollHandler, { passive: true })
-    
+    window.addEventListener("scroll", scrollHandler, { passive: true });
+
     return () => {
-      window.removeEventListener('scroll', scrollHandler)
-    }
-  }, [lastScrollY])
+      window.removeEventListener("scroll", scrollHandler);
+    };
+  }, [lastScrollY]);
 
-  return { isVisible }
+  return { isVisible };
 }
-

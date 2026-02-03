@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Check, ChevronsUpDown, Briefcase } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
+import { useState, useEffect } from "react";
+import { Check, ChevronsUpDown, Briefcase } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -11,49 +11,50 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command'
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover'
-import { services } from '@/data/services'
+} from "@/components/ui/popover";
+import { services } from "@/data/services";
 
 interface ServiceAutocompleteProps {
-  value: string
-  onChange: (value: string) => void
-  placeholder?: string
-  className?: string
-  disabled?: boolean
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  className?: string;
+  disabled?: boolean;
 }
 
-export function ServiceAutocomplete({ 
-  value, 
-  onChange, 
+export function ServiceAutocomplete({
+  value,
+  onChange,
   placeholder = "Selecione um serviço...",
   className = "",
-  disabled = false
+  disabled = false,
 }: ServiceAutocompleteProps) {
-  const [open, setOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const selectedService = services.find(service => service.id === value)
-  
-  const filteredServices = searchTerm 
-    ? services.filter(service =>
-        service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        service.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  const selectedService = services.find((service) => service.id === value);
+
+  const filteredServices = searchTerm
+    ? services.filter(
+        (service) =>
+          service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          service.description?.toLowerCase().includes(searchTerm.toLowerCase()),
       )
-    : services
+    : services;
 
   // Sincronizar searchTerm com value quando value mudar externamente
   useEffect(() => {
     if (value && selectedService) {
-      setSearchTerm(selectedService.name)
+      setSearchTerm(selectedService.name);
     } else if (!value) {
-      setSearchTerm('')
+      setSearchTerm("");
     }
-  }, [value, selectedService])
+  }, [value, selectedService]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -81,8 +82,8 @@ export function ServiceAutocomplete({
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
         <Command>
-          <CommandInput 
-            placeholder="Buscar serviço..." 
+          <CommandInput
+            placeholder="Buscar serviço..."
             value={searchTerm}
             onValueChange={setSearchTerm}
           />
@@ -97,21 +98,23 @@ export function ServiceAutocomplete({
                     key={service.id}
                     value={service.id}
                     onSelect={(currentValue) => {
-                      onChange(currentValue === value ? '' : currentValue)
-                      setOpen(false)
+                      onChange(currentValue === value ? "" : currentValue);
+                      setOpen(false);
                     }}
                     className="cursor-pointer"
                   >
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        value === service.id ? "opacity-100" : "opacity-0"
+                        value === service.id ? "opacity-100" : "opacity-0",
                       )}
                     />
                     <div className="flex-1">
                       <div className="font-medium">{service.name}</div>
                       {service.description && (
-                        <div className="text-xs text-gray-500">{service.description}</div>
+                        <div className="text-xs text-gray-500">
+                          {service.description}
+                        </div>
                       )}
                     </div>
                   </CommandItem>
@@ -122,5 +125,5 @@ export function ServiceAutocomplete({
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

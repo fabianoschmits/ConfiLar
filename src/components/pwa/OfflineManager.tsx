@@ -1,131 +1,137 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { 
-  WifiOff, 
-  Wifi, 
-  Database, 
-  Trash2, 
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import {
+  WifiOff,
+  Wifi,
+  Database,
+  Trash2,
   RefreshCw,
   CheckCircle,
-  AlertCircle
-} from 'lucide-react'
+  AlertCircle,
+} from "lucide-react";
 
 interface CacheInfo {
-  name: string
-  size: number
-  entries: number
+  name: string;
+  size: number;
+  entries: number;
 }
 
 export function OfflineManager() {
-  const [isOnline, setIsOnline] = useState(true)
-  const [cacheInfo, setCacheInfo] = useState<CacheInfo[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [totalSize, setTotalSize] = useState(0)
+  const [isOnline, setIsOnline] = useState(true);
+  const [cacheInfo, setCacheInfo] = useState<CacheInfo[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [totalSize, setTotalSize] = useState(0);
 
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true)
-    const handleOffline = () => setIsOnline(false)
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
 
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     // Verificar status inicial
-    setIsOnline(navigator.onLine)
+    setIsOnline(navigator.onLine);
 
     // Carregar informações do cache
-    loadCacheInfo()
+    loadCacheInfo();
 
     return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
-    }
-  }, [])
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   const loadCacheInfo = async () => {
-    if (!('caches' in window)) return
+    if (!("caches" in window)) return;
 
     try {
-      const cacheNames = await caches.keys()
-      const cacheData: CacheInfo[] = []
+      const cacheNames = await caches.keys();
+      const cacheData: CacheInfo[] = [];
 
       for (const cacheName of cacheNames) {
-        const cache = await caches.open(cacheName)
-        const keys = await cache.keys()
-        
-        let totalSize = 0
+        const cache = await caches.open(cacheName);
+        const keys = await cache.keys();
+
+        let totalSize = 0;
         for (const request of keys) {
-          const response = await cache.match(request)
+          const response = await cache.match(request);
           if (response) {
-            const blob = await response.blob()
-            totalSize += blob.size
+            const blob = await response.blob();
+            totalSize += blob.size;
           }
         }
 
         cacheData.push({
           name: cacheName,
           size: totalSize,
-          entries: keys.length
-        })
+          entries: keys.length,
+        });
       }
 
-      setCacheInfo(cacheData)
-      setTotalSize(cacheData.reduce((sum, cache) => sum + cache.size, 0))
+      setCacheInfo(cacheData);
+      setTotalSize(cacheData.reduce((sum, cache) => sum + cache.size, 0));
     } catch (error) {
-      console.error('Erro ao carregar informações do cache:', error)
+      console.error("Erro ao carregar informações do cache:", error);
     }
-  }
+  };
 
   const clearCache = async (cacheName?: string) => {
-    if (!('caches' in window)) return
+    if (!("caches" in window)) return;
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       if (cacheName) {
-        await caches.delete(cacheName)
-        console.log(`🗑️ Cache ${cacheName} limpo`)
+        await caches.delete(cacheName);
+        console.log(`🗑️ Cache ${cacheName} limpo`);
       } else {
-        const cacheNames = await caches.keys()
-        await Promise.all(cacheNames.map(name => caches.delete(name)))
-        console.log('🗑️ Todos os caches limpos')
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map((name) => caches.delete(name)));
+        console.log("🗑️ Todos os caches limpos");
       }
-      
-      await loadCacheInfo()
+
+      await loadCacheInfo();
     } catch (error) {
-      console.error('Erro ao limpar cache:', error)
+      console.error("Erro ao limpar cache:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const refreshCache = async () => {
-    if (!('serviceWorker' in navigator)) return
+    if (!("serviceWorker" in navigator)) return;
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const registration = await navigator.serviceWorker.getRegistration()
+      const registration = await navigator.serviceWorker.getRegistration();
       if (registration) {
-        await registration.update()
-        console.log('🔄 Cache atualizado')
+        await registration.update();
+        console.log("🔄 Cache atualizado");
       }
     } catch (error) {
-      console.error('Erro ao atualizar cache:', error)
+      console.error("Erro ao atualizar cache:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-  }
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
 
   return (
     <Card>
@@ -174,7 +180,10 @@ export function OfflineManager() {
           {cacheInfo.length > 0 ? (
             <div className="space-y-2">
               {cacheInfo.map((cache) => (
-                <div key={cache.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div
+                  key={cache.name}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                >
                   <div className="flex items-center gap-2">
                     <Database className="w-4 h-4 text-gray-500" />
                     <div>
@@ -211,7 +220,9 @@ export function OfflineManager() {
             className="w-full"
             variant="outline"
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+            />
             Atualizar Cache
           </Button>
 
@@ -234,26 +245,5 @@ export function OfflineManager() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

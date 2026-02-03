@@ -1,25 +1,34 @@
-'use client'
+"use client";
 
-import React from 'react'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { HardDrive, Wifi, WifiOff, CheckCircle, AlertCircle } from 'lucide-react'
-import { useStaticCache } from '@/hooks/useStaticCache'
+import React from "react";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import {
+  HardDrive,
+  Wifi,
+  WifiOff,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
+import { useStaticCache } from "@/hooks/useStaticCache";
 
 interface CacheStatusProps {
-  className?: string
-  showDetails?: boolean
+  className?: string;
+  showDetails?: boolean;
 }
 
-export function CacheStatus({ className, showDetails = false }: CacheStatusProps) {
-  const { 
-    cacheStats, 
-    isSupported, 
-    isLoading, 
-    formatBytes, 
-    isOverLimit, 
-    usagePercentage 
-  } = useStaticCache()
+export function CacheStatus({
+  className,
+  showDetails = false,
+}: CacheStatusProps) {
+  const {
+    cacheStats,
+    isSupported,
+    isLoading,
+    formatBytes,
+    isOverLimit,
+    usagePercentage,
+  } = useStaticCache();
 
   if (!isSupported) {
     return (
@@ -29,7 +38,7 @@ export function CacheStatus({ className, showDetails = false }: CacheStatusProps
           Cache não suportado
         </span>
       </div>
-    )
+    );
   }
 
   return (
@@ -45,7 +54,7 @@ export function CacheStatus({ className, showDetails = false }: CacheStatusProps
             </Badge>
           )}
         </div>
-        
+
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600 dark:text-gray-400">
             {formatBytes(cacheStats.totalSize)}
@@ -58,10 +67,7 @@ export function CacheStatus({ className, showDetails = false }: CacheStatusProps
 
       {/* Barra de Progresso */}
       <div className="space-y-1">
-        <Progress 
-          value={Math.min(usagePercentage, 100)} 
-          className="h-2"
-        />
+        <Progress value={Math.min(usagePercentage, 100)} className="h-2" />
         <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
           <span>Uso do Cache</span>
           <span>{usagePercentage.toFixed(1)}%</span>
@@ -74,16 +80,20 @@ export function CacheStatus({ className, showDetails = false }: CacheStatusProps
           <div className="grid grid-cols-2 gap-4 text-xs">
             <div>
               <span className="text-gray-500 dark:text-gray-400">Caches:</span>
-              <span className="ml-1 font-medium">{cacheStats.cacheNames.length}</span>
+              <span className="ml-1 font-medium">
+                {cacheStats.cacheNames.length}
+              </span>
             </div>
             <div>
-              <span className="text-gray-500 dark:text-gray-400">Atualizado:</span>
+              <span className="text-gray-500 dark:text-gray-400">
+                Atualizado:
+              </span>
               <span className="ml-1 font-medium">
                 {new Date(cacheStats.lastUpdated).toLocaleTimeString()}
               </span>
             </div>
           </div>
-          
+
           {isOverLimit && (
             <div className="flex items-center gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-md">
               <AlertCircle className="h-4 w-4 text-yellow-600" />
@@ -95,40 +105,40 @@ export function CacheStatus({ className, showDetails = false }: CacheStatusProps
         </div>
       )}
     </div>
-  )
+  );
 }
 
 // Componente compacto para header
 export function CacheStatusCompact() {
-  const { cacheStats, isSupported, formatBytes } = useStaticCache()
+  const { cacheStats, isSupported, formatBytes } = useStaticCache();
 
-  if (!isSupported) return null
+  if (!isSupported) return null;
 
   return (
     <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
       <HardDrive className="h-3 w-3" />
       <span>{formatBytes(cacheStats.totalSize)}</span>
     </div>
-  )
+  );
 }
 
 // Componente para status de conexão
 export function ConnectionStatus() {
-  const [isOnline, setIsOnline] = React.useState(true)
+  const [isOnline, setIsOnline] = React.useState(true);
 
   React.useEffect(() => {
-    const handleOnline = () => setIsOnline(true)
-    const handleOffline = () => setIsOnline(false)
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
 
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
-    setIsOnline(navigator.onLine)
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    setIsOnline(navigator.onLine);
 
     return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
-    }
-  }, [])
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   return (
     <div className="flex items-center gap-1">
@@ -138,8 +148,8 @@ export function ConnectionStatus() {
         <WifiOff className="h-4 w-4 text-red-500" />
       )}
       <span className="text-xs text-gray-600 dark:text-gray-400">
-        {isOnline ? 'Online' : 'Offline'}
+        {isOnline ? "Online" : "Offline"}
       </span>
     </div>
-  )
+  );
 }

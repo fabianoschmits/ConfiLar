@@ -1,29 +1,29 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-import { 
-  User, 
-  UserPlus, 
-  Menu, 
-  X, 
-  HelpCircle, 
-  FileText, 
-  Info, 
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import {
+  User,
+  UserPlus,
+  Menu,
+  X,
+  HelpCircle,
+  FileText,
+  Info,
   Mail,
   LogIn,
-  Instagram
-} from 'lucide-react'
-import Link from 'next/link'
+  Instagram,
+} from "lucide-react";
+import Link from "next/link";
 
 export function MobileFloatingMenu() {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleClose = () => {
-    setIsOpen(false)
-  }
+    setIsOpen(false);
+  };
 
   return (
     <>
@@ -34,11 +34,7 @@ export function MobileFloatingMenu() {
           size="lg"
           className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-blue-600 hover:bg-blue-700 text-white"
         >
-          {isOpen ? (
-            <X className="h-6 w-6" />
-          ) : (
-            <Menu className="h-6 w-6" />
-          )}
+          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </Button>
       </div>
 
@@ -49,14 +45,18 @@ export function MobileFloatingMenu() {
             <CardContent className="p-4 space-y-2">
               <div className="text-center mb-4">
                 <h3 className="font-semibold text-gray-900">Menu</h3>
-                <p className="text-sm text-gray-600">Acesse as principais funcionalidades</p>
+                <p className="text-sm text-gray-600">
+                  Acesse as principais funcionalidades
+                </p>
               </div>
-              
+
               <Separator />
 
               {/* Acesso à Conta */}
               <div className="space-y-2 pt-2">
-                <h4 className="text-xs font-semibold text-gray-500 uppercase px-2">Acesso</h4>
+                <h4 className="text-xs font-semibold text-gray-500 uppercase px-2">
+                  Acesso
+                </h4>
                 <Link href="/auth" onClick={handleClose}>
                   <Button
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white justify-start"
@@ -66,7 +66,7 @@ export function MobileFloatingMenu() {
                     Fazer Login
                   </Button>
                 </Link>
-                
+
                 <Link href="/auth?tab=register" onClick={handleClose}>
                   <Button
                     variant="outline"
@@ -83,8 +83,10 @@ export function MobileFloatingMenu() {
 
               {/* Informações */}
               <div className="space-y-2 pt-2">
-                <h4 className="text-xs font-semibold text-gray-500 uppercase px-2">Informações</h4>
-                
+                <h4 className="text-xs font-semibold text-gray-500 uppercase px-2">
+                  Informações
+                </h4>
+
                 <Link href="/sobre" onClick={handleClose}>
                   <Button
                     variant="ghost"
@@ -119,7 +121,10 @@ export function MobileFloatingMenu() {
                 </Link>
 
                 {/* Contato - assumindo que existe uma página ou pode ser email */}
-                <a href="mailto:contato@appconfilar.com.br" onClick={handleClose}>
+                <a
+                  href="mailto:contato@appconfilar.com.br"
+                  onClick={handleClose}
+                >
                   <Button
                     variant="ghost"
                     className="w-full justify-start text-gray-700 hover:bg-gray-100"
@@ -131,7 +136,12 @@ export function MobileFloatingMenu() {
                 </a>
 
                 {/* Instagram */}
-                <a href="https://www.instagram.com/appconfilar" target="_blank" rel="noopener noreferrer" onClick={handleClose}>
+                <a
+                  href="https://www.instagram.com/appconfilar"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={handleClose}
+                >
                   <Button
                     variant="ghost"
                     className="w-full justify-start text-gray-700 hover:bg-gray-100"
@@ -155,5 +165,5 @@ export function MobileFloatingMenu() {
         />
       )}
     </>
-  )
+  );
 }

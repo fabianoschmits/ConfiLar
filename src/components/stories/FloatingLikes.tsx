@@ -1,121 +1,121 @@
-'use client'
+"use client";
 
-import { useEffect, useState, useRef, useMemo } from 'react'
-import { Heart } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useEffect, useState, useRef, useMemo } from "react";
+import { Heart } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface LikeUser {
-  id: string
-  full_name: string
-  avatar_url?: string
-  is_premium: boolean
-  created_at: string
+  id: string;
+  full_name: string;
+  avatar_url?: string;
+  is_premium: boolean;
+  created_at: string;
 }
 
 interface FloatingLikesProps {
-  likeUsers: LikeUser[]
-  isVisible: boolean
+  likeUsers: LikeUser[];
+  isVisible: boolean;
 }
 
 interface FloatingLike extends LikeUser {
-  animationId: string
-  delay: number
+  animationId: string;
+  delay: number;
 }
 
 export function FloatingLikes({ likeUsers, isVisible }: FloatingLikesProps) {
-  const [floatingLikes, setFloatingLikes] = useState<FloatingLike[]>([])
-  const lastLikesHashRef = useRef<string>('')
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [floatingLikes, setFloatingLikes] = useState<FloatingLike[]>([]);
+  const lastLikesHashRef = useRef<string>("");
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Criar um "hash" estável dos likes para comparar mudanças
   // Inclui quantidade e IDs para detectar novos likes imediatamente
   const likesHash = useMemo(() => {
-    if (!likeUsers || likeUsers.length === 0) return ''
+    if (!likeUsers || likeUsers.length === 0) return "";
     // Incluir quantidade e IDs para detectar novos likes
     return `${likeUsers.length}-${likeUsers
-      .map(like => `${like.id}-${like.is_premium}`)
+      .map((like) => `${like.id}-${like.is_premium}`)
       .sort()
-      .join(',')}`
-  }, [likeUsers])
+      .join(",")}`;
+  }, [likeUsers]);
 
   useEffect(() => {
     // Limpar timeout anterior se existir
     if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-      timeoutRef.current = null
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
 
     if (!isVisible || !likeUsers || likeUsers.length === 0) {
-      setFloatingLikes([])
-      lastLikesHashRef.current = ''
-      return
+      setFloatingLikes([]);
+      lastLikesHashRef.current = "";
+      return;
     }
 
     // Só atualizar se os likes realmente mudaram (comparar hash)
     if (likesHash === lastLikesHashRef.current) {
-      return // Nada mudou, não fazer nada
+      return; // Nada mudou, não fazer nada
     }
 
-    lastLikesHashRef.current = likesHash
+    lastLikesHashRef.current = likesHash;
 
     // Função para embaralhar array (Fisher-Yates shuffle - verdadeiramente aleatório)
     const shuffleArray = <T,>(array: T[]): T[] => {
-      const shuffled = [...array]
+      const shuffled = [...array];
       for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
       }
-      return shuffled
-    }
+      return shuffled;
+    };
 
     // Função para criar novo conjunto de likes
     const createFloatingLikes = () => {
       // Mostrar 3-5 likes aleatórios (ou menos se não houver tantos)
       const numToShow = Math.min(
         Math.max(3, Math.floor(Math.random() * 3) + 3),
-        likeUsers.length
-      )
-      
+        likeUsers.length,
+      );
+
       // Embaralhar verdadeiramente aleatório usando Fisher-Yates
-      const shuffled = shuffleArray(likeUsers)
-      const selected = shuffled.slice(0, numToShow)
+      const shuffled = shuffleArray(likeUsers);
+      const selected = shuffled.slice(0, numToShow);
 
       // Criar likes com delays escalonados aleatórios (entre 0 e 400ms)
       return selected.map((like, index) => ({
         ...like,
         animationId: `${like.id}-${Date.now()}-${Math.random()}-${index}`,
-        delay: index * 200 + Math.random() * 100 // Delay base + variação aleatória
-      }))
-    }
+        delay: index * 200 + Math.random() * 100, // Delay base + variação aleatória
+      }));
+    };
 
     // Criar primeiro conjunto
-    setFloatingLikes(createFloatingLikes())
+    setFloatingLikes(createFloatingLikes());
 
     // Criar um loop contínuo para sempre mostrar novos likes aleatórios
     // Intervalo variável entre 3-5 segundos para mais aleatoriedade
     const scheduleNext = () => {
-      const nextInterval = 3000 + Math.random() * 2000 // Entre 3-5 segundos
+      const nextInterval = 3000 + Math.random() * 2000; // Entre 3-5 segundos
       timeoutRef.current = setTimeout(() => {
-        setFloatingLikes(createFloatingLikes())
-        scheduleNext() // Agendar próximo ciclo
-      }, nextInterval)
-    }
+        setFloatingLikes(createFloatingLikes());
+        scheduleNext(); // Agendar próximo ciclo
+      }, nextInterval);
+    };
 
     // Iniciar o ciclo contínuo
     if (likeUsers.length > 0) {
-      scheduleNext()
+      scheduleNext();
     }
 
     return () => {
       if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-        timeoutRef.current = null
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
       }
-    }
-  }, [likesHash, isVisible, likeUsers]) // Agora podemos usar likeUsers porque comparamos o hash
+    };
+  }, [likesHash, isVisible, likeUsers]); // Agora podemos usar likeUsers porque comparamos o hash
 
   if (!isVisible || floatingLikes.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -124,29 +124,29 @@ export function FloatingLikes({ likeUsers, isVisible }: FloatingLikesProps) {
         <FloatingHeart key={like.animationId} like={like} />
       ))}
     </div>
-  )
+  );
 }
 
 function FloatingHeart({ like }: { like: FloatingLike }) {
-  const [shouldRender, setShouldRender] = useState(false)
+  const [shouldRender, setShouldRender] = useState(false);
 
   useEffect(() => {
     // Delay para iniciar a animação
     const timer = setTimeout(() => {
-      setShouldRender(true)
-    }, like.delay)
+      setShouldRender(true);
+    }, like.delay);
 
-    return () => clearTimeout(timer)
-  }, [like.delay])
+    return () => clearTimeout(timer);
+  }, [like.delay]);
 
-  if (!shouldRender) return null
+  if (!shouldRender) return null;
 
   return (
     <div
       className="absolute bottom-0 left-1/2 -translate-x-1/2"
       style={{
-        animation: 'floatHeart 3.5s ease-out forwards',
-        animationDelay: '0ms'
+        animation: "floatHeart 3.5s ease-out forwards",
+        animationDelay: "0ms",
       }}
     >
       <div className="relative flex items-center justify-center">
@@ -154,18 +154,18 @@ function FloatingHeart({ like }: { like: FloatingLike }) {
         <div
           className={`absolute inset-0 rounded-full blur-md ${
             like.is_premium
-              ? 'bg-gradient-to-r from-yellow-400 to-yellow-600'
-              : 'bg-gradient-to-r from-red-400 to-red-600'
+              ? "bg-gradient-to-r from-yellow-400 to-yellow-600"
+              : "bg-gradient-to-r from-red-400 to-red-600"
           }`}
-          style={{ transform: 'scale(1.2)' }}
+          style={{ transform: "scale(1.2)" }}
         />
 
         {/* Container do coração com avatar */}
         <div
           className={`relative flex items-center justify-center w-16 h-16 rounded-full ${
             like.is_premium
-              ? 'bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600'
-              : 'bg-gradient-to-br from-red-400 via-red-500 to-red-600'
+              ? "bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600"
+              : "bg-gradient-to-br from-red-400 via-red-500 to-red-600"
           } shadow-lg`}
         >
           {/* Avatar do usuário */}
@@ -180,7 +180,9 @@ function FloatingHeart({ like }: { like: FloatingLike }) {
           <div className="absolute -top-1 -right-1 bg-white rounded-full p-1 shadow-md">
             <Heart
               className={`h-3 w-3 ${
-                like.is_premium ? 'text-yellow-500 fill-yellow-500' : 'text-red-500 fill-red-500'
+                like.is_premium
+                  ? "text-yellow-500 fill-yellow-500"
+                  : "text-red-500 fill-red-500"
               }`}
             />
           </div>
@@ -203,10 +205,12 @@ function FloatingHeart({ like }: { like: FloatingLike }) {
             transform: translateY(-30vh) translateX(25px) scale(1) rotate(15deg);
           }
           50% {
-            transform: translateY(-50vh) translateX(-25px) scale(0.95) rotate(-15deg);
+            transform: translateY(-50vh) translateX(-25px) scale(0.95)
+              rotate(-15deg);
           }
           70% {
-            transform: translateY(-70vh) translateX(20px) scale(0.85) rotate(10deg);
+            transform: translateY(-70vh) translateX(20px) scale(0.85)
+              rotate(10deg);
           }
           85% {
             opacity: 0.9;
@@ -222,6 +226,5 @@ function FloatingHeart({ like }: { like: FloatingLike }) {
         }
       `}</style>
     </div>
-  )
+  );
 }
-

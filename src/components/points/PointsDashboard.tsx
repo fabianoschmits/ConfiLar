@@ -1,36 +1,43 @@
-'use client'
+"use client";
 
-import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  Coins, 
-  TrendingUp, 
-  Award, 
-  Star, 
-  History, 
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Coins,
+  TrendingUp,
+  Award,
+  Star,
+  History,
   Trophy,
   Target,
   Calendar,
-  Users
-} from 'lucide-react'
-import { usePointsDashboard, usePointsLeaderboard } from '@/hooks/usePoints'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { PointsBalance } from './PointsBalance'
-import { PointsHistory } from './PointsHistory'
-import { formatPoints, getNextLevel, getPointsToNextLevel, getLevelProgress, USER_LEVELS, UserLevel } from '@/types/points'
-import { cn } from '@/lib/utils'
+  Users,
+} from "lucide-react";
+import { usePointsDashboard, usePointsLeaderboard } from "@/hooks/usePoints";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { PointsBalance } from "./PointsBalance";
+import { PointsHistory } from "./PointsHistory";
+import {
+  formatPoints,
+  getNextLevel,
+  getPointsToNextLevel,
+  getLevelProgress,
+  USER_LEVELS,
+  UserLevel,
+} from "@/types/points";
+import { cn } from "@/lib/utils";
 
 interface PointsDashboardProps {
-  className?: string
+  className?: string;
 }
 
 export function PointsDashboard({ className }: PointsDashboardProps) {
-  const { user } = useAuthContext()
-  const { dashboard, loading, error } = usePointsDashboard(user?.id)
-  const { leaderboard, loading: leaderboardLoading } = usePointsLeaderboard(10)
+  const { user } = useAuthContext();
+  const { dashboard, loading, error } = usePointsDashboard(user?.id);
+  const { leaderboard, loading: leaderboardLoading } = usePointsLeaderboard(10);
 
   if (loading) {
     return (
@@ -64,7 +71,7 @@ export function PointsDashboard({ className }: PointsDashboardProps) {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (error || !dashboard) {
@@ -82,22 +89,28 @@ export function PointsDashboard({ className }: PointsDashboardProps) {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   // Mapear nível numérico para string (compatibilidade com banco)
   const levelMap: Record<number, UserLevel> = {
-    1: 'bronze',
-    2: 'silver', 
-    3: 'gold',
-    4: 'platinum',
-    5: 'diamond'
-  }
-  
-  const userLevel = levelMap[Number(dashboard.balance.level)] || 'bronze'
-  const nextLevel = getNextLevel(userLevel)
-  const pointsToNext = getPointsToNextLevel(dashboard.balance.total_earned, userLevel)
-  const progressPercentage = getLevelProgress(dashboard.balance.total_earned, userLevel)
+    1: "bronze",
+    2: "silver",
+    3: "gold",
+    4: "platinum",
+    5: "diamond",
+  };
+
+  const userLevel = levelMap[Number(dashboard.balance.level)] || "bronze";
+  const nextLevel = getNextLevel(userLevel);
+  const pointsToNext = getPointsToNextLevel(
+    dashboard.balance.total_earned,
+    userLevel,
+  );
+  const progressPercentage = getLevelProgress(
+    dashboard.balance.total_earned,
+    userLevel,
+  );
 
   return (
     <div className={className}>
@@ -105,7 +118,7 @@ export function PointsDashboard({ className }: PointsDashboardProps) {
         {/* Saldo e Nível */}
         <div className="lg:col-span-1 space-y-6">
           <PointsBalance showDetails={true} />
-          
+
           {/* Estatísticas do Mês */}
           <Card>
             <CardHeader>
@@ -120,21 +133,27 @@ export function PointsDashboard({ className }: PointsDashboardProps) {
                   <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                     +{formatPoints(dashboard.monthly_stats.earned)}
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Ganhos</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Ganhos
+                  </p>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                     -{formatPoints(dashboard.monthly_stats.spent)}
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Gastos</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Gastos
+                  </p>
                 </div>
               </div>
-              
+
               <div className="text-center">
                 <div className="text-lg font-semibold text-gray-900 dark:text-white">
                   {formatPoints(dashboard.monthly_stats.net)}
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Saldo líquido</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Saldo líquido
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -150,10 +169,7 @@ export function PointsDashboard({ className }: PointsDashboardProps) {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="text-center">
-                  <Badge 
-                    variant="outline" 
-                    className="text-sm font-medium mb-2"
-                  >
+                  <Badge variant="outline" className="text-sm font-medium mb-2">
                     <Award className="w-4 h-4 mr-1" />
                     {USER_LEVELS[nextLevel].name}
                   </Badge>
@@ -161,12 +177,9 @@ export function PointsDashboard({ className }: PointsDashboardProps) {
                     {formatPoints(pointsToNext)} pontos restantes
                   </p>
                 </div>
-                
-                <Progress 
-                  value={progressPercentage} 
-                  className="h-3"
-                />
-                
+
+                <Progress value={progressPercentage} className="h-3" />
+
                 <div className="text-center">
                   <span className="text-sm font-medium text-gray-900 dark:text-white">
                     {progressPercentage.toFixed(1)}%
@@ -188,7 +201,10 @@ export function PointsDashboard({ className }: PointsDashboardProps) {
                 <History className="w-4 h-4" />
                 Histórico
               </TabsTrigger>
-              <TabsTrigger value="leaderboard" className="flex items-center gap-2">
+              <TabsTrigger
+                value="leaderboard"
+                className="flex items-center gap-2"
+              >
                 <Trophy className="w-4 h-4" />
                 Ranking
               </TabsTrigger>
@@ -203,7 +219,10 @@ export function PointsDashboard({ className }: PointsDashboardProps) {
             </TabsContent>
 
             <TabsContent value="leaderboard">
-              <LeaderboardTab leaderboard={leaderboard} loading={leaderboardLoading} />
+              <LeaderboardTab
+                leaderboard={leaderboard}
+                loading={leaderboardLoading}
+              />
             </TabsContent>
 
             <TabsContent value="stats">
@@ -213,12 +232,12 @@ export function PointsDashboard({ className }: PointsDashboardProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 interface LeaderboardTabProps {
-  leaderboard: any[]
-  loading: boolean
+  leaderboard: any[];
+  loading: boolean;
 }
 
 function LeaderboardTab({ leaderboard, loading }: LeaderboardTabProps) {
@@ -246,7 +265,7 @@ function LeaderboardTab({ leaderboard, loading }: LeaderboardTabProps) {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -272,39 +291,39 @@ function LeaderboardTab({ leaderboard, loading }: LeaderboardTabProps) {
                 key={user.user_id}
                 className={cn(
                   "flex items-center gap-3 p-3 rounded-lg border transition-colors",
-                  index < 3 
+                  index < 3
                     ? "bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-yellow-200 dark:border-yellow-800"
-                    : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                    : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50",
                 )}
               >
                 {/* Posição */}
-                <div className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm",
-                  index === 0 && "bg-yellow-500 text-white",
-                  index === 1 && "bg-gray-400 text-white",
-                  index === 2 && "bg-amber-600 text-white",
-                  index > 2 && "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
-                )}>
+                <div
+                  className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm",
+                    index === 0 && "bg-yellow-500 text-white",
+                    index === 1 && "bg-gray-400 text-white",
+                    index === 2 && "bg-amber-600 text-white",
+                    index > 2 &&
+                      "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400",
+                  )}
+                >
                   {index + 1}
                 </div>
 
                 {/* Avatar */}
                 <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
                   <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    {user.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                    {user.full_name?.charAt(0)?.toUpperCase() || "U"}
                   </span>
                 </div>
 
                 {/* Nome e Nível */}
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-gray-900 dark:text-white truncate">
-                    {user.full_name || 'Usuário'}
+                    {user.full_name || "Usuário"}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge 
-                      variant="outline" 
-                      className="text-xs"
-                    >
+                    <Badge variant="outline" className="text-xs">
                       {USER_LEVELS[user.user_level]?.name || user.user_level}
                     </Badge>
                   </div>
@@ -315,7 +334,9 @@ function LeaderboardTab({ leaderboard, loading }: LeaderboardTabProps) {
                   <div className="text-lg font-bold text-gray-900 dark:text-white">
                     {formatPoints(user.total_points_earned)}
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">pontos</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    pontos
+                  </p>
                 </div>
               </div>
             ))}
@@ -323,11 +344,11 @@ function LeaderboardTab({ leaderboard, loading }: LeaderboardTabProps) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
 
 interface StatsTabProps {
-  dashboard: any
+  dashboard: any;
 }
 
 function StatsTab({ dashboard }: StatsTabProps) {
@@ -347,21 +368,27 @@ function StatsTab({ dashboard }: StatsTabProps) {
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {formatPoints(dashboard.balance.total_earned)}
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Total ganho</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Total ganho
+              </p>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                 {formatPoints(dashboard.balance.total_spent)}
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Total gasto</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Total gasto
+              </p>
             </div>
           </div>
-          
+
           <div className="text-center">
             <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
               {formatPoints(dashboard.balance.balance)}
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Saldo atual</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Saldo atual
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -378,11 +405,9 @@ function StatsTab({ dashboard }: StatsTabProps) {
           <div className="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2">
             #{dashboard.leaderboard_position}
           </div>
-          <p className="text-gray-600 dark:text-gray-400">
-            Posição global
-          </p>
+          <p className="text-gray-600 dark:text-gray-400">Posição global</p>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

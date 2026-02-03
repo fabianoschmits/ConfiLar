@@ -1,35 +1,41 @@
-'use client'
+"use client";
 
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { WifiOff, RefreshCw, Home, MessageCircle, Search } from 'lucide-react'
-import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { WifiOff, RefreshCw, Home, MessageCircle, Search } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function OfflinePage() {
-  const [isOnline, setIsOnline] = useState(false)
-  const [retryCount, setRetryCount] = useState(0)
+  const [isOnline, setIsOnline] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true)
-    const handleOffline = () => setIsOnline(false)
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
 
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     // Verificar status inicial
-    setIsOnline(navigator.onLine)
+    setIsOnline(navigator.onLine);
 
     return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
-    }
-  }, [])
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   const handleRetry = () => {
-    setRetryCount(prev => prev + 1)
-    window.location.reload()
-  }
+    setRetryCount((prev) => prev + 1);
+    window.location.reload();
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
@@ -42,10 +48,9 @@ export default function OfflinePage() {
             ConfiLar Offline
           </CardTitle>
           <CardDescription className="text-gray-600">
-            {isOnline 
-              ? 'Conexão restaurada! Recarregando...' 
-              : 'Você está offline. Algumas funcionalidades podem não estar disponíveis.'
-            }
+            {isOnline
+              ? "Conexão restaurada! Recarregando..."
+              : "Você está offline. Algumas funcionalidades podem não estar disponíveis."}
           </CardDescription>
         </CardHeader>
 
@@ -56,8 +61,8 @@ export default function OfflinePage() {
                 <p className="text-sm text-gray-500 mb-4">
                   Verifique sua conexão com a internet e tente novamente.
                 </p>
-                
-                <Button 
+
+                <Button
                   onClick={handleRetry}
                   className="w-full"
                   disabled={retryCount > 3}
@@ -123,26 +128,5 @@ export default function OfflinePage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

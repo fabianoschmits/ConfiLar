@@ -1,26 +1,34 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react'
-import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { CheckCircle2, Clock, User, Calendar, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react'
-import { useReferralDashboard } from '@/hooks/useReferralStats'
-import { formatDistanceToNow } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
-import { cn } from '@/lib/utils'
+import React, { useState } from "react";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  CheckCircle2,
+  Clock,
+  User,
+  Calendar,
+  TrendingUp,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import { useReferralDashboard } from "@/hooks/useReferralStats";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 interface ReferralHistoryProps {
-  userId: string
-  className?: string
+  userId: string;
+  className?: string;
 }
 
 export function ReferralHistory({ userId, className }: ReferralHistoryProps) {
-  const { dashboard, loading } = useReferralDashboard(userId)
-  const [showAllPoints, setShowAllPoints] = useState(false)
-  const [showAllReferrals, setShowAllReferrals] = useState(false)
+  const { dashboard, loading } = useReferralDashboard(userId);
+  const [showAllPoints, setShowAllPoints] = useState(false);
+  const [showAllReferrals, setShowAllReferrals] = useState(false);
 
   if (loading) {
     return (
@@ -42,15 +50,19 @@ export function ReferralHistory({ userId, className }: ReferralHistoryProps) {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  const referrals = dashboard?.referrals || []
-  const recentPoints = dashboard?.recentPoints || []
-  
+  const referrals = dashboard?.referrals || [];
+  const recentPoints = dashboard?.recentPoints || [];
+
   // Limitar exibição inicial
-  const displayedPoints = showAllPoints ? recentPoints : recentPoints.slice(0, 10)
-  const displayedReferrals = showAllReferrals ? referrals : referrals.slice(0, 10)
+  const displayedPoints = showAllPoints
+    ? recentPoints
+    : recentPoints.slice(0, 10);
+  const displayedReferrals = showAllReferrals
+    ? referrals
+    : referrals.slice(0, 10);
 
   if (referrals.length === 0) {
     return (
@@ -70,7 +82,7 @@ export function ReferralHistory({ userId, className }: ReferralHistoryProps) {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -91,7 +103,8 @@ export function ReferralHistory({ userId, className }: ReferralHistoryProps) {
                 Histórico de Pontos
               </h3>
               <Badge variant="outline" className="ml-auto">
-                {showAllPoints ? recentPoints.length : 'Últimas 10'} de {recentPoints.length}
+                {showAllPoints ? recentPoints.length : "Últimas 10"} de{" "}
+                {recentPoints.length}
               </Badge>
             </div>
             <div className="space-y-2">
@@ -102,13 +115,14 @@ export function ReferralHistory({ userId, className }: ReferralHistoryProps) {
                 >
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      {point.description || getActionTypeDescription(point.actionType)}
+                      {point.description ||
+                        getActionTypeDescription(point.actionType)}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       {formatDistanceToNow(new Date(point.createdAt), {
                         addSuffix: true,
-                        locale: ptBR
+                        locale: ptBR,
                       })}
                     </p>
                   </div>
@@ -116,12 +130,14 @@ export function ReferralHistory({ userId, className }: ReferralHistoryProps) {
                     <span className="text-lg font-bold text-green-600 dark:text-green-400">
                       +{point.points}
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">pts</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      pts
+                    </span>
                   </div>
                 </div>
               ))}
             </div>
-            
+
             {/* Botão Ver Mais/Menos - Pontos */}
             {recentPoints.length > 10 && (
               <div className="mt-4 text-center">
@@ -156,7 +172,8 @@ export function ReferralHistory({ userId, className }: ReferralHistoryProps) {
               Pessoas que Você Indicou
             </h3>
             <Badge variant="outline" className="ml-auto">
-              {showAllReferrals ? referrals.length : 'Primeiras 10'} de {referrals.length}
+              {showAllReferrals ? referrals.length : "Primeiras 10"} de{" "}
+              {referrals.length}
             </Badge>
           </div>
           {displayedReferrals.map((referral) => (
@@ -165,7 +182,7 @@ export function ReferralHistory({ userId, className }: ReferralHistoryProps) {
               className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
             >
               {/* Avatar e Nome - Link para perfil */}
-              <Link 
+              <Link
                 href={`/perfil/${referral.referredId}`}
                 className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
               >
@@ -186,7 +203,7 @@ export function ReferralHistory({ userId, className }: ReferralHistoryProps) {
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       {formatDistanceToNow(new Date(referral.createdAt), {
                         addSuffix: true,
-                        locale: ptBR
+                        locale: ptBR,
                       })}
                     </p>
                   </div>
@@ -223,7 +240,7 @@ export function ReferralHistory({ userId, className }: ReferralHistoryProps) {
               </div>
             </div>
           ))}
-          
+
           {/* Botão Ver Mais/Menos - Referrals */}
           {referrals.length > 10 && (
             <div className="mt-4 text-center">
@@ -250,47 +267,48 @@ export function ReferralHistory({ userId, className }: ReferralHistoryProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
-function getStatusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
+function getStatusVariant(
+  status: string,
+): "default" | "secondary" | "destructive" | "outline" {
   switch (status) {
-    case 'completed':
-      return 'default'
-    case 'active':
-      return 'secondary'
-    case 'pending':
-      return 'outline'
+    case "completed":
+      return "default";
+    case "active":
+      return "secondary";
+    case "pending":
+      return "outline";
     default:
-      return 'outline'
+      return "outline";
   }
 }
 
 function getStatusText(status: string): string {
   switch (status) {
-    case 'completed':
-      return 'Completo'
-    case 'active':
-      return 'Ativo'
-    case 'pending':
-      return 'Pendente'
-    case 'inactive':
-      return 'Inativo'
+    case "completed":
+      return "Completo";
+    case "active":
+      return "Ativo";
+    case "pending":
+      return "Pendente";
+    case "inactive":
+      return "Inativo";
     default:
-      return status
+      return status;
   }
 }
 
 function getActionTypeDescription(actionType: string): string {
   const descriptions: Record<string, string> = {
-    'signup': 'Pessoa indicada se cadastrou',
-    'profile_completed': 'Pessoa indicada completou perfil',
-    'first_post': 'Pessoa indicada fez primeiro post',
-    'first_review': 'Pessoa indicada fez primeira avaliação',
-    'active_30_days': 'Pessoa indicada ficou ativa por 30 dias',
-    'tier_upgrade': 'Você subiu de nível',
-    'milestone_reached': 'Você alcançou um marco'
-  }
-  return descriptions[actionType] || actionType
+    signup: "Pessoa indicada se cadastrou",
+    profile_completed: "Pessoa indicada completou perfil",
+    first_post: "Pessoa indicada fez primeiro post",
+    first_review: "Pessoa indicada fez primeira avaliação",
+    active_30_days: "Pessoa indicada ficou ativa por 30 dias",
+    tier_upgrade: "Você subiu de nível",
+    milestone_reached: "Você alcançou um marco",
+  };
+  return descriptions[actionType] || actionType;
 }
-

@@ -1,27 +1,27 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react'
-import { MainLayout } from '@/components/layout/MainLayout'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { ReferralDashboardSkeleton } from '@/components/ui/skeleton'
-import { ReferralDashboard } from '@/components/referral/ReferralDashboard'
-import { ReferralLinkCard } from '@/components/referral/ReferralLinkCard'
-import { ReferralHistory } from '@/components/referral/ReferralHistory'
-import { ReferralLeaderboard } from '@/components/referral/ReferralLeaderboard'
-import { ReferralBadge } from '@/components/referral/ReferralBadge'
-import { WhoReferredMe } from '@/components/referral/WhoReferredMe'
-import { useWhoReferredMe } from '@/hooks/useWhoReferredMe'
-import { Card, CardContent } from '@/components/ui/card'
-import { Users, TrendingUp, Award, Sparkles, ChevronDown } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { EmptyState } from '@/components/ui/EmptyState'
+import React, { useState } from "react";
+import { MainLayout } from "@/components/layout/MainLayout";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { ReferralDashboardSkeleton } from "@/components/ui/skeleton";
+import { ReferralDashboard } from "@/components/referral/ReferralDashboard";
+import { ReferralLinkCard } from "@/components/referral/ReferralLinkCard";
+import { ReferralHistory } from "@/components/referral/ReferralHistory";
+import { ReferralLeaderboard } from "@/components/referral/ReferralLeaderboard";
+import { ReferralBadge } from "@/components/referral/ReferralBadge";
+import { WhoReferredMe } from "@/components/referral/WhoReferredMe";
+import { useWhoReferredMe } from "@/hooks/useWhoReferredMe";
+import { Card, CardContent } from "@/components/ui/card";
+import { Users, TrendingUp, Award, Sparkles, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function IndicacoesPage() {
-  const { user, loading } = useAuthContext()
-  const { referrer, loading: loadingReferrer } = useWhoReferredMe(user?.id)
-  const [showHowItWorks, setShowHowItWorks] = useState(false)
-  const [showPointsTable, setShowPointsTable] = useState(false)
-  const [showTiersBenefits, setShowTiersBenefits] = useState(false)
+  const { user, loading } = useAuthContext();
+  const { referrer, loading: loadingReferrer } = useWhoReferredMe(user?.id);
+  const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [showPointsTable, setShowPointsTable] = useState(false);
+  const [showTiersBenefits, setShowTiersBenefits] = useState(false);
 
   if (loading) {
     return (
@@ -32,7 +32,7 @@ export default function IndicacoesPage() {
           </div>
         </div>
       </MainLayout>
-    )
+    );
   }
 
   if (!user) {
@@ -40,18 +40,20 @@ export default function IndicacoesPage() {
       <MainLayout>
         <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center p-6">
           <EmptyState
-            icon={<Users className="h-16 w-16 text-gray-400 dark:text-gray-600" />}
+            icon={
+              <Users className="h-16 w-16 text-gray-400 dark:text-gray-600" />
+            }
             title="Faça login para acessar"
             description="Você precisa estar logado para ver seu programa de indicações"
             variant="centered"
             action={{
-              label: 'Fazer Login',
-              onClick: () => window.location.href = '/auth'
+              label: "Fazer Login",
+              onClick: () => (window.location.href = "/auth"),
             }}
           />
         </div>
       </MainLayout>
-    )
+    );
   }
 
   return (
@@ -69,8 +71,9 @@ export default function IndicacoesPage() {
               </h1>
             </div>
             <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Indique amigos para o ConfiLar e ganhe recompensas incríveis! Quanto mais pessoas você indicar,
-              mais badges e benefícios você desbloqueia.
+              Indique amigos para o ConfiLar e ganhe recompensas incríveis!
+              Quanto mais pessoas você indicar, mais badges e benefícios você
+              desbloqueia.
             </p>
           </div>
 
@@ -112,7 +115,7 @@ export default function IndicacoesPage() {
                 </div>
                 <ChevronDown
                   className={`w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform ${
-                    showPointsTable ? 'rotate-180' : ''
+                    showPointsTable ? "rotate-180" : ""
                   }`}
                 />
               </Button>
@@ -126,7 +129,9 @@ export default function IndicacoesPage() {
                     >
                       <div className="flex items-center gap-2 md:gap-3">
                         <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-600 dark:bg-green-400 rounded-full" />
-                        <span className="text-sm md:text-base text-gray-900 dark:text-white">{item.action}</span>
+                        <span className="text-sm md:text-base text-gray-900 dark:text-white">
+                          {item.action}
+                        </span>
                       </div>
                       <span className="text-sm md:text-base font-bold text-green-600 dark:text-green-400">
                         +{item.points} pts
@@ -154,7 +159,7 @@ export default function IndicacoesPage() {
                 </div>
                 <ChevronDown
                   className={`w-4 h-4 text-gray-600 dark:text-gray-400 transition-transform ${
-                    showHowItWorks ? 'rotate-180' : ''
+                    showHowItWorks ? "rotate-180" : ""
                   }`}
                 />
               </Button>
@@ -166,7 +171,9 @@ export default function IndicacoesPage() {
                       1
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">Compartilhe seu link</p>
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        Compartilhe seu link
+                      </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         Use seu código exclusivo para convidar amigos
                       </p>
@@ -178,7 +185,9 @@ export default function IndicacoesPage() {
                       2
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">Amigos se cadastram</p>
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        Amigos se cadastram
+                      </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         Cada cadastro via seu link te dá pontos
                       </p>
@@ -190,7 +199,9 @@ export default function IndicacoesPage() {
                       3
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">Ganhe recompensas</p>
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        Ganhe recompensas
+                      </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         Desbloqueie badges e benefícios exclusivos
                       </p>
@@ -217,7 +228,7 @@ export default function IndicacoesPage() {
                 </div>
                 <ChevronDown
                   className={`w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform ${
-                    showTiersBenefits ? 'rotate-180' : ''
+                    showTiersBenefits ? "rotate-180" : ""
                   }`}
                 />
               </Button>
@@ -237,7 +248,9 @@ export default function IndicacoesPage() {
                           size="sm"
                         />
                         <div className="text-center">
-                          <h4 className="font-bold text-xs md:text-sm text-gray-900 dark:text-white">{tier.name}</h4>
+                          <h4 className="font-bold text-xs md:text-sm text-gray-900 dark:text-white">
+                            {tier.name}
+                          </h4>
                           <p className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400">
                             {tier.requirement}
                           </p>
@@ -245,8 +258,13 @@ export default function IndicacoesPage() {
                       </div>
                       <ul className="space-y-1">
                         {tier.benefits.map((benefit, idx) => (
-                          <li key={idx} className="text-[9px] md:text-[10px] text-gray-600 dark:text-gray-400 flex items-start gap-1">
-                            <span className="text-green-600 dark:text-green-400 text-[8px] md:text-[9px]">✓</span>
+                          <li
+                            key={idx}
+                            className="text-[9px] md:text-[10px] text-gray-600 dark:text-gray-400 flex items-start gap-1"
+                          >
+                            <span className="text-green-600 dark:text-green-400 text-[8px] md:text-[9px]">
+                              ✓
+                            </span>
                             {benefit}
                           </li>
                         ))}
@@ -257,66 +275,69 @@ export default function IndicacoesPage() {
               )}
             </CardContent>
           </Card>
-
         </div>
       </div>
     </MainLayout>
-  )
+  );
 }
 
 const pointsTable = [
-  { action: 'Indicação se cadastra', points: 200 },
-  { action: 'Indicação completa perfil', points: 150 },
-  { action: 'Indicação faz primeiro post', points: 100 },
-  { action: 'Indicação faz primeira avaliação', points: 100 },
-  { action: 'Indicação fica ativa por 30 dias', points: 300 }
-]
+  { action: "Indicação se cadastra", points: 200 },
+  { action: "Indicação completa perfil", points: 150 },
+  { action: "Indicação faz primeiro post", points: 100 },
+  { action: "Indicação faz primeira avaliação", points: 100 },
+  { action: "Indicação fica ativa por 30 dias", points: 300 },
+];
 
 const tiersBenefits = [
   {
-    name: 'Bronze',
-    tierKey: 'bronze' as const,
+    name: "Bronze",
+    tierKey: "bronze" as const,
     minReferrals: 1,
     icon: Award,
-    color: 'text-amber-600',
-    requirement: '1-4 indicações',
-    benefits: ['Badge Bronze', 'Reconhecimento no perfil']
+    color: "text-amber-600",
+    requirement: "1-4 indicações",
+    benefits: ["Badge Bronze", "Reconhecimento no perfil"],
   },
   {
-    name: 'Prata',
-    tierKey: 'silver' as const,
+    name: "Prata",
+    tierKey: "silver" as const,
     minReferrals: 5,
     icon: Award,
-    color: 'text-gray-400',
-    requirement: '5-9 indicações',
-    benefits: ['Badge Prata', 'Destaque no perfil', 'Título especial']
+    color: "text-gray-400",
+    requirement: "5-9 indicações",
+    benefits: ["Badge Prata", "Destaque no perfil", "Título especial"],
   },
   {
-    name: 'Ouro',
-    tierKey: 'gold' as const,
+    name: "Ouro",
+    tierKey: "gold" as const,
     minReferrals: 10,
     icon: Award,
-    color: 'text-yellow-500',
-    requirement: '10-24 indicações',
-    benefits: ['Badge Ouro', 'Prioridade em buscas', 'Badge no feed']
+    color: "text-yellow-500",
+    requirement: "10-24 indicações",
+    benefits: ["Badge Ouro", "Prioridade em buscas", "Badge no feed"],
   },
   {
-    name: 'Platina',
-    tierKey: 'platinum' as const,
+    name: "Platina",
+    tierKey: "platinum" as const,
     minReferrals: 25,
     icon: Award,
-    color: 'text-cyan-500',
-    requirement: '25-49 indicações',
-    benefits: ['Badge Platina', 'Perfil Premium', 'Selo verificado']
+    color: "text-cyan-500",
+    requirement: "25-49 indicações",
+    benefits: ["Badge Platina", "Perfil Premium", "Selo verificado"],
   },
   {
-    name: 'Diamante',
-    tierKey: 'diamond' as const,
+    name: "Diamante",
+    tierKey: "diamond" as const,
     minReferrals: 50,
     icon: Sparkles,
-    color: 'text-blue-500',
-    requirement: '50+ indicações',
-    benefits: ['Badge Diamante', 'Perfil VIP', 'Reconhecimento público', 'Features exclusivas']
-  }
-]
-
+    color: "text-blue-500",
+    requirement: "50+ indicações",
+    benefits: [
+      "Badge Diamante",
+      "Perfil VIP",
+      "Reconhecimento público",
+      "Features exclusivas",
+    ],
+  },
+];

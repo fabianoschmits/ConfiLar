@@ -1,18 +1,18 @@
-'use client'
+"use client";
 
-import React from 'react'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { User, ArrowRight } from 'lucide-react'
-import Link from 'next/link'
+import React from "react";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { User, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export function LoginPrompt() {
-  const { user, loading } = useAuthContext()
+  const { user, loading } = useAuthContext();
 
   // Não mostrar se estiver carregando ou se usuário estiver logado
   if (loading || user) {
-    return null
+    return null;
   }
 
   return (
@@ -25,7 +25,7 @@ export function LoginPrompt() {
                 <User className="w-5 h-5 text-white" />
               </div>
             </div>
-            
+
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-sm mb-1">
                 Faça login para continuar
@@ -34,11 +34,11 @@ export function LoginPrompt() {
                 Acesse sua conta para usar todos os recursos da plataforma
               </p>
             </div>
-            
+
             <div className="flex-shrink-0">
               <Link href="/auth">
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   className="bg-white text-blue-600 hover:bg-blue-50 text-xs font-medium px-3 py-2 h-8"
                 >
                   Entrar
@@ -50,5 +50,5 @@ export function LoginPrompt() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

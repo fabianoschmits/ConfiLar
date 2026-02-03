@@ -1,70 +1,78 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { useReauthentication } from '@/hooks/useReauthentication'
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useReauthentication } from "@/hooks/useReauthentication";
 
 interface AutoReauthenticationProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function AutoReauthentication({ children }: AutoReauthenticationProps) {
-  const { user } = useAuthContext()
-  const router = useRouter()
-  const pathname = usePathname()
-  const [isChecking, setIsChecking] = useState(false)
+  const { user } = useAuthContext();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isChecking, setIsChecking] = useState(false);
 
   useEffect(() => {
     const checkReauthentication = async () => {
       // Se não há usuário logado, não precisa verificar
       if (!user) {
-        return
+        return;
       }
 
       // Páginas que devem ser ignoradas (como login, registro, etc.)
-      const ignoredPages = ['/auth', '/registro', '/recuperar-senha', '/verificacao', '/logout', '/reautenticacao']
+      const ignoredPages = [
+        "/auth",
+        "/registro",
+        "/recuperar-senha",
+        "/verificacao",
+        "/logout",
+        "/reautenticacao",
+      ];
       if (ignoredPages.includes(pathname)) {
-        return
+        return;
       }
 
       // Páginas que requerem reautenticação
       const protectedPages = {
-        '/nova-senha': 'password',
-        '/alterar-email': 'email'
-      } as const
+        "/nova-senha": "password",
+        "/alterar-email": "email",
+      } as const;
 
-      const requiredAction = protectedPages[pathname as keyof typeof protectedPages]
-      
+      const requiredAction =
+        protectedPages[pathname as keyof typeof protectedPages];
+
       if (!requiredAction) {
-        return
+        return;
       }
 
-      setIsChecking(true)
+      setIsChecking(true);
 
       try {
         // Verificação simples baseada em sessionStorage
-        const reauthSession = sessionStorage.getItem('reauth_session')
-        const needsReauth = !reauthSession
-        
+        const reauthSession = sessionStorage.getItem("reauth_session");
+        const needsReauth = !reauthSession;
+
         if (needsReauth) {
-          console.log(`⚠️ Reautenticação necessária para ${pathname}`)
-          router.push(`/reautenticacao?action=${requiredAction}`)
+          console.log(`⚠️ Reautenticação necessária para ${pathname}`);
+          router.push(`/reautenticacao?action=${requiredAction}`);
         }
       } catch (error) {
-        console.error('❌ Erro ao verificar reautenticação:', error)
+        console.error("❌ Erro ao verificar reautenticação:", error);
         // Em caso de erro, assumir que reautenticação é necessária
-        router.push(`/reautenticacao?action=${requiredAction}`)
+        router.push(`/reautenticacao?action=${requiredAction}`);
       } finally {
-        setIsChecking(false)
+        setIsChecking(false);
       }
-    }
+    };
 
     // Adicionar um pequeno delay para evitar interferência no login
-    const timeoutId = setTimeout(checkReauthentication, 100)
-    
-    return () => clearTimeout(timeoutId)
-  }, [user, pathname, router])
+    const timeoutId = setTimeout(checkReauthentication, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [user, pathname, router]);
 
   // Mostrar loading enquanto verifica
   if (isChecking) {
@@ -80,36 +88,39 @@ export function AutoReauthentication({ children }: AutoReauthenticationProps) {
           </p>
         </div>
       </div>
-    )
+    );
   }
 
-  return <>{children}</>
+  return <>{children}</>;
 }
 
 // Hook para verificar reautenticação em qualquer lugar
 export function useAutoReauthentication() {
-  const { checkReauthenticationRequired } = useReauthentication()
-  const router = useRouter()
+  const { checkReauthenticationRequired } = useReauthentication();
+  const router = useRouter();
 
-  const checkAndRedirect = async (action: 'password' | 'email' | 'general', redirectPath?: string) => {
+  const checkAndRedirect = async (
+    action: "password" | "email" | "general",
+    redirectPath?: string,
+  ) => {
     try {
       // Verificação simples baseada em sessionStorage
-      const reauthSession = sessionStorage.getItem('reauth_session')
-      const needsReauth = !reauthSession
-      
-      if (needsReauth) {
-        console.log(`⚠️ Reautenticação necessária para ${action}`)
-        router.push(`/reautenticacao?action=${action}`)
-        return true
-      }
-      
-      return false
-    } catch (error) {
-      console.error('❌ Erro ao verificar reautenticação:', error)
-      router.push(`/reautenticacao?action=${action}`)
-      return true
-    }
-  }
+      const reauthSession = sessionStorage.getItem("reauth_session");
+      const needsReauth = !reauthSession;
 
-  return { checkAndRedirect }
+      if (needsReauth) {
+        console.log(`⚠️ Reautenticação necessária para ${action}`);
+        router.push(`/reautenticacao?action=${action}`);
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error("❌ Erro ao verificar reautenticação:", error);
+      router.push(`/reautenticacao?action=${action}`);
+      return true;
+    }
+  };
+
+  return { checkAndRedirect };
 }

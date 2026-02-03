@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useCallback } from 'react'
-import { Check, ChevronsUpDown, MapPin } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
+import { useState, useEffect, useCallback } from "react";
+import { Check, ChevronsUpDown, MapPin } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -11,50 +11,51 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command'
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover'
-import { useEstados, useCidades } from '@/hooks/useIBGE'
-import type { Estado, Cidade } from '@/lib/ibge'
-import { services } from '@/data/services'
+} from "@/components/ui/popover";
+import { useEstados, useCidades } from "@/hooks/useIBGE";
+import type { Estado, Cidade } from "@/lib/ibge";
+import { services } from "@/data/services";
 
 // Combobox para Estados
 interface EstadoComboboxProps {
-  value?: string
-  onValueChange: (value: string) => void
-  placeholder?: string
-  className?: string
+  value?: string;
+  onValueChange: (value: string) => void;
+  placeholder?: string;
+  className?: string;
 }
 
-export function EstadoCombobox({ 
-  value, 
-  onValueChange, 
+export function EstadoCombobox({
+  value,
+  onValueChange,
   placeholder = "Selecione o estado",
-  className 
+  className,
 }: EstadoComboboxProps) {
-  const [open, setOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
-  const { estados, loading, error } = useEstados()
+  const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const { estados, loading, error } = useEstados();
 
-  const selectedEstado = estados.find(estado => estado.sigla === value)
-  const filteredEstados = searchTerm 
-    ? estados.filter(estado =>
-        estado.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        estado.sigla.toLowerCase().includes(searchTerm.toLowerCase())
+  const selectedEstado = estados.find((estado) => estado.sigla === value);
+  const filteredEstados = searchTerm
+    ? estados.filter(
+        (estado) =>
+          estado.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          estado.sigla.toLowerCase().includes(searchTerm.toLowerCase()),
       )
-    : estados
+    : estados;
 
   // Sincronizar searchTerm com value quando value mudar externamente
   useEffect(() => {
     if (value && selectedEstado) {
-      setSearchTerm(selectedEstado.nome)
+      setSearchTerm(selectedEstado.nome);
     } else if (!value) {
-      setSearchTerm('')
+      setSearchTerm("");
     }
-  }, [value, selectedEstado])
+  }, [value, selectedEstado]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -81,17 +82,17 @@ export function EstadoCombobox({
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
         <Command>
-          <CommandInput 
-            placeholder="Buscar estado..." 
+          <CommandInput
+            placeholder="Buscar estado..."
             value={searchTerm}
             onValueChange={setSearchTerm}
           />
           <CommandList>
-            {loading && (
-              <CommandEmpty>Carregando estados...</CommandEmpty>
-            )}
+            {loading && <CommandEmpty>Carregando estados...</CommandEmpty>}
             {error && (
-              <CommandEmpty>Erro ao carregar estados. Tente novamente.</CommandEmpty>
+              <CommandEmpty>
+                Erro ao carregar estados. Tente novamente.
+              </CommandEmpty>
             )}
             {!loading && !error && filteredEstados.length === 0 && (
               <CommandEmpty>Nenhum estado encontrado.</CommandEmpty>
@@ -99,97 +100,102 @@ export function EstadoCombobox({
             {!loading && !error && filteredEstados.length > 0 && (
               <CommandGroup>
                 {filteredEstados.map((estado) => (
-                <CommandItem
-                  key={estado.sigla}
-                  value={estado.sigla}
-                  onSelect={(currentValue) => {
-                    onValueChange(currentValue === value ? "" : currentValue)
-                    setOpen(false)
-                    setSearchTerm('')
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === estado.sigla ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  <div className="flex flex-col">
-                    <span className="font-medium">{estado.nome}</span>
-                    <span className="text-sm text-muted-foreground">{estado.sigla}</span>
-                  </div>
-                </CommandItem>
-              ))}
+                  <CommandItem
+                    key={estado.sigla}
+                    value={estado.sigla}
+                    onSelect={(currentValue) => {
+                      onValueChange(currentValue === value ? "" : currentValue);
+                      setOpen(false);
+                      setSearchTerm("");
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === estado.sigla ? "opacity-100" : "opacity-0",
+                      )}
+                    />
+                    <div className="flex flex-col">
+                      <span className="font-medium">{estado.nome}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {estado.sigla}
+                      </span>
+                    </div>
+                  </CommandItem>
+                ))}
               </CommandGroup>
             )}
           </CommandList>
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }
 
 // Combobox para Cidades
 interface CidadeComboboxProps {
-  value?: string
-  onValueChange: (value: string) => void
-  estadoSigla?: string
-  placeholder?: string
-  className?: string
-  disabled?: boolean
+  value?: string;
+  onValueChange: (value: string) => void;
+  estadoSigla?: string;
+  placeholder?: string;
+  className?: string;
+  disabled?: boolean;
 }
 
-export function CidadeCombobox({ 
-  value, 
-  onValueChange, 
+export function CidadeCombobox({
+  value,
+  onValueChange,
   estadoSigla,
   placeholder = "Selecione a cidade",
   className,
-  disabled = false
+  disabled = false,
 }: CidadeComboboxProps) {
-  const [open, setOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
-  const { cidades, loading: loadingCidades } = useCidades(estadoSigla || '')
+  const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const { cidades, loading: loadingCidades } = useCidades(estadoSigla || "");
 
   // Debug logs
-  console.log('🏙️ CidadeCombobox renderizado:', {
+  console.log("🏙️ CidadeCombobox renderizado:", {
     estadoSigla,
     value,
     cidadesCount: cidades.length,
-    loading: loadingCidades
-  })
+    loading: loadingCidades,
+  });
 
-  const filteredCidades = searchTerm 
-    ? cidades.filter(cidade =>
-        cidade.nome.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCidades = searchTerm
+    ? cidades.filter((cidade) =>
+        cidade.nome.toLowerCase().includes(searchTerm.toLowerCase()),
       )
-    : cidades
+    : cidades;
 
-  const selectedCidade = cidades.find(cidade => cidade.nome === value)
+  const selectedCidade = cidades.find((cidade) => cidade.nome === value);
 
   // Sincronizar searchTerm com value quando value mudar externamente
   useEffect(() => {
     if (value && selectedCidade) {
-      setSearchTerm(selectedCidade.nome)
+      setSearchTerm(selectedCidade.nome);
     } else if (!value) {
-      setSearchTerm('')
+      setSearchTerm("");
     }
-  }, [value, selectedCidade])
+  }, [value, selectedCidade]);
 
   // Reset cidade quando estado muda
   useEffect(() => {
     if (value && estadoSigla) {
-      const cidadeExiste = cidades.some(cidade => cidade.nome === value)
+      const cidadeExiste = cidades.some((cidade) => cidade.nome === value);
       if (!cidadeExiste) {
-        onValueChange('')
+        onValueChange("");
       }
     }
-  }, [estadoSigla, value, cidades, onValueChange])
+  }, [estadoSigla, value, cidades, onValueChange]);
 
   // Estabilizar a função de mudança de valor
-  const handleValueChange = useCallback((newValue: string) => {
-    onValueChange(newValue)
-  }, [onValueChange])
+  const handleValueChange = useCallback(
+    (newValue: string) => {
+      onValueChange(newValue);
+    },
+    [onValueChange],
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -217,8 +223,8 @@ export function CidadeCombobox({
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
         <Command>
-          <CommandInput 
-            placeholder="Buscar cidade..." 
+          <CommandInput
+            placeholder="Buscar cidade..."
             value={searchTerm}
             onValueChange={setSearchTerm}
           />
@@ -232,62 +238,64 @@ export function CidadeCombobox({
             {!loadingCidades && filteredCidades.length > 0 && (
               <CommandGroup>
                 {filteredCidades.map((cidade) => (
-                <CommandItem
-                  key={cidade.id}
-                  value={cidade.nome}
-                  onSelect={(currentValue) => {
-                    handleValueChange(currentValue === value ? "" : currentValue)
-                    setOpen(false)
-                    setSearchTerm('')
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === cidade.nome ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {cidade.nome}
-                </CommandItem>
-              ))}
+                  <CommandItem
+                    key={cidade.id}
+                    value={cidade.nome}
+                    onSelect={(currentValue) => {
+                      handleValueChange(
+                        currentValue === value ? "" : currentValue,
+                      );
+                      setOpen(false);
+                      setSearchTerm("");
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === cidade.nome ? "opacity-100" : "opacity-0",
+                      )}
+                    />
+                    {cidade.nome}
+                  </CommandItem>
+                ))}
               </CommandGroup>
             )}
           </CommandList>
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }
 
 // Combobox para Categorias
 interface CategoriaComboboxProps {
-  value?: string
-  onValueChange: (value: string) => void
-  placeholder?: string
-  className?: string
+  value?: string;
+  onValueChange: (value: string) => void;
+  placeholder?: string;
+  className?: string;
 }
 
 // Adicionar categoria "Todas as Categorias" para filtros
 const categorias = [
-  { id: 'all', name: 'Todas as Categorias', icon: '🏠' },
-  ...services
-]
+  { id: "all", name: "Todas as Categorias", icon: "🏠" },
+  ...services,
+];
 
-export function CategoriaCombobox({ 
-  value, 
-  onValueChange, 
+export function CategoriaCombobox({
+  value,
+  onValueChange,
   placeholder = "Selecione a categoria",
-  className 
+  className,
 }: CategoriaComboboxProps) {
-  const [open, setOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const selectedCategoria = categorias.find(cat => cat.id === value)
-  const filteredCategorias = searchTerm 
-    ? categorias.filter(cat =>
-        cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const selectedCategoria = categorias.find((cat) => cat.id === value);
+  const filteredCategorias = searchTerm
+    ? categorias.filter((cat) =>
+        cat.name.toLowerCase().includes(searchTerm.toLowerCase()),
       )
-    : categorias
+    : categorias;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -314,8 +322,8 @@ export function CategoriaCombobox({
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
         <Command>
-          <CommandInput 
-            placeholder="Buscar categoria..." 
+          <CommandInput
+            placeholder="Buscar categoria..."
             value={searchTerm}
             onValueChange={setSearchTerm}
           />
@@ -327,15 +335,15 @@ export function CategoriaCombobox({
                   key={categoria.id}
                   value={categoria.name}
                   onSelect={(currentValue) => {
-                    onValueChange(currentValue === value ? "" : currentValue)
-                    setOpen(false)
-                    setSearchTerm('')
+                    onValueChange(currentValue === value ? "" : currentValue);
+                    setOpen(false);
+                    setSearchTerm("");
                   }}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === categoria.name ? "opacity-100" : "opacity-0"
+                      value === categoria.name ? "opacity-100" : "opacity-0",
                     )}
                   />
                   <span className="mr-2">{categoria.icon}</span>
@@ -347,5 +355,5 @@ export function CategoriaCombobox({
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

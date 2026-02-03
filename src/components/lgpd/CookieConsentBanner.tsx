@@ -1,101 +1,101 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { 
-  Cookie, 
-  Settings, 
-  Check, 
-  X, 
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Cookie,
+  Settings,
+  Check,
+  X,
   Shield,
   BarChart3,
-  Zap
-} from 'lucide-react'
-import Link from 'next/link'
+  Zap,
+} from "lucide-react";
+import Link from "next/link";
 
 interface CookiePreferences {
-  essential: boolean
-  functional: boolean
-  analytical: boolean
-  marketing: boolean
+  essential: boolean;
+  functional: boolean;
+  analytical: boolean;
+  marketing: boolean;
 }
 
 export function CookieConsentBanner() {
-  const [showBanner, setShowBanner] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
+  const [showBanner, setShowBanner] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [preferences, setPreferences] = useState<CookiePreferences>({
     essential: true, // Sempre true
     functional: false,
     analytical: false,
-    marketing: false
-  })
+    marketing: false,
+  });
 
   useEffect(() => {
     // Verificar se o usuário já deu consentimento
-    const consent = localStorage.getItem('cookie-consent')
+    const consent = localStorage.getItem("cookie-consent");
     if (!consent) {
-      setShowBanner(true)
+      setShowBanner(true);
     } else {
       // Carregar preferências salvas
-      const savedPreferences = localStorage.getItem('cookie-preferences')
+      const savedPreferences = localStorage.getItem("cookie-preferences");
       if (savedPreferences) {
-        setPreferences(JSON.parse(savedPreferences))
+        setPreferences(JSON.parse(savedPreferences));
       }
     }
-  }, [])
+  }, []);
 
   const handleAcceptAll = () => {
     const allAccepted = {
       essential: true,
       functional: true,
       analytical: true,
-      marketing: true
-    }
-    
-    setPreferences(allAccepted)
-    savePreferences(allAccepted)
-    setShowBanner(false)
-  }
+      marketing: true,
+    };
+
+    setPreferences(allAccepted);
+    savePreferences(allAccepted);
+    setShowBanner(false);
+  };
 
   const handleRejectAll = () => {
     const onlyEssential = {
       essential: true,
       functional: false,
       analytical: false,
-      marketing: false
-    }
-    
-    setPreferences(onlyEssential)
-    savePreferences(onlyEssential)
-    setShowBanner(false)
-  }
+      marketing: false,
+    };
+
+    setPreferences(onlyEssential);
+    savePreferences(onlyEssential);
+    setShowBanner(false);
+  };
 
   const handleSavePreferences = () => {
-    savePreferences(preferences)
-    setShowBanner(false)
-    setShowSettings(false)
-  }
+    savePreferences(preferences);
+    setShowBanner(false);
+    setShowSettings(false);
+  };
 
   const savePreferences = (prefs: CookiePreferences) => {
-    localStorage.setItem('cookie-consent', 'true')
-    localStorage.setItem('cookie-preferences', JSON.stringify(prefs))
-    
+    localStorage.setItem("cookie-consent", "true");
+    localStorage.setItem("cookie-preferences", JSON.stringify(prefs));
+
     // Aplicar preferências (aqui você implementaria a lógica real)
-    console.log('Cookie preferences saved:', prefs)
-  }
+    console.log("Cookie preferences saved:", prefs);
+  };
 
   const togglePreference = (key: keyof CookiePreferences) => {
-    if (key === 'essential') return // Não pode ser desabilitado
-    
-    setPreferences(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }))
-  }
+    if (key === "essential") return; // Não pode ser desabilitado
 
-  if (!showBanner) return null
+    setPreferences((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  if (!showBanner) return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-2 sm:p-4">
@@ -119,7 +119,7 @@ export function CookieConsentBanner() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-2">
-                <Button 
+                <Button
                   onClick={handleAcceptAll}
                   className="bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm h-8 sm:h-9"
                   size="sm"
@@ -127,8 +127,8 @@ export function CookieConsentBanner() {
                   <Check className="h-3 w-3 mr-1 sm:mr-2" />
                   Aceitar
                 </Button>
-                
-                <Button 
+
+                <Button
                   onClick={handleRejectAll}
                   variant="outline"
                   className="text-xs sm:text-sm h-8 sm:h-9"
@@ -137,8 +137,8 @@ export function CookieConsentBanner() {
                   <X className="h-3 w-3 mr-1 sm:mr-2" />
                   Apenas Essenciais
                 </Button>
-                
-                <Button 
+
+                <Button
                   onClick={() => setShowSettings(true)}
                   variant="ghost"
                   className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm h-8 sm:h-9"
@@ -151,8 +151,11 @@ export function CookieConsentBanner() {
               </div>
 
               <div className="text-xs text-gray-500 text-center">
-                Ao continuar, você concorda com nossa{' '}
-                <Link href="/privacidade" className="text-blue-600 hover:underline">
+                Ao continuar, você concorda com nossa{" "}
+                <Link
+                  href="/privacidade"
+                  className="text-blue-600 hover:underline"
+                >
                   Política de Privacidade
                 </Link>
                 .
@@ -165,7 +168,7 @@ export function CookieConsentBanner() {
                 <h3 className="font-medium text-gray-900 text-sm sm:text-base">
                   Configurações de Cookies
                 </h3>
-                <Button 
+                <Button
                   onClick={() => setShowSettings(false)}
                   variant="ghost"
                   size="sm"
@@ -181,13 +184,18 @@ export function CookieConsentBanner() {
                   <div className="flex items-center space-x-2">
                     <Shield className="h-4 w-4 text-green-600" />
                     <div>
-                      <h4 className="font-medium text-gray-900 text-xs sm:text-sm">Essenciais</h4>
+                      <h4 className="font-medium text-gray-900 text-xs sm:text-sm">
+                        Essenciais
+                      </h4>
                       <p className="text-xs text-gray-600 hidden sm:block">
                         Funcionamento básico
                       </p>
                     </div>
                   </div>
-                  <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
+                  <Badge
+                    variant="secondary"
+                    className="bg-green-100 text-green-800 text-xs"
+                  >
                     Sempre
                   </Badge>
                 </div>
@@ -197,19 +205,21 @@ export function CookieConsentBanner() {
                   <div className="flex items-center space-x-2">
                     <Zap className="h-4 w-4 text-blue-600" />
                     <div>
-                      <h4 className="font-medium text-gray-900 text-xs sm:text-sm">Funcionais</h4>
+                      <h4 className="font-medium text-gray-900 text-xs sm:text-sm">
+                        Funcionais
+                      </h4>
                       <p className="text-xs text-gray-600 hidden sm:block">
                         Personalização
                       </p>
                     </div>
                   </div>
                   <Button
-                    onClick={() => togglePreference('functional')}
+                    onClick={() => togglePreference("functional")}
                     variant={preferences.functional ? "default" : "outline"}
                     size="sm"
                     className="h-6 text-xs"
                   >
-                    {preferences.functional ? 'Sim' : 'Não'}
+                    {preferences.functional ? "Sim" : "Não"}
                   </Button>
                 </div>
 
@@ -218,19 +228,21 @@ export function CookieConsentBanner() {
                   <div className="flex items-center space-x-2">
                     <BarChart3 className="h-4 w-4 text-purple-600" />
                     <div>
-                      <h4 className="font-medium text-gray-900 text-xs sm:text-sm">Analíticos</h4>
+                      <h4 className="font-medium text-gray-900 text-xs sm:text-sm">
+                        Analíticos
+                      </h4>
                       <p className="text-xs text-gray-600 hidden sm:block">
                         Análise e melhorias
                       </p>
                     </div>
                   </div>
                   <Button
-                    onClick={() => togglePreference('analytical')}
+                    onClick={() => togglePreference("analytical")}
                     variant={preferences.analytical ? "default" : "outline"}
                     size="sm"
                     className="h-6 text-xs"
                   >
-                    {preferences.analytical ? 'Sim' : 'Não'}
+                    {preferences.analytical ? "Sim" : "Não"}
                   </Button>
                 </div>
 
@@ -239,25 +251,27 @@ export function CookieConsentBanner() {
                   <div className="flex items-center space-x-2">
                     <Cookie className="h-4 w-4 text-orange-600" />
                     <div>
-                      <h4 className="font-medium text-gray-900 text-xs sm:text-sm">Marketing</h4>
+                      <h4 className="font-medium text-gray-900 text-xs sm:text-sm">
+                        Marketing
+                      </h4>
                       <p className="text-xs text-gray-600 hidden sm:block">
                         Publicidade
                       </p>
                     </div>
                   </div>
                   <Button
-                    onClick={() => togglePreference('marketing')}
+                    onClick={() => togglePreference("marketing")}
                     variant={preferences.marketing ? "default" : "outline"}
                     size="sm"
                     className="h-6 text-xs"
                   >
-                    {preferences.marketing ? 'Sim' : 'Não'}
+                    {preferences.marketing ? "Sim" : "Não"}
                   </Button>
                 </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-2 pt-3 border-t">
-                <Button 
+                <Button
                   onClick={handleSavePreferences}
                   className="bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm h-8 sm:h-9"
                   size="sm"
@@ -265,8 +279,8 @@ export function CookieConsentBanner() {
                   <Check className="h-3 w-3 mr-1 sm:mr-2" />
                   Salvar
                 </Button>
-                
-                <Button 
+
+                <Button
                   onClick={handleAcceptAll}
                   variant="outline"
                   className="text-xs sm:text-sm h-8 sm:h-9"
@@ -284,5 +298,5 @@ export function CookieConsentBanner() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

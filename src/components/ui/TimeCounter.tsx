@@ -1,38 +1,47 @@
-'use client'
+"use client";
 
-import React from 'react'
-import { Clock, CheckCircle, Star } from 'lucide-react'
-import { useTimeCounter } from '@/hooks/useTimeCounter'
-import { Button } from '@/components/ui/button'
+import React from "react";
+import { Clock, CheckCircle, Star } from "lucide-react";
+import { useTimeCounter } from "@/hooks/useTimeCounter";
+import { Button } from "@/components/ui/button";
 
 interface TimeCounterProps {
-  targetDate: string | Date | null
-  onExpired?: () => void
-  onReviewClick?: () => void
-  className?: string
+  targetDate: string | Date | null;
+  onExpired?: () => void;
+  onReviewClick?: () => void;
+  className?: string;
 }
 
-export function TimeCounter({ targetDate, onExpired, onReviewClick, className = '' }: TimeCounterProps) {
-  const { hours, minutes, seconds, isExpired, formattedTime } = useTimeCounter(targetDate)
+export function TimeCounter({
+  targetDate,
+  onExpired,
+  onReviewClick,
+  className = "",
+}: TimeCounterProps) {
+  const { hours, minutes, seconds, isExpired, formattedTime } =
+    useTimeCounter(targetDate);
 
   React.useEffect(() => {
     if (isExpired && onExpired) {
-      onExpired()
+      onExpired();
     }
-  }, [isExpired, onExpired])
+  }, [isExpired, onExpired]);
 
   // Mostrar toast quando tempo expirar
   React.useEffect(() => {
     if (isExpired) {
       // Importar toast dinamicamente para evitar problemas de SSR
-      import('sonner').then(({ toast }) => {
-        toast.success('🎉 Tempo de espera acabou! Você já pode avaliar este usuário.', {
-          duration: 5000,
-          position: 'top-right'
-        })
-      })
+      import("sonner").then(({ toast }) => {
+        toast.success(
+          "🎉 Tempo de espera acabou! Você já pode avaliar este usuário.",
+          {
+            duration: 5000,
+            position: "top-right",
+          },
+        );
+      });
     }
-  }, [isExpired])
+  }, [isExpired]);
 
   if (isExpired) {
     return (
@@ -42,9 +51,7 @@ export function TimeCounter({ targetDate, onExpired, onReviewClick, className = 
             <CheckCircle className="h-4 w-4 text-white" />
             <span className="font-black text-white text-sm">DISPONÍVEL</span>
           </div>
-          <p className="text-white font-bold text-lg">
-            Pode avaliar agora!
-          </p>
+          <p className="text-white font-bold text-lg">Pode avaliar agora!</p>
         </div>
         {onReviewClick && (
           <Button
@@ -56,21 +63,19 @@ export function TimeCounter({ targetDate, onExpired, onReviewClick, className = 
           </Button>
         )}
       </div>
-    )
+    );
   }
 
   return (
-    <div className={`bg-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] p-3 ${className}`}>
+    <div
+      className={`bg-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] p-3 ${className}`}
+    >
       <div className="flex items-center gap-2 mb-1">
         <Clock className="h-4 w-4 text-black" />
         <span className="font-black text-black text-sm">AGUARDE</span>
       </div>
-      <p className="text-black font-bold text-lg">
-        {formattedTime}
-      </p>
-      <p className="text-black font-bold text-xs">
-        para poder avaliar
-      </p>
+      <p className="text-black font-bold text-lg">{formattedTime}</p>
+      <p className="text-black font-bold text-xs">para poder avaliar</p>
     </div>
-  )
+  );
 }

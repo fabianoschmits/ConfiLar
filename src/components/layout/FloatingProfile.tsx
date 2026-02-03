@@ -1,12 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { 
-  ChevronDown, 
-  ChevronUp
-} from 'lucide-react';
+import React, { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
-import { AvailabilityToggleCompact } from '@/components/ui/AvailabilityToggle'
+import { AvailabilityToggleCompact } from "@/components/ui/AvailabilityToggle";
 
 // Phosphor Icons Light
 import {
@@ -26,22 +23,22 @@ import {
   Lightning,
   Eye as EyePhosphor,
   PencilSimple,
-  Info as InfoPhosphor
-} from '@phosphor-icons/react';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { useFloatingChat } from '@/contexts/FloatingChatContextSimple';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { UserAvatar } from '@/components/ui/UserAvatar';
-import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
-import { Card, CardContent } from '@/components/ui/card';
+  Info as InfoPhosphor,
+} from "@phosphor-icons/react";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { UserAvatar } from "@/components/ui/UserAvatar";
+import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
+import { Card, CardContent } from "@/components/ui/card";
 
-import Link from 'next/link';
-import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications'
+import Link from "next/link";
+import { useSupabaseNotifications } from "@/hooks/useSupabaseNotifications";
 
 export const FloatingProfile: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   // Agora o componente só é renderizado quando o usuário está logado
   const { profile, signOut, user } = useAuthContext();
   const { openChat } = useFloatingChat();
@@ -55,41 +52,56 @@ export const FloatingProfile: React.FC = () => {
   const handleSignOut = async () => {
     try {
       // Fechar o menu expandido
-      setIsExpanded(false)
-      
+      setIsExpanded(false);
+
       // Fazer logout e redirecionar diretamente para login
-      await signOut()
-      window.location.href = '/auth'
+      await signOut();
+      window.location.href = "/auth";
     } catch (error) {
-      console.error('Erro ao sair:', error)
+      console.error("Erro ao sair:", error);
       // Mesmo com erro, redirecionar para login
-      window.location.href = '/auth'
+      window.location.href = "/auth";
     }
   };
 
   // Dados mockados para demonstração
   const accountStats = {
-    totalServices: profile?.user_type === 'professional' ? 45 : 12,
-    completedServices: profile?.user_type === 'professional' ? 38 : 10,
+    totalServices: profile?.user_type === "professional" ? 45 : 12,
+    completedServices: profile?.user_type === "professional" ? 38 : 10,
     rating: 4.8,
-    memberSince: profile?.created_at ? new Date(profile.created_at).getFullYear() : '2024',
-    verificationStatus: profile?.user_type === 'professional' ? 'verified' : 'basic',
-    premiumStatus: false
-  }
+    memberSince: profile?.created_at
+      ? new Date(profile.created_at).getFullYear()
+      : "2024",
+    verificationStatus:
+      profile?.user_type === "professional" ? "verified" : "basic",
+    premiumStatus: false,
+  };
 
   const getVerificationBadge = () => {
-    if (accountStats.verificationStatus === 'verified') {
-      return <Badge className="bg-green-100 text-green-800 text-xs">✓ Verificado</Badge>
+    if (accountStats.verificationStatus === "verified") {
+      return (
+        <Badge className="bg-green-100 text-green-800 text-xs">
+          ✓ Verificado
+        </Badge>
+      );
     }
-    return <Badge variant="outline" className="text-xs">Básico</Badge>
-  }
+    return (
+      <Badge variant="outline" className="text-xs">
+        Básico
+      </Badge>
+    );
+  };
 
   const getPremiumBadge = () => {
     if (accountStats.premiumStatus) {
-      return <Badge className="bg-yellow-100 text-yellow-800 text-xs">👑 Premium</Badge>
+      return (
+        <Badge className="bg-yellow-100 text-yellow-800 text-xs">
+          👑 Premium
+        </Badge>
+      );
     }
-    return null
-  }
+    return null;
+  };
 
   return (
     <div className="fixed top-4 right-4 z-[9999]">
@@ -98,33 +110,39 @@ export const FloatingProfile: React.FC = () => {
         <div className="flex items-center gap-3">
           {/* Toggle de Disponibilidade */}
           <AvailabilityToggleCompact />
-          
+
           {/* Notificações */}
-            <NotificationDropdown />
-          
+          <NotificationDropdown />
+
           {/* Avatar e Nome - Toda a área é clicável */}
-          <div 
+          <div
             className="flex items-center gap-1.5 bg-white rounded-full shadow-md border border-gray-200 px-2 py-1.5 cursor-pointer hover:shadow-lg transition-all duration-200"
             onClick={() => setIsExpanded(!isExpanded)}
           >
-            <UserAvatar 
+            <UserAvatar
               src={profile?.avatar_url}
-              alt={profile?.full_name || 'Usuário'}
-              fallback={profile?.full_name?.charAt(0) || 'U'}
+              alt={profile?.full_name || "Usuário"}
+              fallback={profile?.full_name?.charAt(0) || "U"}
               size="sm"
             />
-            
+
             <div className="block">
               <p className="text-xs font-medium text-gray-900 truncate max-w-20">
-                {profile?.full_name || 'Usuário'}
+                {profile?.full_name || "Usuário"}
               </p>
               <p className="text-xs text-gray-500">
-                {profile?.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                {profile?.user_type === "professional"
+                  ? "Profissional"
+                  : "Cliente"}
               </p>
             </div>
-            
+
             <div className="p-0.5 h-5 w-5 flex items-center justify-center">
-              {isExpanded ? <CaretUp size={14} weight="light" className="text-gray-500" /> : <CaretDown size={14} weight="light" className="text-gray-500" />}
+              {isExpanded ? (
+                <CaretUp size={14} weight="light" className="text-gray-500" />
+              ) : (
+                <CaretDown size={14} weight="light" className="text-gray-500" />
+              )}
             </div>
           </div>
         </div>
@@ -136,18 +154,20 @@ export const FloatingProfile: React.FC = () => {
               {/* Header do Perfil */}
               <div className="text-center pb-4 border-b border-gray-100">
                 <div className="flex justify-center mb-2">
-                  <UserAvatar 
+                  <UserAvatar
                     src={profile?.avatar_url}
-                    alt={profile?.full_name || 'Usuário'}
-                    fallback={profile?.full_name?.charAt(0) || 'U'}
+                    alt={profile?.full_name || "Usuário"}
+                    fallback={profile?.full_name?.charAt(0) || "U"}
                     size="md"
                   />
                 </div>
                 <h3 className="font-semibold text-gray-900 text-base">
-                  {profile?.full_name || 'Usuário'}
+                  {profile?.full_name || "Usuário"}
                 </h3>
                 <p className="text-xs text-gray-600 mb-2">
-                  {profile?.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                  {profile?.user_type === "professional"
+                    ? "Profissional"
+                    : "Cliente"}
                 </p>
                 <div className="flex items-center justify-center gap-2">
                   {getVerificationBadge()}
@@ -160,32 +180,44 @@ export const FloatingProfile: React.FC = () => {
                 <CardContent className="p-3">
                   <div className="grid grid-cols-2 gap-3 text-center">
                     <div>
-                      <div className="text-lg font-bold text-blue-600">{accountStats.totalServices}</div>
+                      <div className="text-lg font-bold text-blue-600">
+                        {accountStats.totalServices}
+                      </div>
                       <div className="text-xs text-gray-600">Serviços</div>
                     </div>
                     <div>
-                      <div className="text-lg font-bold text-green-600">{accountStats.rating}</div>
-                    <div className="text-xs text-gray-600">Avaliação</div>
+                      <div className="text-lg font-bold text-green-600">
+                        {accountStats.rating}
+                      </div>
+                      <div className="text-xs text-gray-600">Avaliação</div>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
+                </CardContent>
               </Card>
 
               {/* Ações Rápidas */}
               <div>
                 <h3 className="text-xs font-semibold text-gray-700 mb-2 flex items-center">
-                  <Lightning size={14} weight="light" className="mr-1 text-yellow-500" />
+                  <Lightning
+                    size={14}
+                    weight="light"
+                    className="mr-1 text-yellow-500"
+                  />
                   Ações Rápidas
                 </h3>
                 <div className="grid grid-cols-2 gap-1.5">
                   <button
                     onClick={() => {
-                      openChat()
-                      setIsExpanded(false)
+                      openChat();
+                      setIsExpanded(false);
                     }}
                     className="flex flex-col items-center p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors w-full"
                   >
-                    <ChatTeardrop size={16} weight="light" className="text-blue-600 mb-1" />
+                    <ChatTeardrop
+                      size={16}
+                      weight="light"
+                      className="text-blue-600 mb-1"
+                    />
                     <span className="text-xs font-medium">Mensagens</span>
                     {unreadCount > 0 && (
                       <Badge className="mt-1 bg-red-500 text-white text-xs">
@@ -198,7 +230,11 @@ export const FloatingProfile: React.FC = () => {
                     className="flex flex-col items-center p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <BellPhosphor size={16} weight="light" className="text-purple-600 mb-1" />
+                    <BellPhosphor
+                      size={16}
+                      weight="light"
+                      className="text-purple-600 mb-1"
+                    />
                     <span className="text-xs font-medium">Notificações</span>
                     {unreadCount > 0 && (
                       <Badge className="mt-1 bg-blue-500 text-white text-xs">
@@ -211,7 +247,11 @@ export const FloatingProfile: React.FC = () => {
                     className="flex flex-col items-center p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <HeartPhosphor size={16} weight="light" className="text-red-600 mb-1" />
+                    <HeartPhosphor
+                      size={16}
+                      weight="light"
+                      className="text-red-600 mb-1"
+                    />
                     <span className="text-xs font-medium">Favoritos</span>
                   </Link>
                 </div>
@@ -220,7 +260,11 @@ export const FloatingProfile: React.FC = () => {
               {/* Conta e Perfil */}
               <div>
                 <h3 className="text-xs font-semibold text-gray-700 mb-2 flex items-center">
-                  <UserPhosphor size={14} weight="light" className="mr-1 text-blue-500" />
+                  <UserPhosphor
+                    size={14}
+                    weight="light"
+                    className="mr-1 text-blue-500"
+                  />
                   Minha Conta
                 </h3>
                 <div className="space-y-1">
@@ -229,7 +273,11 @@ export const FloatingProfile: React.FC = () => {
                     className="flex items-center space-x-2 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <EyePhosphor size={14} weight="light" className="text-blue-600" />
+                    <EyePhosphor
+                      size={14}
+                      weight="light"
+                      className="text-blue-600"
+                    />
                     <span>Ver Meu Perfil</span>
                   </Link>
                   <Link
@@ -237,17 +285,25 @@ export const FloatingProfile: React.FC = () => {
                     className="flex items-center space-x-2 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <PencilSimple size={14} weight="light" className="text-green-600" />
+                    <PencilSimple
+                      size={14}
+                      weight="light"
+                      className="text-green-600"
+                    />
                     <span>Editar Perfil</span>
                   </Link>
-                  {profile?.user_type === 'professional' && (
+                  {profile?.user_type === "professional" && (
                     <>
                       <Link
                         href="/portfolio"
                         className="flex items-center space-x-2 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                         onClick={() => setIsExpanded(false)}
                       >
-                        <BriefcasePhosphor size={14} weight="light" className="text-purple-600" />
+                        <BriefcasePhosphor
+                          size={14}
+                          weight="light"
+                          className="text-purple-600"
+                        />
                         <span>Meu Portfólio</span>
                       </Link>
                     </>
@@ -258,7 +314,11 @@ export const FloatingProfile: React.FC = () => {
               {/* Configurações e Segurança */}
               <div>
                 <h3 className="text-xs font-semibold text-gray-700 mb-2 flex items-center">
-                  <Gear size={14} weight="light" className="mr-1 text-gray-500" />
+                  <Gear
+                    size={14}
+                    weight="light"
+                    className="mr-1 text-gray-500"
+                  />
                   Configurações
                 </h3>
                 <div className="space-y-1">
@@ -267,7 +327,11 @@ export const FloatingProfile: React.FC = () => {
                     className="flex items-center space-x-2 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <Question size={14} weight="light" className="text-blue-600" />
+                    <Question
+                      size={14}
+                      weight="light"
+                      className="text-blue-600"
+                    />
                     <span>Central de Ajuda</span>
                   </Link>
                   <Link
@@ -275,7 +339,11 @@ export const FloatingProfile: React.FC = () => {
                     className="flex items-center space-x-2 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <PhonePhosphor size={14} weight="light" className="text-green-600" />
+                    <PhonePhosphor
+                      size={14}
+                      weight="light"
+                      className="text-green-600"
+                    />
                     <span>Contato</span>
                   </Link>
                   <Link
@@ -283,7 +351,11 @@ export const FloatingProfile: React.FC = () => {
                     className="flex items-center space-x-2 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <InfoPhosphor size={14} weight="light" className="text-purple-600" />
+                    <InfoPhosphor
+                      size={14}
+                      weight="light"
+                      className="text-purple-600"
+                    />
                     <span>Sobre a ConfiLar</span>
                   </Link>
                 </div>
@@ -298,7 +370,7 @@ export const FloatingProfile: React.FC = () => {
                   <SignOut size={14} weight="light" />
                   <span>Sair da Conta</span>
                 </button>
-                
+
                 <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
                   <span>Membro desde {accountStats.memberSince}</span>
                   <span>v5.0</span>

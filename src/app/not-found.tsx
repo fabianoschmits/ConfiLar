@@ -1,20 +1,26 @@
-'use client'
+"use client";
 
 // Desabilitar SSG para esta página
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-import Link from 'next/link'
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Home, ArrowLeft } from 'lucide-react'
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Home, ArrowLeft } from "lucide-react";
 
 export default function NotFound() {
-  const [mounted, setMounted] = useState(false)
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
@@ -22,7 +28,9 @@ export default function NotFound() {
           <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
             <span className="text-4xl font-bold text-red-600">404</span>
           </div>
-          <CardTitle className="text-2xl font-bold">Página não encontrada</CardTitle>
+          <CardTitle className="text-2xl font-bold">
+            Página não encontrada
+          </CardTitle>
           <CardDescription>
             A página que você está procurando não existe ou foi movida.
           </CardDescription>
@@ -43,13 +51,13 @@ export default function NotFound() {
                 Ir para o início
               </Link>
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
                 if (mounted) {
-                  window.history.back()
+                  window.history.back();
                 }
-              }} 
+              }}
               className="w-full"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -59,5 +67,5 @@ export default function NotFound() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

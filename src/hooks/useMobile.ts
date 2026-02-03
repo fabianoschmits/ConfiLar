@@ -1,52 +1,50 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react";
 
 export function useMobile() {
-  const [isMobile, setIsMobile] = useState(false)
-  const [isTablet, setIsTablet] = useState(false)
-  const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait')
+  const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+  const [orientation, setOrientation] = useState<"portrait" | "landscape">(
+    "portrait",
+  );
 
   useEffect(() => {
     const checkDevice = () => {
-      const width = window.innerWidth
-      const height = window.innerHeight
-      
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
       // Verificar se é mobile (menor que 768px)
-      setIsMobile(width < 768)
-      
+      setIsMobile(width < 768);
+
       // Verificar se é tablet (entre 768px e 1024px)
-      setIsTablet(width >= 768 && width < 1024)
-      
+      setIsTablet(width >= 768 && width < 1024);
+
       // Verificar orientação
-      setOrientation(width > height ? 'landscape' : 'portrait')
-    }
+      setOrientation(width > height ? "landscape" : "portrait");
+    };
 
     // Verificar na inicialização
-    checkDevice()
+    checkDevice();
 
     // Adicionar listener para mudanças de tamanho
-    window.addEventListener('resize', checkDevice)
-    
+    window.addEventListener("resize", checkDevice);
+
     // Adicionar listener para mudanças de orientação
-    window.addEventListener('orientationchange', checkDevice)
+    window.addEventListener("orientationchange", checkDevice);
 
     return () => {
-      window.removeEventListener('resize', checkDevice)
-      window.removeEventListener('orientationchange', checkDevice)
-    }
-  }, [])
+      window.removeEventListener("resize", checkDevice);
+      window.removeEventListener("orientationchange", checkDevice);
+    };
+  }, []);
 
   return {
     isMobile,
     isTablet,
     isDesktop: !isMobile && !isTablet,
     orientation,
-    isPortrait: orientation === 'portrait',
-    isLandscape: orientation === 'landscape'
-  }
+    isPortrait: orientation === "portrait",
+    isLandscape: orientation === "landscape",
+  };
 }
-
-
-
-

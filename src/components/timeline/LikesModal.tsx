@@ -1,33 +1,33 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { X } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useReactionUsers } from '@/hooks/useReactions'
-import Link from 'next/link'
-import { Loader2 } from 'lucide-react'
+import { useState } from "react";
+import { X } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useReactionUsers } from "@/hooks/useReactions";
+import Link from "next/link";
+import { Loader2 } from "lucide-react";
 
 interface LikesModalProps {
-  isOpen: boolean
-  onClose: () => void
-  postId: string
+  isOpen: boolean;
+  onClose: () => void;
+  postId: string;
 }
 
 export function LikesModal({ isOpen, onClose, postId }: LikesModalProps) {
-  const { reactionUsers, isLoading } = useReactionUsers(postId)
+  const { reactionUsers, isLoading } = useReactionUsers(postId);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4"
       onClick={onClose}
     >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50 dark:bg-black/80 backdrop-blur-sm" />
-      
+
       {/* Modal Content */}
-      <div 
+      <div
         className="relative w-full max-w-md max-h-[80vh] bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
@@ -66,7 +66,10 @@ export function LikesModal({ isOpen, onClose, postId }: LikesModalProps) {
                   className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors text-inherit no-underline"
                 >
                   <Avatar className="w-10 h-10 border-2 border-gray-200 dark:border-gray-800">
-                    <AvatarImage src={user.avatar_url || undefined} alt={user.name} />
+                    <AvatarImage
+                      src={user.avatar_url || undefined}
+                      alt={user.name}
+                    />
                     <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-white font-semibold">
                       {user.name.charAt(0).toUpperCase()}
                     </AvatarFallback>
@@ -83,6 +86,5 @@ export function LikesModal({ isOpen, onClose, postId }: LikesModalProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
-

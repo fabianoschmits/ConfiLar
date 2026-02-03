@@ -1,60 +1,75 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Button } from '@/components/ui/button'
-import { LoadingButton } from '@/components/ui/LoadingButton'
-import { FormFieldFeedback } from '@/components/ui/FormFieldFeedback'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { PasswordInput } from '@/components/ui/password-input'
-import { toast } from 'sonner'
-import { Key, Shield, Check, X } from 'lucide-react'
-import { useReauthentication } from '@/hooks/useReauthentication'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { useRouter } from 'next/navigation'
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/LoadingButton";
+import { FormFieldFeedback } from "@/components/ui/FormFieldFeedback";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { PasswordInput } from "@/components/ui/password-input";
+import { toast } from "sonner";
+import { Key, Shield, Check, X } from "lucide-react";
+import { useReauthentication } from "@/hooks/useReauthentication";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
-const passwordSchema = z.object({
-  password: z.string()
-    .min(8, 'Senha deve ter pelo menos 8 caracteres')
-    .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
-    .regex(/[a-z]/, 'Senha deve conter pelo menos uma letra minúscula')
-    .regex(/[0-9]/, 'Senha deve conter pelo menos um número')
-    .regex(/[^A-Za-z0-9]/, 'Senha deve conter pelo menos um caractere especial'),
-  confirmPassword: z.string()
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Senhas não coincidem",
-  path: ["confirmPassword"],
-})
+const passwordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, "Senha deve ter pelo menos 8 caracteres")
+      .regex(/[A-Z]/, "Senha deve conter pelo menos uma letra maiúscula")
+      .regex(/[a-z]/, "Senha deve conter pelo menos uma letra minúscula")
+      .regex(/[0-9]/, "Senha deve conter pelo menos um número")
+      .regex(
+        /[^A-Za-z0-9]/,
+        "Senha deve conter pelo menos um caractere especial",
+      ),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Senhas não coincidem",
+    path: ["confirmPassword"],
+  });
 
 const otpSchema = z.object({
-  otp: z.string().length(6, 'Código deve ter 6 dígitos').regex(/^\d+$/, 'Código deve conter apenas números'),
-})
+  otp: z
+    .string()
+    .length(6, "Código deve ter 6 dígitos")
+    .regex(/^\d+$/, "Código deve conter apenas números"),
+});
 
-type PasswordFormData = z.infer<typeof passwordSchema>
-type OtpFormData = z.infer<typeof otpSchema>
+type PasswordFormData = z.infer<typeof passwordSchema>;
+type OtpFormData = z.infer<typeof otpSchema>;
 
-type Step = 'reauth' | 'password' | 'success'
+type Step = "reauth" | "password" | "success";
 
 interface ChangePasswordFormProps {
-  onSuccess?: () => void
-  onCancel?: () => void
-  className?: string
+  onSuccess?: () => void;
+  onCancel?: () => void;
+  className?: string;
 }
 
-export function ChangePasswordForm({ 
-  onSuccess, 
+export function ChangePasswordForm({
+  onSuccess,
   onCancel,
-  className 
+  className,
 }: ChangePasswordFormProps) {
-  const [step, setStep] = useState<Step>('reauth')
-  const [isLoading, setIsLoading] = useState(false)
-  const { updatePassword } = useAuthContext()
-  const router = useRouter()
-  
+  const [step, setStep] = useState<Step>("reauth");
+  const [isLoading, setIsLoading] = useState(false);
+  const { updatePassword } = useAuthContext();
+  const router = useRouter();
+
   const {
     isLoading: isReauthLoading,
     isReauthenticated,
@@ -63,29 +78,29 @@ export function ChangePasswordForm({
     requestReauthentication,
     verifyOTP,
     resetReauthentication,
-    checkReauthenticationRequired
-  } = useReauthentication()
+    checkReauthenticationRequired,
+  } = useReauthentication();
 
   const {
     register: registerOtp,
     handleSubmit: handleSubmitOtp,
     formState: { errors: errorsOtp },
-    reset: resetOtp
+    reset: resetOtp,
   } = useForm<OtpFormData>({
     resolver: zodResolver(otpSchema),
-  })
+  });
 
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
-    reset
+    reset,
   } = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
-  })
+  });
 
-  const password = watch('password', '')
+  const password = watch("password", "");
 
   const getPasswordStrength = (password: string) => {
     const checks = {
@@ -93,81 +108,86 @@ export function ChangePasswordForm({
       uppercase: /[A-Z]/.test(password),
       lowercase: /[a-z]/.test(password),
       number: /[0-9]/.test(password),
-      special: /[^A-Za-z0-9]/.test(password)
-    }
-    
-    const score = Object.values(checks).filter(Boolean).length
-    return { checks, score, strength: score < 3 ? 'weak' : score < 4 ? 'medium' : 'strong' }
-  }
+      special: /[^A-Za-z0-9]/.test(password),
+    };
 
-  const passwordStrength = getPasswordStrength(password)
+    const score = Object.values(checks).filter(Boolean).length;
+    return {
+      checks,
+      score,
+      strength: score < 3 ? "weak" : score < 4 ? "medium" : "strong",
+    };
+  };
+
+  const passwordStrength = getPasswordStrength(password);
 
   const handleRequestOTP = async () => {
-    const needsReauth = await checkReauthenticationRequired('password')
-    
+    const needsReauth = await checkReauthenticationRequired("password");
+
     if (needsReauth) {
-      const { error } = await requestReauthentication()
+      const { error } = await requestReauthentication();
       if (error) {
-        toast.error('Erro ao enviar código: ' + error.message)
+        toast.error("Erro ao enviar código: " + error.message);
       }
     } else {
-      setStep('password')
+      setStep("password");
     }
-  }
+  };
 
   const handleVerifyOTP = async (data: OtpFormData) => {
-    const { error } = await verifyOTP(data.otp)
-    
+    const { error } = await verifyOTP(data.otp);
+
     if (error) {
-      toast.error('Código inválido: ' + error.message)
+      toast.error("Código inválido: " + error.message);
     } else {
-      setStep('password')
-      resetOtp()
+      setStep("password");
+      resetOtp();
     }
-  }
+  };
 
   const onSubmit = async (data: PasswordFormData) => {
-    setIsLoading(true)
-    
+    setIsLoading(true);
+
     try {
-      const { error } = await updatePassword(data.password)
-      
+      const { error } = await updatePassword(data.password);
+
       if (error) {
-        if (error.message.includes('Reautenticação necessária')) {
-          toast.info('Reautenticação necessária. Redirecionando...')
-          setStep('reauth')
-          resetReauthentication()
+        if (error.message.includes("Reautenticação necessária")) {
+          toast.info("Reautenticação necessária. Redirecionando...");
+          setStep("reauth");
+          resetReauthentication();
         } else {
-          toast.error('Erro ao atualizar senha', {
-            description: error.message || 'Não foi possível atualizar sua senha.'
-          })
+          toast.error("Erro ao atualizar senha", {
+            description:
+              error.message || "Não foi possível atualizar sua senha.",
+          });
         }
-        setIsLoading(false)
+        setIsLoading(false);
       } else {
-        toast.success('Senha alterada com sucesso!')
-        setStep('success')
-        setIsLoading(false)
-        
+        toast.success("Senha alterada com sucesso!");
+        setStep("success");
+        setIsLoading(false);
+
         if (onSuccess) {
           setTimeout(() => {
-            onSuccess()
-          }, 2000)
+            onSuccess();
+          }, 2000);
         }
       }
     } catch (error) {
-      toast.error('Erro inesperado ao atualizar senha')
-      setIsLoading(false)
+      toast.error("Erro inesperado ao atualizar senha");
+      setIsLoading(false);
     }
-  }
+  };
 
   const resetForm = () => {
-    setStep('reauth')
-    reset()
-    resetOtp()
-    resetReauthentication()
-  }
+    setStep("reauth");
+    reset();
+    resetOtp();
+    resetReauthentication();
+  };
 
-  if (step === 'success') {
+  if (step === "success") {
     return (
       <Card className={className}>
         <CardContent className="p-8 text-center">
@@ -187,10 +207,10 @@ export function ChangePasswordForm({
           )}
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  if (step === 'reauth') {
+  if (step === "reauth") {
     return (
       <Card className={className}>
         <CardHeader>
@@ -220,7 +240,9 @@ export function ChangePasswordForm({
                 disabled={isReauthLoading}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               >
-                {isReauthLoading ? 'Enviando...' : 'Enviar código de verificação'}
+                {isReauthLoading
+                  ? "Enviando..."
+                  : "Enviar código de verificação"}
               </Button>
             </>
           ) : (
@@ -233,7 +255,7 @@ export function ChangePasswordForm({
                   placeholder="000000"
                   maxLength={6}
                   className="text-center text-2xl tracking-widest font-mono"
-                  {...registerOtp('otp')}
+                  {...registerOtp("otp")}
                 />
                 {errorsOtp.otp && (
                   <FormFieldFeedback
@@ -255,7 +277,7 @@ export function ChangePasswordForm({
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-gray-600">
-                  Não recebeu o código?{' '}
+                  Não recebeu o código?{" "}
                   <button
                     type="button"
                     onClick={handleRequestOTP}
@@ -276,7 +298,7 @@ export function ChangePasswordForm({
           )}
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -311,7 +333,7 @@ export function ChangePasswordForm({
             <PasswordInput
               id="password"
               placeholder="Digite sua nova senha"
-              {...register('password')}
+              {...register("password")}
               error={!!errors.password}
             />
             {errors.password && (
@@ -320,44 +342,78 @@ export function ChangePasswordForm({
                 message={errors.password.message}
               />
             )}
-            
+
             {password && (
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <div className="flex-1 bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className={`h-2 rounded-full transition-all duration-300 ${
-                        passwordStrength.strength === 'strong' ? 'bg-green-500' :
-                        passwordStrength.strength === 'medium' ? 'bg-yellow-500' :
-                        'bg-red-500'
+                        passwordStrength.strength === "strong"
+                          ? "bg-green-500"
+                          : passwordStrength.strength === "medium"
+                            ? "bg-yellow-500"
+                            : "bg-red-500"
                       }`}
-                      style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                      style={{
+                        width: `${(passwordStrength.score / 5) * 100}%`,
+                      }}
                     />
                   </div>
                   <span className="text-xs text-gray-600">
                     {passwordStrength.score}/5
                   </span>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className={`flex items-center space-x-1 ${passwordStrength.checks.length ? 'text-green-600' : 'text-gray-400'}`}>
-                    {passwordStrength.checks.length ? <Check size={12} /> : <X size={12} />}
+                  <div
+                    className={`flex items-center space-x-1 ${passwordStrength.checks.length ? "text-green-600" : "text-gray-400"}`}
+                  >
+                    {passwordStrength.checks.length ? (
+                      <Check size={12} />
+                    ) : (
+                      <X size={12} />
+                    )}
                     <span>8+ caracteres</span>
                   </div>
-                  <div className={`flex items-center space-x-1 ${passwordStrength.checks.uppercase ? 'text-green-600' : 'text-gray-400'}`}>
-                    {passwordStrength.checks.uppercase ? <Check size={12} /> : <X size={12} />}
+                  <div
+                    className={`flex items-center space-x-1 ${passwordStrength.checks.uppercase ? "text-green-600" : "text-gray-400"}`}
+                  >
+                    {passwordStrength.checks.uppercase ? (
+                      <Check size={12} />
+                    ) : (
+                      <X size={12} />
+                    )}
                     <span>Maiúscula</span>
                   </div>
-                  <div className={`flex items-center space-x-1 ${passwordStrength.checks.lowercase ? 'text-green-600' : 'text-gray-400'}`}>
-                    {passwordStrength.checks.lowercase ? <Check size={12} /> : <X size={12} />}
+                  <div
+                    className={`flex items-center space-x-1 ${passwordStrength.checks.lowercase ? "text-green-600" : "text-gray-400"}`}
+                  >
+                    {passwordStrength.checks.lowercase ? (
+                      <Check size={12} />
+                    ) : (
+                      <X size={12} />
+                    )}
                     <span>Minúscula</span>
                   </div>
-                  <div className={`flex items-center space-x-1 ${passwordStrength.checks.number ? 'text-green-600' : 'text-gray-400'}`}>
-                    {passwordStrength.checks.number ? <Check size={12} /> : <X size={12} />}
+                  <div
+                    className={`flex items-center space-x-1 ${passwordStrength.checks.number ? "text-green-600" : "text-gray-400"}`}
+                  >
+                    {passwordStrength.checks.number ? (
+                      <Check size={12} />
+                    ) : (
+                      <X size={12} />
+                    )}
                     <span>Número</span>
                   </div>
-                  <div className={`flex items-center space-x-1 ${passwordStrength.checks.special ? 'text-green-600' : 'text-gray-400'}`}>
-                    {passwordStrength.checks.special ? <Check size={12} /> : <X size={12} />}
+                  <div
+                    className={`flex items-center space-x-1 ${passwordStrength.checks.special ? "text-green-600" : "text-gray-400"}`}
+                  >
+                    {passwordStrength.checks.special ? (
+                      <Check size={12} />
+                    ) : (
+                      <X size={12} />
+                    )}
                     <span>Especial</span>
                   </div>
                 </div>
@@ -370,7 +426,7 @@ export function ChangePasswordForm({
             <PasswordInput
               id="confirmPassword"
               placeholder="Digite novamente sua nova senha"
-              {...register('confirmPassword')}
+              {...register("confirmPassword")}
               error={!!errors.confirmPassword}
             />
             {errors.confirmPassword && (
@@ -384,7 +440,7 @@ export function ChangePasswordForm({
           <div className="flex gap-3">
             <LoadingButton
               type="submit"
-              disabled={isLoading || passwordStrength.strength === 'weak'}
+              disabled={isLoading || passwordStrength.strength === "weak"}
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
               isLoading={isLoading}
               loadingText="Atualizando..."
@@ -400,6 +456,5 @@ export function ChangePasswordForm({
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }
-

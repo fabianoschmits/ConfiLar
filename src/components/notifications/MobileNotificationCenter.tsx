@@ -1,16 +1,16 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { 
-  Bell, 
-  BellOff, 
-  Check, 
-  CheckCheck, 
-  Trash2, 
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Bell,
+  BellOff,
+  Check,
+  CheckCheck,
+  Trash2,
   Search,
   X,
   Clock,
@@ -20,68 +20,75 @@ import {
   Shield,
   Trophy,
   Settings,
-  AlertCircle
-} from 'lucide-react'
-import { useNotifications } from './NotificationProviderSimple'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { formatDistanceToNow } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
-import { 
+  AlertCircle,
+} from "lucide-react";
+import { useNotifications } from "./NotificationProviderSimple";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-} from '@/components/ui/sheet'
-import { NotificationSettingsOnlyModal } from './NotificationSettingsOnlyModal'
+} from "@/components/ui/sheet";
+import { NotificationSettingsOnlyModal } from "./NotificationSettingsOnlyModal";
 
 interface MobileNotificationCenterProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 // Ícones e cores otimizados para mobile
 const NOTIFICATION_CONFIG = {
-  message: { icon: MessageCircle, color: 'bg-blue-500', bg: 'bg-blue-50' },
-  review: { icon: Star, color: 'bg-yellow-500', bg: 'bg-yellow-50' },
-  booking: { icon: Calendar, color: 'bg-green-500', bg: 'bg-green-50' },
-  system: { icon: Settings, color: 'bg-gray-500', bg: 'bg-gray-50' },
-  achievement: { icon: Trophy, color: 'bg-purple-500', bg: 'bg-purple-50' },
-  verification: { icon: Shield, color: 'bg-indigo-500', bg: 'bg-indigo-50' },
-  success: { icon: Check, color: 'bg-emerald-500', bg: 'bg-emerald-50' },
-  warning: { icon: AlertCircle, color: 'bg-orange-500', bg: 'bg-orange-50' },
-  error: { icon: AlertCircle, color: 'bg-red-500', bg: 'bg-red-50' },
-  header: { icon: Bell, color: 'bg-cyan-500', bg: 'bg-cyan-50' }
-}
+  message: { icon: MessageCircle, color: "bg-blue-500", bg: "bg-blue-50" },
+  review: { icon: Star, color: "bg-yellow-500", bg: "bg-yellow-50" },
+  booking: { icon: Calendar, color: "bg-green-500", bg: "bg-green-50" },
+  system: { icon: Settings, color: "bg-gray-500", bg: "bg-gray-50" },
+  achievement: { icon: Trophy, color: "bg-purple-500", bg: "bg-purple-50" },
+  verification: { icon: Shield, color: "bg-indigo-500", bg: "bg-indigo-50" },
+  success: { icon: Check, color: "bg-emerald-500", bg: "bg-emerald-50" },
+  warning: { icon: AlertCircle, color: "bg-orange-500", bg: "bg-orange-50" },
+  error: { icon: AlertCircle, color: "bg-red-500", bg: "bg-red-50" },
+  header: { icon: Bell, color: "bg-cyan-500", bg: "bg-cyan-50" },
+};
 
-export function MobileNotificationCenter({ isOpen, onClose }: MobileNotificationCenterProps) {
+export function MobileNotificationCenter({
+  isOpen,
+  onClose,
+}: MobileNotificationCenterProps) {
   const {
     notifications,
     unreadCount,
     markAsRead,
     markAllAsRead,
     removeNotification,
-    clearAll
-  } = useNotifications()
-  const { profile } = useAuthContext()
+    clearAll,
+  } = useNotifications();
+  const { profile } = useAuthContext();
 
-  const [searchTerm, setSearchTerm] = useState('')
-  const [showUnreadOnly, setShowUnreadOnly] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Filtrar notificações
-  const filteredNotifications = notifications.filter(notification => {
-    const matchesSearch = searchTerm === '' || 
+  const filteredNotifications = notifications.filter((notification) => {
+    const matchesSearch =
+      searchTerm === "" ||
       notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      notification.message?.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesFilter = !showUnreadOnly || !notification.is_read
-    
-    return matchesSearch && matchesFilter
-  })
+      notification.message?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesFilter = !showUnreadOnly || !notification.is_read;
+
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full p-0 sm:max-w-sm bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl rounded-l-2xl">
+      <SheetContent
+        side="right"
+        className="w-full p-0 sm:max-w-sm bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl rounded-l-2xl"
+      >
         {/* Header Mobile */}
         <SheetHeader className="p-4 pb-3 border-b border-gray-100 bg-white/90 backdrop-blur-sm sticky top-0 z-10 rounded-tl-2xl">
           <div className="flex items-center justify-between">
@@ -143,7 +150,7 @@ export function MobileNotificationCenter({ isOpen, onClose }: MobileNotification
               {/* Filtros e ações na mesma linha */}
               <div className="flex gap-2">
                 <Button
-                  variant={!showUnreadOnly ? 'default' : 'outline'}
+                  variant={!showUnreadOnly ? "default" : "outline"}
                   size="sm"
                   onClick={() => setShowUnreadOnly(false)}
                   className="h-9 rounded-none"
@@ -151,7 +158,7 @@ export function MobileNotificationCenter({ isOpen, onClose }: MobileNotification
                   Todas
                 </Button>
                 <Button
-                  variant={showUnreadOnly ? 'default' : 'outline'}
+                  variant={showUnreadOnly ? "default" : "outline"}
                   size="sm"
                   onClick={() => setShowUnreadOnly(true)}
                   className="h-9 rounded-none"
@@ -180,19 +187,24 @@ export function MobileNotificationCenter({ isOpen, onClose }: MobileNotification
                   <BellOff className="w-8 h-8 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {searchTerm || showUnreadOnly ? 'Nenhuma notificação encontrada' : 'Nenhuma notificação'}
+                  {searchTerm || showUnreadOnly
+                    ? "Nenhuma notificação encontrada"
+                    : "Nenhuma notificação"}
                 </h3>
                 <p className="text-sm text-gray-500 mb-4">
-                  {searchTerm || showUnreadOnly 
-                    ? 'Tente ajustar a busca' 
-                    : 'Você será notificado quando houver novidades'
-                  }
+                  {searchTerm || showUnreadOnly
+                    ? "Tente ajustar a busca"
+                    : "Você será notificado quando houver novidades"}
                 </p>
                 {(searchTerm || showUnreadOnly) && (
-                  <Button variant="outline" size="sm" onClick={() => {
-                    setSearchTerm('')
-                    setShowUnreadOnly(false)
-                  }}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSearchTerm("");
+                      setShowUnreadOnly(false);
+                    }}
+                  >
                     Limpar filtros
                   </Button>
                 )}
@@ -200,20 +212,27 @@ export function MobileNotificationCenter({ isOpen, onClose }: MobileNotification
             ) : (
               <div className="p-2 space-y-2">
                 {filteredNotifications.map((notification) => {
-                  const config = NOTIFICATION_CONFIG[notification.type as keyof typeof NOTIFICATION_CONFIG] || NOTIFICATION_CONFIG.system
-                  const IconComponent = config.icon
-                  
+                  const config =
+                    NOTIFICATION_CONFIG[
+                      notification.type as keyof typeof NOTIFICATION_CONFIG
+                    ] || NOTIFICATION_CONFIG.system;
+                  const IconComponent = config.icon;
+
                   return (
-                    <Card 
-                      key={notification.id} 
+                    <Card
+                      key={notification.id}
                       className={`transition-all duration-200 ${
-                        !notification.is_read ? `${config.bg} border-l-4 border-l-blue-500` : 'bg-white'
+                        !notification.is_read
+                          ? `${config.bg} border-l-4 border-l-blue-500`
+                          : "bg-white"
                       }`}
                     >
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
                           {/* Ícone mobile-friendly */}
-                          <div className={`p-2.5 rounded-full ${config.color} text-white flex-shrink-0`}>
+                          <div
+                            className={`p-2.5 rounded-full ${config.color} text-white flex-shrink-0`}
+                          >
                             <IconComponent className="w-5 h-5" />
                           </div>
 
@@ -223,7 +242,7 @@ export function MobileNotificationCenter({ isOpen, onClose }: MobileNotification
                             <h4 className="font-semibold text-base text-gray-900 mb-1 leading-tight">
                               {notification.title}
                             </h4>
-                            
+
                             {/* Mensagem */}
                             {notification.message && (
                               <p className="text-sm text-gray-600 mb-3 leading-relaxed">
@@ -234,23 +253,29 @@ export function MobileNotificationCenter({ isOpen, onClose }: MobileNotification
                             {/* Metadados mobile */}
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <Badge 
-                                  variant="outline" 
+                                <Badge
+                                  variant="outline"
                                   className={`text-xs ${
-                                    notification.priority === 'urgent' ? 'bg-red-100 text-red-800' :
-                                    notification.priority === 'high' ? 'bg-orange-100 text-orange-800' :
-                                    notification.priority === 'normal' ? 'bg-blue-100 text-blue-800' :
-                                    'bg-gray-100 text-gray-800'
+                                    notification.priority === "urgent"
+                                      ? "bg-red-100 text-red-800"
+                                      : notification.priority === "high"
+                                        ? "bg-orange-100 text-orange-800"
+                                        : notification.priority === "normal"
+                                          ? "bg-blue-100 text-blue-800"
+                                          : "bg-gray-100 text-gray-800"
                                   }`}
                                 >
                                   {notification.priority}
                                 </Badge>
                                 <span className="text-xs text-gray-500 flex items-center gap-1">
                                   <Clock className="w-3 h-3" />
-                                  {formatDistanceToNow(new Date(notification.created_at), { 
-                                    addSuffix: true, 
-                                    locale: ptBR 
-                                  })}
+                                  {formatDistanceToNow(
+                                    new Date(notification.created_at),
+                                    {
+                                      addSuffix: true,
+                                      locale: ptBR,
+                                    },
+                                  )}
                                 </span>
                               </div>
 
@@ -266,11 +291,13 @@ export function MobileNotificationCenter({ isOpen, onClose }: MobileNotification
                                     <Check className="w-4 h-4 text-blue-600" />
                                   </Button>
                                 )}
-                                
+
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => removeNotification(notification.id)}
+                                  onClick={() =>
+                                    removeNotification(notification.id)
+                                  }
                                   className="h-8 w-8 p-0 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50"
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -286,26 +313,46 @@ export function MobileNotificationCenter({ isOpen, onClose }: MobileNotification
                                   size="sm"
                                   onClick={() => {
                                     // Verificar se é redirecionamento para onboarding e se o usuário já completou
-                                    if (notification.action_url === '/onboarding' || notification.action_url.startsWith('/onboarding')) {
+                                    if (
+                                      notification.action_url ===
+                                        "/onboarding" ||
+                                      notification.action_url.startsWith(
+                                        "/onboarding",
+                                      )
+                                    ) {
                                       // Verificar se o usuário já completou o onboarding (usar localStorage ou verificar no profile como any)
-                                      const hasCompletedOnboarding = (typeof window !== 'undefined' && localStorage.getItem('onboarding_completed') === 'true') ||
-                                        (profile && (profile as any)?.onboarding_completed === true)
-                                      
+                                      const hasCompletedOnboarding =
+                                        (typeof window !== "undefined" &&
+                                          localStorage.getItem(
+                                            "onboarding_completed",
+                                          ) === "true") ||
+                                        (profile &&
+                                          (profile as any)
+                                            ?.onboarding_completed === true);
+
                                       if (hasCompletedOnboarding) {
-                                        console.log('✅ Usuário já completou onboarding, redirecionando para feed ao invés de onboarding')
+                                        console.log(
+                                          "✅ Usuário já completou onboarding, redirecionando para feed ao invés de onboarding",
+                                        );
                                         // Redirecionar para feed ao invés de onboarding
-                                        window.location.href = '/feed'
-                                        markAsRead(notification.id)
-                                        return
+                                        window.location.href = "/feed";
+                                        markAsRead(notification.id);
+                                        return;
                                       }
                                     }
-                                    
-                                    if (notification.action_url.startsWith('/')) {
-                                      window.location.href = notification.action_url
+
+                                    if (
+                                      notification.action_url.startsWith("/")
+                                    ) {
+                                      window.location.href =
+                                        notification.action_url;
                                     } else {
-                                      window.open(notification.action_url, '_blank')
+                                      window.open(
+                                        notification.action_url,
+                                        "_blank",
+                                      );
                                     }
-                                    markAsRead(notification.id)
+                                    markAsRead(notification.id);
                                   }}
                                   className="w-full h-10 text-sm font-medium"
                                 >
@@ -317,7 +364,7 @@ export function MobileNotificationCenter({ isOpen, onClose }: MobileNotification
                         </div>
                       </CardContent>
                     </Card>
-                  )
+                  );
                 })}
               </div>
             )}
@@ -335,12 +382,12 @@ export function MobileNotificationCenter({ isOpen, onClose }: MobileNotification
           )}
         </div>
       </SheetContent>
-      
+
       {/* Modal de Configurações */}
-      <NotificationSettingsOnlyModal 
-        isOpen={showSettings} 
-        onClose={() => setShowSettings(false)} 
+      <NotificationSettingsOnlyModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
       />
     </Sheet>
-  )
+  );
 }

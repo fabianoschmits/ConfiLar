@@ -1,72 +1,74 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { toast } from 'sonner'
-import { PREMIUM_PRICES } from '@/constants/premiumPrices'
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import { PREMIUM_PRICES } from "@/constants/premiumPrices";
 
 interface CreatePremiumPostData {
-  title: string
-  description: string
-  images?: string[]
-  location_city?: string
-  location_state?: string
-  service_category_id?: string
-  pointsToSpend: number
-  durationDays: number
+  title: string;
+  description: string;
+  images?: string[];
+  location_city?: string;
+  location_state?: string;
+  service_category_id?: string;
+  pointsToSpend: number;
+  durationDays: number;
 }
 
 interface UsePremiumPostProps {
-  onSuccess?: () => void
-  onError?: (error: string) => void
+  onSuccess?: () => void;
+  onError?: (error: string) => void;
 }
 
 export function usePremiumPost({ onSuccess, onError }: UsePremiumPostProps) {
-  const { user } = useAuthContext()
-  const [isProcessing, setIsProcessing] = useState(false)
-  const queryClient = useQueryClient()
+  const { user } = useAuthContext();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const queryClient = useQueryClient();
 
   const premiumPostMutation = useMutation({
     mutationFn: async (postData: CreatePremiumPostData) => {
-      if (!user) throw new Error('Usuário não autenticado')
+      if (!user) throw new Error("Usuário não autenticado");
 
       // Verificar saldo do usuário
       const { data: balance, error: balanceError } = await supabase
-        .from('user_points_balance')
-        .select('balance')
-        .eq('user_id', user.id)
-        .single()
+        .from("user_points_balance")
+        .select("balance")
+        .eq("user_id", user.id)
+        .single();
 
-      if (balanceError) throw new Error('Erro ao verificar saldo')
+      if (balanceError) throw new Error("Erro ao verificar saldo");
       if (!balance || balance.balance < postData.pointsToSpend) {
-        throw new Error(`Saldo insuficiente. Necessário: ${postData.pointsToSpend} pontos para post premium`)
+        throw new Error(
+          `Saldo insuficiente. Necessário: ${postData.pointsToSpend} pontos para post premium`,
+        );
       }
 
       // Calcular data de expiração baseado na duração escolhida
-      const expiresAt = new Date()
-      expiresAt.setDate(expiresAt.getDate() + postData.durationDays)
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + postData.durationDays);
 
       // Buscar país do perfil do usuário
-      let location_country = 'BR' // Default
+      let location_country = "BR"; // Default
       try {
         const { data: profileData } = await supabase
-          .from('profiles')
-          .select('country')
-          .eq('id', user.id)
-          .single()
-        
+          .from("profiles")
+          .select("country")
+          .eq("id", user.id)
+          .single();
+
         if (profileData?.country) {
-          location_country = profileData.country
+          location_country = profileData.country;
         }
       } catch (error) {
-        console.warn('Erro ao buscar país do perfil:', error)
+        console.warn("Erro ao buscar país do perfil:", error);
       }
-      
+
       // Criar post premium
       const { data, error } = await supabase
-        .from('feed_posts')
+        .from("feed_posts")
         .insert({
           professional_id: user.id,
           user_id: user.id,
@@ -86,61 +88,59 @@ export function usePremiumPost({ onSuccess, onError }: UsePremiumPostProps) {
           is_premium: true, // Marcar como premium
           premium_points_spent: postData.pointsToSpend,
           premium_expires_at: expiresAt.toISOString(),
-          premium_highlight_color: '#FFD700',
-          tags: ['premium'],
+          premium_highlight_color: "#FFD700",
+          tags: ["premium"],
           metadata: {
-            type: 'premium',
+            type: "premium",
             points_spent: postData.pointsToSpend,
             duration_days: postData.durationDays,
             created_at: new Date().toISOString(),
-            expires_at: expiresAt.toISOString()
-          }
+            expires_at: expiresAt.toISOString(),
+          },
         })
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
+      if (error) throw error;
 
       // Deduzir pontos
-      const { error: pointsError } = await supabase
-        .rpc('add_points', {
-          p_user_id: user.id,
-          p_points: -postData.pointsToSpend,
-          p_source: 'premium_post',
-          p_description: `Criou post premium (${postData.durationDays} dias - ${postData.pointsToSpend} pontos)`
-        })
+      const { error: pointsError } = await supabase.rpc("add_points", {
+        p_user_id: user.id,
+        p_points: -postData.pointsToSpend,
+        p_source: "premium_post",
+        p_description: `Criou post premium (${postData.durationDays} dias - ${postData.pointsToSpend} pontos)`,
+      });
 
-      if (pointsError) throw new Error('Erro ao processar pontos')
+      if (pointsError) throw new Error("Erro ao processar pontos");
 
-      return data
+      return data;
     },
     onSuccess: () => {
-      toast.success(`Post premium criado com sucesso!`)
-      queryClient.invalidateQueries({ queryKey: ['feed-posts'] })
-      queryClient.invalidateQueries({ queryKey: ['user-posts', user?.id] })
-      queryClient.invalidateQueries({ queryKey: ['user-points', user?.id] })
-      onSuccess?.()
+      toast.success(`Post premium criado com sucesso!`);
+      queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["user-posts", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["user-points", user?.id] });
+      onSuccess?.();
     },
     onError: (error: Error) => {
-      toast.error(error.message)
-      onError?.(error.message)
+      toast.error(error.message);
+      onError?.(error.message);
     },
     onSettled: () => {
-      setIsProcessing(false)
-    }
-  })
+      setIsProcessing(false);
+    },
+  });
 
   const createPremiumPost = async (postData: CreatePremiumPostData) => {
-    if (isProcessing) return
-    
-    setIsProcessing(true)
-    premiumPostMutation.mutate(postData)
-  }
+    if (isProcessing) return;
+
+    setIsProcessing(true);
+    premiumPostMutation.mutate(postData);
+  };
 
   return {
     createPremiumPost,
     isProcessing: isProcessing || premiumPostMutation.isPending,
-    error: premiumPostMutation.error?.message
-  }
+    error: premiumPostMutation.error?.message,
+  };
 }
-

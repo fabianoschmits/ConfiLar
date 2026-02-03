@@ -1,13 +1,10 @@
-import { Heart } from 'lucide-react'
+import { Heart } from "lucide-react";
 
-export { Heart }
+export { Heart };
 
-export function HeartFilled({ className, ...props }: React.SVGProps<SVGSVGElement>) {
-  return (
-    <Heart 
-      className={className} 
-      fill="currentColor"
-      {...props} 
-    />
-  )
+export function HeartFilled({
+  className,
+  ...props
+}: React.SVGProps<SVGSVGElement>) {
+  return <Heart className={className} fill="currentColor" {...props} />;
 }

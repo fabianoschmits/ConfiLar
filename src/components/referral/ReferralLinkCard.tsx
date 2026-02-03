@@ -1,18 +1,28 @@
-'use client'
+"use client";
 
-import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Copy, Check, Share2, Mail, MessageCircle, Send, Edit2, X, Loader2 } from 'lucide-react'
-import { useReferralCode } from '@/hooks/useReferralCode'
-import { cn } from '@/lib/utils'
-import { toast } from 'sonner'
-import { supabase } from '@/lib/supabase'
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Copy,
+  Check,
+  Share2,
+  Mail,
+  MessageCircle,
+  Send,
+  Edit2,
+  X,
+  Loader2,
+} from "lucide-react";
+import { useReferralCode } from "@/hooks/useReferralCode";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 
 interface ReferralLinkCardProps {
-  userId: string
-  className?: string
+  userId: string;
+  className?: string;
 }
 
 export function ReferralLinkCard({ userId, className }: ReferralLinkCardProps) {
@@ -25,131 +35,133 @@ export function ReferralLinkCard({ userId, className }: ReferralLinkCardProps) {
     shareViaTelegram,
     shareViaEmail,
     updateReferralCode,
-    refresh
-  } = useReferralCode(userId)
+    refresh,
+  } = useReferralCode(userId);
 
-  const [copied, setCopied] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
-  const [editCode, setEditCode] = useState('')
-  const [isSaving, setIsSaving] = useState(false)
-  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false)
-  const [availabilityStatus, setAvailabilityStatus] = useState<'idle' | 'available' | 'unavailable' | 'invalid'>('idle')
+  const [copied, setCopied] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editCode, setEditCode] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+  const [availabilityStatus, setAvailabilityStatus] = useState<
+    "idle" | "available" | "unavailable" | "invalid"
+  >("idle");
 
   // Inicializar código ao entrar em modo de edição
   useEffect(() => {
     if (isEditing && referralCode) {
-      setEditCode(referralCode)
-      setAvailabilityStatus('idle')
+      setEditCode(referralCode);
+      setAvailabilityStatus("idle");
     }
-  }, [isEditing, referralCode])
+  }, [isEditing, referralCode]);
 
   // Validar e verificar disponibilidade do código em tempo real
   useEffect(() => {
     if (!isEditing || !editCode.trim()) {
-      setAvailabilityStatus('idle')
-      return
+      setAvailabilityStatus("idle");
+      return;
     }
 
-    const normalizedCode = editCode.toUpperCase().trim()
-    
+    const normalizedCode = editCode.toUpperCase().trim();
+
     // Validar formato: 6-12 caracteres, apenas letras (A-Z) e/ou números (0-9)
-    const codeRegex = /^[A-Z0-9]{6,12}$/
-    
+    const codeRegex = /^[A-Z0-9]{6,12}$/;
+
     if (normalizedCode.length < 6) {
-      setAvailabilityStatus('invalid')
-      return
+      setAvailabilityStatus("invalid");
+      return;
     }
 
     if (!codeRegex.test(normalizedCode)) {
-      setAvailabilityStatus('invalid')
-      return
+      setAvailabilityStatus("invalid");
+      return;
     }
 
     // Se é o mesmo código atual, considerar disponível
     if (normalizedCode === referralCode) {
-      setAvailabilityStatus('available')
-      return
+      setAvailabilityStatus("available");
+      return;
     }
 
     // Verificar disponibilidade com debounce
     const timeoutId = setTimeout(async () => {
-      setIsCheckingAvailability(true)
+      setIsCheckingAvailability(true);
       try {
         const { data: existingCode } = await supabase
-          .from('user_referral_stats')
-          .select('user_id, referral_code')
-          .ilike('referral_code', normalizedCode)
-          .single()
+          .from("user_referral_stats")
+          .select("user_id, referral_code")
+          .ilike("referral_code", normalizedCode)
+          .single();
 
         if (existingCode && existingCode.user_id !== userId) {
-          setAvailabilityStatus('unavailable')
+          setAvailabilityStatus("unavailable");
         } else {
-          setAvailabilityStatus('available')
+          setAvailabilityStatus("available");
         }
       } catch (error) {
         // Se não encontrou, está disponível
-        setAvailabilityStatus('available')
+        setAvailabilityStatus("available");
       } finally {
-        setIsCheckingAvailability(false)
+        setIsCheckingAvailability(false);
       }
-    }, 500) // Debounce de 500ms
+    }, 500); // Debounce de 500ms
 
-    return () => clearTimeout(timeoutId)
-  }, [editCode, isEditing, referralCode, userId])
+    return () => clearTimeout(timeoutId);
+  }, [editCode, isEditing, referralCode, userId]);
 
   const handleCopy = async () => {
-    const success = await copyToClipboard()
+    const success = await copyToClipboard();
     if (success) {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
-  }
+  };
 
   const handleSave = async () => {
     if (!editCode.trim()) {
-      toast.error('Digite um código')
-      return
+      toast.error("Digite um código");
+      return;
     }
 
-    if (availabilityStatus !== 'available') {
-      toast.error('Código inválido ou já está em uso')
-      return
+    if (availabilityStatus !== "available") {
+      toast.error("Código inválido ou já está em uso");
+      return;
     }
 
-    setIsSaving(true)
+    setIsSaving(true);
     try {
-      const normalizedCode = editCode.toUpperCase().trim()
-      const result = await updateReferralCode(normalizedCode)
+      const normalizedCode = editCode.toUpperCase().trim();
+      const result = await updateReferralCode(normalizedCode);
 
       if (result.success) {
-        toast.success('Código atualizado com sucesso!')
-        setIsEditing(false)
-        setEditCode('')
-        setAvailabilityStatus('idle')
-        await refresh()
+        toast.success("Código atualizado com sucesso!");
+        setIsEditing(false);
+        setEditCode("");
+        setAvailabilityStatus("idle");
+        await refresh();
       } else {
-        toast.error(result.error || 'Erro ao atualizar código')
+        toast.error(result.error || "Erro ao atualizar código");
       }
     } catch (error) {
-      toast.error('Erro ao atualizar código. Tente novamente.')
+      toast.error("Erro ao atualizar código. Tente novamente.");
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleCancel = () => {
-    setIsEditing(false)
-    setEditCode('')
-    setAvailabilityStatus('idle')
-  }
+    setIsEditing(false);
+    setEditCode("");
+    setAvailabilityStatus("idle");
+  };
 
   const handleCodeChange = (value: string) => {
     // Permitir apenas letras e números, converter para maiúsculas
-    const cleanValue = value.replace(/[^A-Za-z0-9]/g, '').toUpperCase()
+    const cleanValue = value.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
     // Limitar a 12 caracteres
-    const limitedValue = cleanValue.slice(0, 12)
-    setEditCode(limitedValue)
-  }
+    const limitedValue = cleanValue.slice(0, 12);
+    setEditCode(limitedValue);
+  };
 
   if (loading) {
     return (
@@ -161,11 +173,13 @@ export function ReferralLinkCard({ userId, className }: ReferralLinkCardProps) {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
-    <Card className={cn('border-2 border-blue-200 dark:border-blue-800', className)}>
+    <Card
+      className={cn("border-2 border-blue-200 dark:border-blue-800", className)}
+    >
       <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Share2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -191,7 +205,7 @@ export function ReferralLinkCard({ userId, className }: ReferralLinkCardProps) {
               </Button>
             )}
           </div>
-          
+
           {!isEditing ? (
             <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
               <code className="flex-1 text-lg font-bold text-blue-600 dark:text-blue-400 tracking-wider">
@@ -207,9 +221,12 @@ export function ReferralLinkCard({ userId, className }: ReferralLinkCardProps) {
                   placeholder="Digite seu código personalizado"
                   className={cn(
                     "text-lg font-bold tracking-wider uppercase",
-                    availabilityStatus === 'invalid' && "border-red-500 focus:border-red-500",
-                    availabilityStatus === 'unavailable' && "border-red-500 focus:border-red-500",
-                    availabilityStatus === 'available' && "border-green-500 focus:border-green-500"
+                    availabilityStatus === "invalid" &&
+                      "border-red-500 focus:border-red-500",
+                    availabilityStatus === "unavailable" &&
+                      "border-red-500 focus:border-red-500",
+                    availabilityStatus === "available" &&
+                      "border-green-500 focus:border-green-500",
                   )}
                   maxLength={12}
                 />
@@ -219,33 +236,39 @@ export function ReferralLinkCard({ userId, className }: ReferralLinkCardProps) {
                   </div>
                 )}
               </div>
-              
+
               {/* Feedback de validação */}
               {editCode && (
                 <div className="text-xs">
-                  {availabilityStatus === 'invalid' && (
+                  {availabilityStatus === "invalid" && (
                     <p className="text-red-600 dark:text-red-400">
-                      Código deve ter entre 6 e 12 caracteres (apenas letras e/ou números)
+                      Código deve ter entre 6 e 12 caracteres (apenas letras
+                      e/ou números)
                     </p>
                   )}
-                  {availabilityStatus === 'unavailable' && (
+                  {availabilityStatus === "unavailable" && (
                     <p className="text-red-600 dark:text-red-400">
                       Este código já está em uso. Tente outro.
                     </p>
                   )}
-                  {availabilityStatus === 'available' && (
+                  {availabilityStatus === "available" && (
                     <p className="text-green-600 dark:text-green-400">
                       ✓ Código disponível!
                     </p>
                   )}
                 </div>
               )}
-              
+
               {/* Botões de ação */}
               <div className="flex gap-2">
                 <Button
                   onClick={handleSave}
-                  disabled={isSaving || availabilityStatus !== 'available' || !editCode.trim() || editCode.length < 6}
+                  disabled={
+                    isSaving ||
+                    availabilityStatus !== "available" ||
+                    !editCode.trim() ||
+                    editCode.length < 6
+                  }
                   size="sm"
                   className="flex-1"
                 >
@@ -271,10 +294,11 @@ export function ReferralLinkCard({ userId, className }: ReferralLinkCardProps) {
                   Cancelar
                 </Button>
               </div>
-              
+
               {/* Dica */}
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                💡 Você pode usar apenas letras, apenas números, ou ambos. Ex: "fabianoschmits", "123456", "fabiano123"
+                💡 Você pode usar apenas letras, apenas números, ou ambos. Ex:
+                "fabianoschmits", "123456", "fabiano123"
               </p>
             </div>
           )}
@@ -287,13 +311,13 @@ export function ReferralLinkCard({ userId, className }: ReferralLinkCardProps) {
           </label>
           <div className="flex items-center gap-2">
             <Input
-              value={referralLink || ''}
+              value={referralLink || ""}
               readOnly
               className="font-mono text-sm bg-white dark:bg-gray-900"
             />
             <Button
               onClick={handleCopy}
-              variant={copied ? 'default' : 'outline'}
+              variant={copied ? "default" : "outline"}
               size="sm"
               className="flex-shrink-0"
             >
@@ -350,12 +374,12 @@ export function ReferralLinkCard({ userId, className }: ReferralLinkCardProps) {
         {/* Dica */}
         <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
           <p className="text-xs text-yellow-800 dark:text-yellow-200">
-            💡 <strong>Dica:</strong> Compartilhe seu link nas redes sociais, grupos de WhatsApp ou com amigos.
-            Quanto mais pessoas se cadastrarem usando seu link, mais pontos e badges você ganha!
+            💡 <strong>Dica:</strong> Compartilhe seu link nas redes sociais,
+            grupos de WhatsApp ou com amigos. Quanto mais pessoas se cadastrarem
+            usando seu link, mais pontos e badges você ganha!
           </p>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

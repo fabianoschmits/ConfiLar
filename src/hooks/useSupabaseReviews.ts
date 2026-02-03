@@ -1,55 +1,57 @@
-import { useState, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
-import { Database } from '@/types/database'
+import { useState, useCallback } from "react";
+import { supabase } from "@/lib/supabase";
+import { Database } from "@/types/database";
 
-export type Review = Database['public']['Tables']['reviews']['Row']
-export type ReviewInsert = Database['public']['Tables']['reviews']['Insert']
-export type ReviewUpdate = Database['public']['Tables']['reviews']['Update']
+export type Review = Database["public"]["Tables"]["reviews"]["Row"];
+export type ReviewInsert = Database["public"]["Tables"]["reviews"]["Insert"];
+export type ReviewUpdate = Database["public"]["Tables"]["reviews"]["Update"];
 
 export interface ReviewWithProfiles extends Review {
   reviewer: {
-    id: string
-    full_name: string
-    avatar_url?: string
-    user_type: 'client' | 'professional'
-  }
+    id: string;
+    full_name: string;
+    avatar_url?: string;
+    user_type: "client" | "professional";
+  };
   reviewed: {
-    id: string
-    full_name: string
-    avatar_url?: string
-    user_type: 'client' | 'professional'
-  }
+    id: string;
+    full_name: string;
+    avatar_url?: string;
+    user_type: "client" | "professional";
+  };
 }
 
 export interface ReviewStats {
-  averageRating: number
-  totalReviews: number
+  averageRating: number;
+  totalReviews: number;
   ratingDistribution: {
-    5: number
-    4: number
-    3: number
-    2: number
-    1: number
-  }
-  recentReviews: ReviewWithProfiles[]
+    5: number;
+    4: number;
+    3: number;
+    2: number;
+    1: number;
+  };
+  recentReviews: ReviewWithProfiles[];
 }
 
 export function useSupabaseReviews() {
-  const [reviews, setReviews] = useState<ReviewWithProfiles[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [reviews, setReviews] = useState<ReviewWithProfiles[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Buscar avaliações de um usuário específico
-  const fetchUserReviews = useCallback(async (userId: string, type: 'received' | 'given' = 'received') => {
-    setLoading(true)
-    setError(null)
-    
-    try {
-      const column = type === 'received' ? 'reviewed_id' : 'reviewer_id'
-      
-      const { data, error } = await supabase
-        .from('reviews')
-        .select(`
+  const fetchUserReviews = useCallback(
+    async (userId: string, type: "received" | "given" = "received") => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const column = type === "received" ? "reviewed_id" : "reviewer_id";
+
+        const { data, error } = await supabase
+          .from("reviews")
+          .select(
+            `
           id,
           reviewer_id,
           reviewed_id,
@@ -70,54 +72,63 @@ export function useSupabaseReviews() {
             avatar_url,
             user_type
           )
-        `)
-        .eq(column, userId)
-        .order('created_at', { ascending: false })
-        .limit(20) // Limitar a 20 avaliações por vez
+        `,
+          )
+          .eq(column, userId)
+          .order("created_at", { ascending: false })
+          .limit(20); // Limitar a 20 avaliações por vez
 
-
-      if (error) throw error
-      setReviews(data as any || [])
-    } catch (err) {
-      console.error('Erro ao buscar avaliações:', err)
-      setError(err instanceof Error ? err.message : 'Erro desconhecido')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+        if (error) throw error;
+        setReviews((data as any) || []);
+      } catch (err) {
+        console.error("Erro ao buscar avaliações:", err);
+        setError(err instanceof Error ? err.message : "Erro desconhecido");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   // Buscar estatísticas de avaliações de um usuário
-  const fetchUserReviewStats = useCallback(async (userId: string): Promise<ReviewStats | null> => {
-    try {
-      const { data, error } = await supabase
-        .from('reviews')
-        .select('rating_person, created_at')
-        .eq('reviewed_id', userId)
+  const fetchUserReviewStats = useCallback(
+    async (userId: string): Promise<ReviewStats | null> => {
+      try {
+        const { data, error } = await supabase
+          .from("reviews")
+          .select("rating_person, created_at")
+          .eq("reviewed_id", userId);
 
-      if (error) throw error
+        if (error) throw error;
 
-      if (!data || data.length === 0) {
-        return {
-          averageRating: 0,
-          totalReviews: 0,
-          ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
-          recentReviews: []
+        if (!data || data.length === 0) {
+          return {
+            averageRating: 0,
+            totalReviews: 0,
+            ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+            recentReviews: [],
+          };
         }
-      }
 
-      // Calcular estatísticas
-      const totalReviews = data.length
-      const averageRating = data.reduce((sum, review) => sum + review.rating_person, 0) / totalReviews
-      
-      const ratingDistribution = data.reduce((acc, review) => {
-        acc[review.rating_person as keyof typeof acc]++
-        return acc
-      }, { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 })
+        // Calcular estatísticas
+        const totalReviews = data.length;
+        const averageRating =
+          data.reduce((sum, review) => sum + review.rating_person, 0) /
+          totalReviews;
 
-      // Buscar avaliações recentes
-      const recentReviewsData = await supabase
-        .from('reviews')
-        .select(`
+        const ratingDistribution = data.reduce(
+          (acc, review) => {
+            acc[review.rating_person as keyof typeof acc]++;
+            return acc;
+          },
+          { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+        );
+
+        // Buscar avaliações recentes
+        const recentReviewsData = await supabase
+          .from("reviews")
+          .select(
+            `
           *,
           reviewer:profiles!reviews_reviewer_id_fkey(
             id,
@@ -136,32 +147,36 @@ export function useSupabaseReviews() {
             title,
             category
           )
-        `)
-        .eq('reviewed_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(5)
+        `,
+          )
+          .eq("reviewed_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(5);
 
-      if (recentReviewsData.error) throw recentReviewsData.error
+        if (recentReviewsData.error) throw recentReviewsData.error;
 
-      return {
-        averageRating: Math.round(averageRating * 10) / 10,
-        totalReviews,
-        ratingDistribution,
-        recentReviews: recentReviewsData.data || []
+        return {
+          averageRating: Math.round(averageRating * 10) / 10,
+          totalReviews,
+          ratingDistribution,
+          recentReviews: recentReviewsData.data || [],
+        };
+      } catch (err) {
+        console.error("Erro ao buscar estatísticas de avaliações:", err);
+        return null;
       }
-    } catch (err) {
-      console.error('Erro ao buscar estatísticas de avaliações:', err)
-      return null
-    }
-  }, [])
+    },
+    [],
+  );
 
   // Criar nova avaliação
   const createReview = async (reviewData: ReviewInsert) => {
     try {
       const { data, error } = await supabase
-        .from('reviews')
+        .from("reviews")
         .insert(reviewData)
-        .select(`
+        .select(
+          `
           *,
           reviewer:profiles!reviews_reviewer_id_fkey(
             id,
@@ -180,93 +195,105 @@ export function useSupabaseReviews() {
             title,
             category
           )
-        `)
-        .single()
+        `,
+        )
+        .single();
 
-      if (error) throw error
+      if (error) throw error;
 
       // ✅ VERIFICAR SE É A PRIMEIRA AVALIAÇÃO DO USUÁRIO (para referral milestone)
       if (data && data.reviewer_id) {
         try {
           // Contar quantas avaliações o usuário fez
           const { count, error: countError } = await supabase
-            .from('reviews')
-            .select('*', { count: 'exact', head: true })
-            .eq('reviewer_id', data.reviewer_id)
-          
+            .from("reviews")
+            .select("*", { count: "exact", head: true })
+            .eq("reviewer_id", data.reviewer_id);
+
           if (!countError && count === 1) {
-            console.log('🎉 [Review] Esta é a PRIMEIRA avaliação do usuário! Marcando milestone...')
-            
+            console.log(
+              "🎉 [Review] Esta é a PRIMEIRA avaliação do usuário! Marcando milestone...",
+            );
+
             // Marcar milestone de primeira avaliação
             const { error: milestoneError } = await supabase
-              .from('referrals')
-              .update({ 
+              .from("referrals")
+              .update({
                 first_review_made: true,
-                last_activity_at: new Date().toISOString()
+                last_activity_at: new Date().toISOString(),
               })
-              .eq('referred_id', data.reviewer_id)
-              .eq('first_review_made', false)
-            
+              .eq("referred_id", data.reviewer_id)
+              .eq("first_review_made", false);
+
             if (milestoneError) {
-              console.warn('⚠️ [Review] Erro ao marcar milestone (usuário pode não ter sido indicado):', milestoneError.message)
+              console.warn(
+                "⚠️ [Review] Erro ao marcar milestone (usuário pode não ter sido indicado):",
+                milestoneError.message,
+              );
             } else {
-              console.log('✅ [Review] Milestone first_review_made marcado! (+100 pontos para indicador)')
+              console.log(
+                "✅ [Review] Milestone first_review_made marcado! (+100 pontos para indicador)",
+              );
             }
           }
         } catch (milestoneError) {
-          console.warn('⚠️ [Review] Erro ao processar milestone de primeira avaliação:', milestoneError)
+          console.warn(
+            "⚠️ [Review] Erro ao processar milestone de primeira avaliação:",
+            milestoneError,
+          );
           // Não falhar a criação da avaliação se houver erro no milestone
         }
       }
 
       // Criar notificação para o usuário avaliado
       if (data && data.reviewed_id !== data.reviewer_id) {
-        await createReviewNotification(data)
+        await createReviewNotification(data);
       }
 
-      return { data, error: null }
+      return { data, error: null };
     } catch (err) {
-      console.error('Erro ao criar avaliação:', err)
-      return { 
-        data: null, 
-        error: err instanceof Error ? err.message : 'Erro desconhecido' 
-      }
+      console.error("Erro ao criar avaliação:", err);
+      return {
+        data: null,
+        error: err instanceof Error ? err.message : "Erro desconhecido",
+      };
     }
-  }
+  };
 
   // Criar notificação para nova avaliação
   const createReviewNotification = async (review: ReviewWithProfiles) => {
     try {
       const notificationData = {
         user_id: review.reviewed_id,
-        title: 'Nova Avaliação Recebida',
+        title: "Nova Avaliação Recebida",
         message: `${review.reviewer.full_name} avaliou você com ${review.rating_person} estrelas`,
-        type: 'review',
+        type: "review",
         is_read: false,
         action_url: `/perfil/${review.reviewed_id}`,
-        priority: 'normal' as const
-      }
+        priority: "normal" as const,
+      };
 
       const { error } = await supabase
-        .from('notifications')
-        .insert(notificationData)
+        .from("notifications")
+        .insert(notificationData);
 
       if (error) {
-        console.error('Erro ao criar notificação de avaliação:', error)
+        console.error("Erro ao criar notificação de avaliação:", error);
       }
     } catch (err) {
-      console.error('Erro ao criar notificação de avaliação:', err)
+      console.error("Erro ao criar notificação de avaliação:", err);
     }
-  }
+  };
 
   // Atualizar avaliação
   const updateReview = async (reviewId: string, updates: ReviewUpdate) => {
     try {
       const { data, error } = await supabase
-        .from('reviews')
+        .from("reviews")
         .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq('id', reviewId)
-        .select(`
+        .eq("id", reviewId)
+        .select(
+          `
           *,
           reviewer:profiles!reviews_reviewer_id_fkey(
             id,
@@ -285,75 +312,81 @@ export function useSupabaseReviews() {
             title,
             category
           )
-        `)
-        .single()
+        `,
+        )
+        .single();
 
-      if (error) throw error
-      return { data, error: null }
+      if (error) throw error;
+      return { data, error: null };
     } catch (err) {
-      console.error('Erro ao atualizar avaliação:', err)
-      return { 
-        data: null, 
-        error: err instanceof Error ? err.message : 'Erro desconhecido' 
-      }
+      console.error("Erro ao atualizar avaliação:", err);
+      return {
+        data: null,
+        error: err instanceof Error ? err.message : "Erro desconhecido",
+      };
     }
-  }
+  };
 
   // Deletar avaliação
   const deleteReview = async (reviewId: string) => {
     try {
       const { error } = await supabase
-        .from('reviews')
+        .from("reviews")
         .delete()
-        .eq('id', reviewId)
+        .eq("id", reviewId);
 
-      if (error) throw error
-      return { error: null }
+      if (error) throw error;
+      return { error: null };
     } catch (err) {
-      console.error('Erro ao deletar avaliação:', err)
-      return { 
-        error: err instanceof Error ? err.message : 'Erro desconhecido' 
-      }
+      console.error("Erro ao deletar avaliação:", err);
+      return {
+        error: err instanceof Error ? err.message : "Erro desconhecido",
+      };
     }
-  }
+  };
 
   // Responder a uma avaliação
   const respondToReview = async (reviewId: string, responseText: string) => {
     try {
       // Se responseText estiver vazio, remover a resposta
       const updateData: any = {
-        updated_at: new Date().toISOString()
-      }
-      
+        updated_at: new Date().toISOString(),
+      };
+
       if (responseText && responseText.trim()) {
-        updateData.response_text = responseText.trim()
-        updateData.response_date = new Date().toISOString()
+        updateData.response_text = responseText.trim();
+        updateData.response_date = new Date().toISOString();
       } else {
         // Remover resposta
-        updateData.response_text = null
-        updateData.response_date = null
+        updateData.response_text = null;
+        updateData.response_date = null;
       }
-      
+
       // Fazer o update sem select para evitar erro 406
       const { data: updateResult, error: updateError } = await supabase
-        .from('reviews')
+        .from("reviews")
         .update(updateData)
-        .eq('id', reviewId)
-        .select('id, response_text, response_date')
+        .eq("id", reviewId)
+        .select("id, response_text, response_date");
 
       if (updateError) {
-        console.error('❌ Erro ao atualizar resposta:', updateError)
-        throw updateError
+        console.error("❌ Erro ao atualizar resposta:", updateError);
+        throw updateError;
       }
-      
+
       // Se o update retornou dados, usar eles diretamente
-      if (updateResult && updateResult.length > 0 && updateResult[0].response_text) {
-        const updatedReview = updateResult[0]
-        
+      if (
+        updateResult &&
+        updateResult.length > 0 &&
+        updateResult[0].response_text
+      ) {
+        const updatedReview = updateResult[0];
+
         // Buscar relacionamentos separadamente
         const { data: relationships } = await supabase
-          .from('reviews')
-          .select(`
+          .from("reviews")
+          .select(
+            `
             reviewer:profiles!reviews_reviewer_id_fkey(
               id,
               full_name,
@@ -366,49 +399,51 @@ export function useSupabaseReviews() {
               avatar_url,
               user_type
             )
-          `)
-          .eq('id', reviewId)
-          .single()
-        
-        const reviewer = Array.isArray(relationships?.reviewer) 
-          ? relationships.reviewer[0] 
-          : relationships?.reviewer
-        const reviewed = Array.isArray(relationships?.reviewed) 
-          ? relationships.reviewed[0] 
-          : relationships?.reviewed
-        
+          `,
+          )
+          .eq("id", reviewId)
+          .single();
+
+        const reviewer = Array.isArray(relationships?.reviewer)
+          ? relationships.reviewer[0]
+          : relationships?.reviewer;
+        const reviewed = Array.isArray(relationships?.reviewed)
+          ? relationships.reviewed[0]
+          : relationships?.reviewed;
+
         const fullData = {
           ...updatedReview,
           reviewer: reviewer || null,
-          reviewed: reviewed || null
-        }
-        
+          reviewed: reviewed || null,
+        };
+
         // Atualizar o estado local
-        setReviews(prevReviews => {
-          const updated = prevReviews.map(review => {
+        setReviews((prevReviews) => {
+          const updated = prevReviews.map((review) => {
             if (review.id === reviewId) {
-              return { 
-                ...review, 
+              return {
+                ...review,
                 ...updatedReview,
                 reviewer: reviewer || review.reviewer,
-                reviewed: reviewed || review.reviewed
-              }
+                reviewed: reviewed || review.reviewed,
+              };
             }
-            return review
-          })
-          return updated
-        })
-        
-        return { data: fullData, error: null }
+            return review;
+          });
+          return updated;
+        });
+
+        return { data: fullData, error: null };
       }
-      
+
       // Pequeno delay para garantir que o banco processou a atualização
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       // Buscar os dados completos com relacionamentos em uma query separada
       const { data: fullData, error: selectError } = await supabase
-        .from('reviews')
-        .select(`
+        .from("reviews")
+        .select(
+          `
           id,
           reviewer_id,
           reviewed_id,
@@ -430,115 +465,119 @@ export function useSupabaseReviews() {
             avatar_url,
             user_type
           )
-        `)
-        .eq('id', reviewId)
-        .single()
-      
+        `,
+        )
+        .eq("id", reviewId)
+        .single();
+
       if (selectError) {
-        console.error('❌ Erro ao buscar avaliação atualizada:', selectError)
-        throw selectError
+        console.error("❌ Erro ao buscar avaliação atualizada:", selectError);
+        throw selectError;
       }
-      
+
       // Atualizar o estado local com todos os dados retornados
       if (fullData) {
         // Garantir que reviewer e reviewed sejam objetos únicos, não arrays
-        const reviewer = Array.isArray(fullData.reviewer) 
-          ? fullData.reviewer[0] 
-          : fullData.reviewer
-        const reviewed = Array.isArray(fullData.reviewed) 
-          ? fullData.reviewed[0] 
-          : fullData.reviewed
-        
-        setReviews(prevReviews => {
-          const updated = prevReviews.map(review => {
+        const reviewer = Array.isArray(fullData.reviewer)
+          ? fullData.reviewer[0]
+          : fullData.reviewer;
+        const reviewed = Array.isArray(fullData.reviewed)
+          ? fullData.reviewed[0]
+          : fullData.reviewed;
+
+        setReviews((prevReviews) => {
+          const updated = prevReviews.map((review) => {
             if (review.id === reviewId) {
-              return { 
-                ...review, 
+              return {
+                ...review,
                 ...fullData,
                 reviewer: reviewer || review.reviewer,
-                reviewed: reviewed || review.reviewed
-              } as typeof review
+                reviewed: reviewed || review.reviewed,
+              } as typeof review;
             }
-            return review
-          })
-          return updated
-        })
+            return review;
+          });
+          return updated;
+        });
       }
-      
-      return { data: fullData, error: null }
-    } catch (err) {
-      console.error('Erro ao responder avaliação:', err)
-      return { 
-        data: null, 
-        error: err instanceof Error ? err.message : 'Erro desconhecido' 
-      }
-    }
-  }
 
+      return { data: fullData, error: null };
+    } catch (err) {
+      console.error("Erro ao responder avaliação:", err);
+      return {
+        data: null,
+        error: err instanceof Error ? err.message : "Erro desconhecido",
+      };
+    }
+  };
 
   // Verificar se usuário pode avaliar outro usuário
-  const canUserReview = async (reviewerId: string, reviewedId: string, adId?: string) => {
+  const canUserReview = async (
+    reviewerId: string,
+    reviewedId: string,
+    adId?: string,
+  ) => {
     try {
       // 1. Não pode avaliar a si mesmo
       if (reviewerId === reviewedId) {
-        return false
+        return false;
       }
 
       // 2. Verificar se já existe uma avaliação
       const { data: existingReview, error: reviewError } = await supabase
-        .from('reviews')
-        .select('id')
-        .eq('reviewer_id', reviewerId)
-        .eq('reviewed_id', reviewedId)
+        .from("reviews")
+        .select("id")
+        .eq("reviewer_id", reviewerId)
+        .eq("reviewed_id", reviewedId);
 
-      if (reviewError) throw reviewError
-      
+      if (reviewError) throw reviewError;
+
       if (existingReview && existingReview.length > 0) {
-        return false // Já existe avaliação
+        return false; // Já existe avaliação
       }
 
       // 3. Verificar se há acordo aceito entre os usuários
       const { data: agreementData, error: agreementError } = await supabase
-        .from('contact_agreements')
-        .select('id, contacts_revealed_at')
+        .from("contact_agreements")
+        .select("id, contacts_revealed_at")
         .or(`client_id.eq.${reviewerId},professional_id.eq.${reviewerId}`)
         .or(`client_id.eq.${reviewedId},professional_id.eq.${reviewedId}`)
-        .eq('status', 'accepted')
+        .eq("status", "accepted");
 
       if (agreementError) {
-        console.error('Erro ao verificar acordos:', agreementError)
-        return false
+        console.error("Erro ao verificar acordos:", agreementError);
+        return false;
       }
 
       // Se não há acordos aceitos, não pode avaliar
       if (!agreementData || agreementData.length === 0) {
-        return false
+        return false;
       }
 
       // 4. Verificar se o acordo foi aceito há pelo menos 20 horas
-      const validAgreement = agreementData.find(agreement => {
-        if (!agreement.contacts_revealed_at) return false
-        
-        const revealedDate = new Date(agreement.contacts_revealed_at)
-        const twentyHoursAgo = new Date(Date.now() - 20 * 60 * 60 * 1000)
-        
-        return revealedDate <= twentyHoursAgo
-      })
+      const validAgreement = agreementData.find((agreement) => {
+        if (!agreement.contacts_revealed_at) return false;
 
-      return !!validAgreement
+        const revealedDate = new Date(agreement.contacts_revealed_at);
+        const twentyHoursAgo = new Date(Date.now() - 20 * 60 * 60 * 1000);
 
+        return revealedDate <= twentyHoursAgo;
+      });
+
+      return !!validAgreement;
     } catch (err) {
-      console.error('Erro ao verificar se pode avaliar:', err)
-      return false
+      console.error("Erro ao verificar se pode avaliar:", err);
+      return false;
     }
-  }
+  };
 
   // Buscar usuários que podem ser avaliados pelo usuário atual
   const getEligibleUsersForReview = async (reviewerId: string) => {
     try {
       const { data, error } = await supabase
-        .from('contact_agreements')
-        .select(`
+        .from("contact_agreements")
+        .select(
+          `
           id,
           client_id,
           professional_id,
@@ -549,68 +588,74 @@ export function useSupabaseReviews() {
           professional:profiles!contact_agreements_professional_id_fkey(
             id, full_name, avatar_url, user_type
           )
-        `)
+        `,
+        )
         .or(`client_id.eq.${reviewerId},professional_id.eq.${reviewerId}`)
-        .eq('status', 'accepted')
-        .not('contacts_revealed_at', 'is', null)
+        .eq("status", "accepted")
+        .not("contacts_revealed_at", "is", null);
 
-      if (error) throw error
+      if (error) throw error;
 
       // Filtrar usuários elegíveis (acordo aceito há pelo menos 20 horas)
-      const eligibleAgreements = data?.filter(agreement => {
-        if (!agreement.contacts_revealed_at) return false
-        
-        const revealedDate = new Date(agreement.contacts_revealed_at)
-        const twentyHoursAgo = new Date(Date.now() - 20 * 60 * 60 * 1000)
-        
-        return revealedDate <= twentyHoursAgo
-      }) || []
+      const eligibleAgreements =
+        data?.filter((agreement) => {
+          if (!agreement.contacts_revealed_at) return false;
+
+          const revealedDate = new Date(agreement.contacts_revealed_at);
+          const twentyHoursAgo = new Date(Date.now() - 20 * 60 * 60 * 1000);
+
+          return revealedDate <= twentyHoursAgo;
+        }) || [];
 
       // Verificar quais usuários já foram avaliados
       const reviewedUserIds = await Promise.all(
         eligibleAgreements.map(async (agreement) => {
-          const otherUserId = agreement.client_id === reviewerId 
-            ? agreement.professional_id 
-            : agreement.client_id
-          
+          const otherUserId =
+            agreement.client_id === reviewerId
+              ? agreement.professional_id
+              : agreement.client_id;
+
           const { data: existingReview } = await supabase
-            .from('reviews')
-            .select('id')
-            .eq('reviewer_id', reviewerId)
-            .eq('reviewed_id', otherUserId)
-            .limit(1)
-          
-          return existingReview && existingReview.length > 0 ? otherUserId : null
-        })
-      )
+            .from("reviews")
+            .select("id")
+            .eq("reviewer_id", reviewerId)
+            .eq("reviewed_id", otherUserId)
+            .limit(1);
+
+          return existingReview && existingReview.length > 0
+            ? otherUserId
+            : null;
+        }),
+      );
 
       // Retornar apenas usuários não avaliados
       const eligibleUsers = eligibleAgreements
-        .map(agreement => {
-          const otherUser = agreement.client_id === reviewerId 
-            ? agreement.professional 
-            : agreement.client
-          
-          // Type assertion para resolver problema de tipagem
-          const user = otherUser as any
-          
-          return {
-            id: user?.id || '',
-            name: user?.full_name || 'Nome não disponível',
-            avatar: user?.avatar_url,
-            userType: user?.user_type || 'user',
-            agreementId: agreement.id,
-            contactsRevealedAt: agreement.contacts_revealed_at
-          }
-        })
-        .filter(user => user.id && !reviewedUserIds.includes(user.id))
+        .map((agreement) => {
+          const otherUser =
+            agreement.client_id === reviewerId
+              ? agreement.professional
+              : agreement.client;
 
-      return eligibleUsers
+          // Type assertion para resolver problema de tipagem
+          const user = otherUser as any;
+
+          return {
+            id: user?.id || "",
+            name: user?.full_name || "Nome não disponível",
+            avatar: user?.avatar_url,
+            userType: user?.user_type || "user",
+            agreementId: agreement.id,
+            contactsRevealedAt: agreement.contacts_revealed_at,
+          };
+        })
+        .filter((user) => user.id && !reviewedUserIds.includes(user.id));
+
+      return eligibleUsers;
     } catch (err) {
-      console.error('Erro ao buscar usuários elegíveis:', err)
-      return []
+      console.error("Erro ao buscar usuários elegíveis:", err);
+      return [];
     }
-  }
+  };
 
   return {
     reviews,
@@ -623,6 +668,6 @@ export function useSupabaseReviews() {
     deleteReview,
     respondToReview,
     canUserReview,
-    getEligibleUsersForReview
-  }
+    getEligibleUsersForReview,
+  };
 }

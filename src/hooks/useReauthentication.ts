@@ -1,105 +1,115 @@
-'use client'
+"use client";
 
-import { useState, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
-import { toast } from 'sonner'
+import { useState, useCallback } from "react";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export interface ReauthenticationState {
-  isLoading: boolean
-  isReauthenticated: boolean
-  error: string | null
-  otpSent: boolean
-  otpVerified: boolean
+  isLoading: boolean;
+  isReauthenticated: boolean;
+  error: string | null;
+  otpSent: boolean;
+  otpVerified: boolean;
 }
 
 export interface ReauthenticationActions {
-  requestReauthentication: () => Promise<{ error: { message: string } | null }>
-  verifyOTP: (otp: string) => Promise<{ error: { message: string } | null }>
-  resetReauthentication: () => void
-  checkReauthenticationRequired: (action: 'password' | 'email') => Promise<boolean>
+  requestReauthentication: () => Promise<{ error: { message: string } | null }>;
+  verifyOTP: (otp: string) => Promise<{ error: { message: string } | null }>;
+  resetReauthentication: () => void;
+  checkReauthenticationRequired: (
+    action: "password" | "email",
+  ) => Promise<boolean>;
 }
 
-export function useReauthentication(): ReauthenticationState & ReauthenticationActions {
-  const [isLoading, setIsLoading] = useState(false)
-  const [isReauthenticated, setIsReauthenticated] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [otpSent, setOtpSent] = useState(false)
-  const [otpVerified, setOtpVerified] = useState(false)
+export function useReauthentication(): ReauthenticationState &
+  ReauthenticationActions {
+  const [isLoading, setIsLoading] = useState(false);
+  const [isReauthenticated, setIsReauthenticated] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
 
   // Solicitar reautenticação
   const requestReauthentication = useCallback(async () => {
-    console.log('🔐 Solicitando reautenticação...')
-    setIsLoading(true)
-    setError(null)
-    
+    console.log("🔐 Solicitando reautenticação...");
+    setIsLoading(true);
+    setError(null);
+
     try {
       // Obter email do usuário atual
-      const { data: { user } } = await supabase.auth.getUser()
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user?.email) {
-        const error = { message: 'Usuário não encontrado' }
-        setError(error.message)
-        setIsLoading(false)
-        return { error }
+        const error = { message: "Usuário não encontrado" };
+        setError(error.message);
+        setIsLoading(false);
+        return { error };
       }
 
       // Enviar código OTP numérico para reautenticação usando nossa API
       // Isso garante que um código OTP numérico seja enviado, não um magic link
-      const response = await fetch('/api/auth/resend-reauth-otp', {
-        method: 'POST',
+      const response = await fetch("/api/auth/resend-reauth-otp", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
-        }
-      })
+          "Content-Type": "application/json",
+        },
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (!response.ok) {
-        const error = { message: result.error || 'Erro ao enviar código de verificação' }
-        console.error('❌ Erro na reautenticação:', error)
-        setError(error.message)
-        setIsLoading(false)
-        return { error }
+        const error = {
+          message: result.error || "Erro ao enviar código de verificação",
+        };
+        console.error("❌ Erro na reautenticação:", error);
+        setError(error.message);
+        setIsLoading(false);
+        return { error };
       }
 
-      console.log('✅ Código OTP enviado com sucesso')
-      setOtpSent(true)
-      setIsLoading(false)
-      toast.success('Código de verificação enviado para seu email!')
-      
-      return { error: null }
+      console.log("✅ Código OTP enviado com sucesso");
+      setOtpSent(true);
+      setIsLoading(false);
+      toast.success("Código de verificação enviado para seu email!");
+
+      return { error: null };
     } catch (error) {
-      console.error('💥 Erro crítico na reautenticação:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
-      setError(errorMessage)
-      setIsLoading(false)
-      return { error: { message: errorMessage } }
+      console.error("💥 Erro crítico na reautenticação:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Erro desconhecido";
+      setError(errorMessage);
+      setIsLoading(false);
+      return { error: { message: errorMessage } };
     }
-  }, [])
+  }, []);
 
   // Verificar código OTP
   const verifyOTP = useCallback(async (otp: string) => {
-    console.log('🔐 Verificando código OTP...')
-    setIsLoading(true)
-    setError(null)
-    
+    console.log("🔐 Verificando código OTP...");
+    setIsLoading(true);
+    setError(null);
+
     try {
       // Validar formato do código
       if (!otp || otp.length !== 6 || !/^\d+$/.test(otp)) {
-        const error = { message: 'Código deve ter 6 dígitos' }
-        setError(error.message)
-        setIsLoading(false)
-        return { error }
+        const error = { message: "Código deve ter 6 dígitos" };
+        setError(error.message);
+        setIsLoading(false);
+        return { error };
       }
 
       // Obter email do usuário atual
-      const { data: { user } } = await supabase.auth.getUser()
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user?.email) {
-        const error = { message: 'Usuário não encontrado' }
-        setError(error.message)
-        setIsLoading(false)
-        return { error }
+        const error = { message: "Usuário não encontrado" };
+        setError(error.message);
+        setIsLoading(false);
+        return { error };
       }
 
       // Verificar código OTP usando a API oficial do Supabase
@@ -107,113 +117,131 @@ export function useReauthentication(): ReauthenticationState & ReauthenticationA
       const { data, error: verifyError } = await supabase.auth.verifyOtp({
         email: user.email,
         token: otp,
-        type: 'email' // Tipo correto para signInWithOtp
-      })
+        type: "email", // Tipo correto para signInWithOtp
+      });
 
       if (verifyError) {
-        console.error('❌ Erro ao verificar OTP:', verifyError)
-        setError(verifyError.message)
-        setIsLoading(false)
-        return { error: verifyError }
+        console.error("❌ Erro ao verificar OTP:", verifyError);
+        setError(verifyError.message);
+        setIsLoading(false);
+        return { error: verifyError };
       }
 
       if (!data.session) {
-        const error = { message: 'Código inválido ou expirado' }
-        setError(error.message)
-        setIsLoading(false)
-        return { error }
+        const error = { message: "Código inválido ou expirado" };
+        setError(error.message);
+        setIsLoading(false);
+        return { error };
       }
 
-      console.log('✅ OTP verificado com sucesso')
-      setOtpVerified(true)
-      setIsReauthenticated(true)
-      setIsLoading(false)
-      toast.success('Reautenticação confirmada!')
-      
+      console.log("✅ OTP verificado com sucesso");
+      setOtpVerified(true);
+      setIsReauthenticated(true);
+      setIsLoading(false);
+      toast.success("Reautenticação confirmada!");
+
       // Salvar sessão de reautenticação (válida por 1 hora)
-      sessionStorage.setItem('reauth_session', JSON.stringify({
-        timestamp: new Date().toISOString(),
-        user_id: user.id
-      }))
-      
-      return { error: null }
+      sessionStorage.setItem(
+        "reauth_session",
+        JSON.stringify({
+          timestamp: new Date().toISOString(),
+          user_id: user.id,
+        }),
+      );
+
+      return { error: null };
     } catch (error) {
-      console.error('💥 Erro crítico na verificação do OTP:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
-      setError(errorMessage)
-      setIsLoading(false)
-      return { error: { message: errorMessage } }
+      console.error("💥 Erro crítico na verificação do OTP:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Erro desconhecido";
+      setError(errorMessage);
+      setIsLoading(false);
+      return { error: { message: errorMessage } };
     }
-  }, [])
+  }, []);
 
   // Resetar estado de reautenticação
   const resetReauthentication = useCallback(() => {
-    console.log('🔄 Resetando estado de reautenticação...')
-    setIsReauthenticated(false)
-    setError(null)
-    setOtpSent(false)
-    setOtpVerified(false)
-    setIsLoading(false)
-  }, [])
+    console.log("🔄 Resetando estado de reautenticação...");
+    setIsReauthenticated(false);
+    setError(null);
+    setOtpSent(false);
+    setOtpVerified(false);
+    setIsLoading(false);
+  }, []);
 
   // Verificar se reautenticação é necessária
-  const checkReauthenticationRequired = useCallback(async (action: 'password' | 'email'): Promise<boolean> => {
-    console.log(`🔍 Verificando se reautenticação é necessária para: ${action}`)
-    
-    try {
-      // Verificar última atividade do usuário
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (!session?.user) {
-        console.log('❌ Usuário não autenticado')
-        return false
-      }
+  const checkReauthenticationRequired = useCallback(
+    async (action: "password" | "email"): Promise<boolean> => {
+      console.log(
+        `🔍 Verificando se reautenticação é necessária para: ${action}`,
+      );
 
-      // Verificar se a sessão é recente (menos de 24 horas)
-      const lastSignIn = session.user.last_sign_in_at
-      if (lastSignIn) {
-        const lastSignInDate = new Date(lastSignIn)
-        const now = new Date()
-        const hoursSinceLastSignIn = (now.getTime() - lastSignInDate.getTime()) / (1000 * 60 * 60)
-        
-        console.log(`⏰ Horas desde último login: ${hoursSinceLastSignIn}`)
-        
-        // Se passou mais de 24 horas, requer reautenticação
-        if (hoursSinceLastSignIn > 24) {
-          console.log('⚠️ Reautenticação necessária - sessão expirada')
-          return true
-        }
-      }
+      try {
+        // Verificar última atividade do usuário
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      // Para ações sensíveis, sempre requerer reautenticação se não foi feita recentemente
-      if (action === 'password' || action === 'email') {
-        // Verificar se há uma sessão de reautenticação ativa
-        const reauthSession = sessionStorage.getItem('reauth_session')
-        if (!reauthSession) {
-          console.log('⚠️ Reautenticação necessária - ação sensível')
-          return true
+        if (!session?.user) {
+          console.log("❌ Usuário não autenticado");
+          return false;
         }
-        
-        // Verificar se a sessão de reautenticação ainda é válida (1 hora)
-        const reauthData = JSON.parse(reauthSession)
-        const reauthTime = new Date(reauthData.timestamp)
-        const now = new Date()
-        const hoursSinceReauth = (now.getTime() - reauthTime.getTime()) / (1000 * 60 * 60)
-        
-        if (hoursSinceReauth > 1) {
-          console.log('⚠️ Reautenticação necessária - sessão de reautenticação expirada')
-          return true
-        }
-      }
 
-      console.log('✅ Reautenticação não necessária')
-      return false
-    } catch (error) {
-      console.error('❌ Erro ao verificar necessidade de reautenticação:', error)
-      // Em caso de erro, assumir que reautenticação é necessária por segurança
-      return true
-    }
-  }, [])
+        // Verificar se a sessão é recente (menos de 24 horas)
+        const lastSignIn = session.user.last_sign_in_at;
+        if (lastSignIn) {
+          const lastSignInDate = new Date(lastSignIn);
+          const now = new Date();
+          const hoursSinceLastSignIn =
+            (now.getTime() - lastSignInDate.getTime()) / (1000 * 60 * 60);
+
+          console.log(`⏰ Horas desde último login: ${hoursSinceLastSignIn}`);
+
+          // Se passou mais de 24 horas, requer reautenticação
+          if (hoursSinceLastSignIn > 24) {
+            console.log("⚠️ Reautenticação necessária - sessão expirada");
+            return true;
+          }
+        }
+
+        // Para ações sensíveis, sempre requerer reautenticação se não foi feita recentemente
+        if (action === "password" || action === "email") {
+          // Verificar se há uma sessão de reautenticação ativa
+          const reauthSession = sessionStorage.getItem("reauth_session");
+          if (!reauthSession) {
+            console.log("⚠️ Reautenticação necessária - ação sensível");
+            return true;
+          }
+
+          // Verificar se a sessão de reautenticação ainda é válida (1 hora)
+          const reauthData = JSON.parse(reauthSession);
+          const reauthTime = new Date(reauthData.timestamp);
+          const now = new Date();
+          const hoursSinceReauth =
+            (now.getTime() - reauthTime.getTime()) / (1000 * 60 * 60);
+
+          if (hoursSinceReauth > 1) {
+            console.log(
+              "⚠️ Reautenticação necessária - sessão de reautenticação expirada",
+            );
+            return true;
+          }
+        }
+
+        console.log("✅ Reautenticação não necessária");
+        return false;
+      } catch (error) {
+        console.error(
+          "❌ Erro ao verificar necessidade de reautenticação:",
+          error,
+        );
+        // Em caso de erro, assumir que reautenticação é necessária por segurança
+        return true;
+      }
+    },
+    [],
+  );
 
   return {
     isLoading,
@@ -224,6 +252,6 @@ export function useReauthentication(): ReauthenticationState & ReauthenticationA
     requestReauthentication,
     verifyOTP,
     resetReauthentication,
-    checkReauthenticationRequired
-  }
+    checkReauthenticationRequired,
+  };
 }

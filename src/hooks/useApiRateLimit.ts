@@ -1,186 +1,217 @@
-import { useCallback } from 'react'
-import { useRateLimit, RateLimitConfigs } from '@/hooks/useRateLimit'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { logger } from '@/lib/logger'
+import { useCallback } from "react";
+import { useRateLimit, RateLimitConfigs } from "@/hooks/useRateLimit";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { logger } from "@/lib/logger";
 
 interface ApiRateLimitOptions {
-  endpoint: string
-  method: string
+  endpoint: string;
+  method: string;
   customConfig?: {
-    maxAttempts: number
-    windowMs: number
-    blockDurationMs?: number
-  }
+    maxAttempts: number;
+    windowMs: number;
+    blockDurationMs?: number;
+  };
 }
 
 export function useApiRateLimit() {
-  const { checkRateLimit, recordAttempt } = useRateLimit()
-  const { user } = useAuthContext()
+  const { checkRateLimit, recordAttempt } = useRateLimit();
+  const { user } = useAuthContext();
 
-  const checkApiRateLimit = useCallback(async (options: ApiRateLimitOptions): Promise<{
-    allowed: boolean
-    retryAfter?: number
-    remainingAttempts: number
-  }> => {
-    const identifier = user?.id || 'anonymous'
-    const config = options.customConfig || RateLimitConfigs.API_REQUESTS
-    
-    const result = checkRateLimit(identifier, {
-      ...config,
-      identifier: `api_${options.endpoint}_${options.method}`
-    })
+  const checkApiRateLimit = useCallback(
+    async (
+      options: ApiRateLimitOptions,
+    ): Promise<{
+      allowed: boolean;
+      retryAfter?: number;
+      remainingAttempts: number;
+    }> => {
+      const identifier = user?.id || "anonymous";
+      const config = options.customConfig || RateLimitConfigs.API_REQUESTS;
 
-    if (!result.allowed) {
-      logger.warn('api-rate-limit', `Rate limit exceeded for ${options.endpoint}`, {
-        endpoint: options.endpoint,
-        method: options.method,
-        identifier,
+      const result = checkRateLimit(identifier, {
+        ...config,
+        identifier: `api_${options.endpoint}_${options.method}`,
+      });
+
+      if (!result.allowed) {
+        logger.warn(
+          "api-rate-limit",
+          `Rate limit exceeded for ${options.endpoint}`,
+          {
+            endpoint: options.endpoint,
+            method: options.method,
+            identifier,
+            remainingAttempts: result.remainingAttempts,
+            isBlocked: result.isBlocked,
+            retryAfter: result.retryAfter,
+          },
+        );
+      }
+
+      return {
+        allowed: result.allowed,
+        retryAfter: result.retryAfter,
         remainingAttempts: result.remainingAttempts,
-        isBlocked: result.isBlocked,
-        retryAfter: result.retryAfter
-      })
-    }
+      };
+    },
+    [checkRateLimit, user?.id],
+  );
 
-    return {
-      allowed: result.allowed,
-      retryAfter: result.retryAfter,
-      remainingAttempts: result.remainingAttempts
-    }
-  }, [checkRateLimit, user?.id])
+  const recordApiAttempt = useCallback(
+    (options: ApiRateLimitOptions) => {
+      const identifier = user?.id || "anonymous";
+      const config = options.customConfig || RateLimitConfigs.API_REQUESTS;
 
-  const recordApiAttempt = useCallback((options: ApiRateLimitOptions) => {
-    const identifier = user?.id || 'anonymous'
-    const config = options.customConfig || RateLimitConfigs.API_REQUESTS
-    
-    recordAttempt(identifier, {
-      ...config,
-      identifier: `api_${options.endpoint}_${options.method}`
-    })
+      recordAttempt(identifier, {
+        ...config,
+        identifier: `api_${options.endpoint}_${options.method}`,
+      });
 
-    logger.debug('api-rate-limit', `API attempt recorded for ${options.endpoint}`, {
-      endpoint: options.endpoint,
-      method: options.method,
-      identifier
-    })
-  }, [recordAttempt, user?.id])
+      logger.debug(
+        "api-rate-limit",
+        `API attempt recorded for ${options.endpoint}`,
+        {
+          endpoint: options.endpoint,
+          method: options.method,
+          identifier,
+        },
+      );
+    },
+    [recordAttempt, user?.id],
+  );
 
-  const withRateLimit = useCallback(async <T>(
-    apiCall: () => Promise<T>,
-    options: ApiRateLimitOptions
-  ): Promise<T> => {
-    // Verificar rate limit antes da chamada
-    const rateLimitResult = await checkApiRateLimit(options)
-    
-    if (!rateLimitResult.allowed) {
-      throw new Error(
-        rateLimitResult.retryAfter 
-          ? `Rate limit exceeded. Try again in ${rateLimitResult.retryAfter} seconds.`
-          : 'Rate limit exceeded. Please try again later.'
-      )
-    }
+  const withRateLimit = useCallback(
+    async <T>(
+      apiCall: () => Promise<T>,
+      options: ApiRateLimitOptions,
+    ): Promise<T> => {
+      // Verificar rate limit antes da chamada
+      const rateLimitResult = await checkApiRateLimit(options);
 
-    try {
-      // Fazer a chamada da API
-      const result = await apiCall()
-      return result
-    } catch (error) {
-      // Registrar tentativa falhada
-      recordApiAttempt(options)
-      throw error
-    }
-  }, [checkApiRateLimit, recordApiAttempt])
+      if (!rateLimitResult.allowed) {
+        throw new Error(
+          rateLimitResult.retryAfter
+            ? `Rate limit exceeded. Try again in ${rateLimitResult.retryAfter} seconds.`
+            : "Rate limit exceeded. Please try again later.",
+        );
+      }
+
+      try {
+        // Fazer a chamada da API
+        const result = await apiCall();
+        return result;
+      } catch (error) {
+        // Registrar tentativa falhada
+        recordApiAttempt(options);
+        throw error;
+      }
+    },
+    [checkApiRateLimit, recordApiAttempt],
+  );
 
   return {
     checkApiRateLimit,
     recordApiAttempt,
-    withRateLimit
-  }
+    withRateLimit,
+  };
 }
 
 // Hook específico para operações de mensagens
 export function useMessageRateLimit() {
-  const { checkRateLimit, recordAttempt } = useRateLimit()
-  const { user } = useAuthContext()
+  const { checkRateLimit, recordAttempt } = useRateLimit();
+  const { user } = useAuthContext();
 
   const checkMessageRateLimit = useCallback(async (): Promise<{
-    allowed: boolean
-    retryAfter?: number
-    remainingAttempts: number
+    allowed: boolean;
+    retryAfter?: number;
+    remainingAttempts: number;
   }> => {
-    const identifier = user?.id || 'anonymous'
-    const result = checkRateLimit(identifier, RateLimitConfigs.MESSAGE_SENDING)
+    const identifier = user?.id || "anonymous";
+    const result = checkRateLimit(identifier, RateLimitConfigs.MESSAGE_SENDING);
 
     if (!result.allowed) {
-      logger.warn('message-rate-limit', `Message rate limit exceeded for ${identifier}`, {
-        identifier,
-        remainingAttempts: result.remainingAttempts,
-        isBlocked: result.isBlocked,
-        retryAfter: result.retryAfter
-      })
+      logger.warn(
+        "message-rate-limit",
+        `Message rate limit exceeded for ${identifier}`,
+        {
+          identifier,
+          remainingAttempts: result.remainingAttempts,
+          isBlocked: result.isBlocked,
+          retryAfter: result.retryAfter,
+        },
+      );
     }
 
     return {
       allowed: result.allowed,
       retryAfter: result.retryAfter,
-      remainingAttempts: result.remainingAttempts
-    }
-  }, [checkRateLimit, user?.id])
+      remainingAttempts: result.remainingAttempts,
+    };
+  }, [checkRateLimit, user?.id]);
 
   const recordMessageAttempt = useCallback(() => {
-    const identifier = user?.id || 'anonymous'
-    recordAttempt(identifier, RateLimitConfigs.MESSAGE_SENDING)
+    const identifier = user?.id || "anonymous";
+    recordAttempt(identifier, RateLimitConfigs.MESSAGE_SENDING);
 
-    logger.debug('message-rate-limit', `Message attempt recorded for ${identifier}`, {
-      identifier
-    })
-  }, [recordAttempt, user?.id])
+    logger.debug(
+      "message-rate-limit",
+      `Message attempt recorded for ${identifier}`,
+      {
+        identifier,
+      },
+    );
+  }, [recordAttempt, user?.id]);
 
   return {
     checkMessageRateLimit,
-    recordMessageAttempt
-  }
+    recordMessageAttempt,
+  };
 }
 
 // Hook específico para criação de posts
 export function usePostRateLimit() {
-  const { checkRateLimit, recordAttempt } = useRateLimit()
-  const { user } = useAuthContext()
+  const { checkRateLimit, recordAttempt } = useRateLimit();
+  const { user } = useAuthContext();
 
   const checkPostRateLimit = useCallback(async (): Promise<{
-    allowed: boolean
-    retryAfter?: number
-    remainingAttempts: number
+    allowed: boolean;
+    retryAfter?: number;
+    remainingAttempts: number;
   }> => {
-    const identifier = user?.id || 'anonymous'
-    const result = checkRateLimit(identifier, RateLimitConfigs.POST_CREATION)
+    const identifier = user?.id || "anonymous";
+    const result = checkRateLimit(identifier, RateLimitConfigs.POST_CREATION);
 
     if (!result.allowed) {
-      logger.warn('post-rate-limit', `Post rate limit exceeded for ${identifier}`, {
-        identifier,
-        remainingAttempts: result.remainingAttempts,
-        isBlocked: result.isBlocked,
-        retryAfter: result.retryAfter
-      })
+      logger.warn(
+        "post-rate-limit",
+        `Post rate limit exceeded for ${identifier}`,
+        {
+          identifier,
+          remainingAttempts: result.remainingAttempts,
+          isBlocked: result.isBlocked,
+          retryAfter: result.retryAfter,
+        },
+      );
     }
 
     return {
       allowed: result.allowed,
       retryAfter: result.retryAfter,
-      remainingAttempts: result.remainingAttempts
-    }
-  }, [checkRateLimit, user?.id])
+      remainingAttempts: result.remainingAttempts,
+    };
+  }, [checkRateLimit, user?.id]);
 
   const recordPostAttempt = useCallback(() => {
-    const identifier = user?.id || 'anonymous'
-    recordAttempt(identifier, RateLimitConfigs.POST_CREATION)
+    const identifier = user?.id || "anonymous";
+    recordAttempt(identifier, RateLimitConfigs.POST_CREATION);
 
-    logger.debug('post-rate-limit', `Post attempt recorded for ${identifier}`, {
-      identifier
-    })
-  }, [recordAttempt, user?.id])
+    logger.debug("post-rate-limit", `Post attempt recorded for ${identifier}`, {
+      identifier,
+    });
+  }, [recordAttempt, user?.id]);
 
   return {
     checkPostRateLimit,
-    recordPostAttempt
-  }
+    recordPostAttempt,
+  };
 }

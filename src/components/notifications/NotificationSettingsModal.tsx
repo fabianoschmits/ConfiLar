@@ -1,29 +1,41 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
-import { Separator } from '@/components/ui/separator'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  Bell, 
-  BellOff, 
-  Settings, 
-  Send, 
-  Trash2, 
-  CheckCircle, 
-  AlertCircle, 
-  MessageCircle, 
-  Star, 
-  Calendar, 
-  Shield, 
-  Trophy, 
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Bell,
+  BellOff,
+  Settings,
+  Send,
+  Trash2,
+  CheckCircle,
+  AlertCircle,
+  MessageCircle,
+  Star,
+  Calendar,
+  Shield,
+  Trophy,
   Info,
   Clock,
   Zap,
@@ -38,222 +50,279 @@ import {
   Search,
   MoreHorizontal,
   ChevronDown,
-  ChevronUp
-} from 'lucide-react'
-import { useAuth } from '@/hooks/useUnifiedAuth'
-import { usePushNotifications } from '@/hooks/usePushNotifications'
-import { useNotifications } from './NotificationProviderSimple'
-import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
-import { formatDistanceToNow } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
-import { 
+  ChevronUp,
+} from "lucide-react";
+import { useAuth } from "@/hooks/useUnifiedAuth";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useNotifications } from "./NotificationProviderSimple";
+import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { 
+} from "@/components/ui/dropdown-menu";
+import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from '@/components/ui/sheet'
-import { toast } from 'sonner'
+} from "@/components/ui/sheet";
+import { toast } from "sonner";
 
 interface NotificationSettingsModalProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 // Tipos de notificação disponíveis
 const NOTIFICATION_TYPES = [
-  { value: 'message', label: 'Mensagem de Chat', icon: MessageCircle, color: 'bg-blue-500' },
-  { value: 'review', label: 'Avaliação', icon: Star, color: 'bg-yellow-500' },
-  { value: 'booking', label: 'Agendamento', icon: Calendar, color: 'bg-green-500' },
-  { value: 'system', label: 'Sistema', icon: Settings, color: 'bg-gray-500' },
-  { value: 'achievement', label: 'Conquista', icon: Trophy, color: 'bg-purple-500' },
-  { value: 'verification', label: 'Verificação', icon: Shield, color: 'bg-indigo-500' },
-  { value: 'success', label: 'Sucesso', icon: CheckCircle, color: 'bg-emerald-500' },
-  { value: 'warning', label: 'Aviso', icon: AlertCircle, color: 'bg-orange-500' },
-  { value: 'error', label: 'Erro', icon: AlertCircle, color: 'bg-red-500' },
-  { value: 'header', label: 'Header', icon: Bell, color: 'bg-cyan-500' }
-]
+  {
+    value: "message",
+    label: "Mensagem de Chat",
+    icon: MessageCircle,
+    color: "bg-blue-500",
+  },
+  { value: "review", label: "Avaliação", icon: Star, color: "bg-yellow-500" },
+  {
+    value: "booking",
+    label: "Agendamento",
+    icon: Calendar,
+    color: "bg-green-500",
+  },
+  { value: "system", label: "Sistema", icon: Settings, color: "bg-gray-500" },
+  {
+    value: "achievement",
+    label: "Conquista",
+    icon: Trophy,
+    color: "bg-purple-500",
+  },
+  {
+    value: "verification",
+    label: "Verificação",
+    icon: Shield,
+    color: "bg-indigo-500",
+  },
+  {
+    value: "success",
+    label: "Sucesso",
+    icon: CheckCircle,
+    color: "bg-emerald-500",
+  },
+  {
+    value: "warning",
+    label: "Aviso",
+    icon: AlertCircle,
+    color: "bg-orange-500",
+  },
+  { value: "error", label: "Erro", icon: AlertCircle, color: "bg-red-500" },
+  { value: "header", label: "Header", icon: Bell, color: "bg-cyan-500" },
+];
 
 // Prioridades disponíveis
 const PRIORITY_LEVELS = [
-  { value: 'low', label: 'Baixa', color: 'bg-gray-100 text-gray-800' },
-  { value: 'normal', label: 'Normal', color: 'bg-blue-100 text-blue-800' },
-  { value: 'high', label: 'Alta', color: 'bg-orange-100 text-orange-800' },
-  { value: 'urgent', label: 'Urgente', color: 'bg-red-100 text-red-800' }
-]
+  { value: "low", label: "Baixa", color: "bg-gray-100 text-gray-800" },
+  { value: "normal", label: "Normal", color: "bg-blue-100 text-blue-800" },
+  { value: "high", label: "Alta", color: "bg-orange-100 text-orange-800" },
+  { value: "urgent", label: "Urgente", color: "bg-red-100 text-red-800" },
+];
 
-export function NotificationSettingsModal({ isOpen, onClose }: NotificationSettingsModalProps) {
-  const { user } = useAuth()
-  const { 
-    isSupported, 
-    isGranted, 
-    isSubscribed, 
-    isLoading, 
-    error, 
-    requestPermission, 
-    subscribe, 
-    unsubscribe 
-  } = usePushNotifications()
-  
-  const { 
-    notifications, 
-    unreadCount, 
-    addNotification, 
-    markAsRead, 
-    markAllAsRead, 
-    removeNotification, 
-    clearAll 
-  } = useNotifications()
-  
-  const { openChat } = useFloatingChat()
+export function NotificationSettingsModal({
+  isOpen,
+  onClose,
+}: NotificationSettingsModalProps) {
+  const { user } = useAuth();
+  const {
+    isSupported,
+    isGranted,
+    isSubscribed,
+    isLoading,
+    error,
+    requestPermission,
+    subscribe,
+    unsubscribe,
+  } = usePushNotifications();
+
+  const {
+    notifications,
+    unreadCount,
+    addNotification,
+    markAsRead,
+    markAllAsRead,
+    removeNotification,
+    clearAll,
+  } = useNotifications();
+
+  const { openChat } = useFloatingChat();
 
   // Estados do formulário
   const [formData, setFormData] = useState({
-    type: 'message',
-    title: '',
-    message: '',
-    priority: 'normal',
-    actionUrl: ''
-  })
+    type: "message",
+    title: "",
+    message: "",
+    priority: "normal",
+    actionUrl: "",
+  });
 
   // Estados dos filtros
-  const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedType, setSelectedType] = useState<string>('all')
-  const [showFilters, setShowFilters] = useState(false)
+  const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedType, setSelectedType] = useState<string>("all");
+  const [showFilters, setShowFilters] = useState(false);
 
   // Filtrar notificações
-  const filteredNotifications = notifications.filter(notification => {
-    const matchesFilter = filter === 'all' || 
-      (filter === 'unread' && !notification.is_read) ||
-      (filter === 'read' && notification.is_read)
-    
-    const matchesSearch = searchTerm === '' || 
+  const filteredNotifications = notifications.filter((notification) => {
+    const matchesFilter =
+      filter === "all" ||
+      (filter === "unread" && !notification.is_read) ||
+      (filter === "read" && notification.is_read);
+
+    const matchesSearch =
+      searchTerm === "" ||
       notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      notification.message?.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesType = selectedType === 'all' || notification.type === selectedType
-    
-    return matchesFilter && matchesSearch && matchesType
-  })
+      notification.message?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesType =
+      selectedType === "all" || notification.type === selectedType;
+
+    return matchesFilter && matchesSearch && matchesType;
+  });
 
   // Obter tipos únicos para filtro
-  const uniqueTypes = Array.from(new Set(notifications.map(n => n.type)))
+  const uniqueTypes = Array.from(new Set(notifications.map((n) => n.type)));
 
   // Função para enviar notificação
   const handleSendNotification = () => {
     if (!formData.title.trim()) {
-      toast.error('Título é obrigatório')
-      return
+      toast.error("Título é obrigatório");
+      return;
     }
 
     const notification = {
-      type: formData.type as "error" | "success" | "message" | "review" | "info" | "system" | "warning" | "booking" | "verification" | "achievement",
+      type: formData.type as
+        | "error"
+        | "success"
+        | "message"
+        | "review"
+        | "info"
+        | "system"
+        | "warning"
+        | "booking"
+        | "verification"
+        | "achievement",
       title: formData.title,
-      message: formData.message || '',
+      message: formData.message || "",
       priority: formData.priority as "low" | "high" | "normal" | "urgent",
       action_url: formData.actionUrl || null,
-      user_id: user?.id || 'test'
-    }
+      user_id: user?.id || "test",
+    };
 
-    addNotification(notification)
-    toast.success('Notificação adicionada!')
-    
+    addNotification(notification);
+    toast.success("Notificação adicionada!");
+
     // Limpar formulário
     setFormData({
-      type: 'message',
-      title: '',
-      message: '',
-      priority: 'normal',
-      actionUrl: ''
-    })
-  }
+      type: "message",
+      title: "",
+      message: "",
+      priority: "normal",
+      actionUrl: "",
+    });
+  };
 
   // Função para adicionar notificação de exemplo
   const addExampleNotification = (type: string) => {
     const examples = {
       message: {
-        title: 'Nova mensagem de João',
-        message: 'Olá! Como está o projeto?',
-        priority: 'normal'
+        title: "Nova mensagem de João",
+        message: "Olá! Como está o projeto?",
+        priority: "normal",
       },
       review: {
-        title: 'Nova avaliação recebida',
-        message: 'Maria avaliou seu serviço com 5 estrelas',
-        priority: 'high'
+        title: "Nova avaliação recebida",
+        message: "Maria avaliou seu serviço com 5 estrelas",
+        priority: "high",
       },
       booking: {
-        title: 'Agendamento confirmado',
-        message: 'Seu agendamento para amanhã foi confirmado',
-        priority: 'normal'
+        title: "Agendamento confirmado",
+        message: "Seu agendamento para amanhã foi confirmado",
+        priority: "normal",
       },
       system: {
-        title: 'Sistema atualizado',
-        message: 'Nova versão disponível com melhorias',
-        priority: 'low'
+        title: "Sistema atualizado",
+        message: "Nova versão disponível com melhorias",
+        priority: "low",
       },
       achievement: {
-        title: 'Nova conquista desbloqueada',
-        message: 'Você completou 10 serviços!',
-        priority: 'high'
+        title: "Nova conquista desbloqueada",
+        message: "Você completou 10 serviços!",
+        priority: "high",
       },
       verification: {
-        title: 'Perfil verificado',
-        message: 'Seu perfil foi verificado com sucesso',
-        priority: 'normal'
+        title: "Perfil verificado",
+        message: "Seu perfil foi verificado com sucesso",
+        priority: "normal",
       },
       success: {
-        title: 'Ação realizada com sucesso',
-        message: 'Sua solicitação foi processada',
-        priority: 'normal'
+        title: "Ação realizada com sucesso",
+        message: "Sua solicitação foi processada",
+        priority: "normal",
       },
       warning: {
-        title: 'Aviso importante',
-        message: 'Sua assinatura expira em 7 dias',
-        priority: 'high'
+        title: "Aviso importante",
+        message: "Sua assinatura expira em 7 dias",
+        priority: "high",
       },
       error: {
-        title: 'Erro no sistema',
-        message: 'Falha ao processar sua solicitação',
-        priority: 'urgent'
+        title: "Erro no sistema",
+        message: "Falha ao processar sua solicitação",
+        priority: "urgent",
       },
       header: {
-        title: 'Notificação do Header',
-        message: 'Esta é uma notificação de teste criada pelo componente do header',
-        priority: 'normal'
-      }
-    }
+        title: "Notificação do Header",
+        message:
+          "Esta é uma notificação de teste criada pelo componente do header",
+        priority: "normal",
+      },
+    };
 
-    const example = examples[type as keyof typeof examples]
+    const example = examples[type as keyof typeof examples];
     if (example) {
       addNotification({
-        type: type as "error" | "success" | "message" | "review" | "info" | "system" | "warning" | "booking" | "verification" | "achievement",
+        type: type as
+          | "error"
+          | "success"
+          | "message"
+          | "review"
+          | "info"
+          | "system"
+          | "warning"
+          | "booking"
+          | "verification"
+          | "achievement",
         title: example.title,
         message: example.message,
         priority: example.priority as "low" | "high" | "normal" | "urgent",
         action_url: null,
-        user_id: user?.id || 'test'
-      })
-      toast.success('Notificação de exemplo adicionada!')
+        user_id: user?.id || "test",
+      });
+      toast.success("Notificação de exemplo adicionada!");
     }
-  }
+  };
 
   // Limpar filtros
   const clearFilters = () => {
-    setFilter('all')
-    setSearchTerm('')
-    setSelectedType('all')
-    setShowFilters(false)
-  }
+    setFilter("all");
+    setSearchTerm("");
+    setSelectedType("all");
+    setShowFilters(false);
+  };
 
-  if (!user) return null
+  if (!user) return null;
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -288,14 +357,25 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
         <div className="flex-1 overflow-hidden flex flex-col">
           <Tabs defaultValue="notifications" className="flex-1 flex flex-col">
             <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 mx-6 mt-4">
-              <TabsTrigger value="notifications" className="text-xs sm:text-sm">Notificações</TabsTrigger>
-              <TabsTrigger value="create" className="text-xs sm:text-sm">Criar</TabsTrigger>
-              <TabsTrigger value="settings" className="text-xs sm:text-sm">Configurações</TabsTrigger>
-              <TabsTrigger value="status" className="text-xs sm:text-sm">Status</TabsTrigger>
+              <TabsTrigger value="notifications" className="text-xs sm:text-sm">
+                Notificações
+              </TabsTrigger>
+              <TabsTrigger value="create" className="text-xs sm:text-sm">
+                Criar
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="text-xs sm:text-sm">
+                Configurações
+              </TabsTrigger>
+              <TabsTrigger value="status" className="text-xs sm:text-sm">
+                Status
+              </TabsTrigger>
             </TabsList>
 
             {/* Aba de Notificações */}
-            <TabsContent value="notifications" className="flex-1 overflow-hidden flex flex-col m-6 mt-4">
+            <TabsContent
+              value="notifications"
+              className="flex-1 overflow-hidden flex flex-col m-6 mt-4"
+            >
               {/* Barra de Busca e Filtros */}
               <div className="mb-4">
                 <div className="space-y-3">
@@ -320,23 +400,27 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                     >
                       <Filter className="w-3 h-3 mr-1" />
                       Filtros
-                      {showFilters ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />}
+                      {showFilters ? (
+                        <ChevronUp className="w-3 h-3 ml-1" />
+                      ) : (
+                        <ChevronDown className="w-3 h-3 ml-1" />
+                      )}
                     </Button>
 
                     {/* Filtros rápidos */}
                     <div className="flex gap-1 w-full sm:w-auto">
                       <Button
-                        variant={filter === 'all' ? 'default' : 'outline'}
+                        variant={filter === "all" ? "default" : "outline"}
                         size="sm"
-                        onClick={() => setFilter('all')}
+                        onClick={() => setFilter("all")}
                         className="h-8 text-xs px-2 flex-1 sm:flex-none"
                       >
                         Todas
                       </Button>
                       <Button
-                        variant={filter === 'unread' ? 'default' : 'outline'}
+                        variant={filter === "unread" ? "default" : "outline"}
                         size="sm"
-                        onClick={() => setFilter('unread')}
+                        onClick={() => setFilter("unread")}
                         className="h-8 text-xs px-2 flex-1 sm:flex-none"
                       >
                         Não lidas
@@ -346,16 +430,26 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                     {/* Ações rápidas */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                        >
                           <MoreHorizontal className="w-4 h-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={markAllAsRead} disabled={unreadCount === 0}>
+                        <DropdownMenuItem
+                          onClick={markAllAsRead}
+                          disabled={unreadCount === 0}
+                        >
                           <CheckCheck className="w-4 h-4 mr-2" />
                           Marcar todas como lidas
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={clearAll} disabled={notifications.length === 0}>
+                        <DropdownMenuItem
+                          onClick={clearAll}
+                          disabled={notifications.length === 0}
+                        >
                           <Trash2 className="w-4 h-4 mr-2" />
                           Limpar todas
                         </DropdownMenuItem>
@@ -367,20 +461,26 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                   {showFilters && (
                     <div className="space-y-2 pt-2 border-t">
                       <div>
-                        <label className="text-xs font-medium text-gray-600 mb-1 block">Tipo</label>
+                        <label className="text-xs font-medium text-gray-600 mb-1 block">
+                          Tipo
+                        </label>
                         <div className="flex flex-wrap gap-1">
                           <Button
-                            variant={selectedType === 'all' ? 'default' : 'outline'}
+                            variant={
+                              selectedType === "all" ? "default" : "outline"
+                            }
                             size="sm"
-                            onClick={() => setSelectedType('all')}
+                            onClick={() => setSelectedType("all")}
                             className="h-7 text-xs px-2"
                           >
                             Todos
                           </Button>
-                          {uniqueTypes.map(type => (
+                          {uniqueTypes.map((type) => (
                             <Button
                               key={type}
-                              variant={selectedType === type ? 'default' : 'outline'}
+                              variant={
+                                selectedType === type ? "default" : "outline"
+                              }
                               size="sm"
                               onClick={() => setSelectedType(type)}
                               className="h-7 text-xs px-2"
@@ -409,16 +509,21 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                   <div className="flex flex-col items-center justify-center h-full text-center p-6">
                     <BellOff className="w-12 h-12 text-gray-300 mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      {searchTerm || selectedType !== 'all' ? 'Nenhuma notificação encontrada' : 'Nenhuma notificação'}
+                      {searchTerm || selectedType !== "all"
+                        ? "Nenhuma notificação encontrada"
+                        : "Nenhuma notificação"}
                     </h3>
                     <p className="text-sm text-gray-500 mb-4">
-                      {searchTerm || selectedType !== 'all' 
-                        ? 'Tente ajustar os filtros de busca' 
-                        : 'Você será notificado quando houver novidades'
-                      }
+                      {searchTerm || selectedType !== "all"
+                        ? "Tente ajustar os filtros de busca"
+                        : "Você será notificado quando houver novidades"}
                     </p>
-                    {(searchTerm || selectedType !== 'all') && (
-                      <Button variant="outline" size="sm" onClick={clearFilters}>
+                    {(searchTerm || selectedType !== "all") && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={clearFilters}
+                      >
                         Limpar filtros
                       </Button>
                     )}
@@ -426,21 +531,31 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                 ) : (
                   <div className="space-y-2">
                     {filteredNotifications.map((notification) => {
-                      const typeConfig = NOTIFICATION_TYPES.find(t => t.value === notification.type)
-                      const priorityConfig = PRIORITY_LEVELS.find(p => p.value === notification.priority)
-                      
+                      const typeConfig = NOTIFICATION_TYPES.find(
+                        (t) => t.value === notification.type,
+                      );
+                      const priorityConfig = PRIORITY_LEVELS.find(
+                        (p) => p.value === notification.priority,
+                      );
+
                       return (
-                        <Card 
-                          key={notification.id} 
+                        <Card
+                          key={notification.id}
                           className={`transition-all duration-200 hover:shadow-md ${
-                            !notification.is_read ? 'bg-blue-50/50 border-blue-200' : 'bg-white'
+                            !notification.is_read
+                              ? "bg-blue-50/50 border-blue-200"
+                              : "bg-white"
                           }`}
                         >
                           <CardContent className="p-3 sm:p-4">
                             <div className="flex items-start gap-3">
                               {/* Ícone */}
-                              <div className={`p-2 rounded-full ${typeConfig?.color || 'bg-gray-500'} text-white flex-shrink-0`}>
-                                {typeConfig?.icon && <typeConfig.icon className="w-4 h-4" />}
+                              <div
+                                className={`p-2 rounded-full ${typeConfig?.color || "bg-gray-500"} text-white flex-shrink-0`}
+                              >
+                                {typeConfig?.icon && (
+                                  <typeConfig.icon className="w-4 h-4" />
+                                )}
                               </div>
 
                               {/* Conteúdo */}
@@ -450,7 +565,7 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                                     <h4 className="font-medium text-sm text-gray-900 line-clamp-2">
                                       {notification.title}
                                     </h4>
-                                    
+
                                     {notification.message && (
                                       <p className="text-sm text-gray-600 mt-1 line-clamp-2">
                                         {notification.message}
@@ -459,15 +574,21 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
 
                                     {/* Metadados */}
                                     <div className="flex items-center gap-2 mt-2">
-                                      <Badge className={`text-xs ${priorityConfig?.color || 'bg-gray-100 text-gray-800'}`}>
-                                        {priorityConfig?.label || notification.priority}
+                                      <Badge
+                                        className={`text-xs ${priorityConfig?.color || "bg-gray-100 text-gray-800"}`}
+                                      >
+                                        {priorityConfig?.label ||
+                                          notification.priority}
                                       </Badge>
                                       <span className="text-xs text-gray-500 flex items-center gap-1">
                                         <Clock className="w-3 h-3" />
-                                        {formatDistanceToNow(new Date(notification.created_at), { 
-                                          addSuffix: true, 
-                                          locale: ptBR 
-                                        })}
+                                        {formatDistanceToNow(
+                                          new Date(notification.created_at),
+                                          {
+                                            addSuffix: true,
+                                            locale: ptBR,
+                                          },
+                                        )}
                                       </span>
                                     </div>
                                   </div>
@@ -478,17 +599,21 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                                       <Button
                                         variant="ghost"
                                         size="sm"
-                                        onClick={() => markAsRead(notification.id)}
+                                        onClick={() =>
+                                          markAsRead(notification.id)
+                                        }
                                         className="h-7 w-7 p-0"
                                       >
                                         <Check className="w-3 h-3" />
                                       </Button>
                                     )}
-                                    
+
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      onClick={() => removeNotification(notification.id)}
+                                      onClick={() =>
+                                        removeNotification(notification.id)
+                                      }
                                       className="h-7 w-7 p-0 text-gray-400 hover:text-red-500"
                                     >
                                       <Trash2 className="w-3 h-3" />
@@ -497,22 +622,33 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                                 </div>
 
                                 {/* Ação da notificação */}
-                                {(notification.action_url || notification.type === 'message') && (
+                                {(notification.action_url ||
+                                  notification.type === "message") && (
                                   <div className="mt-3 pt-3 border-t">
                                     <Button
                                       variant="outline"
                                       size="sm"
                                       onClick={() => {
-                                        const metadata = (notification as any).metadata || {};
-                                        const notificationType = (notification.type as string) || '';
-                                        const titleLower = (notification.title || '').toLowerCase();
-                                        
+                                        const metadata =
+                                          (notification as any).metadata || {};
+                                        const notificationType =
+                                          (notification.type as string) || "";
+                                        const titleLower = (
+                                          notification.title || ""
+                                        ).toLowerCase();
+
                                         // 1. MENSAGEM - Abrir chat flutuante
-                                        if (notificationType === 'message' || titleLower.includes('mensagem')) {
-                                          const conversationId = metadata.conversation_id || metadata.chat_id;
+                                        if (
+                                          notificationType === "message" ||
+                                          titleLower.includes("mensagem")
+                                        ) {
+                                          const conversationId =
+                                            metadata.conversation_id ||
+                                            metadata.chat_id;
                                           const senderId = metadata.sender_id;
-                                          const senderName = metadata.sender_name;
-                                          
+                                          const senderName =
+                                            metadata.sender_name;
+
                                           if (conversationId) {
                                             openChat(conversationId);
                                           } else if (senderId && senderName) {
@@ -523,9 +659,13 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                                           markAsRead(notification.id);
                                           return;
                                         }
-                                        
+
                                         // 2. LIKE / CURTIDA - Ir para o post
-                                        if (notificationType === 'like' || titleLower.includes('curtida') || metadata.type === 'post_like') {
+                                        if (
+                                          notificationType === "like" ||
+                                          titleLower.includes("curtida") ||
+                                          metadata.type === "post_like"
+                                        ) {
                                           const postId = metadata.post_id;
                                           if (postId) {
                                             window.location.href = `/feed?post=${postId}`;
@@ -533,9 +673,13 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                                             return;
                                           }
                                         }
-                                        
+
                                         // 3. COMENTÁRIO - Ir para o post
-                                        if (notificationType === 'comment' || titleLower.includes('comentário') || metadata.type === 'post_comment') {
+                                        if (
+                                          notificationType === "comment" ||
+                                          titleLower.includes("comentário") ||
+                                          metadata.type === "post_comment"
+                                        ) {
                                           const postId = metadata.post_id;
                                           if (postId) {
                                             window.location.href = `/feed?post=${postId}`;
@@ -543,9 +687,13 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                                             return;
                                           }
                                         }
-                                        
+
                                         // 4. RESPOSTA A COMENTÁRIO - Ir para o post
-                                        if (notificationType === 'reply' || titleLower.includes('resposta') || metadata.type === 'comment_reply') {
+                                        if (
+                                          notificationType === "reply" ||
+                                          titleLower.includes("resposta") ||
+                                          metadata.type === "comment_reply"
+                                        ) {
                                           const postId = metadata.post_id;
                                           if (postId) {
                                             window.location.href = `/feed?post=${postId}`;
@@ -553,9 +701,13 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                                             return;
                                           }
                                         }
-                                        
+
                                         // 5. MENÇÃO - Ir para o post
-                                        if (notificationType === 'mention' || titleLower.includes('mencionado') || metadata.type === 'mention') {
+                                        if (
+                                          notificationType === "mention" ||
+                                          titleLower.includes("mencionado") ||
+                                          metadata.type === "mention"
+                                        ) {
                                           const postId = metadata.post_id;
                                           if (postId) {
                                             window.location.href = `/feed?post=${postId}`;
@@ -563,9 +715,12 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                                             return;
                                           }
                                         }
-                                        
+
                                         // 6. COMPARTILHAMENTO - Ir para o post compartilhado
-                                        if (notificationType === 'share' || titleLower.includes('compartilhou')) {
+                                        if (
+                                          notificationType === "share" ||
+                                          titleLower.includes("compartilhou")
+                                        ) {
                                           const postId = metadata.post_id;
                                           if (postId) {
                                             window.location.href = `/feed?post=${postId}`;
@@ -573,16 +728,23 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                                             return;
                                           }
                                         }
-                                        
+
                                         // 7. AVALIAÇÃO / REVIEW - Ir para página de avaliações
-                                        if (notificationType === 'review' || titleLower.includes('avaliação') || metadata.type === 'review') {
-                                          window.location.href = '/avaliacoes';
+                                        if (
+                                          notificationType === "review" ||
+                                          titleLower.includes("avaliação") ||
+                                          metadata.type === "review"
+                                        ) {
+                                          window.location.href = "/avaliacoes";
                                           markAsRead(notification.id);
                                           return;
                                         }
-                                        
+
                                         // 8. FAVORITO - Ir para o perfil do usuário
-                                        if (titleLower.includes('favorito') || metadata.type === 'favorite') {
+                                        if (
+                                          titleLower.includes("favorito") ||
+                                          metadata.type === "favorite"
+                                        ) {
                                           // Usar user do contexto se disponível
                                           const userId = metadata.user_id;
                                           if (userId) {
@@ -591,16 +753,22 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                                             return;
                                           }
                                         }
-                                        
+
                                         // 9. RECOMENDAÇÃO - Ir para página de reputação
-                                        if (titleLower.includes('recomendação') || metadata.type === 'recommendation') {
-                                          window.location.href = '/reputacao';
+                                        if (
+                                          titleLower.includes("recomendação") ||
+                                          metadata.type === "recommendation"
+                                        ) {
+                                          window.location.href = "/reputacao";
                                           markAsRead(notification.id);
                                           return;
                                         }
-                                        
+
                                         // 10. VISUALIZAÇÃO DE PERFIL - Ir para o perfil
-                                        if (titleLower.includes('visualizou') || metadata.type === 'profile_view') {
+                                        if (
+                                          titleLower.includes("visualizou") ||
+                                          metadata.type === "profile_view"
+                                        ) {
                                           const userId = metadata.user_id;
                                           if (userId) {
                                             window.location.href = `/perfil/${userId}`;
@@ -608,36 +776,56 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                                             return;
                                           }
                                         }
-                                        
+
                                         // 11. SEGUIR / FOLLOW - Ir para o perfil de quem seguiu
-                                        if (notificationType === 'follow' || titleLower.includes('seguir')) {
-                                          const followerId = metadata.follower_id || metadata.user_id;
+                                        if (
+                                          notificationType === "follow" ||
+                                          titleLower.includes("seguir")
+                                        ) {
+                                          const followerId =
+                                            metadata.follower_id ||
+                                            metadata.user_id;
                                           if (followerId) {
                                             window.location.href = `/perfil/${followerId}`;
                                             markAsRead(notification.id);
                                             return;
                                           }
                                         }
-                                        
+
                                         // 12. FALLBACK - Usar action_url se disponível
                                         if (notification.action_url) {
-                                          if (notification.action_url.startsWith('/')) {
-                                            window.location.href = notification.action_url;
-                                          } else if (notification.action_url.startsWith('#')) {
-                                            window.location.hash = notification.action_url;
+                                          if (
+                                            notification.action_url.startsWith(
+                                              "/",
+                                            )
+                                          ) {
+                                            window.location.href =
+                                              notification.action_url;
+                                          } else if (
+                                            notification.action_url.startsWith(
+                                              "#",
+                                            )
+                                          ) {
+                                            window.location.hash =
+                                              notification.action_url;
                                           } else {
-                                            window.open(notification.action_url, '_blank');
+                                            window.open(
+                                              notification.action_url,
+                                              "_blank",
+                                            );
                                           }
                                           markAsRead(notification.id);
                                           return;
                                         }
-                                        
+
                                         // Se não houver ação, apenas marcar como lida
                                         markAsRead(notification.id);
                                       }}
                                       className="w-full text-xs"
                                     >
-                                      {notification.type === 'message' ? 'Abrir conversa' : 'Ver detalhes'}
+                                      {notification.type === "message"
+                                        ? "Abrir conversa"
+                                        : "Ver detalhes"}
                                     </Button>
                                   </div>
                                 )}
@@ -645,7 +833,7 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                             </div>
                           </CardContent>
                         </Card>
-                      )
+                      );
                     })}
                   </div>
                 )}
@@ -683,7 +871,10 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
             </TabsContent>
 
             {/* Aba de Criar Notificação */}
-            <TabsContent value="create" className="flex-1 overflow-y-auto m-4 sm:m-6 mt-4">
+            <TabsContent
+              value="create"
+              className="flex-1 overflow-y-auto m-4 sm:m-6 mt-4"
+            >
               <Card>
                 <CardHeader className="p-4 sm:p-6">
                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
@@ -694,7 +885,12 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                 <CardContent className="space-y-4 p-4 sm:p-6">
                   <div>
                     <Label htmlFor="type">Tipo</Label>
-                    <Select value={formData.type} onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}>
+                    <Select
+                      value={formData.type}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, type: value }))
+                      }
+                    >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -716,7 +912,12 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                     <Input
                       id="title"
                       value={formData.title}
-                      onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          title: e.target.value,
+                        }))
+                      }
                       placeholder="Digite o título da notificação"
                     />
                   </div>
@@ -726,7 +927,12 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                     <Textarea
                       id="message"
                       value={formData.message}
-                      onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          message: e.target.value,
+                        }))
+                      }
                       placeholder="Digite a mensagem da notificação"
                       rows={3}
                     />
@@ -734,13 +940,21 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
 
                   <div>
                     <Label htmlFor="priority">Prioridade</Label>
-                    <Select value={formData.priority} onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value }))}>
+                    <Select
+                      value={formData.priority}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, priority: value }))
+                      }
+                    >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {PRIORITY_LEVELS.map((priority) => (
-                          <SelectItem key={priority.value} value={priority.value}>
+                          <SelectItem
+                            key={priority.value}
+                            value={priority.value}
+                          >
                             <div className="flex items-center gap-2">
                               <Badge className={priority.color}>
                                 {priority.label}
@@ -757,7 +971,12 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                     <Input
                       id="actionUrl"
                       value={formData.actionUrl}
-                      onChange={(e) => setFormData(prev => ({ ...prev, actionUrl: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          actionUrl: e.target.value,
+                        }))
+                      }
                       placeholder="https://exemplo.com"
                     />
                   </div>
@@ -788,7 +1007,9 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                         className="h-auto p-2 flex flex-col items-center gap-1 text-xs"
                       >
                         <type.icon className="w-3 h-3 sm:w-4 sm:h-4" />
-                        <span className="text-xs leading-tight">{type.label}</span>
+                        <span className="text-xs leading-tight">
+                          {type.label}
+                        </span>
                       </Button>
                     ))}
                   </div>
@@ -797,7 +1018,10 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
             </TabsContent>
 
             {/* Aba de Configurações */}
-            <TabsContent value="settings" className="flex-1 overflow-y-auto m-4 sm:m-6 mt-4">
+            <TabsContent
+              value="settings"
+              className="flex-1 overflow-y-auto m-4 sm:m-6 mt-4"
+            >
               <div className="space-y-4 sm:space-y-6">
                 {/* Configurações de Push Notifications */}
                 <Card>
@@ -812,7 +1036,7 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {!isGranted && (
-                      <Button 
+                      <Button
                         onClick={requestPermission}
                         disabled={isLoading}
                         className="w-full"
@@ -821,9 +1045,9 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                         Solicitar Permissão
                       </Button>
                     )}
-                    
+
                     {isGranted && !isSubscribed && (
-                      <Button 
+                      <Button
                         onClick={subscribe}
                         disabled={isLoading}
                         className="w-full"
@@ -832,9 +1056,9 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                         Ativar Notificações
                       </Button>
                     )}
-                    
+
                     {isSubscribed && (
-                      <Button 
+                      <Button
                         onClick={unsubscribe}
                         disabled={isLoading}
                         variant="destructive"
@@ -844,7 +1068,7 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                         Desativar Notificações
                       </Button>
                     )}
-                    
+
                     {error && (
                       <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
                         <p className="text-sm text-red-800">{error}</p>
@@ -866,28 +1090,41 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {NOTIFICATION_TYPES.map((type) => {
-                      const IconComponent = type.icon
+                      const IconComponent = type.icon;
                       return (
-                        <div key={type.value} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div
+                          key={type.value}
+                          className="flex items-center justify-between p-3 border rounded-lg"
+                        >
                           <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-full ${type.color} text-white`}>
+                            <div
+                              className={`p-2 rounded-full ${type.color} text-white`}
+                            >
                               <IconComponent className="w-4 h-4" />
                             </div>
                             <div>
-                              <Label htmlFor={`type-${type.value}`} className="font-medium">
+                              <Label
+                                htmlFor={`type-${type.value}`}
+                                className="font-medium"
+                              >
                                 {type.label}
                               </Label>
                               <p className="text-sm text-gray-500">
-                                Receber notificações de {type.label.toLowerCase()}
+                                Receber notificações de{" "}
+                                {type.label.toLowerCase()}
                               </p>
                             </div>
                           </div>
-                          <Switch 
-                            id={`type-${type.value}`} 
-                            defaultChecked={['message', 'review', 'system'].includes(type.value)}
+                          <Switch
+                            id={`type-${type.value}`}
+                            defaultChecked={[
+                              "message",
+                              "review",
+                              "system",
+                            ].includes(type.value)}
                           />
                         </div>
-                      )
+                      );
                     })}
                   </CardContent>
                 </Card>
@@ -906,7 +1143,9 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                   <CardContent className="space-y-4">
                     <div className="space-y-3">
                       <div>
-                        <Label htmlFor="frequency">Frequência de notificações</Label>
+                        <Label htmlFor="frequency">
+                          Frequência de notificações
+                        </Label>
                         <Select defaultValue="immediate">
                           <SelectTrigger>
                             <SelectValue placeholder="Selecione a frequência" />
@@ -919,32 +1158,36 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                           </SelectContent>
                         </Select>
                       </div>
-                      
+
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="start-time">Horário inicial</Label>
-                          <Input 
-                            id="start-time" 
-                            type="time" 
+                          <Input
+                            id="start-time"
+                            type="time"
                             defaultValue="08:00"
                             className="mt-1"
                           />
                         </div>
                         <div>
                           <Label htmlFor="end-time">Horário final</Label>
-                          <Input 
-                            id="end-time" 
-                            type="time" 
+                          <Input
+                            id="end-time"
+                            type="time"
                             defaultValue="22:00"
                             className="mt-1"
                           />
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center justify-between">
                         <div>
-                          <Label htmlFor="quiet-hours">Horário silencioso</Label>
-                          <p className="text-sm text-gray-500">Não receber notificações durante a noite</p>
+                          <Label htmlFor="quiet-hours">
+                            Horário silencioso
+                          </Label>
+                          <p className="text-sm text-gray-500">
+                            Não receber notificações durante a noite
+                          </p>
                         </div>
                         <Switch id="quiet-hours" defaultChecked />
                       </div>
@@ -965,23 +1208,32 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {PRIORITY_LEVELS.map((priority) => (
-                      <div key={priority.value} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div
+                        key={priority.value}
+                        className="flex items-center justify-between p-3 border rounded-lg"
+                      >
                         <div className="flex items-center gap-3">
                           <Badge className={`${priority.color} text-xs`}>
                             {priority.label}
                           </Badge>
                           <div>
-                            <Label htmlFor={`priority-${priority.value}`} className="font-medium">
+                            <Label
+                              htmlFor={`priority-${priority.value}`}
+                              className="font-medium"
+                            >
                               Notificações {priority.label}
                             </Label>
                             <p className="text-sm text-gray-500">
-                              Receber notificações de prioridade {priority.label.toLowerCase()}
+                              Receber notificações de prioridade{" "}
+                              {priority.label.toLowerCase()}
                             </p>
                           </div>
                         </div>
-                        <Switch 
-                          id={`priority-${priority.value}`} 
-                          defaultChecked={['normal', 'high', 'urgent'].includes(priority.value)}
+                        <Switch
+                          id={`priority-${priority.value}`}
+                          defaultChecked={["normal", "high", "urgent"].includes(
+                            priority.value,
+                          )}
                         />
                       </div>
                     ))}
@@ -1003,27 +1255,33 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                     <div className="flex items-center justify-between">
                       <div>
                         <Label htmlFor="sound">Som de notificação</Label>
-                        <p className="text-sm text-gray-500">Reproduzir som ao receber notificações</p>
+                        <p className="text-sm text-gray-500">
+                          Reproduzir som ao receber notificações
+                        </p>
                       </div>
                       <Switch id="sound" defaultChecked />
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div>
                         <Label htmlFor="vibration">Vibração</Label>
-                        <p className="text-sm text-gray-500">Vibrar ao receber notificações</p>
+                        <p className="text-sm text-gray-500">
+                          Vibrar ao receber notificações
+                        </p>
                       </div>
                       <Switch id="vibration" defaultChecked />
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div>
                         <Label htmlFor="desktop">Notificações desktop</Label>
-                        <p className="text-sm text-gray-500">Mostrar notificações na área de trabalho</p>
+                        <p className="text-sm text-gray-500">
+                          Mostrar notificações na área de trabalho
+                        </p>
                       </div>
                       <Switch id="desktop" defaultChecked />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="sound-type">Tipo de som</Label>
                       <Select defaultValue="default">
@@ -1055,22 +1313,30 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label htmlFor="email-notifications">Notificações por email</Label>
-                        <p className="text-sm text-gray-500">Receber notificações por email</p>
+                        <Label htmlFor="email-notifications">
+                          Notificações por email
+                        </Label>
+                        <p className="text-sm text-gray-500">
+                          Receber notificações por email
+                        </p>
                       </div>
                       <Switch id="email-notifications" defaultChecked />
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div>
                         <Label htmlFor="email-digest">Resumo diário</Label>
-                        <p className="text-sm text-gray-500">Receber um resumo diário por email</p>
+                        <p className="text-sm text-gray-500">
+                          Receber um resumo diário por email
+                        </p>
                       </div>
                       <Switch id="email-digest" defaultChecked />
                     </div>
-                    
+
                     <div>
-                      <Label htmlFor="email-frequency">Frequência do email</Label>
+                      <Label htmlFor="email-frequency">
+                        Frequência do email
+                      </Label>
                       <Select defaultValue="daily">
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione a frequência" />
@@ -1094,23 +1360,28 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                       Notificações por SMS
                     </CardTitle>
                     <CardDescription>
-                      Configure notificações por SMS (apenas para notificações urgentes)
+                      Configure notificações por SMS (apenas para notificações
+                      urgentes)
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label htmlFor="sms-notifications">SMS para urgências</Label>
-                        <p className="text-sm text-gray-500">Receber SMS apenas para notificações urgentes</p>
+                        <Label htmlFor="sms-notifications">
+                          SMS para urgências
+                        </Label>
+                        <p className="text-sm text-gray-500">
+                          Receber SMS apenas para notificações urgentes
+                        </p>
                       </div>
                       <Switch id="sms-notifications" />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="phone-number">Número de telefone</Label>
-                      <Input 
-                        id="phone-number" 
-                        type="tel" 
+                      <Input
+                        id="phone-number"
+                        type="tel"
                         placeholder="(11) 99999-9999"
                         className="mt-1"
                       />
@@ -1132,14 +1403,20 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label htmlFor="location-notifications">Notificações por localização</Label>
-                        <p className="text-sm text-gray-500">Receber notificações baseadas na localização</p>
+                        <Label htmlFor="location-notifications">
+                          Notificações por localização
+                        </Label>
+                        <p className="text-sm text-gray-500">
+                          Receber notificações baseadas na localização
+                        </p>
                       </div>
                       <Switch id="location-notifications" />
                     </div>
-                    
+
                     <div>
-                      <Label htmlFor="location-radius">Raio de notificação (km)</Label>
+                      <Label htmlFor="location-radius">
+                        Raio de notificação (km)
+                      </Label>
                       <Select defaultValue="10">
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione o raio" />
@@ -1171,23 +1448,31 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                     <div className="flex items-center justify-between">
                       <div>
                         <Label htmlFor="show-content">Mostrar conteúdo</Label>
-                        <p className="text-sm text-gray-500">Mostrar conteúdo das notificações na tela de bloqueio</p>
+                        <p className="text-sm text-gray-500">
+                          Mostrar conteúdo das notificações na tela de bloqueio
+                        </p>
                       </div>
                       <Switch id="show-content" defaultChecked />
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div>
                         <Label htmlFor="show-sender">Mostrar remetente</Label>
-                        <p className="text-sm text-gray-500">Mostrar nome do remetente nas notificações</p>
+                        <p className="text-sm text-gray-500">
+                          Mostrar nome do remetente nas notificações
+                        </p>
                       </div>
                       <Switch id="show-sender" defaultChecked />
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label htmlFor="group-notifications">Agrupar notificações</Label>
-                        <p className="text-sm text-gray-500">Agrupar notificações do mesmo tipo</p>
+                        <Label htmlFor="group-notifications">
+                          Agrupar notificações
+                        </Label>
+                        <p className="text-sm text-gray-500">
+                          Agrupar notificações do mesmo tipo
+                        </p>
                       </div>
                       <Switch id="group-notifications" defaultChecked />
                     </div>
@@ -1207,7 +1492,9 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <Label htmlFor="max-notifications">Máximo de notificações</Label>
+                      <Label htmlFor="max-notifications">
+                        Máximo de notificações
+                      </Label>
                       <Select defaultValue="50">
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione o máximo" />
@@ -1221,7 +1508,7 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                         </SelectContent>
                       </Select>
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="auto-delete">Auto-exclusão</Label>
                       <Select defaultValue="7">
@@ -1237,19 +1524,27 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                         </SelectContent>
                       </Select>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label htmlFor="mark-read-auto">Marcar como lida automaticamente</Label>
-                        <p className="text-sm text-gray-500">Marcar notificações como lidas após visualizar</p>
+                        <Label htmlFor="mark-read-auto">
+                          Marcar como lida automaticamente
+                        </Label>
+                        <p className="text-sm text-gray-500">
+                          Marcar notificações como lidas após visualizar
+                        </p>
                       </div>
                       <Switch id="mark-read-auto" defaultChecked />
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label htmlFor="sync-devices">Sincronizar entre dispositivos</Label>
-                        <p className="text-sm text-gray-500">Sincronizar notificações entre todos os dispositivos</p>
+                        <Label htmlFor="sync-devices">
+                          Sincronizar entre dispositivos
+                        </Label>
+                        <p className="text-sm text-gray-500">
+                          Sincronizar notificações entre todos os dispositivos
+                        </p>
                       </div>
                       <Switch id="sync-devices" defaultChecked />
                     </div>
@@ -1259,7 +1554,10 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
             </TabsContent>
 
             {/* Aba de Status */}
-            <TabsContent value="status" className="flex-1 overflow-y-auto m-4 sm:m-6 mt-4">
+            <TabsContent
+              value="status"
+              className="flex-1 overflow-y-auto m-4 sm:m-6 mt-4"
+            >
               <div className="space-y-4 sm:space-y-6">
                 {/* Status do Sistema */}
                 <Card>
@@ -1271,38 +1569,38 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Push Notifications</span>
-                      <Badge variant={isSupported ? 'default' : 'destructive'}>
-                        {isSupported ? 'Suportado' : 'Não suportado'}
+                      <span className="text-sm font-medium">
+                        Push Notifications
+                      </span>
+                      <Badge variant={isSupported ? "default" : "destructive"}>
+                        {isSupported ? "Suportado" : "Não suportado"}
                       </Badge>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Permissão</span>
-                      <Badge variant={isGranted ? 'default' : 'destructive'}>
-                        {isGranted ? 'Concedida' : 'Negada'}
+                      <Badge variant={isGranted ? "default" : "destructive"}>
+                        {isGranted ? "Concedida" : "Negada"}
                       </Badge>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Inscrito</span>
-                      <Badge variant={isSubscribed ? 'default' : 'secondary'}>
-                        {isSubscribed ? 'Sim' : 'Não'}
+                      <Badge variant={isSubscribed ? "default" : "secondary"}>
+                        {isSubscribed ? "Sim" : "Não"}
                       </Badge>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Notificações</span>
                       <Badge variant="default">
                         {notifications.length} total
                       </Badge>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Não lidas</span>
-                      <Badge variant="destructive">
-                        {unreadCount}
-                      </Badge>
+                      <Badge variant="destructive">{unreadCount}</Badge>
                     </div>
                   </CardContent>
                 </Card>
@@ -1318,19 +1616,23 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="text-center p-3 bg-blue-50 rounded-lg">
-                        <div className="text-2xl font-bold text-blue-600">{notifications.length}</div>
+                        <div className="text-2xl font-bold text-blue-600">
+                          {notifications.length}
+                        </div>
                         <div className="text-sm text-blue-800">Total</div>
                       </div>
                       <div className="text-center p-3 bg-red-50 rounded-lg">
-                        <div className="text-2xl font-bold text-red-600">{unreadCount}</div>
+                        <div className="text-2xl font-bold text-red-600">
+                          {unreadCount}
+                        </div>
                         <div className="text-sm text-red-800">Não lidas</div>
                       </div>
                     </div>
-                    
+
                     <Separator />
-                    
+
                     <div className="space-y-2">
-                      <Button 
+                      <Button
                         onClick={markAllAsRead}
                         disabled={unreadCount === 0}
                         variant="outline"
@@ -1339,8 +1641,8 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Marcar Todas como Lidas
                       </Button>
-                      
-                      <Button 
+
+                      <Button
                         onClick={clearAll}
                         disabled={notifications.length === 0}
                         variant="destructive"
@@ -1358,5 +1660,5 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
         </div>
       </SheetContent>
     </Sheet>
-  )
+  );
 }

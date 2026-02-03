@@ -1,95 +1,98 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
-import { Badge } from '@/components/ui/badge'
-import { 
-  Eye, 
-  EyeOff, 
-  Users, 
-  UserCheck, 
-  Globe, 
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import {
+  Eye,
+  EyeOff,
+  Users,
+  UserCheck,
+  Globe,
   Lock,
   Save,
-  Loader2
-} from 'lucide-react'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { supabase } from '@/lib/supabase'
-import { ExtendedProfile } from '@/types/privacy'
-import { toast } from 'sonner'
+  Loader2,
+} from "lucide-react";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
+import { ExtendedProfile } from "@/types/privacy";
+import { toast } from "sonner";
 
 interface ProfileVisibilitySettings {
   // Apenas configurações que realmente existem no sistema
-  isAvailable: boolean
+  isAvailable: boolean;
 }
 
 export function ProfileVisibilitySettings() {
-  const { user, profile, refreshAuth } = useAuthContext()
-  const extendedProfile = profile as ExtendedProfile
+  const { user, profile, refreshAuth } = useAuthContext();
+  const extendedProfile = profile as ExtendedProfile;
   const [settings, setSettings] = useState<ProfileVisibilitySettings>({
-    isAvailable: true
-  })
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
+    isAvailable: true,
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (profile) {
       // Carregar configurações do perfil (apenas campos que existem)
       setSettings({
-        isAvailable: profile.is_available ?? true
-      })
+        isAvailable: profile.is_available ?? true,
+      });
     }
-  }, [profile])
+  }, [profile]);
 
-  const handleSettingChange = (key: keyof ProfileVisibilitySettings, value: boolean) => {
-    setSettings(prev => ({
+  const handleSettingChange = (
+    key: keyof ProfileVisibilitySettings,
+    value: boolean,
+  ) => {
+    setSettings((prev) => ({
       ...prev,
-      [key]: value
-    }))
-  }
+      [key]: value,
+    }));
+  };
 
   const handleSaveSettings = async () => {
     if (!user || !profile) {
-      toast.error('Usuário não encontrado')
-      return
+      toast.error("Usuário não encontrado");
+      return;
     }
 
-    setIsSaving(true)
+    setIsSaving(true);
     try {
       const { error } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update({
           is_available: settings.isAvailable,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', user.id)
+        .eq("id", user.id);
 
       if (error) {
-        throw error
+        throw error;
       }
 
-      toast.success('Configurações de disponibilidade salvas com sucesso!')
-      await refreshAuth() // Atualizar dados do usuário
-      
+      toast.success("Configurações de disponibilidade salvas com sucesso!");
+      await refreshAuth(); // Atualizar dados do usuário
     } catch (error) {
-      console.error('Erro ao salvar configurações:', error)
-      toast.error('Erro ao salvar configurações. Tente novamente.')
+      console.error("Erro ao salvar configurações:", error);
+      toast.error("Erro ao salvar configurações. Tente novamente.");
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const visibilityOptions = [
     {
-      key: 'isAvailable' as keyof ProfileVisibilitySettings,
-      title: 'Disponibilidade',
-      description: 'Mostrar que você está disponível para receber propostas de trabalho',
+      key: "isAvailable" as keyof ProfileVisibilitySettings,
+      title: "Disponibilidade",
+      description:
+        "Mostrar que você está disponível para receber propostas de trabalho",
       icon: <UserCheck className="h-4 w-4" />,
-      impact: 'Médio'
-    }
-  ]
+      impact: "Médio",
+    },
+  ];
 
   return (
     <Card>
@@ -103,30 +106,38 @@ export function ProfileVisibilitySettings() {
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
-        
         {/* Configurações */}
         <div className="space-y-4">
           {visibilityOptions.map((option) => (
-            <div key={option.key} className="flex items-center justify-between p-4 border rounded-lg">
+            <div
+              key={option.key}
+              className="flex items-center justify-between p-4 border rounded-lg"
+            >
               <div className="flex items-center space-x-3">
-                <div className="text-blue-600">
-                  {option.icon}
-                </div>
+                <div className="text-blue-600">{option.icon}</div>
                 <div>
                   <h4 className="font-medium text-gray-900">{option.title}</h4>
                   <p className="text-sm text-gray-600">{option.description}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
-                <Badge 
-                  variant={option.impact === 'Alto' ? 'destructive' : option.impact === 'Médio' ? 'default' : 'secondary'}
+                <Badge
+                  variant={
+                    option.impact === "Alto"
+                      ? "destructive"
+                      : option.impact === "Médio"
+                        ? "default"
+                        : "secondary"
+                  }
                   className="text-xs"
                 >
                   {option.impact}
                 </Badge>
                 <Switch
                   checked={settings[option.key]}
-                  onCheckedChange={(value) => handleSettingChange(option.key, value)}
+                  onCheckedChange={(value) =>
+                    handleSettingChange(option.key, value)
+                  }
                   disabled={isSaving}
                 />
               </div>
@@ -136,23 +147,37 @@ export function ProfileVisibilitySettings() {
 
         {/* Resumo de Impacto */}
         <div className="bg-blue-50 p-4 rounded-lg">
-          <h4 className="font-semibold text-blue-800 mb-2">Resumo de Impacto:</h4>
+          <h4 className="font-semibold text-blue-800 mb-2">
+            Resumo de Impacto:
+          </h4>
           <div className="grid grid-cols-3 gap-4 text-sm">
             <div className="text-center">
               <div className="text-red-600 font-semibold">
-                {visibilityOptions.filter(opt => opt.impact === 'Alto' && settings[opt.key]).length}
+                {
+                  visibilityOptions.filter(
+                    (opt) => opt.impact === "Alto" && settings[opt.key],
+                  ).length
+                }
               </div>
               <div className="text-gray-600">Alto Risco</div>
             </div>
             <div className="text-center">
               <div className="text-orange-600 font-semibold">
-                {visibilityOptions.filter(opt => opt.impact === 'Médio' && settings[opt.key]).length}
+                {
+                  visibilityOptions.filter(
+                    (opt) => opt.impact === "Médio" && settings[opt.key],
+                  ).length
+                }
               </div>
               <div className="text-gray-600">Médio Risco</div>
             </div>
             <div className="text-center">
               <div className="text-green-600 font-semibold">
-                {visibilityOptions.filter(opt => opt.impact === 'Baixo' && settings[opt.key]).length}
+                {
+                  visibilityOptions.filter(
+                    (opt) => opt.impact === "Baixo" && settings[opt.key],
+                  ).length
+                }
               </div>
               <div className="text-gray-600">Baixo Risco</div>
             </div>
@@ -161,7 +186,7 @@ export function ProfileVisibilitySettings() {
 
         {/* Botão Salvar */}
         <div className="flex justify-end pt-4 border-t">
-          <Button 
+          <Button
             onClick={handleSaveSettings}
             disabled={isSaving}
             className="bg-blue-600 hover:bg-blue-700"
@@ -182,13 +207,15 @@ export function ProfileVisibilitySettings() {
 
         {/* Aviso de Segurança */}
         <div className="bg-amber-50 p-4 rounded-lg">
-          <h4 className="font-semibold text-amber-800 mb-2">⚠️ Aviso de Segurança</h4>
+          <h4 className="font-semibold text-amber-800 mb-2">
+            ⚠️ Aviso de Segurança
+          </h4>
           <p className="text-amber-700 text-sm">
-            Informações com "Alto Risco" podem ser usadas para contato direto. 
+            Informações com "Alto Risco" podem ser usadas para contato direto.
             Recomendamos manter apenas as informações essenciais visíveis.
           </p>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

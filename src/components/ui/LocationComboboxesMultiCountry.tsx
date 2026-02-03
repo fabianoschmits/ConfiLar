@@ -1,35 +1,42 @@
-'use client'
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react'
-import { useLocale } from '@/contexts/LocaleContext'
-import { useTranslations } from 'next-intl'
-import { LocationService } from '@/lib/location/LocationService'
-import { State, City } from '@/lib/location/types'
+import React, { useState, useEffect, useCallback } from "react";
+import { useLocale } from "@/contexts/LocaleContext";
+import { useTranslations } from "next-intl";
+import { LocationService } from "@/lib/location/LocationService";
+import { State, City } from "@/lib/location/types";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
-import { Check, ChevronDown, Loader2 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Check, ChevronDown, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface LocationComboboxesMultiCountryProps {
-  country?: string
-  stateCode?: string
-  city?: string
-  onCountryChange?: (country: string) => void
-  onStateChange?: (stateCode: string) => void
-  onCityChange?: (city: string) => void
-  className?: string
+  country?: string;
+  stateCode?: string;
+  city?: string;
+  onCountryChange?: (country: string) => void;
+  onStateChange?: (stateCode: string) => void;
+  onCityChange?: (city: string) => void;
+  className?: string;
 }
 
 const COUNTRIES = [
-  { code: 'BR', name: 'Brasil', flag: '🇧🇷' },
-  { code: 'US', name: 'United States', flag: '🇺🇸' },
-]
+  { code: "BR", name: "Brasil", flag: "🇧🇷" },
+  { code: "US", name: "United States", flag: "🇺🇸" },
+];
 
 export function LocationComboboxesMultiCountry({
   country: initialCountry,
@@ -38,96 +45,101 @@ export function LocationComboboxesMultiCountry({
   onCountryChange,
   onStateChange,
   onCityChange,
-  className
+  className,
 }: LocationComboboxesMultiCountryProps) {
-  const { country: contextCountry, locationService } = useLocale()
-  const t = useTranslations('location')
-  
-  const [country, setCountry] = useState<string>(initialCountry || contextCountry || 'BR')
-  const [stateCode, setStateCode] = useState<string>(initialStateCode || '')
-  const [city, setCity] = useState<string>(initialCity || '')
-  
-  const [states, setStates] = useState<State[]>([])
-  const [cities, setCities] = useState<City[]>([])
-  const [loadingStates, setLoadingStates] = useState(false)
-  const [loadingCities, setLoadingCities] = useState(false)
-  
-  const [countryOpen, setCountryOpen] = useState(false)
-  const [stateOpen, setStateOpen] = useState(false)
-  const [cityOpen, setCityOpen] = useState(false)
+  const { country: contextCountry, locationService } = useLocale();
+  const t = useTranslations("location");
+
+  const [country, setCountry] = useState<string>(
+    initialCountry || contextCountry || "BR",
+  );
+  const [stateCode, setStateCode] = useState<string>(initialStateCode || "");
+  const [city, setCity] = useState<string>(initialCity || "");
+
+  const [states, setStates] = useState<State[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
+  const [loadingStates, setLoadingStates] = useState(false);
+  const [loadingCities, setLoadingCities] = useState(false);
+
+  const [countryOpen, setCountryOpen] = useState(false);
+  const [stateOpen, setStateOpen] = useState(false);
+  const [cityOpen, setCityOpen] = useState(false);
 
   // Atualizar locationService quando país mudar
   useEffect(() => {
-    if (country && (country === 'BR' || country === 'US')) {
-      locationService.setCountry(country as 'BR' | 'US')
-      loadStates()
+    if (country && (country === "BR" || country === "US")) {
+      locationService.setCountry(country as "BR" | "US");
+      loadStates();
     }
-  }, [country, locationService])
+  }, [country, locationService]);
 
   // Carregar estados
   const loadStates = useCallback(async () => {
-    if (!country || (country !== 'BR' && country !== 'US')) return
-    
-    setLoadingStates(true)
+    if (!country || (country !== "BR" && country !== "US")) return;
+
+    setLoadingStates(true);
     try {
-      const service = new LocationService(country as 'BR' | 'US')
-      const statesData = await service.getStates()
-      setStates(statesData)
+      const service = new LocationService(country as "BR" | "US");
+      const statesData = await service.getStates();
+      setStates(statesData);
     } catch (error) {
-      console.error('Erro ao carregar estados:', error)
+      console.error("Erro ao carregar estados:", error);
     } finally {
-      setLoadingStates(false)
+      setLoadingStates(false);
     }
-  }, [country])
+  }, [country]);
 
   // Carregar cidades quando estado mudar
   useEffect(() => {
     if (stateCode && country) {
-      loadCities(stateCode)
+      loadCities(stateCode);
     } else {
-      setCities([])
+      setCities([]);
     }
-  }, [stateCode, country])
+  }, [stateCode, country]);
 
-  const loadCities = useCallback(async (state: string) => {
-    if (!state || !country) return
-    
-    setLoadingCities(true)
-    try {
-      const service = new LocationService(country as 'BR' | 'US')
-      const citiesData = await service.getCitiesByState(state)
-      setCities(citiesData)
-    } catch (error) {
-      console.error('Erro ao carregar cidades:', error)
-    } finally {
-      setLoadingCities(false)
-    }
-  }, [country])
+  const loadCities = useCallback(
+    async (state: string) => {
+      if (!state || !country) return;
+
+      setLoadingCities(true);
+      try {
+        const service = new LocationService(country as "BR" | "US");
+        const citiesData = await service.getCitiesByState(state);
+        setCities(citiesData);
+      } catch (error) {
+        console.error("Erro ao carregar cidades:", error);
+      } finally {
+        setLoadingCities(false);
+      }
+    },
+    [country],
+  );
 
   const handleCountryChange = (newCountry: string) => {
-    setCountry(newCountry)
-    setStateCode('')
-    setCity('')
-    setStates([])
-    setCities([])
-    onCountryChange?.(newCountry)
-  }
+    setCountry(newCountry);
+    setStateCode("");
+    setCity("");
+    setStates([]);
+    setCities([]);
+    onCountryChange?.(newCountry);
+  };
 
   const handleStateChange = (newStateCode: string) => {
-    setStateCode(newStateCode)
-    setCity('')
-    setCities([])
-    onStateChange?.(newStateCode)
-  }
+    setStateCode(newStateCode);
+    setCity("");
+    setCities([]);
+    onStateChange?.(newStateCode);
+  };
 
   const handleCityChange = (newCity: string) => {
-    setCity(newCity)
-    onCityChange?.(newCity)
-  }
+    setCity(newCity);
+    onCityChange?.(newCity);
+  };
 
-  const selectedCountry = COUNTRIES.find(c => c.code === country)
-  const selectedState = states.find(s => s.code === stateCode)
-  const selectedCity = cities.find(c => c.name === city)
+  const selectedCountry = COUNTRIES.find((c) => c.code === country);
+  const selectedState = states.find((s) => s.code === stateCode);
+  const selectedCity = cities.find((c) => c.name === city);
 
   return (
     <div className={cn("grid grid-cols-1 gap-2 sm:gap-3", className)}>
@@ -144,7 +156,7 @@ export function LocationComboboxesMultiCountry({
               "hover:!bg-white dark:hover:!bg-gray-900",
               "focus:!bg-white dark:focus:!bg-gray-900",
               "focus-visible:!bg-white dark:focus-visible:!bg-gray-900",
-              "active:!bg-white dark:active:!bg-gray-900"
+              "active:!bg-white dark:active:!bg-gray-900",
             )}
           >
             {selectedCountry ? (
@@ -153,14 +165,14 @@ export function LocationComboboxesMultiCountry({
                 <span>{selectedCountry.name}</span>
               </span>
             ) : (
-              t('selectCountry')
+              t("selectCountry")
             )}
             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] sm:w-[250px] p-0" align="start">
           <Command>
-            <CommandInput placeholder={t('selectCountry')} />
+            <CommandInput placeholder={t("selectCountry")} />
             <CommandList>
               <CommandEmpty>Nenhum país encontrado.</CommandEmpty>
               <CommandGroup>
@@ -169,14 +181,14 @@ export function LocationComboboxesMultiCountry({
                     key={c.code}
                     value={c.code}
                     onSelect={(currentValue) => {
-                      handleCountryChange(c.code)
-                      setCountryOpen(false)
+                      handleCountryChange(c.code);
+                      setCountryOpen(false);
                     }}
                   >
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        country === c.code ? "opacity-100" : "opacity-0"
+                        country === c.code ? "opacity-100" : "opacity-0",
                       )}
                     />
                     <span className="mr-2">{c.flag}</span>
@@ -202,7 +214,7 @@ export function LocationComboboxesMultiCountry({
               "hover:!bg-white dark:hover:!bg-gray-900",
               "focus:!bg-white dark:focus:!bg-gray-900",
               "focus-visible:!bg-white dark:focus-visible:!bg-gray-900",
-              "active:!bg-white dark:active:!bg-gray-900"
+              "active:!bg-white dark:active:!bg-gray-900",
             )}
             disabled={!country || loadingStates}
           >
@@ -211,17 +223,17 @@ export function LocationComboboxesMultiCountry({
             ) : selectedState ? (
               selectedState.name
             ) : (
-              t('selectState')
+              t("selectState")
             )}
             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] sm:w-[300px] p-0" align="start">
           <Command>
-            <CommandInput placeholder={t('selectState')} />
+            <CommandInput placeholder={t("selectState")} />
             <CommandList>
               <CommandEmpty>
-                {loadingStates ? 'Carregando...' : 'Nenhum estado encontrado.'}
+                {loadingStates ? "Carregando..." : "Nenhum estado encontrado."}
               </CommandEmpty>
               <CommandGroup>
                 {states.map((state) => (
@@ -229,14 +241,14 @@ export function LocationComboboxesMultiCountry({
                     key={state.code}
                     value={state.code}
                     onSelect={(currentValue) => {
-                      handleStateChange(state.code)
-                      setStateOpen(false)
+                      handleStateChange(state.code);
+                      setStateOpen(false);
                     }}
                   >
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        stateCode === state.code ? "opacity-100" : "opacity-0"
+                        stateCode === state.code ? "opacity-100" : "opacity-0",
                       )}
                     />
                     <span className="truncate">{state.name}</span>
@@ -261,7 +273,7 @@ export function LocationComboboxesMultiCountry({
               "hover:!bg-white dark:hover:!bg-gray-900",
               "focus:!bg-white dark:focus:!bg-gray-900",
               "focus-visible:!bg-white dark:focus-visible:!bg-gray-900",
-              "active:!bg-white dark:active:!bg-gray-900"
+              "active:!bg-white dark:active:!bg-gray-900",
             )}
             disabled={!stateCode || loadingCities}
           >
@@ -270,17 +282,17 @@ export function LocationComboboxesMultiCountry({
             ) : selectedCity ? (
               selectedCity.name
             ) : (
-              t('selectCity')
+              t("selectCity")
             )}
             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] sm:w-[300px] p-0" align="start">
           <Command>
-            <CommandInput placeholder={t('selectCity')} />
+            <CommandInput placeholder={t("selectCity")} />
             <CommandList>
               <CommandEmpty>
-                {loadingCities ? 'Carregando...' : 'Nenhuma cidade encontrada.'}
+                {loadingCities ? "Carregando..." : "Nenhuma cidade encontrada."}
               </CommandEmpty>
               <CommandGroup>
                 {cities.map((c) => (
@@ -288,14 +300,14 @@ export function LocationComboboxesMultiCountry({
                     key={c.id}
                     value={c.name}
                     onSelect={(currentValue) => {
-                      handleCityChange(c.name)
-                      setCityOpen(false)
+                      handleCityChange(c.name);
+                      setCityOpen(false);
                     }}
                   >
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        city === c.name ? "opacity-100" : "opacity-0"
+                        city === c.name ? "opacity-100" : "opacity-0",
                       )}
                     />
                     <span className="truncate">{c.name}</span>
@@ -307,6 +319,5 @@ export function LocationComboboxesMultiCountry({
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }
-

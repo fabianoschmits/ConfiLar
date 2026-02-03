@@ -1,40 +1,40 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { RefreshCw, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { usePWA } from '@/hooks/usePWA'
+import { useState, useEffect } from "react";
+import { RefreshCw, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { usePWA } from "@/hooks/usePWA";
 
 export function PWAUpdateNotification() {
-  const { updateAvailable, updateApp } = usePWA()
-  const [isVisible, setIsVisible] = useState(false)
-  const [isUpdating, setIsUpdating] = useState(false)
+  const { updateAvailable, updateApp } = usePWA();
+  const [isVisible, setIsVisible] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     if (updateAvailable) {
-      setIsVisible(true)
+      setIsVisible(true);
     }
-  }, [updateAvailable])
+  }, [updateAvailable]);
 
   const handleUpdate = async () => {
-    setIsUpdating(true)
-    await updateApp()
+    setIsUpdating(true);
+    await updateApp();
     // updateApp já recarrega a página, então não precisa fazer nada aqui
-  }
+  };
 
   const handleDismiss = () => {
-    setIsVisible(false)
+    setIsVisible(false);
     // Mostrar novamente em 1 hora se ainda houver atualização
     setTimeout(() => {
       if (updateAvailable) {
-        setIsVisible(true)
+        setIsVisible(true);
       }
-    }, 3600000) // 1 hora
-  }
+    }, 3600000); // 1 hora
+  };
 
   if (!isVisible || !updateAvailable) {
-    return null
+    return null;
   }
 
   return (
@@ -68,15 +68,9 @@ export function PWAUpdateNotification() {
 
           {/* Informações sobre a atualização */}
           <div className="bg-white rounded-lg p-3 space-y-1">
-            <p className="text-xs text-gray-600">
-              ✨ Melhorias de performance
-            </p>
-            <p className="text-xs text-gray-600">
-              🐛 Correções de bugs
-            </p>
-            <p className="text-xs text-gray-600">
-              🆕 Novas funcionalidades
-            </p>
+            <p className="text-xs text-gray-600">✨ Melhorias de performance</p>
+            <p className="text-xs text-gray-600">🐛 Correções de bugs</p>
+            <p className="text-xs text-gray-600">🆕 Novas funcionalidades</p>
           </div>
 
           {/* Ações */}
@@ -116,6 +110,5 @@ export function PWAUpdateNotification() {
         </div>
       </Card>
     </div>
-  )
+  );
 }
-

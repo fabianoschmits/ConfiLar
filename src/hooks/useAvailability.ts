@@ -1,290 +1,304 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useCallback } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { supabase } from '@/lib/supabase'
-import { toast } from 'sonner'
+import { useState, useEffect, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 // Função helper para usar o contexto de disponibilidade de forma opcional
 const useAvailabilityContextOptional = () => {
   // Retorna null por padrão - o contexto será usado quando estiver implementado
-  return null
-}
+  return null;
+};
 
 export interface AvailabilityState {
-  isAvailable: boolean
-  loading: boolean
-  error: string | null
+  isAvailable: boolean;
+  loading: boolean;
+  error: string | null;
 }
 
 export const useAvailability = () => {
-  const { user, profile, refreshAuth } = useAuthContext()
-  const availabilityContext = useAvailabilityContextOptional()
-  const queryClient = useQueryClient()
+  const { user, profile, refreshAuth } = useAuthContext();
+  const availabilityContext = useAvailabilityContextOptional();
+  const queryClient = useQueryClient();
   const [state, setState] = useState<AvailabilityState>({
     isAvailable: false,
     loading: true,
-    error: null
-  })
+    error: null,
+  });
 
   // Carregar estado inicial da disponibilidade
   useEffect(() => {
     if (profile) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isAvailable: profile.is_available || false,
-        loading: false
-      }))
+        loading: false,
+      }));
     }
-  }, [profile])
+  }, [profile]);
 
   // Função para alternar disponibilidade
   const toggleAvailability = useCallback(async () => {
-    if (!user || !profile) return
+    if (!user || !profile) return;
 
-    setState(prev => ({ ...prev, loading: true, error: null }))
+    setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const newAvailability = !state.isAvailable
+      const newAvailability = !state.isAvailable;
 
       // Atualizar no banco de dados
       const { error } = await supabase
-        .from('profiles')
-        .update({ 
+        .from("profiles")
+        .update({
           is_available: newAvailability,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', user.id)
+        .eq("id", user.id);
 
       if (error) {
-        throw error
+        throw error;
       }
 
       // Atualizar estado local
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isAvailable: newAvailability,
-        loading: false
-      }))
+        loading: false,
+      }));
 
       // Atualizar contexto de autenticação para refletir mudança no perfil
-      await refreshAuth()
+      await refreshAuth();
 
       // Atualizar contexto global se disponível
       if (availabilityContext && user) {
-        availabilityContext.updateUserAvailability(user.id, newAvailability)
+        availabilityContext.updateUserAvailability(user.id, newAvailability);
       }
 
       // Invalidar cache do timeline para atualizar posts existentes
       queryClient.invalidateQueries({
-        queryKey: ['unified-timeline']
-      })
+        queryKey: ["unified-timeline"],
+      });
       queryClient.invalidateQueries({
-        queryKey: ['timeline']
-      })
+        queryKey: ["timeline"],
+      });
 
       // Mostrar mensagem de feedback com tema moderno
       if (newAvailability) {
-        toast.success('✅ Disponível para orçamentos!', {
-          description: 'Agora você está disponível para receber orçamentos e ofertas de clientes',
+        toast.success("✅ Disponível para orçamentos!", {
+          description:
+            "Agora você está disponível para receber orçamentos e ofertas de clientes",
           style: {
-            background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-            color: '#FFFFFF',
-            border: '1px solid #10B981',
-            borderRadius: '12px',
-            boxShadow: '0 10px 25px rgba(16, 185, 129, 0.3)',
-            fontWeight: '500',
-            fontSize: '14px',
-            padding: '16px 20px'
-          }
-        })
-        
+            background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
+            color: "#FFFFFF",
+            border: "1px solid #10B981",
+            borderRadius: "12px",
+            boxShadow: "0 10px 25px rgba(16, 185, 129, 0.3)",
+            fontWeight: "500",
+            fontSize: "14px",
+            padding: "16px 20px",
+          },
+        });
+
         // Mensagem informativa sobre inativação automática
         setTimeout(() => {
-          toast.info('ℹ️ Importante: Inativação Automática', {
-            description: 'Você será automaticamente marcado como indisponível se ficar 7 dias sem acessar o site',
+          toast.info("ℹ️ Importante: Inativação Automática", {
+            description:
+              "Você será automaticamente marcado como indisponível se ficar 7 dias sem acessar o site",
             duration: 6000,
             style: {
-              background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
-              color: '#FFFFFF',
-              border: '1px solid #3B82F6',
-              borderRadius: '12px',
-              boxShadow: '0 10px 25px rgba(59, 130, 246, 0.3)',
-              fontWeight: '500',
-              fontSize: '14px',
-              padding: '16px 20px'
-            }
-          })
-        }, 2000)
+              background: "linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)",
+              color: "#FFFFFF",
+              border: "1px solid #3B82F6",
+              borderRadius: "12px",
+              boxShadow: "0 10px 25px rgba(59, 130, 246, 0.3)",
+              fontWeight: "500",
+              fontSize: "14px",
+              padding: "16px 20px",
+            },
+          });
+        }, 2000);
       } else {
-        toast.info('⏸️ Indisponível', {
-          description: 'Você não está mais disponível para receber orçamentos e ofertas',
+        toast.info("⏸️ Indisponível", {
+          description:
+            "Você não está mais disponível para receber orçamentos e ofertas",
           style: {
-            background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
-            color: '#FFFFFF',
-            border: '1px solid #EF4444',
-            borderRadius: '12px',
-            boxShadow: '0 10px 25px rgba(239, 68, 68, 0.3)',
-            fontWeight: '500',
-            fontSize: '14px',
-            padding: '16px 20px'
-          }
-        })
+            background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
+            color: "#FFFFFF",
+            border: "1px solid #EF4444",
+            borderRadius: "12px",
+            boxShadow: "0 10px 25px rgba(239, 68, 68, 0.3)",
+            fontWeight: "500",
+            fontSize: "14px",
+            padding: "16px 20px",
+          },
+        });
       }
 
-      return newAvailability
+      return newAvailability;
     } catch (error) {
-      console.error('Erro ao atualizar disponibilidade:', error)
-      setState(prev => ({
+      console.error("Erro ao atualizar disponibilidade:", error);
+      setState((prev) => ({
         ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : 'Erro ao atualizar disponibilidade'
-      }))
-      
+        error:
+          error instanceof Error
+            ? error.message
+            : "Erro ao atualizar disponibilidade",
+      }));
+
       // Mostrar erro com tema moderno
-      toast.error('❌ Erro ao alterar disponibilidade', {
-        description: 'Tente novamente em alguns instantes',
+      toast.error("❌ Erro ao alterar disponibilidade", {
+        description: "Tente novamente em alguns instantes",
         style: {
-          background: 'linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)',
-          color: '#FFFFFF',
-          border: '1px solid #DC2626',
-          borderRadius: '12px',
-          boxShadow: '0 10px 25px rgba(220, 38, 38, 0.3)',
-          fontWeight: '500',
-          fontSize: '14px',
-          padding: '16px 20px'
-        }
-      })
-      
-      return null
+          background: "linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)",
+          color: "#FFFFFF",
+          border: "1px solid #DC2626",
+          borderRadius: "12px",
+          boxShadow: "0 10px 25px rgba(220, 38, 38, 0.3)",
+          fontWeight: "500",
+          fontSize: "14px",
+          padding: "16px 20px",
+        },
+      });
+
+      return null;
     }
-  }, [user, profile, state.isAvailable])
+  }, [user, profile, state.isAvailable]);
 
   // Função para definir disponibilidade específica
-  const setAvailability = useCallback(async (available: boolean) => {
-    if (!user || !profile) return
+  const setAvailability = useCallback(
+    async (available: boolean) => {
+      if (!user || !profile) return;
 
-    setState(prev => ({ ...prev, loading: true, error: null }))
+      setState((prev) => ({ ...prev, loading: true, error: null }));
 
-    try {
-      // Atualizar no banco de dados
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          is_available: available,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id)
-
-      if (error) {
-        throw error
-      }
-
-      // Atualizar estado local
-      setState(prev => ({
-        ...prev,
-        isAvailable: available,
-        loading: false
-      }))
-
-      // Atualizar contexto de autenticação para refletir mudança no perfil
-      await refreshAuth()
-
-      // Atualizar contexto global se disponível
-      if (availabilityContext && user) {
-        availabilityContext.updateUserAvailability(user.id, available)
-      }
-
-      // Invalidar cache do timeline para atualizar posts existentes
-      queryClient.invalidateQueries({
-        queryKey: ['unified-timeline']
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['timeline']
-      })
-
-      // Mostrar mensagem de feedback com tema moderno
-      if (available) {
-        toast.success('✅ Disponível para orçamentos!', {
-          description: 'Agora você está disponível para receber orçamentos e ofertas de clientes',
-          style: {
-            background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-            color: '#FFFFFF',
-            border: '1px solid #10B981',
-            borderRadius: '12px',
-            boxShadow: '0 10px 25px rgba(16, 185, 129, 0.3)',
-            fontWeight: '500',
-            fontSize: '14px',
-            padding: '16px 20px'
-          }
-        })
-        
-        // Mensagem informativa sobre inativação automática
-        setTimeout(() => {
-          toast.info('ℹ️ Importante: Inativação Automática', {
-            description: 'Você será automaticamente marcado como indisponível se ficar 7 dias sem acessar o site',
-            duration: 6000,
-            style: {
-              background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
-              color: '#FFFFFF',
-              border: '1px solid #3B82F6',
-              borderRadius: '12px',
-              boxShadow: '0 10px 25px rgba(59, 130, 246, 0.3)',
-              fontWeight: '500',
-              fontSize: '14px',
-              padding: '16px 20px'
-            }
+      try {
+        // Atualizar no banco de dados
+        const { error } = await supabase
+          .from("profiles")
+          .update({
+            is_available: available,
+            updated_at: new Date().toISOString(),
           })
-        }, 2000)
-      } else {
-        toast.info('⏸️ Indisponível', {
-          description: 'Você não está mais disponível para receber orçamentos e ofertas',
-          style: {
-            background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
-            color: '#FFFFFF',
-            border: '1px solid #EF4444',
-            borderRadius: '12px',
-            boxShadow: '0 10px 25px rgba(239, 68, 68, 0.3)',
-            fontWeight: '500',
-            fontSize: '14px',
-            padding: '16px 20px'
-          }
-        })
-      }
+          .eq("id", user.id);
 
-      return available
-    } catch (error) {
-      console.error('Erro ao definir disponibilidade:', error)
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: error instanceof Error ? error.message : 'Erro ao definir disponibilidade'
-      }))
-      
-      // Mostrar erro com tema moderno
-      toast.error('❌ Erro ao alterar disponibilidade', {
-        description: 'Tente novamente em alguns instantes',
-        style: {
-          background: 'linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)',
-          color: '#FFFFFF',
-          border: '1px solid #DC2626',
-          borderRadius: '12px',
-          boxShadow: '0 10px 25px rgba(220, 38, 38, 0.3)',
-          fontWeight: '500',
-          fontSize: '14px',
-          padding: '16px 20px'
+        if (error) {
+          throw error;
         }
-      })
-      
-      return null
-    }
-  }, [user, profile])
+
+        // Atualizar estado local
+        setState((prev) => ({
+          ...prev,
+          isAvailable: available,
+          loading: false,
+        }));
+
+        // Atualizar contexto de autenticação para refletir mudança no perfil
+        await refreshAuth();
+
+        // Atualizar contexto global se disponível
+        if (availabilityContext && user) {
+          availabilityContext.updateUserAvailability(user.id, available);
+        }
+
+        // Invalidar cache do timeline para atualizar posts existentes
+        queryClient.invalidateQueries({
+          queryKey: ["unified-timeline"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["timeline"],
+        });
+
+        // Mostrar mensagem de feedback com tema moderno
+        if (available) {
+          toast.success("✅ Disponível para orçamentos!", {
+            description:
+              "Agora você está disponível para receber orçamentos e ofertas de clientes",
+            style: {
+              background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
+              color: "#FFFFFF",
+              border: "1px solid #10B981",
+              borderRadius: "12px",
+              boxShadow: "0 10px 25px rgba(16, 185, 129, 0.3)",
+              fontWeight: "500",
+              fontSize: "14px",
+              padding: "16px 20px",
+            },
+          });
+
+          // Mensagem informativa sobre inativação automática
+          setTimeout(() => {
+            toast.info("ℹ️ Importante: Inativação Automática", {
+              description:
+                "Você será automaticamente marcado como indisponível se ficar 7 dias sem acessar o site",
+              duration: 6000,
+              style: {
+                background: "linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)",
+                color: "#FFFFFF",
+                border: "1px solid #3B82F6",
+                borderRadius: "12px",
+                boxShadow: "0 10px 25px rgba(59, 130, 246, 0.3)",
+                fontWeight: "500",
+                fontSize: "14px",
+                padding: "16px 20px",
+              },
+            });
+          }, 2000);
+        } else {
+          toast.info("⏸️ Indisponível", {
+            description:
+              "Você não está mais disponível para receber orçamentos e ofertas",
+            style: {
+              background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
+              color: "#FFFFFF",
+              border: "1px solid #EF4444",
+              borderRadius: "12px",
+              boxShadow: "0 10px 25px rgba(239, 68, 68, 0.3)",
+              fontWeight: "500",
+              fontSize: "14px",
+              padding: "16px 20px",
+            },
+          });
+        }
+
+        return available;
+      } catch (error) {
+        console.error("Erro ao definir disponibilidade:", error);
+        setState((prev) => ({
+          ...prev,
+          loading: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Erro ao definir disponibilidade",
+        }));
+
+        // Mostrar erro com tema moderno
+        toast.error("❌ Erro ao alterar disponibilidade", {
+          description: "Tente novamente em alguns instantes",
+          style: {
+            background: "linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)",
+            color: "#FFFFFF",
+            border: "1px solid #DC2626",
+            borderRadius: "12px",
+            boxShadow: "0 10px 25px rgba(220, 38, 38, 0.3)",
+            fontWeight: "500",
+            fontSize: "14px",
+            padding: "16px 20px",
+          },
+        });
+
+        return null;
+      }
+    },
+    [user, profile],
+  );
 
   return {
     ...state,
     toggleAvailability,
-    setAvailability
-  }
-}
-
+    setAvailability,
+  };
+};

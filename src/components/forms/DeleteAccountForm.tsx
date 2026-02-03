@@ -1,44 +1,46 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { 
-  Trash2, 
-  Shield, 
-  CheckCircle2, 
-  AlertCircle, 
-  RefreshCw, 
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Trash2,
+  Shield,
+  CheckCircle2,
+  AlertCircle,
+  RefreshCw,
   ArrowLeft,
-  AlertTriangle
-} from 'lucide-react'
-import { supabase } from '@/lib/supabase'
-import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
-import { useReauthentication } from '@/hooks/useReauthentication'
-import { useRouter } from 'next/navigation'
-import { useAuthContext } from '@/contexts/AuthContext'
+  AlertTriangle,
+} from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { useReauthentication } from "@/hooks/useReauthentication";
+import { useRouter } from "next/navigation";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 interface DeleteAccountFormProps {
-  userEmail: string
-  className?: string
+  userEmail: string;
+  className?: string;
 }
 
-export function DeleteAccountForm({ 
+export function DeleteAccountForm({
   userEmail,
-  className 
+  className,
 }: DeleteAccountFormProps) {
-  const router = useRouter()
-  const { signOut } = useAuthContext()
-  const [step, setStep] = useState<'warning' | 'reauth' | 'confirmation' | 'processing' | 'success'>('warning')
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [verificationCode, setVerificationCode] = useState('')
-  const [confirmText, setConfirmText] = useState('')
-  
+  const router = useRouter();
+  const { signOut } = useAuthContext();
+  const [step, setStep] = useState<
+    "warning" | "reauth" | "confirmation" | "processing" | "success"
+  >("warning");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [confirmText, setConfirmText] = useState("");
+
   const {
     isLoading: isReauthLoading,
     isReauthenticated,
@@ -47,160 +49,156 @@ export function DeleteAccountForm({
     requestReauthentication,
     verifyOTP,
     resetReauthentication,
-    checkReauthenticationRequired
-  } = useReauthentication()
+    checkReauthenticationRequired,
+  } = useReauthentication();
 
   const handleStartDeletion = async () => {
     try {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
 
       // Verificar se reautenticação é necessária
-      const needsReauth = await checkReauthenticationRequired('email')
-      
+      const needsReauth = await checkReauthenticationRequired("email");
+
       if (needsReauth) {
-        setStep('reauth')
-        setIsLoading(false)
-        return
+        setStep("reauth");
+        setIsLoading(false);
+        return;
       }
 
       // Se não precisa reautenticação, ir direto para confirmação
-      setStep('confirmation')
-      setIsLoading(false)
-
+      setStep("confirmation");
+      setIsLoading(false);
     } catch (err: any) {
-      console.error('Erro ao iniciar deleção:', err)
-      setError(err.message || 'Erro ao iniciar processo de deleção')
-      toast.error('Erro ao iniciar deleção', {
-        description: err.message
-      })
-      setIsLoading(false)
+      console.error("Erro ao iniciar deleção:", err);
+      setError(err.message || "Erro ao iniciar processo de deleção");
+      toast.error("Erro ao iniciar deleção", {
+        description: err.message,
+      });
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleReauthentication = async () => {
     try {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
 
-      const { error } = await requestReauthentication()
+      const { error } = await requestReauthentication();
       if (error) {
-        throw new Error(error.message)
+        throw new Error(error.message);
       }
 
       // Código enviado com sucesso
-      setIsLoading(false)
-
+      setIsLoading(false);
     } catch (err: any) {
-      console.error('Erro na reautenticação:', err)
-      setError(err.message || 'Erro na reautenticação')
-      toast.error('Erro na reautenticação', {
-        description: err.message
-      })
-      setIsLoading(false)
+      console.error("Erro na reautenticação:", err);
+      setError(err.message || "Erro na reautenticação");
+      toast.error("Erro na reautenticação", {
+        description: err.message,
+      });
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleReauthOTP = async () => {
     try {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
 
-      const { error } = await verifyOTP(verificationCode)
+      const { error } = await verifyOTP(verificationCode);
       if (error) {
-        throw new Error(error.message)
+        throw new Error(error.message);
       }
 
       // Após reautenticação bem-sucedida, ir para confirmação
-      setStep('confirmation')
-      setIsLoading(false)
-
+      setStep("confirmation");
+      setIsLoading(false);
     } catch (err: any) {
-      console.error('Erro ao verificar código de reautenticação:', err)
-      setError(err.message || 'Código inválido')
-      toast.error('Código inválido', {
-        description: err.message
-      })
-      setIsLoading(false)
+      console.error("Erro ao verificar código de reautenticação:", err);
+      setError(err.message || "Código inválido");
+      toast.error("Código inválido", {
+        description: err.message,
+      });
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleConfirmDeletion = async () => {
-    if (!confirmText || confirmText !== 'DELETAR CONTA') {
-      toast.error('Digite exatamente "DELETAR CONTA" para confirmar')
-      return
+    if (!confirmText || confirmText !== "DELETAR CONTA") {
+      toast.error('Digite exatamente "DELETAR CONTA" para confirmar');
+      return;
     }
 
-    setStep('processing')
-    setIsLoading(true)
-    setError(null)
+    setStep("processing");
+    setIsLoading(true);
+    setError(null);
 
     try {
-      const response = await fetch('/api/lgpd/delete-account', {
-        method: 'POST',
+      const response = await fetch("/api/lgpd/delete-account", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          emailVerified: true // Indica que email foi verificado via reautenticação
-        })
-      })
+        body: JSON.stringify({
+          emailVerified: true, // Indica que email foi verificado via reautenticação
+        }),
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Erro ao deletar conta')
+        throw new Error(data.error || "Erro ao deletar conta");
       }
 
-      setStep('success')
-      toast.success('Conta deletada com sucesso!')
-      
+      setStep("success");
+      toast.success("Conta deletada com sucesso!");
+
       // Deslogar o usuário e limpar sessão
       try {
         // Fazer signOut do Supabase
-        await supabase.auth.signOut()
-        
+        await supabase.auth.signOut();
+
         // Fazer signOut do contexto de autenticação
         if (signOut) {
-          await signOut()
+          await signOut();
         }
-        
+
         // Limpar localStorage e sessionStorage
-        localStorage.clear()
-        sessionStorage.clear()
-        
+        localStorage.clear();
+        sessionStorage.clear();
+
         // Redirecionar para página inicial após 1 segundo
         setTimeout(() => {
-          window.location.href = '/'
-        }, 1000)
+          window.location.href = "/";
+        }, 1000);
       } catch (logoutError) {
-        console.error('Erro ao fazer logout:', logoutError)
+        console.error("Erro ao fazer logout:", logoutError);
         // Mesmo com erro, redirecionar
         setTimeout(() => {
-          window.location.href = '/'
-        }, 1000)
+          window.location.href = "/";
+        }, 1000);
       }
-
     } catch (err: any) {
-      console.error('Erro ao deletar conta:', err)
-      setError(err.message || 'Erro ao deletar conta')
-      toast.error('Erro ao deletar conta', {
-        description: err.message
-      })
-      setStep('confirmation')
-      setIsLoading(false)
+      console.error("Erro ao deletar conta:", err);
+      setError(err.message || "Erro ao deletar conta");
+      toast.error("Erro ao deletar conta", {
+        description: err.message,
+      });
+      setStep("confirmation");
+      setIsLoading(false);
     }
-  }
+  };
 
   const resetForm = () => {
-    setStep('warning')
-    setError(null)
-    setVerificationCode('')
-    setConfirmText('')
-    resetReauthentication()
-  }
+    setStep("warning");
+    setError(null);
+    setVerificationCode("");
+    setConfirmText("");
+    resetReauthentication();
+  };
 
-  if (step === 'success') {
+  if (step === "success") {
     return (
       <Card className={cn("border-red-200 dark:border-red-900", className)}>
         <CardContent className="p-6 text-center">
@@ -215,10 +213,10 @@ export function DeleteAccountForm({
           </p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  if (step === 'processing') {
+  if (step === "processing") {
     return (
       <Card className={cn("border-red-200 dark:border-red-900", className)}>
         <CardContent className="p-6 text-center">
@@ -233,10 +231,10 @@ export function DeleteAccountForm({
           </p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  if (step === 'reauth') {
+  if (step === "reauth") {
     return (
       <Card className={cn("border-red-200 dark:border-red-900", className)}>
         <CardHeader>
@@ -249,8 +247,9 @@ export function DeleteAccountForm({
           <Alert>
             <AlertCircle className="w-4 h-4" />
             <AlertDescription>
-              Para deletar sua conta, precisamos confirmar sua identidade. 
-              Enviaremos um código de verificação para <strong>{userEmail}</strong>.
+              Para deletar sua conta, precisamos confirmar sua identidade.
+              Enviaremos um código de verificação para{" "}
+              <strong>{userEmail}</strong>.
             </AlertDescription>
           </Alert>
 
@@ -267,13 +266,13 @@ export function DeleteAccountForm({
               disabled={isLoading || isReauthLoading}
               className="w-full bg-red-600 hover:bg-red-700 text-white"
             >
-              {(isLoading || isReauthLoading) ? (
+              {isLoading || isReauthLoading ? (
                 <>
                   <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
                   Enviando...
                 </>
               ) : (
-                'Enviar Código de Verificação'
+                "Enviar Código de Verificação"
               )}
             </Button>
           ) : (
@@ -302,26 +301,22 @@ export function DeleteAccountForm({
                     Verificando...
                   </>
                 ) : (
-                  'Verificar Código'
+                  "Verificar Código"
                 )}
               </Button>
             </div>
           )}
 
-          <Button
-            onClick={resetForm}
-            variant="ghost"
-            className="w-full"
-          >
+          <Button onClick={resetForm} variant="ghost" className="w-full">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Cancelar
           </Button>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  if (step === 'confirmation') {
+  if (step === "confirmation") {
     return (
       <Card className={cn("border-red-200 dark:border-red-900", className)}>
         <CardHeader>
@@ -334,13 +329,16 @@ export function DeleteAccountForm({
           <Alert variant="destructive">
             <AlertTriangle className="w-4 h-4" />
             <AlertDescription>
-              <strong>Atenção:</strong> Esta ação é permanente e não pode ser desfeita. 
-              Todos os seus dados serão permanentemente removidos, incluindo:
+              <strong>Atenção:</strong> Esta ação é permanente e não pode ser
+              desfeita. Todos os seus dados serão permanentemente removidos,
+              incluindo:
             </AlertDescription>
           </Alert>
 
           <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-lg p-4 space-y-2">
-            <p className="text-sm text-red-800 dark:text-red-200 font-medium">Dados que serão deletados:</p>
+            <p className="text-sm text-red-800 dark:text-red-200 font-medium">
+              Dados que serão deletados:
+            </p>
             <ul className="text-sm text-red-700 dark:text-red-300 space-y-1 list-disc list-inside">
               <li>Perfil e informações pessoais</li>
               <li>Posts e publicações</li>
@@ -360,7 +358,10 @@ export function DeleteAccountForm({
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="confirmText" className="text-red-600 dark:text-red-400">
+            <Label
+              htmlFor="confirmText"
+              className="text-red-600 dark:text-red-400"
+            >
               Digite <strong>DELETAR CONTA</strong> para confirmar:
             </Label>
             <Input
@@ -371,16 +372,16 @@ export function DeleteAccountForm({
               onChange={(e) => setConfirmText(e.target.value)}
               className={cn(
                 "font-mono",
-                confirmText === 'DELETAR CONTA' 
-                  ? 'border-red-500 focus:border-red-600' 
-                  : 'border-gray-300'
+                confirmText === "DELETAR CONTA"
+                  ? "border-red-500 focus:border-red-600"
+                  : "border-gray-300",
               )}
             />
           </div>
 
           <Button
             onClick={handleConfirmDeletion}
-            disabled={isLoading || confirmText !== 'DELETAR CONTA'}
+            disabled={isLoading || confirmText !== "DELETAR CONTA"}
             className="w-full bg-red-600 hover:bg-red-700 text-white"
           >
             {isLoading ? (
@@ -396,17 +397,13 @@ export function DeleteAccountForm({
             )}
           </Button>
 
-          <Button
-            onClick={resetForm}
-            variant="ghost"
-            className="w-full"
-          >
+          <Button onClick={resetForm} variant="ghost" className="w-full">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Cancelar
           </Button>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -421,8 +418,9 @@ export function DeleteAccountForm({
         <Alert variant="destructive">
           <AlertTriangle className="w-4 h-4" />
           <AlertDescription>
-            <strong>Ação Irreversível:</strong> Ao deletar sua conta, todos os seus dados 
-            serão permanentemente removidos e não poderão ser recuperados.
+            <strong>Ação Irreversível:</strong> Ao deletar sua conta, todos os
+            seus dados serão permanentemente removidos e não poderão ser
+            recuperados.
           </AlertDescription>
         </Alert>
 
@@ -468,6 +466,5 @@ export function DeleteAccountForm({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

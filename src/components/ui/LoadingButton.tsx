@@ -1,14 +1,14 @@
-'use client'
+"use client";
 
-import { Button } from '@/components/ui/button'
-import { Loader2 } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { ComponentProps, useEffect, useRef } from 'react'
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ComponentProps, useEffect, useRef } from "react";
 
 interface LoadingButtonProps extends ComponentProps<typeof Button> {
-  isLoading?: boolean
-  loadingText?: string
-  children: React.ReactNode
+  isLoading?: boolean;
+  loadingText?: string;
+  children: React.ReactNode;
 }
 
 export function LoadingButton({
@@ -20,7 +20,7 @@ export function LoadingButton({
   ...props
 }: LoadingButtonProps) {
   // Haptic feedback removido para simplificar
-  const prevLoadingRef = useRef(isLoading)
+  const prevLoadingRef = useRef(isLoading);
 
   // Feedback háptico quando o loading termina com sucesso
   useEffect(() => {
@@ -28,16 +28,16 @@ export function LoadingButton({
       // Loading acabou, dar feedback de sucesso
       // Haptic feedback removido
     }
-    prevLoadingRef.current = isLoading
-  }, [isLoading])
+    prevLoadingRef.current = isLoading;
+  }, [isLoading]);
 
   return (
     <Button
       className={cn(
-        'transition-smooth',
-        isLoading && 'cursor-wait',
-        'hover:scale-105 active:scale-95',
-        className
+        "transition-smooth",
+        isLoading && "cursor-wait",
+        "hover:scale-105 active:scale-95",
+        className,
       )}
       disabled={disabled || isLoading}
       {...props}
@@ -51,6 +51,5 @@ export function LoadingButton({
         children
       )}
     </Button>
-  )
+  );
 }
-

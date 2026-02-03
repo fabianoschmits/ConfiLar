@@ -1,22 +1,22 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { 
-  MoreHorizontal, 
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  MoreHorizontal,
   Copy,
   Edit,
   Trash2,
   AlertTriangle,
-  Flag
-} from 'lucide-react'
+  Flag,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,45 +26,44 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
+} from "@/components/ui/alert-dialog";
 
 interface MessageMenuProps {
-  messageId: string
-  messageContent: string
-  onDelete: (messageId: string) => void
-  onEdit?: (messageId: string, newContent: string) => void
-  disabled?: boolean
-  isOwnMessage: boolean
+  messageId: string;
+  messageContent: string;
+  onDelete: (messageId: string) => void;
+  onEdit?: (messageId: string, newContent: string) => void;
+  disabled?: boolean;
+  isOwnMessage: boolean;
 }
 
-export function MessageMenu({ 
-  messageId, 
+export function MessageMenu({
+  messageId,
   messageContent,
-  onDelete, 
+  onDelete,
   onEdit,
   disabled = false,
-  isOwnMessage
+  isOwnMessage,
 }: MessageMenuProps) {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
     try {
-      setIsDeleting(true)
-      await onDelete(messageId)
-      setShowDeleteDialog(false)
+      setIsDeleting(true);
+      await onDelete(messageId);
+      setShowDeleteDialog(false);
     } catch (error) {
-      console.error('Erro ao deletar mensagem:', error)
+      console.error("Erro ao deletar mensagem:", error);
     } finally {
-      setIsDeleting(false)
+      setIsDeleting(false);
     }
-  }
+  };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(messageContent)
+    navigator.clipboard.writeText(messageContent);
     // Você pode adicionar um toast aqui se quiser
-  }
+  };
 
   return (
     <>
@@ -77,27 +76,27 @@ export function MessageMenu({
             <MoreHorizontal className="h-2.5 w-2.5 text-gray-500 hover:text-gray-700" />
           </div>
         </DropdownMenuTrigger>
-        <DropdownMenuContent 
-          align="end" 
+        <DropdownMenuContent
+          align="end"
           className="w-40 bg-white border border-gray-200 shadow-lg rounded-lg p-1"
         >
           <DropdownMenuItem
             onClick={(e) => {
-              e.stopPropagation()
-              handleCopy()
+              e.stopPropagation();
+              handleCopy();
             }}
             className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 focus:bg-gray-50 text-gray-700 text-sm rounded-md px-2 py-1.5"
           >
             <Copy className="h-3.5 w-3.5" />
             Copiar
           </DropdownMenuItem>
-          
+
           {/* Opções para mensagens próprias - Editar */}
           {isOwnMessage && onEdit && (
             <DropdownMenuItem
               onClick={(e) => {
-                e.stopPropagation()
-                onEdit(messageId, messageContent)
+                e.stopPropagation();
+                onEdit(messageId, messageContent);
               }}
               className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 focus:bg-gray-50 text-gray-700 text-sm rounded-md px-2 py-1.5"
             >
@@ -105,16 +104,15 @@ export function MessageMenu({
               Editar
             </DropdownMenuItem>
           )}
-          
+
           <DropdownMenuSeparator className="bg-gray-200 my-1" />
-          
-          
+
           {/* Opção de deletar para mensagens próprias */}
           {isOwnMessage && (
             <DropdownMenuItem
               onClick={(e) => {
-                e.stopPropagation()
-                setShowDeleteDialog(true)
+                e.stopPropagation();
+                setShowDeleteDialog(true);
               }}
               className="flex items-center gap-2 cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-600 text-sm rounded-md px-2 py-1.5"
             >
@@ -142,7 +140,10 @@ export function MessageMenu({
                   </p>
                   <ul className="text-sm text-amber-700 space-y-1">
                     <li>• Esta ação não pode ser desfeita</li>
-                    <li>• A mensagem será removida para você e para o outro usuário</li>
+                    <li>
+                      • A mensagem será removida para você e para o outro
+                      usuário
+                    </li>
                     <li>• Ambos não conseguirão mais ver esta mensagem</li>
                   </ul>
                 </div>
@@ -150,7 +151,7 @@ export function MessageMenu({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-3">
-            <AlertDialogCancel 
+            <AlertDialogCancel
               onClick={() => setShowDeleteDialog(false)}
               className="bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
             >
@@ -161,11 +162,11 @@ export function MessageMenu({
               disabled={isDeleting}
               className="bg-red-500 text-white hover:bg-red-600 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isDeleting ? 'Deletando...' : 'Deletar'}
+              {isDeleting ? "Deletando..." : "Deletar"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
+  );
 }

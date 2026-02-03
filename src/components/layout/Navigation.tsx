@@ -1,52 +1,52 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { Button } from '@/components/ui/button'
-import { useRouter } from 'next/navigation'
-import { useOpenMessages } from '@/hooks/useOpenMessages'
-import { NewNotificationBell } from '@/components/notifications/NewNotificationBell'
-import { 
-  Home, 
-  Search, 
-  MessageSquare, 
-  User, 
+import Link from "next/link";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { useOpenMessages } from "@/hooks/useOpenMessages";
+import { NewNotificationBell } from "@/components/notifications/NewNotificationBell";
+import {
+  Home,
+  Search,
+  MessageSquare,
+  User,
   LogOut,
   Plus,
   Briefcase,
   Calendar,
   HelpCircle,
-  TestTube
-} from 'lucide-react'
+  TestTube,
+} from "lucide-react";
 
 export function Navigation() {
-  const { profile, signOut, isMockMode } = useAuthContext()
-  const router = useRouter()
-  const { openMessagesList } = useOpenMessages()
+  const { profile, signOut, isMockMode } = useAuthContext();
+  const router = useRouter();
+  const { openMessagesList } = useOpenMessages();
 
   // Função de navegação robusta
   const handleNavigation = (path: string) => {
     try {
-      window.location.href = path
+      window.location.href = path;
     } catch (error) {
-      console.error('Erro na navegação:', error)
-      router.push(path)
+      console.error("Erro na navegação:", error);
+      router.push(path);
     }
-  }
+  };
 
   const handleLogout = async () => {
     try {
-      await signOut()
+      await signOut();
       // Redirecionar diretamente para a página de login
-      window.location.href = '/auth'
+      window.location.href = "/auth";
     } catch (error) {
-      console.error('Erro ao sair:', error)
+      console.error("Erro ao sair:", error);
       // Mesmo com erro, redirecionar para login
-      window.location.href = '/auth'
+      window.location.href = "/auth";
     }
-  }
+  };
 
-  if (!profile) return null
+  if (!profile) return null;
 
   return (
     <nav className="bg-white shadow-sm border-b">
@@ -54,8 +54,8 @@ export function Navigation() {
         <div className="flex items-center justify-between h-20 sm:h-20 md:h-16 py-2 sm:py-0">
           {/* Logo */}
           <div className="flex items-center">
-            <button 
-              onClick={() => handleNavigation('/home')}
+            <button
+              onClick={() => handleNavigation("/home")}
               className="text-2xl font-bold text-blue-600 hover:text-blue-800 transition-colors"
             >
               Confilar
@@ -64,48 +64,48 @@ export function Navigation() {
 
           {/* Links de Navegação */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
-              onClick={() => handleNavigation('/home')}
+              onClick={() => handleNavigation("/home")}
             >
               <Home className="h-4 w-4 mr-2" />
               Home
             </Button>
-            
-            <Button 
-              variant="ghost" 
+
+            <Button
+              variant="ghost"
               size="sm"
-              onClick={() => handleNavigation('/feed')}
+              onClick={() => handleNavigation("/feed")}
             >
               <MessageSquare className="h-4 w-4 mr-2" />
               Feed Social
             </Button>
 
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
-              onClick={() => handleNavigation('/buscar')}
+              onClick={() => handleNavigation("/buscar")}
             >
               <Search className="h-4 w-4 mr-2" />
               Buscar
             </Button>
 
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
-              onClick={() => handleNavigation('/classificados')}
+              onClick={() => handleNavigation("/classificados")}
             >
               <Briefcase className="h-4 w-4 mr-2" />
               Classificados
             </Button>
 
-            {profile.user_type === 'professional' && (
+            {profile.user_type === "professional" && (
               <>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="sm"
-                  onClick={() => handleNavigation('/portfolio')}
+                  onClick={() => handleNavigation("/portfolio")}
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Meus Serviços
@@ -114,11 +114,11 @@ export function Navigation() {
             )}
 
             {/* Link para página de teste (apenas em desenvolvimento) */}
-            {process.env.NODE_ENV === 'development' && (
-              <Button 
-                variant="ghost" 
+            {process.env.NODE_ENV === "development" && (
+              <Button
+                variant="ghost"
                 size="sm"
-                onClick={() => handleNavigation('/teste-notificacoes')}
+                onClick={() => handleNavigation("/teste-notificacoes")}
                 className="text-orange-600 hover:text-orange-800"
               >
                 <TestTube className="h-4 w-4 mr-2" />
@@ -130,21 +130,21 @@ export function Navigation() {
           {/* Perfil e Ações */}
           <div className="flex items-center space-x-2 sm:space-x-4">
             {/* Sino de Notificações */}
-                <NewNotificationBell />
+            <NewNotificationBell />
 
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
-              onClick={() => handleNavigation('/editarperfil/dados-da-conta')}
+              onClick={() => handleNavigation("/editarperfil/dados-da-conta")}
               className="hidden sm:flex"
             >
               <User className="h-4 w-4 mr-2" />
               Perfil
             </Button>
 
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleLogout}
               className="hidden sm:flex"
             >
@@ -162,5 +162,5 @@ export function Navigation() {
         </div>
       </div>
     </nav>
-  )
+  );
 }

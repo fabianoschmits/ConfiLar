@@ -1,15 +1,15 @@
-'use client'
+"use client";
 
-import { LoadingOverlay } from './LoadingOverlay'
-import { useLoading } from '@/hooks/useLoading'
+import { LoadingOverlay } from "./LoadingOverlay";
+import { useLoading } from "@/hooks/useLoading";
 
 export function LoadingOverlayProvider() {
-  const { loadingState } = useLoading()
+  const { loadingState } = useLoading();
 
   return (
-    <LoadingOverlay 
+    <LoadingOverlay
       isLoading={loadingState.isLoading}
       message={loadingState.message}
     />
-  )
+  );
 }

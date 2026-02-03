@@ -1,171 +1,186 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Bell, BellOff, Settings, CheckCircle, XCircle } from 'lucide-react'
-import { useAuth } from '@/hooks/useUnifiedAuth'
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Bell, BellOff, Settings, CheckCircle, XCircle } from "lucide-react";
+import { useAuth } from "@/hooks/useUnifiedAuth";
 
 interface NotificationPermission {
-  granted: boolean
-  denied: boolean
-  default: boolean
+  granted: boolean;
+  denied: boolean;
+  default: boolean;
 }
 
 export function PushNotificationManager() {
-  const { user } = useAuth()
+  const { user } = useAuth();
   const [permission, setPermission] = useState<NotificationPermission>({
     granted: false,
     denied: false,
-    default: false
-  })
-  const [isSupported, setIsSupported] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [subscription, setSubscription] = useState<PushSubscription | null>(null)
+    default: false,
+  });
+  const [isSupported, setIsSupported] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [subscription, setSubscription] = useState<PushSubscription | null>(
+    null,
+  );
 
   useEffect(() => {
-    checkNotificationSupport()
-    checkPermission()
-    checkSubscription()
-  }, [])
+    checkNotificationSupport();
+    checkPermission();
+    checkSubscription();
+  }, []);
 
   const checkNotificationSupport = () => {
-    const supported = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window
-    setIsSupported(supported)
-  }
+    const supported =
+      "Notification" in window &&
+      "serviceWorker" in navigator &&
+      "PushManager" in window;
+    setIsSupported(supported);
+  };
 
   const checkPermission = () => {
-    if (!isSupported) return
+    if (!isSupported) return;
 
-    const permissionStatus = Notification.permission
+    const permissionStatus = Notification.permission;
     setPermission({
-      granted: permissionStatus === 'granted',
-      denied: permissionStatus === 'denied',
-      default: permissionStatus === 'default'
-    })
-  }
+      granted: permissionStatus === "granted",
+      denied: permissionStatus === "denied",
+      default: permissionStatus === "default",
+    });
+  };
 
   const checkSubscription = async () => {
-    if (!isSupported) return
+    if (!isSupported) return;
 
     try {
-      const registration = await navigator.serviceWorker.getRegistration()
+      const registration = await navigator.serviceWorker.getRegistration();
       if (registration) {
-        const sub = await registration.pushManager.getSubscription()
-        setSubscription(sub)
+        const sub = await registration.pushManager.getSubscription();
+        setSubscription(sub);
       }
     } catch (error) {
-      console.error('Erro ao verificar subscription:', error)
+      console.error("Erro ao verificar subscription:", error);
     }
-  }
+  };
 
   const requestPermission = async () => {
-    if (!isSupported) return
+    if (!isSupported) return;
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const permission = await Notification.requestPermission()
-      
-      setPermission({
-        granted: permission === 'granted',
-        denied: permission === 'denied',
-        default: permission === 'default'
-      })
+      const permission = await Notification.requestPermission();
 
-      if (permission === 'granted') {
-        await subscribeToPush()
+      setPermission({
+        granted: permission === "granted",
+        denied: permission === "denied",
+        default: permission === "default",
+      });
+
+      if (permission === "granted") {
+        await subscribeToPush();
       }
     } catch (error) {
-      console.error('Erro ao solicitar permissão:', error)
+      console.error("Erro ao solicitar permissão:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const subscribeToPush = async () => {
-    if (!isSupported || !user) return
+    if (!isSupported || !user) return;
 
     try {
-      const registration = await navigator.serviceWorker.getRegistration()
-      if (!registration) return
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (!registration) return;
 
       // VAPID public key (você deve gerar suas próprias chaves)
-      const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || 'BEl62iUYgUivxIkv69yViEuiBIa40HI8F2jWqH3Q3Y4'
-      
+      const vapidPublicKey =
+        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
+        "BEl62iUYgUivxIkv69yViEuiBIa40HI8F2jWqH3Q3Y4";
+
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
-      })
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+      });
 
-      setSubscription(subscription)
+      setSubscription(subscription);
 
       // Enviar subscription para o servidor
-      await fetch('/api/notifications/subscribe', {
-        method: 'POST',
+      await fetch("/api/notifications/subscribe", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           subscription,
-          userId: user.id
-        })
-      })
+          userId: user.id,
+        }),
+      });
 
-      console.log('✅ Inscrito em notificações push com sucesso!')
+      console.log("✅ Inscrito em notificações push com sucesso!");
     } catch (error) {
-      console.error('❌ Erro ao inscrever em push:', error)
+      console.error("❌ Erro ao inscrever em push:", error);
     }
-  }
+  };
 
   const unsubscribeFromPush = async () => {
-    if (!subscription) return
+    if (!subscription) return;
 
     try {
-      await subscription.unsubscribe()
-      setSubscription(null)
+      await subscription.unsubscribe();
+      setSubscription(null);
 
       // Remover subscription do servidor
-      await fetch('/api/notifications/unsubscribe', {
-        method: 'POST',
+      await fetch("/api/notifications/unsubscribe", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: user?.id
-        })
-      })
+          userId: user?.id,
+        }),
+      });
 
-      console.log('✅ Desinscrito de notificações push com sucesso!')
+      console.log("✅ Desinscrito de notificações push com sucesso!");
     } catch (error) {
-      console.error('❌ Erro ao desinscrever de push:', error)
+      console.error("❌ Erro ao desinscrever de push:", error);
     }
-  }
+  };
 
   const openNotificationSettings = () => {
     if (navigator.permissions) {
-      navigator.permissions.query({ name: 'notifications' as PermissionName }).then((result) => {
-        // Abrir configurações do navegador
-        window.open('chrome://settings/content/notifications', '_blank')
-      })
+      navigator.permissions
+        .query({ name: "notifications" as PermissionName })
+        .then((result) => {
+          // Abrir configurações do navegador
+          window.open("chrome://settings/content/notifications", "_blank");
+        });
     }
-  }
+  };
 
   // Converter VAPID key para Uint8Array
   const urlBase64ToUint8Array = (base64String: string) => {
-    const padding = '='.repeat((4 - base64String.length % 4) % 4)
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding)
-      .replace(/-/g, '+')
-      .replace(/_/g, '/')
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
 
-    const rawData = window.atob(base64)
-    const outputArray = new Uint8Array(rawData.length)
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
 
     for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i)
+      outputArray[i] = rawData.charCodeAt(i);
     }
-    return outputArray
-  }
+    return outputArray;
+  };
 
   if (!isSupported) {
     return (
@@ -180,7 +195,7 @@ export function PushNotificationManager() {
           </CardDescription>
         </CardHeader>
       </Card>
-    )
+    );
   }
 
   return (
@@ -244,13 +259,13 @@ export function PushNotificationManager() {
         {/* Ações */}
         <div className="space-y-2">
           {permission.default && (
-            <Button 
+            <Button
               onClick={requestPermission}
               disabled={isLoading}
               className="w-full"
             >
               <Bell className="w-4 h-4 mr-2" />
-              {isLoading ? 'Solicitando...' : 'Ativar Notificações'}
+              {isLoading ? "Solicitando..." : "Ativar Notificações"}
             </Button>
           )}
 
@@ -259,7 +274,7 @@ export function PushNotificationManager() {
               <p className="text-sm text-red-600">
                 As notificações foram negadas. Para ativá-las:
               </p>
-              <Button 
+              <Button
                 onClick={openNotificationSettings}
                 variant="outline"
                 className="w-full"
@@ -271,18 +286,18 @@ export function PushNotificationManager() {
           )}
 
           {permission.granted && !subscription && (
-            <Button 
+            <Button
               onClick={subscribeToPush}
               disabled={isLoading}
               className="w-full"
             >
               <Bell className="w-4 h-4 mr-2" />
-              {isLoading ? 'Configurando...' : 'Inscrever em Notificações'}
+              {isLoading ? "Configurando..." : "Inscrever em Notificações"}
             </Button>
           )}
 
           {permission.granted && subscription && (
-            <Button 
+            <Button
               onClick={unsubscribeFromPush}
               variant="outline"
               className="w-full"
@@ -301,6 +316,5 @@ export function PushNotificationManager() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

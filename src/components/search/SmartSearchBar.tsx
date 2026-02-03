@@ -1,258 +1,304 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { Search, X, Filter, MapPin, Star, Users, Briefcase } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent } from '@/components/ui/card'
-import { useIBGE } from '@/hooks/useIBGE'
-import { EstadoCombobox } from './EstadoCombobox'
-import { CidadeCombobox } from './CidadeCombobox'
-import { services } from '@/data/services'
+import { useState, useEffect, useCallback, useRef } from "react";
+import {
+  Search,
+  X,
+  Filter,
+  MapPin,
+  Star,
+  Users,
+  Briefcase,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { useIBGE } from "@/hooks/useIBGE";
+import { EstadoCombobox } from "./EstadoCombobox";
+import { CidadeCombobox } from "./CidadeCombobox";
+import { services } from "@/data/services";
 
 interface SearchSuggestion {
-  id: string
-  text: string
-  type: 'service' | 'location' | 'professional' | 'recent'
-  icon?: string
+  id: string;
+  text: string;
+  type: "service" | "location" | "professional" | "recent";
+  icon?: string;
 }
 
 interface SmartSearchBarProps {
-  onSearch: (query: string, filters: SearchFilters) => void
-  onFiltersChange: (filters: SearchFilters) => void
-  initialFilters?: SearchFilters
-  placeholder?: string
-  className?: string
-  showAdvancedFilters?: boolean
+  onSearch: (query: string, filters: SearchFilters) => void;
+  onFiltersChange: (filters: SearchFilters) => void;
+  initialFilters?: SearchFilters;
+  placeholder?: string;
+  className?: string;
+  showAdvancedFilters?: boolean;
 }
 
 interface SearchFilters {
-  searchTerm: string
-  state: string
-  city: string
-  service: string
-  rating: string
-  availability: string
-  userType: string
+  searchTerm: string;
+  state: string;
+  city: string;
+  service: string;
+  rating: string;
+  availability: string;
+  userType: string;
 }
 
 export function SmartSearchBar({
   onSearch,
   onFiltersChange,
   initialFilters = {
-    searchTerm: '',
-    state: '',
-    city: '',
-    service: 'all',
-    rating: 'all',
-    availability: 'all',
-    userType: 'all'
+    searchTerm: "",
+    state: "",
+    city: "",
+    service: "all",
+    rating: "all",
+    availability: "all",
+    userType: "all",
   },
   placeholder = "Buscar profissionais, serviços...",
-  className = '',
-  showAdvancedFilters = true
+  className = "",
+  showAdvancedFilters = true,
 }: SmartSearchBarProps) {
-  const [query, setQuery] = useState(initialFilters.searchTerm)
-  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([])
-  const [showSuggestions, setShowSuggestions] = useState(false)
-  const [filters, setFilters] = useState<SearchFilters>(initialFilters)
-  const [showFilters, setShowFilters] = useState(false)
-  
-  const inputRef = useRef<HTMLInputElement>(null)
-  const suggestionsRef = useRef<HTMLDivElement>(null)
-  const { estados, cidades, loadCidades } = useIBGE()
+  const [query, setQuery] = useState(initialFilters.searchTerm);
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [filters, setFilters] = useState<SearchFilters>(initialFilters);
+  const [showFilters, setShowFilters] = useState(false);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const { estados, cidades, loadCidades } = useIBGE();
 
   // Debounce para sugestões
-  const [debouncedQuery, setDebouncedQuery] = useState('')
-  
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedQuery(query)
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [query])
+      setDebouncedQuery(query);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query]);
 
   // Gerar sugestões baseadas na query
   useEffect(() => {
     if (debouncedQuery.length < 2) {
-      setSuggestions([])
-      return
+      setSuggestions([]);
+      return;
     }
 
     const generateSuggestions = (): SearchSuggestion[] => {
-      const queryLower = debouncedQuery.toLowerCase()
-      const suggestions: SearchSuggestion[] = []
+      const queryLower = debouncedQuery.toLowerCase();
+      const suggestions: SearchSuggestion[] = [];
 
       // Sugestões de serviços
-      services.forEach(service => {
+      services.forEach((service) => {
         if (service.name.toLowerCase().includes(queryLower)) {
           suggestions.push({
             id: `service-${service.name}`,
             text: service.name,
-            type: 'service',
-            icon: service.icon
-          })
+            type: "service",
+            icon: service.icon,
+          });
         }
-      })
+      });
 
       // Sugestões de estados
-      estados.forEach(estado => {
+      estados.forEach((estado) => {
         if (estado.nome.toLowerCase().includes(queryLower)) {
           suggestions.push({
             id: `state-${estado.sigla}`,
             text: estado.nome,
-            type: 'location',
-            icon: '📍'
-          })
+            type: "location",
+            icon: "📍",
+          });
         }
-      })
+      });
 
       // Sugestões de cidades (se estado selecionado)
       if (filters.state && cidades.length > 0) {
-        cidades.forEach(cidade => {
+        cidades.forEach((cidade) => {
           if (cidade.nome.toLowerCase().includes(queryLower)) {
             suggestions.push({
               id: `city-${cidade.nome}`,
               text: cidade.nome,
-              type: 'location',
-              icon: '🏙️'
-            })
+              type: "location",
+              icon: "🏙️",
+            });
           }
-        })
+        });
       }
 
       // Sugestões de profissionais comuns
       const commonProfessionals = [
-        'Pedreiro', 'Eletricista', 'Encanador', 'Pintor', 'Marceneiro',
-        'Diarista', 'Faxineira', 'Babá', 'Cuidador', 'Jardineiro',
-        'Cabeleireiro', 'Manicure', 'Personal Trainer', 'Nutricionista'
-      ]
+        "Pedreiro",
+        "Eletricista",
+        "Encanador",
+        "Pintor",
+        "Marceneiro",
+        "Diarista",
+        "Faxineira",
+        "Babá",
+        "Cuidador",
+        "Jardineiro",
+        "Cabeleireiro",
+        "Manicure",
+        "Personal Trainer",
+        "Nutricionista",
+      ];
 
-      commonProfessionals.forEach(prof => {
+      commonProfessionals.forEach((prof) => {
         if (prof.toLowerCase().includes(queryLower)) {
           suggestions.push({
             id: `professional-${prof}`,
             text: prof,
-            type: 'professional',
-            icon: '👨‍💼'
-          })
+            type: "professional",
+            icon: "👨‍💼",
+          });
         }
-      })
+      });
 
-      return suggestions.slice(0, 6) // Limitar a 6 sugestões
-    }
+      return suggestions.slice(0, 6); // Limitar a 6 sugestões
+    };
 
-    setSuggestions(generateSuggestions())
-  }, [debouncedQuery, estados, cidades, filters.state])
+    setSuggestions(generateSuggestions());
+  }, [debouncedQuery, estados, cidades, filters.state]);
 
   // Busca semântica inteligente
   const getSemanticQuery = (query: string): string => {
     const semanticMap: Record<string, string[]> = {
-      'pedreiro': ['construção', 'obra', 'alvenaria', 'tijolo', 'cimento'],
-      'eletricista': ['elétrica', 'luz', 'energia', 'fiação', 'tomada'],
-      'encanador': ['água', 'cano', 'vazamento', 'hidráulica', 'torneira'],
-      'pintor': ['pintura', 'tinta', 'parede', 'cor', 'verniz'],
-      'diarista': ['limpeza', 'faxina', 'doméstica', 'casa', 'limpar'],
-      'babá': ['criança', 'bebê', 'cuidador infantil', 'creche'],
-      'jardineiro': ['jardim', 'planta', 'paisagismo', 'poda', 'verde']
-    }
+      pedreiro: ["construção", "obra", "alvenaria", "tijolo", "cimento"],
+      eletricista: ["elétrica", "luz", "energia", "fiação", "tomada"],
+      encanador: ["água", "cano", "vazamento", "hidráulica", "torneira"],
+      pintor: ["pintura", "tinta", "parede", "cor", "verniz"],
+      diarista: ["limpeza", "faxina", "doméstica", "casa", "limpar"],
+      babá: ["criança", "bebê", "cuidador infantil", "creche"],
+      jardineiro: ["jardim", "planta", "paisagismo", "poda", "verde"],
+    };
 
-    const queryLower = query.toLowerCase()
+    const queryLower = query.toLowerCase();
     for (const [key, synonyms] of Object.entries(semanticMap)) {
-      if (synonyms.some(synonym => queryLower.includes(synonym))) {
-        return key
+      if (synonyms.some((synonym) => queryLower.includes(synonym))) {
+        return key;
       }
     }
-    return query
-  }
+    return query;
+  };
 
   const handleInputChange = (value: string) => {
-    setQuery(value)
-    setShowSuggestions(true)
-  }
+    setQuery(value);
+    setShowSuggestions(true);
+  };
 
   const handleSuggestionClick = (suggestion: SearchSuggestion) => {
-    setQuery(suggestion.text)
-    setShowSuggestions(false)
-    
+    setQuery(suggestion.text);
+    setShowSuggestions(false);
+
     // Aplicar filtro baseado no tipo de sugestão
-    if (suggestion.type === 'service') {
-      setFilters(prev => ({ ...prev, service: suggestion.text }))
-    } else if (suggestion.type === 'location') {
+    if (suggestion.type === "service") {
+      setFilters((prev) => ({ ...prev, service: suggestion.text }));
+    } else if (suggestion.type === "location") {
       // Detectar se é estado ou cidade
-      const estado = estados.find(estado => estado.nome === suggestion.text)
+      const estado = estados.find((estado) => estado.nome === suggestion.text);
       if (estado) {
-        setFilters(prev => ({ ...prev, state: suggestion.text, city: '' }))
-        loadCidades(estado.sigla) // Passar a SIGLA do estado, não o nome
+        setFilters((prev) => ({ ...prev, state: suggestion.text, city: "" }));
+        loadCidades(estado.sigla); // Passar a SIGLA do estado, não o nome
       } else {
-        setFilters(prev => ({ ...prev, city: suggestion.text }))
+        setFilters((prev) => ({ ...prev, city: suggestion.text }));
       }
     }
-  }
+  };
 
   const handleSearch = () => {
-    const semanticQuery = getSemanticQuery(query)
-    const searchFilters = { ...filters, searchTerm: semanticQuery }
-    setFilters(searchFilters)
-    onSearch(semanticQuery, searchFilters)
-    onFiltersChange(searchFilters)
-    setShowSuggestions(false)
-  }
+    const semanticQuery = getSemanticQuery(query);
+    const searchFilters = { ...filters, searchTerm: semanticQuery };
+    setFilters(searchFilters);
+    onSearch(semanticQuery, searchFilters);
+    onFiltersChange(searchFilters);
+    setShowSuggestions(false);
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch()
-    } else if (e.key === 'Escape') {
-      setShowSuggestions(false)
+    if (e.key === "Enter") {
+      handleSearch();
+    } else if (e.key === "Escape") {
+      setShowSuggestions(false);
     }
-  }
+  };
 
   const clearFilters = () => {
     const clearedFilters = {
-      searchTerm: '',
-      state: '',
-      city: '',
-      service: 'all',
-      rating: 'all',
-      availability: 'all',
-      userType: 'all'
-    }
-    setFilters(clearedFilters)
-    setQuery('')
-    onFiltersChange(clearedFilters)
-  }
+      searchTerm: "",
+      state: "",
+      city: "",
+      service: "all",
+      rating: "all",
+      availability: "all",
+      userType: "all",
+    };
+    setFilters(clearedFilters);
+    setQuery("");
+    onFiltersChange(clearedFilters);
+  };
 
   const removeFilter = (filterKey: keyof SearchFilters) => {
-    const newFilters = { ...filters, [filterKey]: filterKey === 'service' ? 'all' : '' }
-    setFilters(newFilters)
-    onFiltersChange(newFilters)
-  }
+    const newFilters = {
+      ...filters,
+      [filterKey]: filterKey === "service" ? "all" : "",
+    };
+    setFilters(newFilters);
+    onFiltersChange(newFilters);
+  };
 
   const getFilterChips = () => {
-    const chips = []
-    
+    const chips = [];
+
     if (filters.state) {
-      chips.push({ key: 'state', label: `Estado: ${filters.state}`, value: filters.state })
+      chips.push({
+        key: "state",
+        label: `Estado: ${filters.state}`,
+        value: filters.state,
+      });
     }
     if (filters.city) {
-      chips.push({ key: 'city', label: `Cidade: ${filters.city}`, value: filters.city })
+      chips.push({
+        key: "city",
+        label: `Cidade: ${filters.city}`,
+        value: filters.city,
+      });
     }
-    if (filters.service !== 'all') {
-      chips.push({ key: 'service', label: `Serviço: ${filters.service}`, value: filters.service })
+    if (filters.service !== "all") {
+      chips.push({
+        key: "service",
+        label: `Serviço: ${filters.service}`,
+        value: filters.service,
+      });
     }
-    if (filters.rating !== 'all') {
-      chips.push({ key: 'rating', label: `Avaliação: ${filters.rating}+`, value: filters.rating })
+    if (filters.rating !== "all") {
+      chips.push({
+        key: "rating",
+        label: `Avaliação: ${filters.rating}+`,
+        value: filters.rating,
+      });
     }
-    if (filters.availability !== 'all') {
-      chips.push({ key: 'availability', label: `Disponível`, value: filters.availability })
+    if (filters.availability !== "all") {
+      chips.push({
+        key: "availability",
+        label: `Disponível`,
+        value: filters.availability,
+      });
     }
-    if (filters.userType !== 'all') {
-      chips.push({ key: 'userType', label: `Tipo: ${filters.userType}`, value: filters.userType })
+    if (filters.userType !== "all") {
+      chips.push({
+        key: "userType",
+        label: `Tipo: ${filters.userType}`,
+        value: filters.userType,
+      });
     }
-    
-    return chips
-  }
+
+    return chips;
+  };
 
   return (
     <div className={`relative ${className}`}>
@@ -275,7 +321,7 @@ export function SmartSearchBar({
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
-                className={`h-7 px-1.5 ${showFilters ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : ''}`}
+                className={`h-7 px-1.5 ${showFilters ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : ""}`}
               >
                 <Filter className="h-3 w-3" />
               </Button>
@@ -292,7 +338,10 @@ export function SmartSearchBar({
 
         {/* Sugestões */}
         {showSuggestions && suggestions.length > 0 && (
-          <Card ref={suggestionsRef} className="absolute top-full left-0 right-0 mt-1 z-50 shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 max-h-60 overflow-y-auto">
+          <Card
+            ref={suggestionsRef}
+            className="absolute top-full left-0 right-0 mt-1 z-50 shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 max-h-60 overflow-y-auto"
+          >
             <CardContent className="p-0">
               {suggestions.map((suggestion) => (
                 <button
@@ -302,8 +351,12 @@ export function SmartSearchBar({
                 >
                   <span className="text-sm">{suggestion.icon}</span>
                   <div>
-                    <div className="font-medium text-gray-900 dark:text-white text-sm">{suggestion.text}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">{suggestion.type}</div>
+                    <div className="font-medium text-gray-900 dark:text-white text-sm">
+                      {suggestion.text}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                      {suggestion.type}
+                    </div>
                   </div>
                 </button>
               ))}
@@ -358,15 +411,21 @@ export function SmartSearchBar({
               <X className="h-3 w-3" />
             </Button>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {/* Estado */}
             <div>
-              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">Estado</label>
+              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                Estado
+              </label>
               <EstadoCombobox
                 value={filters.state}
                 onValueChange={(newState) => {
-                  setFilters(prev => ({ ...prev, state: newState, city: '' }))
+                  setFilters((prev) => ({
+                    ...prev,
+                    state: newState,
+                    city: "",
+                  }));
                 }}
                 placeholder="Digite ou selecione o estado"
                 className="w-full"
@@ -375,10 +434,14 @@ export function SmartSearchBar({
 
             {/* Cidade */}
             <div>
-              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">Cidade</label>
+              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                Cidade
+              </label>
               <CidadeCombobox
                 value={filters.city}
-                onValueChange={(newCity) => setFilters(prev => ({ ...prev, city: newCity }))}
+                onValueChange={(newCity) =>
+                  setFilters((prev) => ({ ...prev, city: newCity }))
+                }
                 estadoSelecionado={filters.state}
                 placeholder="Digite ou selecione a cidade"
                 className="w-full"
@@ -387,14 +450,18 @@ export function SmartSearchBar({
 
             {/* Serviço */}
             <div>
-              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">Serviço</label>
+              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                Serviço
+              </label>
               <select
                 value={filters.service}
-                onChange={(e) => setFilters(prev => ({ ...prev, service: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, service: e.target.value }))
+                }
                 className="w-full p-1.5 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="all">Todos os serviços</option>
-                {services.map(service => (
+                {services.map((service) => (
                   <option key={service.name} value={service.name}>
                     {service.icon} {service.name}
                   </option>
@@ -404,10 +471,14 @@ export function SmartSearchBar({
 
             {/* Avaliação */}
             <div>
-              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">Avaliação mínima</label>
+              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                Avaliação mínima
+              </label>
               <select
                 value={filters.rating}
-                onChange={(e) => setFilters(prev => ({ ...prev, rating: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, rating: e.target.value }))
+                }
                 className="w-full p-1.5 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="all">Qualquer avaliação</option>
@@ -419,10 +490,17 @@ export function SmartSearchBar({
 
             {/* Disponibilidade */}
             <div>
-              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">Disponibilidade</label>
+              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                Disponibilidade
+              </label>
               <select
                 value={filters.availability}
-                onChange={(e) => setFilters(prev => ({ ...prev, availability: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    availability: e.target.value,
+                  }))
+                }
                 className="w-full p-1.5 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="all">Todos</option>
@@ -434,10 +512,14 @@ export function SmartSearchBar({
 
             {/* Tipo de usuário */}
             <div>
-              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">Tipo</label>
+              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                Tipo
+              </label>
               <select
                 value={filters.userType}
-                onChange={(e) => setFilters(prev => ({ ...prev, userType: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, userType: e.target.value }))
+                }
                 className="w-full p-1.5 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="all">Todos</option>
@@ -446,7 +528,7 @@ export function SmartSearchBar({
               </select>
             </div>
           </div>
-          
+
           {/* Botões de ação */}
           <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
             <Button
@@ -460,8 +542,8 @@ export function SmartSearchBar({
             <Button
               size="sm"
               onClick={() => {
-                handleSearch()
-                setShowFilters(false)
+                handleSearch();
+                setShowFilters(false);
               }}
               className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-xs h-7 px-3"
             >
@@ -471,5 +553,5 @@ export function SmartSearchBar({
         </Card>
       )}
     </div>
-  )
+  );
 }

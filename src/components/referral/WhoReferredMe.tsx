@@ -1,22 +1,27 @@
-'use client'
+"use client";
 
-import React from 'react'
-import Link from 'next/link'
-import { UserAvatar } from '@/components/ui/UserAvatar'
-import { UserCheck, Sparkles } from 'lucide-react'
+import React from "react";
+import Link from "next/link";
+import { UserAvatar } from "@/components/ui/UserAvatar";
+import { UserCheck, Sparkles } from "lucide-react";
 
 interface WhoReferredMeProps {
-  referrerId: string
-  referrerName: string
-  referrerCode: string
-  referrerAvatar: string | null
+  referrerId: string;
+  referrerName: string;
+  referrerCode: string;
+  referrerAvatar: string | null;
 }
 
-export function WhoReferredMe({ referrerId, referrerName, referrerCode, referrerAvatar }: WhoReferredMeProps) {
+export function WhoReferredMe({
+  referrerId,
+  referrerName,
+  referrerCode,
+  referrerAvatar,
+}: WhoReferredMeProps) {
   return (
     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 shadow-sm">
       <div className="flex items-center gap-3">
-        <Link 
+        <Link
           href={`/perfil/${referrerId}`}
           className="flex items-center gap-2 flex-1 hover:opacity-80 transition-opacity"
         >
@@ -32,7 +37,7 @@ export function WhoReferredMe({ referrerId, referrerName, referrerCode, referrer
               <UserCheck className="w-2.5 h-2.5 text-white" />
             </div>
           </div>
-          
+
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
               <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">
@@ -56,6 +61,5 @@ export function WhoReferredMe({ referrerId, referrerName, referrerCode, referrer
         </div>
       </div>
     </div>
-  )
+  );
 }
-

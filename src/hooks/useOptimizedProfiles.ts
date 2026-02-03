@@ -1,28 +1,28 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
-import { QueryKeys, CacheUtils } from '@/lib/queryClient'
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { QueryKeys, CacheUtils } from "@/lib/queryClient";
 
 interface Profile {
-  id: string
-  full_name: string
-  user_type: string
-  avatar_url: string
-  bio?: string
-  location_state?: string
-  location_city?: string
-  rating?: number
-  total_reviews?: number
-  is_verified?: boolean
-  is_available?: boolean
-  created_at: string
+  id: string;
+  full_name: string;
+  user_type: string;
+  avatar_url: string;
+  bio?: string;
+  location_state?: string;
+  location_city?: string;
+  rating?: number;
+  total_reviews?: number;
+  is_verified?: boolean;
+  is_available?: boolean;
+  created_at: string;
 }
 
 interface ProfileFilters {
-  user_type?: 'client' | 'professional'
-  location_state?: string
-  location_city?: string
-  is_available?: boolean
-  search?: string
+  user_type?: "client" | "professional";
+  location_state?: string;
+  location_city?: string;
+  is_available?: boolean;
+  search?: string;
 }
 
 // Hook para buscar perfil específico com cache
@@ -31,8 +31,9 @@ export function useProfile(userId: string) {
     queryKey: QueryKeys.profile(userId),
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('profiles')
-        .select(`
+        .from("profiles")
+        .select(
+          `
           id,
           full_name,
           user_type,
@@ -50,29 +51,33 @@ export function useProfile(userId: string) {
           is_verified,
           is_available,
           created_at
-        `)
-        .eq('id', userId)
-        .single()
+        `,
+        )
+        .eq("id", userId)
+        .single();
 
-      if (error) throw error
-      return data as Profile
+      if (error) throw error;
+      return data as Profile;
     },
     enabled: !!userId,
     staleTime: CacheUtils.CACHE_TIMES.SEMI_STATIC,
     gcTime: CacheUtils.CACHE_TIMES.SEMI_STATIC * 2,
     retry: CacheUtils.RETRY_CONFIG.CRITICAL.retry,
     retryDelay: CacheUtils.RETRY_CONFIG.CRITICAL.retryDelay,
-  })
+  });
 }
 
 // Hook para buscar perfis com filtros e paginação
-export function useProfiles(filters: ProfileFilters = {}, page = 0, limit = 20) {
+export function useProfiles(
+  filters: ProfileFilters = {},
+  page = 0,
+  limit = 20,
+) {
   return useQuery({
     queryKey: QueryKeys.profileSearch({ ...filters, page, limit }),
     queryFn: async () => {
-      let query = supabase
-        .from('profiles')
-        .select(`
+      let query = supabase.from("profiles").select(
+        `
           id,
           full_name,
           user_type,
@@ -85,117 +90,130 @@ export function useProfiles(filters: ProfileFilters = {}, page = 0, limit = 20) 
           is_verified,
           is_available,
           created_at
-        `, { count: 'exact' })
+        `,
+        { count: "exact" },
+      );
 
       // Aplicar filtros
       if (filters.user_type) {
-        query = query.eq('user_type', filters.user_type)
+        query = query.eq("user_type", filters.user_type);
       }
       if (filters.location_state) {
-        query = query.eq('location_state', filters.location_state)
+        query = query.eq("location_state", filters.location_state);
       }
       if (filters.location_city) {
-        query = query.eq('location_city', filters.location_city)
+        query = query.eq("location_city", filters.location_city);
       }
       if (filters.is_available !== undefined) {
-        query = query.eq('is_available', filters.is_available)
+        query = query.eq("is_available", filters.is_available);
       }
       if (filters.search) {
-        query = query.or(`full_name.ilike.%${filters.search}%,bio.ilike.%${filters.search}%`)
+        query = query.or(
+          `full_name.ilike.%${filters.search}%,bio.ilike.%${filters.search}%`,
+        );
       }
 
       // Paginação
       query = query
-        .order('created_at', { ascending: false })
-        .range(page * limit, (page + 1) * limit - 1)
+        .order("created_at", { ascending: false })
+        .range(page * limit, (page + 1) * limit - 1);
 
-      const { data, error, count } = await query
+      const { data, error, count } = await query;
 
-      if (error) throw error
+      if (error) throw error;
 
       return {
         profiles: data as Profile[],
         total: count || 0,
-        hasMore: (count || 0) > (page + 1) * limit
-      }
+        hasMore: (count || 0) > (page + 1) * limit,
+      };
     },
     staleTime: CacheUtils.CACHE_TIMES.SEMI_STATIC,
     gcTime: CacheUtils.CACHE_TIMES.SEMI_STATIC * 2,
     retry: CacheUtils.RETRY_CONFIG.IMPORTANT.retry,
     retryDelay: CacheUtils.RETRY_CONFIG.IMPORTANT.retryDelay,
-  })
+  });
 }
 
 // Hook para atualizar perfil
 export function useUpdateProfile() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ userId, updates }: { userId: string; updates: Partial<Profile> }) => {
+    mutationFn: async ({
+      userId,
+      updates,
+    }: {
+      userId: string;
+      updates: Partial<Profile>;
+    }) => {
       const { data, error } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update(updates)
-        .eq('id', userId)
+        .eq("id", userId)
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
-      return data as Profile
+      if (error) throw error;
+      return data as Profile;
     },
     onSuccess: (data, variables) => {
       // Invalidar cache do perfil específico
-      queryClient.invalidateQueries({ queryKey: QueryKeys.profile(variables.userId) })
-      
+      queryClient.invalidateQueries({
+        queryKey: QueryKeys.profile(variables.userId),
+      });
+
       // Invalidar cache de busca de perfis
-      queryClient.invalidateQueries({ queryKey: QueryKeys.profiles })
-    }
-  })
+      queryClient.invalidateQueries({ queryKey: QueryKeys.profiles });
+    },
+  });
 }
 
 // Hook para estatísticas de perfis
 export function useProfileStats(userId: string) {
   return useQuery({
-    queryKey: ['profile-stats', userId],
+    queryKey: ["profile-stats", userId],
     queryFn: async () => {
       // Buscar estatísticas em paralelo
       const [viewsResult, reviewsResult, messagesResult] = await Promise.all([
         // Visualizações do perfil
-        supabase
-          .from('profile_views')
-          .select('id')
-          .eq('profile_id', userId),
-        
+        supabase.from("profile_views").select("id").eq("profile_id", userId),
+
         // Avaliações recebidas
         supabase
-          .from('reviews')
-          .select('id, rating_person')
-          .eq('reviewed_id', userId),
-        
+          .from("reviews")
+          .select("id, rating_person")
+          .eq("reviewed_id", userId),
+
         // Mensagens enviadas/recebidas
         supabase
-          .from('messages')
-          .select('id')
-          .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
-      ])
+          .from("messages")
+          .select("id")
+          .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`),
+      ]);
 
-      const viewsCount = viewsResult.data?.length || 0
-      const reviewsCount = reviewsResult.data?.length || 0
-      const averageRating = reviewsResult.data?.length > 0 
-        ? reviewsResult.data.reduce((sum, review) => sum + review.rating_person, 0) / reviewsResult.data.length 
-        : 0
-      const messagesCount = messagesResult.data?.length || 0
+      const viewsCount = viewsResult.data?.length || 0;
+      const reviewsCount = reviewsResult.data?.length || 0;
+      const averageRating =
+        reviewsResult.data?.length > 0
+          ? reviewsResult.data.reduce(
+              (sum, review) => sum + review.rating_person,
+              0,
+            ) / reviewsResult.data.length
+          : 0;
+      const messagesCount = messagesResult.data?.length || 0;
 
       return {
         viewsCount,
         reviewsCount,
         averageRating,
-        messagesCount
-      }
+        messagesCount,
+      };
     },
     enabled: !!userId,
     staleTime: CacheUtils.CACHE_TIMES.DYNAMIC,
     gcTime: CacheUtils.CACHE_TIMES.DYNAMIC * 2,
     retry: CacheUtils.RETRY_CONFIG.OPTIONAL.retry,
     retryDelay: CacheUtils.RETRY_CONFIG.OPTIONAL.retryDelay,
-  })
+  });
 }

@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Check, ChevronsUpDown } from "lucide-react"
+import * as React from "react";
+import { Check, ChevronsUpDown } from "lucide-react";
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -12,31 +12,31 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { getCategories } from '@/data/services'
+} from "@/components/ui/popover";
+import { getCategories } from "@/data/services";
 
 export interface ComboboxOption {
-  value: string
-  label: string
-  disabled?: boolean
+  value: string;
+  label: string;
+  disabled?: boolean;
 }
 
 interface ComboboxProps {
-  options: ComboboxOption[]
-  value: string
-  onValueChange: (value: string) => void
-  placeholder?: string
-  searchPlaceholder?: string
-  emptyMessage?: string
-  className?: string
-  buttonClassName?: string
-  disabled?: boolean
-  required?: boolean
+  options: ComboboxOption[];
+  value: string;
+  onValueChange: (value: string) => void;
+  placeholder?: string;
+  searchPlaceholder?: string;
+  emptyMessage?: string;
+  className?: string;
+  buttonClassName?: string;
+  disabled?: boolean;
+  required?: boolean;
 }
 
 export function Combobox({
@@ -51,9 +51,9 @@ export function Combobox({
   disabled = false,
   required = false,
 }: ComboboxProps) {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = React.useState(false);
 
-  const selectedOption = options.find((option) => option.value === value)
+  const selectedOption = options.find((option) => option.value === value);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -62,10 +62,7 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn(
-            "w-full justify-between",
-            buttonClassName
-          )}
+          className={cn("w-full justify-between", buttonClassName)}
           disabled={disabled}
         >
           {selectedOption ? selectedOption.label : placeholder}
@@ -84,14 +81,14 @@ export function Combobox({
                   value={option.value}
                   disabled={option.disabled}
                   onSelect={(currentValue) => {
-                    onValueChange(currentValue === value ? "" : currentValue)
-                    setOpen(false)
+                    onValueChange(currentValue === value ? "" : currentValue);
+                    setOpen(false);
                   }}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === option.value ? "opacity-100" : "opacity-0"
+                      value === option.value ? "opacity-100" : "opacity-0",
                     )}
                   />
                   {option.label}
@@ -102,7 +99,7 @@ export function Combobox({
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }
 
 // Combobox específico para categorias de profissionais
@@ -112,21 +109,21 @@ export function ComboboxCategorias({
   className,
   disabled = false,
 }: {
-  value: string
-  onValueChange: (value: string) => void
-  className?: string
-  disabled?: boolean
+  value: string;
+  onValueChange: (value: string) => void;
+  className?: string;
+  disabled?: boolean;
 }) {
   // Obter categorias dos serviços centralizados
-  const categories = getCategories()
-  
+  const categories = getCategories();
+
   const categorias = [
     { value: "all", label: "Todas as categorias" },
-    ...categories.map(category => ({
-      value: category.toLowerCase().replace(/\s+/g, '-'),
-      label: category
-    }))
-  ]
+    ...categories.map((category) => ({
+      value: category.toLowerCase().replace(/\s+/g, "-"),
+      label: category,
+    })),
+  ];
 
   return (
     <Combobox
@@ -139,7 +136,7 @@ export function ComboboxCategorias({
       className={className}
       disabled={disabled}
     />
-  )
+  );
 }
 
 // Combobox específico para estados brasileiros
@@ -149,10 +146,10 @@ export function ComboboxEstados({
   className,
   disabled = false,
 }: {
-  value: string
-  onValueChange: (value: string) => void
-  className?: string
-  disabled?: boolean
+  value: string;
+  onValueChange: (value: string) => void;
+  className?: string;
+  disabled?: boolean;
 }) {
   const estados = [
     { value: "ac", label: "Acre" },
@@ -182,7 +179,7 @@ export function ComboboxEstados({
     { value: "sp", label: "São Paulo" },
     { value: "se", label: "Sergipe" },
     { value: "to", label: "Tocantins" },
-  ]
+  ];
 
   return (
     <Combobox
@@ -195,7 +192,7 @@ export function ComboboxEstados({
       className={className}
       disabled={disabled}
     />
-  )
+  );
 }
 
 // Combobox específico para tipos de usuário
@@ -205,15 +202,15 @@ export function ComboboxTipoUsuario({
   className,
   disabled = false,
 }: {
-  value: string
-  onValueChange: (value: string) => void
-  className?: string
-  disabled?: boolean
+  value: string;
+  onValueChange: (value: string) => void;
+  className?: string;
+  disabled?: boolean;
 }) {
   const tipos = [
     { value: "client", label: "Cliente" },
     { value: "professional", label: "Profissional" },
-  ]
+  ];
 
   return (
     <Combobox
@@ -226,5 +223,5 @@ export function ComboboxTipoUsuario({
       className={className}
       disabled={disabled}
     />
-  )
+  );
 }

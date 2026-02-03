@@ -1,63 +1,63 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { RateLimitStatus } from '@/components/security/RateLimitStatus'
-import { useAuth } from '@/hooks/useUnifiedAuth'
-import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { RateLimitStatus } from "@/components/security/RateLimitStatus";
+import { useAuth } from "@/hooks/useUnifiedAuth";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 
 interface LoginFormWithRateLimitProps {
-  onSuccess?: () => void
-  className?: string
+  onSuccess?: () => void;
+  className?: string;
 }
 
-export function LoginFormWithRateLimit({ 
-  onSuccess, 
-  className = '' 
+export function LoginFormWithRateLimit({
+  onSuccess,
+  className = "",
 }: LoginFormWithRateLimitProps) {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  
-  const { signIn } = useAuth()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const { signIn } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!email || !password) {
-      setError('Email e senha são obrigatórios')
-      return
+      setError("Email e senha são obrigatórios");
+      return;
     }
 
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
 
     try {
-      const result = await signIn(email, password)
-      
+      const result = await signIn(email, password);
+
       if (result.error) {
-        setError(result.error.message)
+        setError(result.error.message);
       } else {
-        onSuccess?.()
+        onSuccess?.();
       }
     } catch (err) {
-      setError('Erro inesperado. Tente novamente.')
+      setError("Erro inesperado. Tente novamente.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Rate Limit Status */}
-      <RateLimitStatus 
-        type="login" 
+      <RateLimitStatus
+        type="login"
         identifier={email || undefined}
         showDetails={false}
       />
@@ -94,7 +94,7 @@ export function LoginFormWithRateLimit({
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   id="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   placeholder="Sua senha"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -108,7 +108,11 @@ export function LoginFormWithRateLimit({
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   disabled={isLoading}
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </button>
               </div>
             </div>
@@ -121,16 +125,16 @@ export function LoginFormWithRateLimit({
             )}
 
             {/* Submit Button */}
-            <Button 
-              type="submit" 
-              className="w-full" 
+            <Button
+              type="submit"
+              className="w-full"
               disabled={isLoading || !email || !password}
             >
-              {isLoading ? 'Entrando...' : 'Entrar'}
+              {isLoading ? "Entrando..." : "Entrar"}
             </Button>
           </form>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

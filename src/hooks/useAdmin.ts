@@ -1,66 +1,66 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
-import { useAuthContext } from '@/contexts/AuthContext'
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/lib/supabase";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 interface AdminUser {
-  id: string
-  user_id: string
-  role: 'admin' | 'super_admin'
+  id: string;
+  user_id: string;
+  role: "admin" | "super_admin";
   permissions: {
-    view_reports: boolean
-    manage_reports: boolean
-    view_analytics: boolean
-    manage_users: boolean
-    system_settings?: boolean
-  }
-  is_active: boolean
-  created_at: string
+    view_reports: boolean;
+    manage_reports: boolean;
+    view_analytics: boolean;
+    manage_users: boolean;
+    system_settings?: boolean;
+  };
+  is_active: boolean;
+  created_at: string;
 }
 
 interface AdminState {
-  isAdmin: boolean
-  isSuperAdmin: boolean
-  adminUser: AdminUser | null
-  loading: boolean
-  error: string | null
+  isAdmin: boolean;
+  isSuperAdmin: boolean;
+  adminUser: AdminUser | null;
+  loading: boolean;
+  error: string | null;
 }
 
 export function useAdmin() {
-  const { user } = useAuthContext()
+  const { user } = useAuthContext();
   const [state, setState] = useState<AdminState>({
     isAdmin: false,
     isSuperAdmin: false,
     adminUser: null,
     loading: true,
-    error: null
-  })
+    error: null,
+  });
 
   const checkAdminStatus = useCallback(async () => {
     if (!user?.id) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isAdmin: false,
         isSuperAdmin: false,
         adminUser: null,
         loading: false,
-        error: null
-      }))
-      return
+        error: null,
+      }));
+      return;
     }
 
     try {
-      setState(prev => ({ ...prev, loading: true, error: null }))
+      setState((prev) => ({ ...prev, loading: true, error: null }));
 
       // Verificar se o usuário é administrador
-      let adminData = null
+      let adminData = null;
       const { data, error: adminError } = await supabase
-        .from('admins')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .single()
+        .from("admins")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .single();
 
       // Tratar erros 406 (Not Acceptable) e 403 (Forbidden) como "não é admin"
       if (adminError) {
@@ -68,66 +68,67 @@ export function useAdmin() {
         // 406 = Not Acceptable (RLS ou formato)
         // 403 = Forbidden (sem permissão)
         // Não logar esses erros - são esperados quando a tabela não existe ou há RLS
-        const isExpectedError = adminError.code === 'PGRST116' || 
-            adminError.code === 'PGRST301' ||
-            adminError.message?.includes('406') ||
-            adminError.message?.includes('403') ||
-            adminError.message?.includes('Not Acceptable') ||
-            adminError.message?.includes('Forbidden') ||
-            adminError.message?.includes('relation') ||
-            adminError.message?.includes('does not exist')
-        
+        const isExpectedError =
+          adminError.code === "PGRST116" ||
+          adminError.code === "PGRST301" ||
+          adminError.message?.includes("406") ||
+          adminError.message?.includes("403") ||
+          adminError.message?.includes("Not Acceptable") ||
+          adminError.message?.includes("Forbidden") ||
+          adminError.message?.includes("relation") ||
+          adminError.message?.includes("does not exist");
+
         // Silenciar erros esperados - usuário não é admin, não é erro
         // Não fazer nada, apenas não definir adminData
       } else {
-        adminData = data
+        adminData = data;
       }
 
-      const isAdmin = !!adminData
-      const isSuperAdmin = adminData?.role === 'super_admin'
+      const isAdmin = !!adminData;
+      const isSuperAdmin = adminData?.role === "super_admin";
 
       setState({
         isAdmin,
         isSuperAdmin,
         adminUser: adminData,
         loading: false,
-        error: null
-      })
+        error: null,
+      });
     } catch (error) {
-      console.error('Erro ao verificar status de administrador:', error)
-      setState(prev => ({
+      console.error("Erro ao verificar status de administrador:", error);
+      setState((prev) => ({
         ...prev,
         isAdmin: false,
         isSuperAdmin: false,
         adminUser: null,
         loading: false,
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
-      }))
+        error: error instanceof Error ? error.message : "Erro desconhecido",
+      }));
     }
-  }, [user?.id])
+  }, [user?.id]);
 
   useEffect(() => {
-    checkAdminStatus()
-  }, [checkAdminStatus])
+    checkAdminStatus();
+  }, [checkAdminStatus]);
 
   const refreshAdminStatus = () => {
-    checkAdminStatus()
-  }
+    checkAdminStatus();
+  };
 
   return {
     ...state,
-    refreshAdminStatus
-  }
+    refreshAdminStatus,
+  };
 }
 
 // Hook específico para verificar apenas se é admin
 export function useIsAdmin() {
-  const { isAdmin, loading } = useAdmin()
-  return { isAdmin, loading }
+  const { isAdmin, loading } = useAdmin();
+  return { isAdmin, loading };
 }
 
 // Hook específico para verificar se é super admin
 export function useIsSuperAdmin() {
-  const { isSuperAdmin, loading } = useAdmin()
-  return { isSuperAdmin, loading }
+  const { isSuperAdmin, loading } = useAdmin();
+  return { isSuperAdmin, loading };
 }

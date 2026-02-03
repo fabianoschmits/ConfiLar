@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Bell,
   Check,
@@ -19,27 +19,27 @@ import {
   MoreHorizontal,
   Eye,
   EyeOff,
-  CheckCheck
-} from 'lucide-react'
-import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications';
-import { useMessages } from '@/hooks/useMessages';
-import { useFloatingChat } from '@/contexts/FloatingChatContextSimple';
-import { useRealtimeConnection } from '@/hooks/useRealtimeConnection';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { NotificationPreferencesFallback } from './NotificationPreferencesFallback';
+  CheckCheck,
+} from "lucide-react";
+import { useSupabaseNotifications } from "@/hooks/useSupabaseNotifications";
+import { useMessages } from "@/hooks/useMessages";
+import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
+import { useRealtimeConnection } from "@/hooks/useRealtimeConnection";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { NotificationPreferencesFallback } from "./NotificationPreferencesFallback";
 
 interface NotificationPreferences {
   push_enabled: boolean;
@@ -52,22 +52,50 @@ interface NotificationPreferences {
 const getNotificationIcon = (type: string) => {
   const iconClass = "h-5 w-5 flex-shrink-0";
   switch (type) {
-    case 'message':
-      return <MessageCircle className={cn(iconClass, "text-blue-500 dark:text-blue-400")} />;
-    case 'review':
-      return <Star className={cn(iconClass, "text-yellow-500 dark:text-yellow-400")} />;
-    case 'booking':
-      return <Calendar className={cn(iconClass, "text-green-500 dark:text-green-400")} />;
-    case 'verification':
-      return <Shield className={cn(iconClass, "text-purple-500 dark:text-purple-400")} />;
-    case 'achievement':
-      return <Trophy className={cn(iconClass, "text-orange-500 dark:text-orange-400")} />;
-    case 'info':
-      return <Info className={cn(iconClass, "text-gray-500 dark:text-gray-400")} />;
-    case 'warning':
-      return <AlertTriangle className={cn(iconClass, "text-red-500 dark:text-red-400")} />;
+    case "message":
+      return (
+        <MessageCircle
+          className={cn(iconClass, "text-blue-500 dark:text-blue-400")}
+        />
+      );
+    case "review":
+      return (
+        <Star
+          className={cn(iconClass, "text-yellow-500 dark:text-yellow-400")}
+        />
+      );
+    case "booking":
+      return (
+        <Calendar
+          className={cn(iconClass, "text-green-500 dark:text-green-400")}
+        />
+      );
+    case "verification":
+      return (
+        <Shield
+          className={cn(iconClass, "text-purple-500 dark:text-purple-400")}
+        />
+      );
+    case "achievement":
+      return (
+        <Trophy
+          className={cn(iconClass, "text-orange-500 dark:text-orange-400")}
+        />
+      );
+    case "info":
+      return (
+        <Info className={cn(iconClass, "text-gray-500 dark:text-gray-400")} />
+      );
+    case "warning":
+      return (
+        <AlertTriangle
+          className={cn(iconClass, "text-red-500 dark:text-red-400")}
+        />
+      );
     default:
-      return <Bell className={cn(iconClass, "text-gray-500 dark:text-gray-400")} />;
+      return (
+        <Bell className={cn(iconClass, "text-gray-500 dark:text-gray-400")} />
+      );
   }
 };
 
@@ -79,34 +107,35 @@ const formatTimestamp = (timestamp: string) => {
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
 
-  if (minutes < 1) return 'Agora';
+  if (minutes < 1) return "Agora";
   if (minutes < 60) return `${minutes}m`;
   if (hours < 24) return `${hours}h`;
   if (days < 7) return `${days}d`;
-  
-  return date.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit'
+
+  return date.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
   });
 };
 
 export const NotificationDropdown: React.FC = () => {
   const { user, profile } = useAuthContext();
-  
-  const { 
-    notifications, 
-    unreadCount, 
-    markAsRead, 
+
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
     markAllAsRead,
     removeNotification,
     clearAll,
-    isLoading
+    isLoading,
   } = useSupabaseNotifications();
-  
-  const { isConnected: isRealtimeConnected, isConnecting } = useRealtimeConnection();
+
+  const { isConnected: isRealtimeConnected, isConnecting } =
+    useRealtimeConnection();
   const { conversations, getTotalUnreadCount } = useMessages();
   const { openChat } = useFloatingChat();
-  
+
   const [isOpen, setIsOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [visualUnreadCount, setVisualUnreadCount] = useState(0);
@@ -122,7 +151,10 @@ export const NotificationDropdown: React.FC = () => {
 
   const displayUnreadCount = unreadCount;
   const recentNotifications = notifications
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    )
     .slice(0, 10);
 
   // Carregar preferências
@@ -130,13 +162,13 @@ export const NotificationDropdown: React.FC = () => {
     if (!user) return;
     try {
       const { data, error } = await supabase
-        .from('notification_preferences')
-        .select('*')
-        .eq('user_id', user.id)
+        .from("notification_preferences")
+        .select("*")
+        .eq("user_id", user.id)
         .single();
 
       if (error) {
-        if (error.code === 'PGRST116' || error.code === '42P01') {
+        if (error.code === "PGRST116" || error.code === "42P01") {
           setTableExists(false);
           return;
         }
@@ -153,7 +185,7 @@ export const NotificationDropdown: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('Erro ao carregar preferências:', error);
+      console.error("Erro ao carregar preferências:", error);
     }
   };
 
@@ -161,29 +193,27 @@ export const NotificationDropdown: React.FC = () => {
     if (!user) return;
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('notification_preferences')
-        .upsert({
-          user_id: user.id,
-          ...preferences,
-          updated_at: new Date().toISOString(),
-        });
+      const { error } = await supabase.from("notification_preferences").upsert({
+        user_id: user.id,
+        ...preferences,
+        updated_at: new Date().toISOString(),
+      });
 
       if (error) {
-        if (error.code === '42P01') {
+        if (error.code === "42P01") {
           setTableExists(false);
-          toast.error('Tabela de preferências não encontrada.');
+          toast.error("Tabela de preferências não encontrada.");
           return;
         }
-        toast.error('Erro ao salvar configurações');
+        toast.error("Erro ao salvar configurações");
         return;
       }
 
-      toast.success('Configurações salvas!');
+      toast.success("Configurações salvas!");
       setShowSettings(false);
     } catch (error) {
-      console.error('Erro ao salvar preferências:', error);
-      toast.error('Erro ao salvar configurações');
+      console.error("Erro ao salvar preferências:", error);
+      toast.error("Erro ao salvar configurações");
     } finally {
       setSaving(false);
     }
@@ -218,15 +248,15 @@ export const NotificationDropdown: React.FC = () => {
     setIsOpen(false);
 
     const metadata = notification.metadata || {};
-    const notificationType = notification.type || '';
-    const titleLower = (notification.title || '').toLowerCase();
-    
+    const notificationType = notification.type || "";
+    const titleLower = (notification.title || "").toLowerCase();
+
     // Mensagem - Abrir chat
-    if (notificationType === 'message' || titleLower.includes('mensagem')) {
+    if (notificationType === "message" || titleLower.includes("mensagem")) {
       const senderId = metadata.sender_id;
       const senderName = metadata.sender_name;
       const conversationId = metadata.conversation_id || metadata.chat_id;
-      
+
       if (conversationId) {
         openChat(conversationId);
       } else if (senderId && senderName) {
@@ -236,45 +266,55 @@ export const NotificationDropdown: React.FC = () => {
       }
       return;
     }
-    
+
     // Post relacionado
     if (metadata.post_id) {
       window.location.href = `/feed?post=${metadata.post_id}`;
       return;
     }
-    
+
     // Avaliação
-    if (notificationType === 'review' || titleLower.includes('avaliação')) {
-      window.location.href = '/avaliacoes';
+    if (notificationType === "review" || titleLower.includes("avaliação")) {
+      window.location.href = "/avaliacoes";
       return;
     }
-    
+
     // Recomendação
-    if (titleLower.includes('recomendação') || metadata.type === 'recommendation') {
-      window.location.href = '/reputacao';
+    if (
+      titleLower.includes("recomendação") ||
+      metadata.type === "recommendation"
+    ) {
+      window.location.href = "/reputacao";
       return;
     }
-    
+
     // Action URL
     if (notification.action_url) {
       // Verificar se é redirecionamento para onboarding e se o usuário já completou
-      if (notification.action_url === '/onboarding' || notification.action_url.startsWith('/onboarding')) {
+      if (
+        notification.action_url === "/onboarding" ||
+        notification.action_url.startsWith("/onboarding")
+      ) {
         // Verificar se o usuário já completou o onboarding (usar localStorage ou verificar no profile como any)
-        const hasCompletedOnboarding = (typeof window !== 'undefined' && localStorage.getItem('onboarding_completed') === 'true') ||
-          (profile && (profile as any)?.onboarding_completed === true)
-        
+        const hasCompletedOnboarding =
+          (typeof window !== "undefined" &&
+            localStorage.getItem("onboarding_completed") === "true") ||
+          (profile && (profile as any)?.onboarding_completed === true);
+
         if (hasCompletedOnboarding) {
-          console.log('✅ Usuário já completou onboarding, redirecionando para feed ao invés de onboarding')
+          console.log(
+            "✅ Usuário já completou onboarding, redirecionando para feed ao invés de onboarding",
+          );
           // Redirecionar para feed ao invés de onboarding
-          window.location.href = '/feed'
-          return
+          window.location.href = "/feed";
+          return;
         }
       }
-      
-      if (notification.action_url.startsWith('/')) {
+
+      if (notification.action_url.startsWith("/")) {
         window.location.href = notification.action_url;
       } else {
-        window.open(notification.action_url, '_blank');
+        window.open(notification.action_url, "_blank");
       }
       return;
     }
@@ -282,20 +322,18 @@ export const NotificationDropdown: React.FC = () => {
 
   const handleToggle = async (key: keyof NotificationPreferences) => {
     const newValue = !preferences[key];
-    setPreferences(prev => ({ ...prev, [key]: newValue }));
+    setPreferences((prev) => ({ ...prev, [key]: newValue }));
 
     if (user && tableExists) {
       try {
-        await supabase
-          .from('notification_preferences')
-          .upsert({
-            user_id: user.id,
-            [key]: newValue,
-            updated_at: new Date().toISOString()
-          });
+        await supabase.from("notification_preferences").upsert({
+          user_id: user.id,
+          [key]: newValue,
+          updated_at: new Date().toISOString(),
+        });
       } catch (error) {
-        console.error('Erro ao salvar preferência:', error);
-        setPreferences(prev => ({ ...prev, [key]: !newValue }));
+        console.error("Erro ao salvar preferência:", error);
+        setPreferences((prev) => ({ ...prev, [key]: !newValue }));
       }
     }
   };
@@ -316,7 +354,7 @@ export const NotificationDropdown: React.FC = () => {
           aria-label="Notificações"
         >
           <Bell className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-          
+
           {/* Indicador de conexão */}
           {isConnecting && (
             <div className="absolute bottom-0 right-0 h-2 w-2 bg-yellow-500 rounded-full border-2 border-white dark:border-gray-800 animate-pulse" />
@@ -324,18 +362,18 @@ export const NotificationDropdown: React.FC = () => {
           {isRealtimeConnected && !isConnecting && (
             <div className="absolute bottom-0 right-0 h-2 w-2 bg-green-500 rounded-full border-2 border-white dark:border-gray-800" />
           )}
-          
+
           {/* Contador de não lidas */}
           {displayUnreadCount > 0 && (
             <div className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] font-bold shadow-lg">
-              {displayUnreadCount > 99 ? '99+' : displayUnreadCount}
+              {displayUnreadCount > 99 ? "99+" : displayUnreadCount}
             </div>
           )}
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent 
-        align="end" 
+      <DropdownMenuContent
+        align="end"
         side="bottom"
         className={cn(
           "w-[calc(100vw-2rem)] sm:w-96 p-0",
@@ -343,7 +381,7 @@ export const NotificationDropdown: React.FC = () => {
           "border border-gray-200 dark:border-gray-700",
           "shadow-2xl rounded-xl",
           "max-h-[85vh] flex flex-col",
-          "overflow-hidden"
+          "overflow-hidden",
         )}
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
@@ -351,11 +389,13 @@ export const NotificationDropdown: React.FC = () => {
           tableExists ? (
             <div className="flex flex-col h-full">
               {/* Header Configurações */}
-              <div className={cn(
-                "flex items-center justify-between p-4",
-                "border-b border-gray-200 dark:border-gray-700",
-                "bg-gray-50 dark:bg-gray-800"
-              )}>
+              <div
+                className={cn(
+                  "flex items-center justify-between p-4",
+                  "border-b border-gray-200 dark:border-gray-700",
+                  "bg-gray-50 dark:bg-gray-800",
+                )}
+              >
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setShowSettings(false)}
@@ -377,7 +417,7 @@ export const NotificationDropdown: React.FC = () => {
                   {saving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    'Salvar'
+                    "Salvar"
                   )}
                 </Button>
               </div>
@@ -389,18 +429,23 @@ export const NotificationDropdown: React.FC = () => {
                     Canais de Notificação
                   </Label>
                   <div className="space-y-2">
-                    <div className={cn(
-                      "flex items-center justify-between p-3 rounded-lg",
-                      "bg-gray-50 dark:bg-gray-800",
-                      "border border-gray-200 dark:border-gray-700"
-                    )}>
-                      <Label htmlFor="push_enabled" className="text-sm text-gray-900 dark:text-white">
+                    <div
+                      className={cn(
+                        "flex items-center justify-between p-3 rounded-lg",
+                        "bg-gray-50 dark:bg-gray-800",
+                        "border border-gray-200 dark:border-gray-700",
+                      )}
+                    >
+                      <Label
+                        htmlFor="push_enabled"
+                        className="text-sm text-gray-900 dark:text-white"
+                      >
                         Notificações Push
                       </Label>
                       <Switch
                         id="push_enabled"
                         checked={preferences.push_enabled}
-                        onCheckedChange={() => handleToggle('push_enabled')}
+                        onCheckedChange={() => handleToggle("push_enabled")}
                         disabled={saving}
                       />
                     </div>
@@ -415,20 +460,35 @@ export const NotificationDropdown: React.FC = () => {
                   </Label>
                   <div className="space-y-2">
                     {[
-                      { key: 'message_notifications' as const, label: 'Mensagens' },
-                      { key: 'review_notifications' as const, label: 'Avaliações' },
-                      { key: 'system_notifications' as const, label: 'Sistema' },
-                      { key: 'info_notifications' as const, label: 'Informações' },
+                      {
+                        key: "message_notifications" as const,
+                        label: "Mensagens",
+                      },
+                      {
+                        key: "review_notifications" as const,
+                        label: "Avaliações",
+                      },
+                      {
+                        key: "system_notifications" as const,
+                        label: "Sistema",
+                      },
+                      {
+                        key: "info_notifications" as const,
+                        label: "Informações",
+                      },
                     ].map(({ key, label }) => (
                       <div
                         key={key}
                         className={cn(
                           "flex items-center justify-between p-3 rounded-lg",
                           "bg-gray-50 dark:bg-gray-800",
-                          "border border-gray-200 dark:border-gray-700"
+                          "border border-gray-200 dark:border-gray-700",
                         )}
                       >
-                        <Label htmlFor={key} className="text-sm text-gray-900 dark:text-white">
+                        <Label
+                          htmlFor={key}
+                          className="text-sm text-gray-900 dark:text-white"
+                        >
                           {label}
                         </Label>
                         <Switch
@@ -444,16 +504,20 @@ export const NotificationDropdown: React.FC = () => {
               </div>
             </div>
           ) : (
-            <NotificationPreferencesFallback onBack={() => setShowSettings(false)} />
+            <NotificationPreferencesFallback
+              onBack={() => setShowSettings(false)}
+            />
           )
         ) : (
           <div className="flex flex-col h-full">
             {/* Header Notificações */}
-            <div className={cn(
-              "flex items-center justify-between p-4",
-              "border-b border-gray-200 dark:border-gray-700",
-              "bg-gray-50 dark:bg-gray-800"
-            )}>
+            <div
+              className={cn(
+                "flex items-center justify-between p-4",
+                "border-b border-gray-200 dark:border-gray-700",
+                "bg-gray-50 dark:bg-gray-800",
+              )}
+            >
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <Bell className="h-5 w-5 text-gray-700 dark:text-gray-300" />
@@ -470,12 +534,13 @@ export const NotificationDropdown: React.FC = () => {
                   </h3>
                   {displayUnreadCount > 0 && (
                     <p className="text-xs text-gray-600 dark:text-gray-400">
-                      {displayUnreadCount} não {displayUnreadCount === 1 ? 'lida' : 'lidas'}
+                      {displayUnreadCount} não{" "}
+                      {displayUnreadCount === 1 ? "lida" : "lidas"}
                     </p>
                   )}
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 {displayUnreadCount > 0 && (
                   <Button
@@ -528,36 +593,41 @@ export const NotificationDropdown: React.FC = () => {
                       className={cn(
                         "relative p-4 cursor-pointer transition-colors",
                         "hover:bg-gray-50 dark:hover:bg-gray-800",
-                        !notification.is_read && "bg-blue-50/50 dark:bg-blue-900/10"
+                        !notification.is_read &&
+                          "bg-blue-50/50 dark:bg-blue-900/10",
                       )}
                     >
                       <div className="flex items-start gap-3">
                         {/* Ícone */}
-                        <div className={cn(
-                          "p-2 rounded-lg flex-shrink-0",
-                          !notification.is_read 
-                            ? "bg-blue-100 dark:bg-blue-900/30" 
-                            : "bg-gray-100 dark:bg-gray-800"
-                        )}>
+                        <div
+                          className={cn(
+                            "p-2 rounded-lg flex-shrink-0",
+                            !notification.is_read
+                              ? "bg-blue-100 dark:bg-blue-900/30"
+                              : "bg-gray-100 dark:bg-gray-800",
+                          )}
+                        >
                           {getNotificationIcon(notification.type)}
                         </div>
 
                         {/* Conteúdo */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2 mb-1">
-                            <h4 className={cn(
-                              "text-sm font-semibold line-clamp-2",
-                              !notification.is_read 
-                                ? "text-gray-900 dark:text-white" 
-                                : "text-gray-700 dark:text-gray-300"
-                            )}>
+                            <h4
+                              className={cn(
+                                "text-sm font-semibold line-clamp-2",
+                                !notification.is_read
+                                  ? "text-gray-900 dark:text-white"
+                                  : "text-gray-700 dark:text-gray-300",
+                              )}
+                            >
                               {notification.title}
                             </h4>
                             <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">
                               {formatTimestamp(notification.created_at)}
                             </span>
                           </div>
-                          
+
                           <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                             {notification.message}
                           </p>
@@ -575,7 +645,7 @@ export const NotificationDropdown: React.FC = () => {
                                 "p-1.5 rounded-md transition-colors",
                                 "bg-green-100 dark:bg-green-900/30",
                                 "hover:bg-green-200 dark:hover:bg-green-900/50",
-                                "text-green-700 dark:text-green-400"
+                                "text-green-700 dark:text-green-400",
                               )}
                               title="Marcar como lida"
                             >
@@ -591,7 +661,7 @@ export const NotificationDropdown: React.FC = () => {
                               "p-1.5 rounded-md transition-colors",
                               "bg-red-100 dark:bg-red-900/30",
                               "hover:bg-red-200 dark:hover:bg-red-900/50",
-                              "text-red-700 dark:text-red-400"
+                              "text-red-700 dark:text-red-400",
                             )}
                             title="Remover"
                           >
@@ -612,10 +682,12 @@ export const NotificationDropdown: React.FC = () => {
 
             {/* Footer */}
             {recentNotifications.length > 0 && (
-              <div className={cn(
-                "p-3 border-t border-gray-200 dark:border-gray-700",
-                "bg-gray-50 dark:bg-gray-800"
-              )}>
+              <div
+                className={cn(
+                  "p-3 border-t border-gray-200 dark:border-gray-700",
+                  "bg-gray-50 dark:bg-gray-800",
+                )}
+              >
                 <Button
                   onClick={handleClearAll}
                   variant="outline"

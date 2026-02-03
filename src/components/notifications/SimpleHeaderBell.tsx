@@ -1,42 +1,49 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Bell } from 'lucide-react'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { useNotifications } from './NotificationProviderSimple'
-import { 
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Bell } from "lucide-react";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useNotifications } from "./NotificationProviderSimple";
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover'
-import { AdaptiveNotificationCenter } from './AdaptiveNotificationCenter'
-import { soundManager } from '@/lib/soundManager'
+} from "@/components/ui/popover";
+import { AdaptiveNotificationCenter } from "./AdaptiveNotificationCenter";
+import { soundManager } from "@/lib/soundManager";
 
 interface SimpleHeaderBellProps {
-  className?: string
+  className?: string;
 }
 
-export function SimpleHeaderBell({ className = '' }: SimpleHeaderBellProps) {
-  const { user } = useAuthContext()
-  const { unreadCount } = useNotifications()
-  const [isOpen, setIsOpen] = useState(false)
+export function SimpleHeaderBell({ className = "" }: SimpleHeaderBellProps) {
+  const { user } = useAuthContext();
+  const { unreadCount } = useNotifications();
+  const [isOpen, setIsOpen] = useState(false);
 
-  console.log('🔔 SimpleHeaderBell: Renderizando com user:', user?.id || 'null', 'unreadCount:', unreadCount)
+  console.log(
+    "🔔 SimpleHeaderBell: Renderizando com user:",
+    user?.id || "null",
+    "unreadCount:",
+    unreadCount,
+  );
 
   if (!user) {
-    console.log('🔔 SimpleHeaderBell: Usuário não autenticado, não renderizando')
-    return null
+    console.log(
+      "🔔 SimpleHeaderBell: Usuário não autenticado, não renderizando",
+    );
+    return null;
   }
 
   const handleOpenChange = (open: boolean) => {
     if (open) {
       // Tocar som ao abrir o sino de notificações
-      soundManager.play('/sounds/New/very-fast.mp3', { volume: 0.3 })
+      soundManager.play("/sounds/New/very-fast.mp3", { volume: 0.3 });
     }
-    setIsOpen(open)
-  }
+    setIsOpen(open);
+  };
 
   return (
     <div className={`relative ${className}`}>
@@ -49,19 +56,17 @@ export function SimpleHeaderBell({ className = '' }: SimpleHeaderBellProps) {
           >
             {/* Sino sempre visível */}
             <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-            
+
             {/* Badge de contador - sempre sobreposto */}
             {unreadCount > 0 && (
-              <Badge 
-                className="absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-5 h-5 flex items-center justify-center px-1 z-10"
-              >
-                {unreadCount > 99 ? '99+' : unreadCount}
+              <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-5 h-5 flex items-center justify-center px-1 z-10">
+                {unreadCount > 99 ? "99+" : unreadCount}
               </Badge>
             )}
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent 
+        <PopoverContent
           className="w-80 max-w-[calc(100vw-2rem)] p-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-xl rounded-2xl animate-slide-down"
           align="end"
           sideOffset={8}
@@ -91,13 +96,13 @@ export function SimpleHeaderBell({ className = '' }: SimpleHeaderBellProps) {
 
           {/* Conteúdo */}
           <div className="max-h-[500px] md:max-h-[600px] overflow-hidden">
-            <AdaptiveNotificationCenter 
-              isOpen={isOpen} 
-              onClose={() => setIsOpen(false)} 
+            <AdaptiveNotificationCenter
+              isOpen={isOpen}
+              onClose={() => setIsOpen(false)}
             />
           </div>
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }

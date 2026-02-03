@@ -1,48 +1,48 @@
-'use client'
+"use client";
 
-import React from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import React from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface MentionTextProps {
-  text: string
-  className?: string
+  text: string;
+  className?: string;
 }
 
 export function MentionText({ text, className = "" }: MentionTextProps) {
-  const router = useRouter()
+  const router = useRouter();
 
   // Função para lidar com clique na menção
   const handleMentionClick = async (e: React.MouseEvent, username: string) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     try {
-      const url = `/api/users/search?name=${encodeURIComponent(username)}`
-      const response = await fetch(url)
-      const data = await response.json()
-      
+      const url = `/api/users/search?name=${encodeURIComponent(username)}`;
+      const response = await fetch(url);
+      const data = await response.json();
+
       if (data.userId) {
-        router.push(`/perfil/${data.userId}`)
+        router.push(`/perfil/${data.userId}`);
       } else {
-        toast.error(`Usuário "${username}" não encontrado`)
+        toast.error(`Usuário "${username}" não encontrado`);
       }
     } catch (error) {
-      console.error('Erro ao buscar usuário:', error)
-      toast.error('Erro ao buscar usuário. Tente novamente.')
+      console.error("Erro ao buscar usuário:", error);
+      toast.error("Erro ao buscar usuário. Tente novamente.");
     }
-  }
+  };
 
   // Função para renderizar texto com menções destacadas
   const renderTextWithMentions = (text: string) => {
     // Regex para encontrar menções (@nome ou @nome sobrenome)
-    const mentionRegex = /(@[a-zA-ZÀ-ÿ]+(?:\s+[a-zA-ZÀ-ÿ]+)?)/g
-    const parts = text.split(mentionRegex)
-    
+    const mentionRegex = /(@[a-zA-ZÀ-ÿ]+(?:\s+[a-zA-ZÀ-ÿ]+)?)/g;
+    const parts = text.split(mentionRegex);
+
     return parts.map((part, index) => {
       if (part.match(mentionRegex)) {
-        const username = part.substring(1).trim()
-        
+        const username = part.substring(1).trim();
+
         return (
           <a
             key={index}
@@ -53,16 +53,12 @@ export function MentionText({ text, className = "" }: MentionTextProps) {
           >
             {part}
           </a>
-        )
+        );
       }
-      
-      return part
-    })
-  }
 
-  return (
-    <span className={className}>
-      {renderTextWithMentions(text)}
-    </span>
-  )
+      return part;
+    });
+  };
+
+  return <span className={className}>{renderTextWithMentions(text)}</span>;
 }

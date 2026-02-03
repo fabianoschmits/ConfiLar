@@ -1,15 +1,15 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react'
-import { MainLayout } from '@/components/layout/MainLayout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Progress } from '@/components/ui/progress'
-import { 
-  Coins, 
-  TrendingUp, 
+import React, { useState } from "react";
+import { MainLayout } from "@/components/layout/MainLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import {
+  Coins,
+  TrendingUp,
   Users,
   ShoppingBag,
   ArrowUpRight,
@@ -24,69 +24,107 @@ import {
   ChevronRight,
   DollarSign,
   Zap,
-  Star
-} from 'lucide-react'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { usePoints, usePointsHistory } from '@/hooks/usePoints'
-import { usePointsTransfers } from '@/hooks/useEconomy'
-import { PREMIUM_PRICES } from '@/constants/premiumPrices'
-import Link from 'next/link'
-import { formatDistanceToNow } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
-import { EmptyState } from '@/components/ui/EmptyState'
-import { TransactionSkeleton } from '@/components/ui/skeleton'
-import { useTranslations } from 'next-intl'
+  Star,
+} from "lucide-react";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { usePoints, usePointsHistory } from "@/hooks/usePoints";
+import { usePointsTransfers } from "@/hooks/useEconomy";
+import { PREMIUM_PRICES } from "@/constants/premiumPrices";
+import Link from "next/link";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { TransactionSkeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "next-intl";
 
 export default function ConfiPointsDashboardPage() {
-  const t = useTranslations('confipoints')
-  const tCommon = useTranslations('common')
-  const { user, profile } = useAuthContext()
-  const { balance, loading: loadingPoints } = usePoints(user?.id)
-  const { transactions, loading: loadingHistory } = usePointsHistory(user?.id, { limit: 200 })
-  const { transfers, loading: loadingTransfers } = usePointsTransfers(user?.id)
-  
-  const [activeTab, setActiveTab] = useState('visao-geral')
-  const [visibleTransactionsCount, setVisibleTransactionsCount] = useState(10)
+  const t = useTranslations("confipoints");
+  const tCommon = useTranslations("common");
+  const { user, profile } = useAuthContext();
+  const { balance, loading: loadingPoints } = usePoints(user?.id);
+  const { transactions, loading: loadingHistory } = usePointsHistory(user?.id, {
+    limit: 200,
+  });
+  const { transfers, loading: loadingTransfers } = usePointsTransfers(user?.id);
+
+  const [activeTab, setActiveTab] = useState("visao-geral");
+  const [visibleTransactionsCount, setVisibleTransactionsCount] = useState(10);
 
   // Calcular nível baseado nos pontos
   const calculateLevel = (points: number) => {
-    if (points >= 10000) return { name: 'Diamond', color: 'text-cyan-600', bgColor: 'bg-cyan-100', icon: '💎' }
-    if (points >= 5000) return { name: 'Platinum', color: 'text-gray-600', bgColor: 'bg-gray-100', icon: '⚪' }
-    if (points >= 2000) return { name: 'Gold', color: 'text-yellow-600', bgColor: 'bg-yellow-100', icon: '🟡' }
-    if (points >= 500) return { name: 'Silver', color: 'text-gray-400', bgColor: 'bg-gray-50', icon: '⚪' }
-    return { name: 'Bronze', color: 'text-orange-600', bgColor: 'bg-orange-100', icon: '🟤' }
-  }
+    if (points >= 10000)
+      return {
+        name: "Diamond",
+        color: "text-cyan-600",
+        bgColor: "bg-cyan-100",
+        icon: "💎",
+      };
+    if (points >= 5000)
+      return {
+        name: "Platinum",
+        color: "text-gray-600",
+        bgColor: "bg-gray-100",
+        icon: "⚪",
+      };
+    if (points >= 2000)
+      return {
+        name: "Gold",
+        color: "text-yellow-600",
+        bgColor: "bg-yellow-100",
+        icon: "🟡",
+      };
+    if (points >= 500)
+      return {
+        name: "Silver",
+        color: "text-gray-400",
+        bgColor: "bg-gray-50",
+        icon: "⚪",
+      };
+    return {
+      name: "Bronze",
+      color: "text-orange-600",
+      bgColor: "bg-orange-100",
+      icon: "🟤",
+    };
+  };
 
-  const currentLevel = calculateLevel(balance?.balance || 0)
-  
+  const currentLevel = calculateLevel(balance?.balance || 0);
+
   // Próximo nível
   const getNextLevel = (points: number) => {
-    if (points < 500) return { target: 500, name: 'Silver' }
-    if (points < 2000) return { target: 2000, name: 'Gold' }
-    if (points < 5000) return { target: 5000, name: 'Platinum' }
-    if (points < 10000) return { target: 10000, name: 'Diamond' }
-    return null
-  }
+    if (points < 500) return { target: 500, name: "Silver" };
+    if (points < 2000) return { target: 2000, name: "Gold" };
+    if (points < 5000) return { target: 5000, name: "Platinum" };
+    if (points < 10000) return { target: 10000, name: "Diamond" };
+    return null;
+  };
 
-  const nextLevel = getNextLevel(balance?.balance || 0)
-  const progress = nextLevel ? ((balance?.balance || 0) / nextLevel.target) * 100 : 100
+  const nextLevel = getNextLevel(balance?.balance || 0);
+  const progress = nextLevel
+    ? ((balance?.balance || 0) / nextLevel.target) * 100
+    : 100;
 
   // Mapear transferências para formato de transações
   const transferTransactions = (transfers || []).map((transfer: any) => {
-    const isSent = transfer.from_user_id === user?.id
-    const otherUser = isSent ? transfer.to_user : transfer.from_user
-    
-    
+    const isSent = transfer.from_user_id === user?.id;
+    const otherUser = isSent ? transfer.to_user : transfer.from_user;
+
     return {
       id: `transfer-${transfer.id}`,
-      type: isSent ? 'transfer_sent' : 'transfer_received',
+      type: isSent ? "transfer_sent" : "transfer_received",
       amount: isSent ? -transfer.points_amount : transfer.points_amount,
-      description: isSent 
-        ? t('transferredPoints', { amount: transfer.points_amount.toLocaleString(), user: otherUser?.full_name || tCommon('user') })
-        : t('receivedTransfer', { amount: transfer.points_amount.toLocaleString(), user: otherUser?.full_name || tCommon('user') }),
+      description: isSent
+        ? t("transferredPoints", {
+            amount: transfer.points_amount.toLocaleString(),
+            user: otherUser?.full_name || tCommon("user"),
+          })
+        : t("receivedTransfer", {
+            amount: transfer.points_amount.toLocaleString(),
+            user: otherUser?.full_name || tCommon("user"),
+          }),
       date: transfer.created_at,
-      status: 'completed',
-      source: 'transfer',
+      status: "completed",
+      source: "transfer",
       metadata: {
         ...(transfer.metadata || {}),
         transfer_id: transfer.id,
@@ -96,140 +134,185 @@ export default function ConfiPointsDashboardPage() {
         to_user: transfer.to_user,
         from_user_name: transfer.from_user?.full_name,
         to_user_name: transfer.to_user?.full_name,
-        message: transfer.message
+        message: transfer.message,
       },
       // Incluir dados de usuário diretamente também
       from_user: transfer.from_user,
       to_user: transfer.to_user,
       from_user_id: transfer.from_user_id,
-      to_user_id: transfer.to_user_id
-    }
-  })
+      to_user_id: transfer.to_user_id,
+    };
+  });
 
   // Mapear transações do histórico para formato da UI
   // Filtrar transferências daqui pois elas vêm da tabela points_transfers
   const pointTransactions = (transactions || [])
-    .filter((tx: any) => tx.type !== 'transfer' || tx.source !== 'transfer') // Remover transferências duplicadas
+    .filter((tx: any) => tx.type !== "transfer" || tx.source !== "transfer") // Remover transferências duplicadas
     .map((tx: any) => {
-    const isPositive = tx.amount > 0 || tx.type === 'earn' || tx.type === 'purchase' || tx.type === 'refund'
-    
-    let typeLabel = ''
-    let description = tx.description || ''
-    
-    // Determinar tipo e descrição baseado na transação
-    switch (tx.type) {
-      case 'earn':
-        typeLabel = 'received'
-        if (!description) description = t('earnedPoints', { amount: Math.abs(tx.amount) })
-        break
-      case 'spend':
-        typeLabel = 'spent'
-        if (!description) description = t('spentPoints', { amount: Math.abs(tx.amount) })
-        break
-      case 'transfer':
-        // Se chegar aqui, é uma transferência antiga sem dados completos
-        // Vamos tentar buscar informações do metadata
-        typeLabel = isPositive ? 'transfer_received' : 'transfer_sent'
-        if (!description) {
-          // Tentar pegar nome do usuário do metadata
-          const otherUserName = tx.metadata?.to_user_name || tx.metadata?.from_user_name || tx.metadata?.user_name || tCommon('user')
-          const otherUserId = tx.metadata?.to_user_id || tx.metadata?.from_user_id
-          
-          if (isPositive && otherUserId) {
-            description = t('receivedTransfer', { amount: Math.abs(tx.amount), user: otherUserName })
-          } else if (!isPositive && otherUserId) {
-            description = t('transferredPoints', { amount: Math.abs(tx.amount), user: otherUserName })
-          } else {
-            description = isPositive 
-              ? t('receivedTransferNoUser', { amount: Math.abs(tx.amount) })
-              : t('transferredPointsNoUser', { amount: Math.abs(tx.amount) })
+      const isPositive =
+        tx.amount > 0 ||
+        tx.type === "earn" ||
+        tx.type === "purchase" ||
+        tx.type === "refund";
+
+      let typeLabel = "";
+      let description = tx.description || "";
+
+      // Determinar tipo e descrição baseado na transação
+      switch (tx.type) {
+        case "earn":
+          typeLabel = "received";
+          if (!description)
+            description = t("earnedPoints", { amount: Math.abs(tx.amount) });
+          break;
+        case "spend":
+          typeLabel = "spent";
+          if (!description)
+            description = t("spentPoints", { amount: Math.abs(tx.amount) });
+          break;
+        case "transfer":
+          // Se chegar aqui, é uma transferência antiga sem dados completos
+          // Vamos tentar buscar informações do metadata
+          typeLabel = isPositive ? "transfer_received" : "transfer_sent";
+          if (!description) {
+            // Tentar pegar nome do usuário do metadata
+            const otherUserName =
+              tx.metadata?.to_user_name ||
+              tx.metadata?.from_user_name ||
+              tx.metadata?.user_name ||
+              tCommon("user");
+            const otherUserId =
+              tx.metadata?.to_user_id || tx.metadata?.from_user_id;
+
+            if (isPositive && otherUserId) {
+              description = t("receivedTransfer", {
+                amount: Math.abs(tx.amount),
+                user: otherUserName,
+              });
+            } else if (!isPositive && otherUserId) {
+              description = t("transferredPoints", {
+                amount: Math.abs(tx.amount),
+                user: otherUserName,
+              });
+            } else {
+              description = isPositive
+                ? t("receivedTransferNoUser", { amount: Math.abs(tx.amount) })
+                : t("transferredPointsNoUser", { amount: Math.abs(tx.amount) });
+            }
           }
+          break;
+        case "purchase":
+          typeLabel = "purchase";
+          if (!description)
+            description = t("purchasedPoints", { amount: Math.abs(tx.amount) });
+          break;
+        case "refund":
+          typeLabel = "refund";
+          if (!description)
+            description = t("refundPoints", { amount: Math.abs(tx.amount) });
+          break;
+        default:
+          typeLabel = tx.type || "other";
+          if (!description)
+            description = t("transactionPoints", {
+              amount: Math.abs(tx.amount),
+            });
+      }
+
+      // Adicionar informações sobre a fonte se disponível
+      if (tx.source) {
+        const sourceLabels: Record<string, string> = {
+          referral: `(${t("sourceReferral")})`,
+          post: `(${t("sourcePost")})`,
+          like: `(${t("sourceLike")})`,
+          daily: `(${t("sourceDaily")})`,
+          purchase: `(${t("sourcePurchase")})`,
+          transfer: `(${t("sourceTransfer")})`,
+          premium_post: `(${t("sourcePremiumPost")})`,
+          store: `(${t("sourceStore")})`,
+          bonus: `(${t("sourceBonus")})`,
+        };
+        if (sourceLabels[tx.source]) {
+          description += ` ${sourceLabels[tx.source]}`;
         }
-        break
-      case 'purchase':
-        typeLabel = 'purchase'
-        if (!description) description = t('purchasedPoints', { amount: Math.abs(tx.amount) })
-        break
-      case 'refund':
-        typeLabel = 'refund'
-        if (!description) description = t('refundPoints', { amount: Math.abs(tx.amount) })
-        break
-      default:
-        typeLabel = tx.type || 'other'
-        if (!description) description = t('transactionPoints', { amount: Math.abs(tx.amount) })
-    }
-
-    // Adicionar informações sobre a fonte se disponível
-    if (tx.source) {
-      const sourceLabels: Record<string, string> = {
-        'referral': `(${t('sourceReferral')})`,
-        'post': `(${t('sourcePost')})`,
-        'like': `(${t('sourceLike')})`,
-        'daily': `(${t('sourceDaily')})`,
-        'purchase': `(${t('sourcePurchase')})`,
-        'transfer': `(${t('sourceTransfer')})`,
-        'premium_post': `(${t('sourcePremiumPost')})`,
-        'store': `(${t('sourceStore')})`,
-        'bonus': `(${t('sourceBonus')})`
       }
-      if (sourceLabels[tx.source]) {
-        description += ` ${sourceLabels[tx.source]}`
-      }
-    }
 
-    return {
-      id: tx.id,
-      type: typeLabel,
-      amount: tx.amount,
-      description,
-      date: tx.created_at,
-      status: 'completed',
-      source: tx.source,
-      metadata: tx.metadata,
-      // Preservar informações de usuário se disponível
-      from_user: tx.metadata?.from_user,
-      to_user: tx.metadata?.to_user,
-      from_user_id: tx.metadata?.from_user_id,
-      to_user_id: tx.metadata?.to_user_id
-    }
-  })
+      return {
+        id: tx.id,
+        type: typeLabel,
+        amount: tx.amount,
+        description,
+        date: tx.created_at,
+        status: "completed",
+        source: tx.source,
+        metadata: tx.metadata,
+        // Preservar informações de usuário se disponível
+        from_user: tx.metadata?.from_user,
+        to_user: tx.metadata?.to_user,
+        from_user_id: tx.metadata?.from_user_id,
+        to_user_id: tx.metadata?.to_user_id,
+      };
+    });
 
   // Combinar transações de pontos com transferências
   // Remover duplicatas baseado no ID ou metadata
   const allTransactions = [...transferTransactions, ...pointTransactions]
     .filter((tx, index, self) => {
       // Para transferências, verificar se já existe uma com mesmo transfer_id
-      if (tx.id?.startsWith('transfer-')) {
-        const transferId = tx.metadata?.transfer_id || tx.id.replace('transfer-', '')
-        return index === self.findIndex(tr => 
-          tr.id?.startsWith('transfer-') && 
-          (tr.metadata?.transfer_id === transferId || tr.id === tx.id)
-        )
+      if (tx.id?.startsWith("transfer-")) {
+        const transferId =
+          tx.metadata?.transfer_id || tx.id.replace("transfer-", "");
+        return (
+          index ===
+          self.findIndex(
+            (tr) =>
+              tr.id?.startsWith("transfer-") &&
+              (tr.metadata?.transfer_id === transferId || tr.id === tx.id),
+          )
+        );
       }
       // Para outras transações, verificar ID normal
-      return index === self.findIndex(tr => tr.id === tx.id && !tr.id?.startsWith('transfer-'))
+      return (
+        index ===
+        self.findIndex(
+          (tr) => tr.id === tx.id && !tr.id?.startsWith("transfer-"),
+        )
+      );
     })
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const getTransactionIcon = (type: string) => {
     switch (type) {
-      case 'purchase': return <ShoppingBag className="h-4 w-4" />
-      case 'transfer_sent': return <Send className="h-4 w-4" />
-      case 'transfer_received': return <Gift className="h-4 w-4" />
-      case 'spent': return <ArrowDownRight className="h-4 w-4" />
-      case 'received': return <ArrowUpRight className="h-4 w-4" />
-      case 'refund': return <History className="h-4 w-4" />
-      default: return <Coins className="h-4 w-4" />
+      case "purchase":
+        return <ShoppingBag className="h-4 w-4" />;
+      case "transfer_sent":
+        return <Send className="h-4 w-4" />;
+      case "transfer_received":
+        return <Gift className="h-4 w-4" />;
+      case "spent":
+        return <ArrowDownRight className="h-4 w-4" />;
+      case "received":
+        return <ArrowUpRight className="h-4 w-4" />;
+      case "refund":
+        return <History className="h-4 w-4" />;
+      default:
+        return <Coins className="h-4 w-4" />;
     }
-  }
+  };
 
   const getTransactionColor = (type: string, amount: number) => {
     // Se o amount é positivo, é verde; se negativo, é vermelho
-    if (amount > 0 || type === 'purchase' || type === 'received' || type === 'transfer_received' || type === 'refund') {
-      return 'text-green-600 dark:text-green-400'
+    if (
+      amount > 0 ||
+      type === "purchase" ||
+      type === "received" ||
+      type === "transfer_received" ||
+      type === "refund"
+    ) {
+      return "text-green-600 dark:text-green-400";
     }
-    return 'text-red-600 dark:text-red-400'
-  }
+    return "text-red-600 dark:text-red-400";
+  };
 
   return (
     <MainLayout requireAuth={true}>
@@ -242,14 +325,14 @@ export default function ConfiPointsDashboardPage() {
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
                     <Coins className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    {t('myConfiPoints')}
-                  </h1>
-                  <p className="text-gray-600 dark:text-gray-400">
-                      {t('managePoints')}
-                  </p>
+                  </div>
+                  <div>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                      {t("myConfiPoints")}
+                    </h1>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      {t("managePoints")}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -262,15 +345,19 @@ export default function ConfiPointsDashboardPage() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      {t('balance')}
+                      {t("balance")}
                     </div>
                     <Coins className="h-5 w-5 text-yellow-600" />
                   </div>
                   <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                    {loadingPoints ? '...' : (balance?.balance || 0).toLocaleString('pt-BR')}
+                    {loadingPoints
+                      ? "..."
+                      : (balance?.balance || 0).toLocaleString("pt-BR")}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge className={`${currentLevel.bgColor} ${currentLevel.color} border-0`}>
+                    <Badge
+                      className={`${currentLevel.bgColor} ${currentLevel.color} border-0`}
+                    >
                       {currentLevel.icon} {currentLevel.name}
                     </Badge>
                   </div>
@@ -282,15 +369,17 @@ export default function ConfiPointsDashboardPage() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      {t('totalEarned')}
+                      {t("totalEarned")}
                     </div>
                     <ArrowUpRight className="h-5 w-5 text-green-600" />
                   </div>
                   <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                    {loadingPoints ? '...' : (balance?.total_earned || 0).toLocaleString('pt-BR')}
+                    {loadingPoints
+                      ? "..."
+                      : (balance?.total_earned || 0).toLocaleString("pt-BR")}
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {t('pointsReceived')}
+                    {t("pointsReceived")}
                   </p>
                 </CardContent>
               </Card>
@@ -300,15 +389,17 @@ export default function ConfiPointsDashboardPage() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      {t('totalSpent')}
+                      {t("totalSpent")}
                     </div>
                     <ArrowDownRight className="h-5 w-5 text-red-600" />
                   </div>
                   <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                    {loadingPoints ? '...' : (balance?.total_spent || 0).toLocaleString('pt-BR')}
+                    {loadingPoints
+                      ? "..."
+                      : (balance?.total_spent || 0).toLocaleString("pt-BR")}
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {t('pointsUsed')}
+                    {t("pointsUsed")}
                   </p>
                 </CardContent>
               </Card>
@@ -321,15 +412,17 @@ export default function ConfiPointsDashboardPage() {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="font-semibold text-gray-900 dark:text-white">
-                        {t('progressTo')} {nextLevel.name}
+                        {t("progressTo")} {nextLevel.name}
                       </h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {t('pointsRemaining')} {(nextLevel.target - (balance?.balance || 0)).toLocaleString('pt-BR')} {t('points')}
+                        {t("pointsRemaining")}{" "}
+                        {(
+                          nextLevel.target - (balance?.balance || 0)
+                        ).toLocaleString("pt-BR")}{" "}
+                        {t("points")}
                       </p>
                     </div>
-                    <Badge variant="outline">
-                      {Math.round(progress)}%
-                    </Badge>
+                    <Badge variant="outline">{Math.round(progress)}%</Badge>
                   </div>
                   <Progress value={progress} className="h-3" />
                 </CardContent>
@@ -337,12 +430,16 @@ export default function ConfiPointsDashboardPage() {
             )}
 
             {/* Tabs */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="space-y-6"
+            >
               <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="visao-geral">{t('overview')}</TabsTrigger>
-                <TabsTrigger value="ganhar">{t('howToEarn')}</TabsTrigger>
-                <TabsTrigger value="usar">{t('howToUse')}</TabsTrigger>
-                <TabsTrigger value="historico">{t('history')}</TabsTrigger>
+                <TabsTrigger value="visao-geral">{t("overview")}</TabsTrigger>
+                <TabsTrigger value="ganhar">{t("howToEarn")}</TabsTrigger>
+                <TabsTrigger value="usar">{t("howToUse")}</TabsTrigger>
+                <TabsTrigger value="historico">{t("history")}</TabsTrigger>
               </TabsList>
 
               {/* Visão Geral */}
@@ -358,19 +455,25 @@ export default function ConfiPointsDashboardPage() {
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <Link href="/confipoints/comprar">
-                        <Button className="w-full justify-between" variant="outline">
+                        <Button
+                          className="w-full justify-between"
+                          variant="outline"
+                        >
                           <span className="flex items-center gap-2">
                             <Crown className="h-4 w-4" />
-                            {t('premiumStore')}
+                            {t("premiumStore")}
                           </span>
                           <ChevronRight className="h-4 w-4" />
                         </Button>
                       </Link>
                       <Link href="/confipoints/transferir">
-                        <Button className="w-full justify-between" variant="outline">
+                        <Button
+                          className="w-full justify-between"
+                          variant="outline"
+                        >
                           <span className="flex items-center gap-2">
                             <Send className="h-4 w-4" />
-                            {t('transferPoints')}
+                            {t("transferPoints")}
                           </span>
                           <ChevronRight className="h-4 w-4" />
                         </Button>
@@ -383,23 +486,36 @@ export default function ConfiPointsDashboardPage() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <History className="h-5 w-5 text-blue-600" />
-                        {t('latestTransactions')}
+                        {t("latestTransactions")}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       {allTransactions.length === 0 ? (
                         <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
-                          {t('noTransactions')}
+                          {t("noTransactions")}
                         </p>
                       ) : (
                         <div className="space-y-3">
                           {allTransactions.slice(0, 5).map((transaction) => (
-                            <div key={transaction.id} className="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div
+                              key={transaction.id}
+                              className="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700"
+                            >
                               <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                                  transaction.amount > 0 ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'
-                                }`}>
-                                  <div className={transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}>
+                                <div
+                                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                                    transaction.amount > 0
+                                      ? "bg-green-100 dark:bg-green-900/20"
+                                      : "bg-red-100 dark:bg-red-900/20"
+                                  }`}
+                                >
+                                  <div
+                                    className={
+                                      transaction.amount > 0
+                                        ? "text-green-600"
+                                        : "text-red-600"
+                                    }
+                                  >
                                     {getTransactionIcon(transaction.type)}
                                   </div>
                                 </div>
@@ -408,12 +524,18 @@ export default function ConfiPointsDashboardPage() {
                                     {transaction.description}
                                   </p>
                                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    {formatDistanceToNow(new Date(transaction.date), { addSuffix: true, locale: ptBR })}
+                                    {formatDistanceToNow(
+                                      new Date(transaction.date),
+                                      { addSuffix: true, locale: ptBR },
+                                    )}
                                   </p>
                                 </div>
                               </div>
-                              <div className={`text-sm font-bold ${transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {transaction.amount > 0 ? '+' : ''}{transaction.amount}
+                              <div
+                                className={`text-sm font-bold ${transaction.amount > 0 ? "text-green-600" : "text-red-600"}`}
+                              >
+                                {transaction.amount > 0 ? "+" : ""}
+                                {transaction.amount}
                               </div>
                             </div>
                           ))}
@@ -432,10 +554,12 @@ export default function ConfiPointsDashboardPage() {
                       <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
                       <div>
                         <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                          {t('pointsSystem')}
+                          {t("pointsSystem")}
                         </h3>
                         <p className="text-sm text-blue-800 dark:text-blue-200">
-                          {t('onlyWayToEarn')} <strong>{t('referralProgram')}</strong>. {t('canAlsoBuy')}
+                          {t("onlyWayToEarn")}{" "}
+                          <strong>{t("referralProgram")}</strong>.{" "}
+                          {t("canAlsoBuy")}
                         </p>
                       </div>
                     </div>
@@ -446,22 +570,45 @@ export default function ConfiPointsDashboardPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Users className="h-5 w-5 text-green-600" />
-                      {t('referralSystem')}
+                      {t("referralSystem")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                      {t('referralDescription')}
+                      {t("referralDescription")}
                     </p>
                     <div className="space-y-3">
                       {[
-                        { action: t('friendRegistered'), points: 200, icon: '👋' },
-                        { action: t('friendCompletedProfile'), points: 150, icon: '📋' },
-                        { action: t('friendFirstPost'), points: 100, icon: '📝' },
-                        { action: t('friendFirstReview'), points: 100, icon: '⭐' },
-                        { action: t('friendActive30Days'), points: 300, icon: '🔥' }
+                        {
+                          action: t("friendRegistered"),
+                          points: 200,
+                          icon: "👋",
+                        },
+                        {
+                          action: t("friendCompletedProfile"),
+                          points: 150,
+                          icon: "📋",
+                        },
+                        {
+                          action: t("friendFirstPost"),
+                          points: 100,
+                          icon: "📝",
+                        },
+                        {
+                          action: t("friendFirstReview"),
+                          points: 100,
+                          icon: "⭐",
+                        },
+                        {
+                          action: t("friendActive30Days"),
+                          points: 300,
+                          icon: "🔥",
+                        },
                       ].map((item, index) => (
-                        <div key={index} className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700"
+                        >
                           <div className="flex items-center gap-3">
                             <span className="text-2xl">{item.icon}</span>
                             <span className="text-sm font-medium text-gray-900 dark:text-white">
@@ -492,12 +639,13 @@ export default function ConfiPointsDashboardPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <ShoppingBag className="h-5 w-5 text-blue-600" />
-                      {t('buyPoints')}
+                      {t("buyPoints")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                      Você também pode comprar pontos diretamente para usar nas funcionalidades premium da plataforma.
+                      Você também pode comprar pontos diretamente para usar nas
+                      funcionalidades premium da plataforma.
                     </p>
                     <Link href="/confipoints/comprar">
                       <Button className="w-full" variant="outline">
@@ -521,17 +669,44 @@ export default function ConfiPointsDashboardPage() {
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {[
-                        { name: 'Curtida Premium', cost: PREMIUM_PRICES.LIKE.POINTS, description: PREMIUM_PRICES.LIKE.DESCRIPTION, icon: '💎', link: '/feed' },
-                        { name: 'Comentário Premium', cost: PREMIUM_PRICES.COMMENT.POINTS, description: PREMIUM_PRICES.COMMENT.DESCRIPTION, icon: '💬', link: '/feed' },
-                        { name: 'Post Premium', cost: PREMIUM_PRICES.POST.POINTS, description: `${PREMIUM_PRICES.POST.DESCRIPTION} (${PREMIUM_PRICES.POST.DURATION})`, icon: '🚀', link: '/feed' },
-                        { name: 'Anúncio Premium', cost: PREMIUM_PRICES.AD.POINTS, description: `${PREMIUM_PRICES.AD.DESCRIPTION} (${PREMIUM_PRICES.AD.DURATION})`, icon: '⭐', link: '/classificados' }
+                        {
+                          name: "Curtida Premium",
+                          cost: PREMIUM_PRICES.LIKE.POINTS,
+                          description: PREMIUM_PRICES.LIKE.DESCRIPTION,
+                          icon: "💎",
+                          link: "/feed",
+                        },
+                        {
+                          name: "Comentário Premium",
+                          cost: PREMIUM_PRICES.COMMENT.POINTS,
+                          description: PREMIUM_PRICES.COMMENT.DESCRIPTION,
+                          icon: "💬",
+                          link: "/feed",
+                        },
+                        {
+                          name: "Post Premium",
+                          cost: PREMIUM_PRICES.POST.POINTS,
+                          description: `${PREMIUM_PRICES.POST.DESCRIPTION} (${PREMIUM_PRICES.POST.DURATION})`,
+                          icon: "🚀",
+                          link: "/feed",
+                        },
+                        {
+                          name: "Anúncio Premium",
+                          cost: PREMIUM_PRICES.AD.POINTS,
+                          description: `${PREMIUM_PRICES.AD.DESCRIPTION} (${PREMIUM_PRICES.AD.DURATION})`,
+                          icon: "⭐",
+                          link: "/classificados",
+                        },
                       ].map((item, index) => (
                         <Link key={index} href={item.link}>
                           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                             <CardContent className="p-4">
                               <div className="flex items-start justify-between mb-2">
                                 <span className="text-3xl">{item.icon}</span>
-                                <Badge variant="outline" className="text-purple-600 border-purple-600">
+                                <Badge
+                                  variant="outline"
+                                  className="text-purple-600 border-purple-600"
+                                >
                                   -{item.cost} pts
                                 </Badge>
                               </div>
@@ -554,16 +729,17 @@ export default function ConfiPointsDashboardPage() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2 text-base">
                         <Crown className="h-5 w-5 text-yellow-600" />
-                        {t('premiumStore')}
+                        {t("premiumStore")}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                        Compre badges exclusivos, recursos especiais e muito mais.
+                        Compre badges exclusivos, recursos especiais e muito
+                        mais.
                       </p>
                       <Link href="/confipoints/comprar">
                         <Button className="w-full" variant="outline">
-                          {t('premiumStore')}
+                          {t("premiumStore")}
                         </Button>
                       </Link>
                     </CardContent>
@@ -582,7 +758,7 @@ export default function ConfiPointsDashboardPage() {
                       </p>
                       <Link href="/confipoints/transferir">
                         <Button className="w-full" variant="outline">
-                          {t('transfer')}
+                          {t("transfer")}
                         </Button>
                       </Link>
                     </CardContent>
@@ -600,7 +776,8 @@ export default function ConfiPointsDashboardPage() {
                         <p className="text-sm text-yellow-800 dark:text-yellow-200">
                           <strong>100 pontos = R$ 1,00</strong>
                           <br />
-                          Use seus pontos na loja, posts premium, curtidas e muito mais!
+                          Use seus pontos na loja, posts premium, curtidas e
+                          muito mais!
                         </p>
                       </div>
                     </div>
@@ -614,11 +791,11 @@ export default function ConfiPointsDashboardPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <History className="h-5 w-5 text-gray-600" />
-                      {t('allTransactions')}
+                      {t("allTransactions")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {(loadingHistory || loadingTransfers) ? (
+                    {loadingHistory || loadingTransfers ? (
                       <TransactionSkeleton />
                     ) : allTransactions.length === 0 ? (
                       <EmptyState
@@ -631,14 +808,24 @@ export default function ConfiPointsDashboardPage() {
                       <>
                         <div className="space-y-3">
                           {allTransactions.map((transaction) => (
-                            <div key={transaction.id} className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <div
+                              key={transaction.id}
+                              className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                            >
                               <div className="flex items-center gap-4">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                  transaction.amount > 0 
-                                    ? 'bg-green-100 dark:bg-green-900/20' 
-                                    : 'bg-red-100 dark:bg-red-900/20'
-                                }`}>
-                                  <div className={getTransactionColor(transaction.type, transaction.amount)}>
+                                <div
+                                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                    transaction.amount > 0
+                                      ? "bg-green-100 dark:bg-green-900/20"
+                                      : "bg-red-100 dark:bg-red-900/20"
+                                  }`}
+                                >
+                                  <div
+                                    className={getTransactionColor(
+                                      transaction.type,
+                                      transaction.amount,
+                                    )}
+                                  >
                                     {getTransactionIcon(transaction.type)}
                                   </div>
                                 </div>
@@ -646,156 +833,258 @@ export default function ConfiPointsDashboardPage() {
                                   <p className="font-medium text-gray-900 dark:text-white">
                                     {(() => {
                                       // Se for transferência, criar links para perfis
-                                      if ((transaction.source === 'transfer' || transaction.id?.startsWith('transfer-')) && transaction.metadata) {
-                                        const isSent = transaction.amount < 0
-                                        const otherUser = isSent 
-                                          ? transaction.metadata.to_user 
-                                          : transaction.metadata.from_user
-                                        const otherUserId = isSent 
-                                          ? transaction.metadata.to_user_id 
-                                          : transaction.metadata.from_user_id
-                                        
+                                      if (
+                                        (transaction.source === "transfer" ||
+                                          transaction.id?.startsWith(
+                                            "transfer-",
+                                          )) &&
+                                        transaction.metadata
+                                      ) {
+                                        const isSent = transaction.amount < 0;
+                                        const otherUser = isSent
+                                          ? transaction.metadata.to_user
+                                          : transaction.metadata.from_user;
+                                        const otherUserId = isSent
+                                          ? transaction.metadata.to_user_id
+                                          : transaction.metadata.from_user_id;
+
                                         if (otherUser && otherUserId) {
-                                          const userName = otherUser.full_name || 'Usuário'
+                                          const userName =
+                                            otherUser.full_name || "Usuário";
                                           const transferText = isSent
                                             ? `Transferiu ${Math.abs(transaction.amount).toLocaleString()} pontos para `
-                                            : `Recebeu transferência de ${transaction.amount.toLocaleString()} pontos de `
-                                          
+                                            : `Recebeu transferência de ${transaction.amount.toLocaleString()} pontos de `;
+
                                           return (
                                             <>
                                               {transferText}
-                                              <Link 
+                                              <Link
                                                 href={`/perfil/${otherUserId}`}
                                                 className="text-purple-600 dark:text-purple-400 hover:underline"
                                               >
                                                 {userName}
                                               </Link>
                                             </>
-                                          )
+                                          );
                                         }
-                                        
+
                                         // Fallback: tentar usar dados do metadata diretamente
                                         if (otherUserId && !otherUser) {
-                                          const userName = transaction.metadata.to_user_name || transaction.metadata.from_user_name || 'Usuário'
+                                          const userName =
+                                            transaction.metadata.to_user_name ||
+                                            transaction.metadata
+                                              .from_user_name ||
+                                            "Usuário";
                                           const transferText = isSent
                                             ? `Transferiu ${Math.abs(transaction.amount).toLocaleString()} pontos para `
-                                            : `Recebeu transferência de ${transaction.amount.toLocaleString()} pontos de `
-                                          
+                                            : `Recebeu transferência de ${transaction.amount.toLocaleString()} pontos de `;
+
                                           return (
                                             <>
                                               {transferText}
-                                              <Link 
+                                              <Link
                                                 href={`/perfil/${otherUserId}`}
                                                 className="text-purple-600 dark:text-purple-400 hover:underline"
                                               >
                                                 {userName}
                                               </Link>
                                             </>
-                                          )
+                                          );
                                         }
                                       }
-                                      
+
                                       // Para outras transações, mostrar descrição normal
                                       // Mas verificar se há nome de usuário na descrição para adicionar link
-                                      const desc = transaction.description
-                                      
+                                      const desc = transaction.description;
+
                                       // Verificar se há informações de usuário no metadata ou diretamente na transação
-                                      if (transaction.from_user && transaction.from_user_id && desc.includes(transaction.from_user.full_name)) {
-                                        return desc.split(transaction.from_user.full_name).map((part: string, index: number, arr: string[]) => {
-                                          if (index === arr.length - 1) return part
-                                          return (
-                                            <span key={index}>
-                                              {part}
-                                              <Link 
-                                                href={`/perfil/${transaction.from_user_id}`}
-                                                className="text-purple-600 dark:text-purple-400 hover:underline"
-                                              >
-                                                {transaction.from_user.full_name}
-                                              </Link>
-                                            </span>
+                                      if (
+                                        transaction.from_user &&
+                                        transaction.from_user_id &&
+                                        desc.includes(
+                                          transaction.from_user.full_name,
+                                        )
+                                      ) {
+                                        return desc
+                                          .split(
+                                            transaction.from_user.full_name,
                                           )
-                                        })
+                                          .map(
+                                            (
+                                              part: string,
+                                              index: number,
+                                              arr: string[],
+                                            ) => {
+                                              if (index === arr.length - 1)
+                                                return part;
+                                              return (
+                                                <span key={index}>
+                                                  {part}
+                                                  <Link
+                                                    href={`/perfil/${transaction.from_user_id}`}
+                                                    className="text-purple-600 dark:text-purple-400 hover:underline"
+                                                  >
+                                                    {
+                                                      transaction.from_user
+                                                        .full_name
+                                                    }
+                                                  </Link>
+                                                </span>
+                                              );
+                                            },
+                                          );
                                       }
-                                      
-                                      if (transaction.to_user && transaction.to_user_id && desc.includes(transaction.to_user.full_name)) {
-                                        return desc.split(transaction.to_user.full_name).map((part: string, index: number, arr: string[]) => {
-                                          if (index === arr.length - 1) return part
-                                          return (
-                                            <span key={index}>
-                                              {part}
-                                              <Link 
-                                                href={`/perfil/${transaction.to_user_id}`}
-                                                className="text-purple-600 dark:text-purple-400 hover:underline"
-                                              >
-                                                {transaction.to_user.full_name}
-                                              </Link>
-                                            </span>
-                                          )
-                                        })
+
+                                      if (
+                                        transaction.to_user &&
+                                        transaction.to_user_id &&
+                                        desc.includes(
+                                          transaction.to_user.full_name,
+                                        )
+                                      ) {
+                                        return desc
+                                          .split(transaction.to_user.full_name)
+                                          .map(
+                                            (
+                                              part: string,
+                                              index: number,
+                                              arr: string[],
+                                            ) => {
+                                              if (index === arr.length - 1)
+                                                return part;
+                                              return (
+                                                <span key={index}>
+                                                  {part}
+                                                  <Link
+                                                    href={`/perfil/${transaction.to_user_id}`}
+                                                    className="text-purple-600 dark:text-purple-400 hover:underline"
+                                                  >
+                                                    {
+                                                      transaction.to_user
+                                                        .full_name
+                                                    }
+                                                  </Link>
+                                                </span>
+                                              );
+                                            },
+                                          );
                                       }
-                                      
+
                                       // Verificar se há userId no metadata para criar link
-                                      if (transaction.metadata?.from_user_id && desc.includes(transaction.metadata?.from_user_name)) {
-                                        return desc.split(transaction.metadata.from_user_name).map((part: string, index: number, arr: string[]) => {
-                                          if (index === arr.length - 1) return part
-                                          return (
-                                            <span key={index}>
-                                              {part}
-                                              <Link 
-                                                href={`/perfil/${transaction.metadata.from_user_id}`}
-                                                className="text-purple-600 dark:text-purple-400 hover:underline"
-                                              >
-                                                {transaction.metadata.from_user_name}
-                                              </Link>
-                                            </span>
+                                      if (
+                                        transaction.metadata?.from_user_id &&
+                                        desc.includes(
+                                          transaction.metadata?.from_user_name,
+                                        )
+                                      ) {
+                                        return desc
+                                          .split(
+                                            transaction.metadata.from_user_name,
                                           )
-                                        })
+                                          .map(
+                                            (
+                                              part: string,
+                                              index: number,
+                                              arr: string[],
+                                            ) => {
+                                              if (index === arr.length - 1)
+                                                return part;
+                                              return (
+                                                <span key={index}>
+                                                  {part}
+                                                  <Link
+                                                    href={`/perfil/${transaction.metadata.from_user_id}`}
+                                                    className="text-purple-600 dark:text-purple-400 hover:underline"
+                                                  >
+                                                    {
+                                                      transaction.metadata
+                                                        .from_user_name
+                                                    }
+                                                  </Link>
+                                                </span>
+                                              );
+                                            },
+                                          );
                                       }
-                                      
-                                      if (transaction.metadata?.to_user_id && desc.includes(transaction.metadata?.to_user_name)) {
-                                        return desc.split(transaction.metadata.to_user_name).map((part: string, index: number, arr: string[]) => {
-                                          if (index === arr.length - 1) return part
-                                          return (
-                                            <span key={index}>
-                                              {part}
-                                              <Link 
-                                                href={`/perfil/${transaction.metadata.to_user_id}`}
-                                                className="text-purple-600 dark:text-purple-400 hover:underline"
-                                              >
-                                                {transaction.metadata.to_user_name}
-                                              </Link>
-                                            </span>
+
+                                      if (
+                                        transaction.metadata?.to_user_id &&
+                                        desc.includes(
+                                          transaction.metadata?.to_user_name,
+                                        )
+                                      ) {
+                                        return desc
+                                          .split(
+                                            transaction.metadata.to_user_name,
                                           )
-                                        })
+                                          .map(
+                                            (
+                                              part: string,
+                                              index: number,
+                                              arr: string[],
+                                            ) => {
+                                              if (index === arr.length - 1)
+                                                return part;
+                                              return (
+                                                <span key={index}>
+                                                  {part}
+                                                  <Link
+                                                    href={`/perfil/${transaction.metadata.to_user_id}`}
+                                                    className="text-purple-600 dark:text-purple-400 hover:underline"
+                                                  >
+                                                    {
+                                                      transaction.metadata
+                                                        .to_user_name
+                                                    }
+                                                  </Link>
+                                                </span>
+                                              );
+                                            },
+                                          );
                                       }
-                                      
-                                      return desc
+
+                                      return desc;
                                     })()}
                                   </p>
                                   <div className="flex items-center gap-2 mt-1">
                                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                                      {formatDistanceToNow(new Date(transaction.date), { 
-                                        addSuffix: true, 
-                                        locale: ptBR 
-                                      })}
+                                      {formatDistanceToNow(
+                                        new Date(transaction.date),
+                                        {
+                                          addSuffix: true,
+                                          locale: ptBR,
+                                        },
+                                      )}
                                     </p>
-                                    <Badge 
-                                      variant={transaction.status === 'completed' ? 'default' : 'outline'}
+                                    <Badge
+                                      variant={
+                                        transaction.status === "completed"
+                                          ? "default"
+                                          : "outline"
+                                      }
                                       className="text-xs"
                                     >
-                                      {transaction.status === 'completed' ? 'Concluído' : 
-                                       transaction.status === 'pending' ? 'Pendente' : 
-                                       transaction.status === 'processing' ? 'Processando' : 
-                                       transaction.status}
+                                      {transaction.status === "completed"
+                                        ? "Concluído"
+                                        : transaction.status === "pending"
+                                          ? "Pendente"
+                                          : transaction.status === "processing"
+                                            ? "Processando"
+                                            : transaction.status}
                                     </Badge>
                                   </div>
                                 </div>
                               </div>
                               <div className="text-right">
-                                <p className={`text-lg font-bold ${
-                                  transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
-                                }`}>
-                                  {transaction.amount > 0 ? '+' : ''}{transaction.amount.toLocaleString('pt-BR')}
+                                <p
+                                  className={`text-lg font-bold ${
+                                    transaction.amount > 0
+                                      ? "text-green-600"
+                                      : "text-red-600"
+                                  }`}
+                                >
+                                  {transaction.amount > 0 ? "+" : ""}
+                                  {transaction.amount.toLocaleString("pt-BR")}
                                 </p>
                                 <p className="text-xs text-gray-500">pontos</p>
                               </div>
@@ -806,7 +1095,8 @@ export default function ConfiPointsDashboardPage() {
                         {allTransactions.length > 0 && (
                           <div className="mt-6 flex justify-center">
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                              Total de {allTransactions.length} transações exibidas
+                              Total de {allTransactions.length} transações
+                              exibidas
                             </p>
                           </div>
                         )}
@@ -820,5 +1110,5 @@ export default function ConfiPointsDashboardPage() {
         </div>
       </div>
     </MainLayout>
-  )
+  );
 }

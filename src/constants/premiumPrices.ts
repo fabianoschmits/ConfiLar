@@ -8,112 +8,111 @@ export const PREMIUM_PRICES = {
   // Curtida Premium
   LIKE: {
     POINTS: 10,
-    BRL: 0.10,
-    DESCRIPTION: 'Curtida com destaque especial',
-    DURATION: 'Permanente'
+    BRL: 0.1,
+    DESCRIPTION: "Curtida com destaque especial",
+    DURATION: "Permanente",
   },
-  
-  // Comentário Premium  
+
+  // Comentário Premium
   COMMENT: {
     POINTS: 50,
-    BRL: 0.50,
-    DESCRIPTION: 'Comentário destacado no topo',
-    DURATION: 'Permanente'
+    BRL: 0.5,
+    DESCRIPTION: "Comentário destacado no topo",
+    DURATION: "Permanente",
   },
-  
+
   // Post Premium - Múltiplas Opções
   POST: {
     POINTS: 1000,
-    BRL: 10.00,
-    DESCRIPTION: 'Post em destaque no feed',
-    DURATION: '1 dia'
+    BRL: 10.0,
+    DESCRIPTION: "Post em destaque no feed",
+    DURATION: "1 dia",
   },
-  
+
   // Opções de Post Premium por Duração (4 opções)
   POST_1_DAY: {
     POINTS: 1000,
-    BRL: 10.00,
-    DESCRIPTION: 'Post em destaque no feed',
-    DURATION: '1 dia',
-    DAYS: 1
+    BRL: 10.0,
+    DESCRIPTION: "Post em destaque no feed",
+    DURATION: "1 dia",
+    DAYS: 1,
   },
-  
+
   POST_7_DAYS: {
     POINTS: 6000,
-    BRL: 60.00,
-    DESCRIPTION: 'Post em destaque no feed',
-    DURATION: '7 dias',
-    DAYS: 7
+    BRL: 60.0,
+    DESCRIPTION: "Post em destaque no feed",
+    DURATION: "7 dias",
+    DAYS: 7,
   },
-  
+
   POST_14_DAYS: {
     POINTS: 10000,
-    BRL: 100.00,
-    DESCRIPTION: 'Post em destaque no feed',
-    DURATION: '14 dias',
-    DAYS: 14
+    BRL: 100.0,
+    DESCRIPTION: "Post em destaque no feed",
+    DURATION: "14 dias",
+    DAYS: 14,
   },
-  
+
   POST_30_DAYS: {
     POINTS: 18000,
-    BRL: 180.00,
-    DESCRIPTION: 'Post em destaque no feed',
-    DURATION: '30 dias',
-    DAYS: 30
+    BRL: 180.0,
+    DESCRIPTION: "Post em destaque no feed",
+    DURATION: "30 dias",
+    DAYS: 30,
   },
-  
+
   // Anúncio Premium - Opções por Duração
   AD_1_DAY: {
     POINTS: 2000,
-    BRL: 20.00,
-    DESCRIPTION: 'Anúncio destacado',
-    DURATION: '1 dia',
-    DAYS: 1
+    BRL: 20.0,
+    DESCRIPTION: "Anúncio destacado",
+    DURATION: "1 dia",
+    DAYS: 1,
   },
   AD_7_DAYS: {
     POINTS: 12000,
-    BRL: 120.00,
-    DESCRIPTION: 'Anúncio destacado',
-    DURATION: '7 dias',
-    DAYS: 7
+    BRL: 120.0,
+    DESCRIPTION: "Anúncio destacado",
+    DURATION: "7 dias",
+    DAYS: 7,
   },
   AD_14_DAYS: {
     POINTS: 20000,
-    BRL: 200.00,
-    DESCRIPTION: 'Anúncio destacado',
-    DURATION: '14 dias',
-    DAYS: 14
+    BRL: 200.0,
+    DESCRIPTION: "Anúncio destacado",
+    DURATION: "14 dias",
+    DAYS: 14,
   },
   AD_30_DAYS: {
     POINTS: 35000,
-    BRL: 350.00,
-    DESCRIPTION: 'Anúncio destacado',
-    DURATION: '30 dias',
-    DAYS: 30
+    BRL: 350.0,
+    DESCRIPTION: "Anúncio destacado",
+    DURATION: "30 dias",
+    DAYS: 30,
   },
-  
+
   // Anúncio Premium (compatibilidade - mantém valor antigo de 30 dias)
   AD: {
     POINTS: 35000,
-    BRL: 350.00,
-    DESCRIPTION: 'Anúncio destacado',
-    DURATION: '30 dias'
-  }
-} as const
+    BRL: 350.0,
+    DESCRIPTION: "Anúncio destacado",
+    DURATION: "30 dias",
+  },
+} as const;
 
 // Taxa de conversão
 export const CONVERSION_RATE = {
-  POINTS_PER_BRL: 100,  // 100 pontos = R$ 1,00
-  BRL_PER_POINT: 0.01   // 1 ponto = R$ 0,01
-} as const
+  POINTS_PER_BRL: 100, // 100 pontos = R$ 1,00
+  BRL_PER_POINT: 0.01, // 1 ponto = R$ 0,01
+} as const;
 
 // Função helper para converter pontos em reais
 export function pointsToBRL(points: number): number {
-  return points * CONVERSION_RATE.BRL_PER_POINT
+  return points * CONVERSION_RATE.BRL_PER_POINT;
 }
 
 // Função helper para converter reais em pontos
 export function brlToPoints(brl: number): number {
-  return Math.floor(brl * CONVERSION_RATE.POINTS_PER_BRL)
+  return Math.floor(brl * CONVERSION_RATE.POINTS_PER_BRL);
 }
-

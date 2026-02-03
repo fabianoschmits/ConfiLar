@@ -1,12 +1,12 @@
-'use client'
+"use client";
 
-import { PWAInstallPrompt } from './PWAInstallPrompt'
-import { PWAUpdateNotification } from './PWAUpdateNotification'
-import { PWAStatus } from './PWAStatus'
+import { PWAInstallPrompt } from "./PWAInstallPrompt";
+import { PWAUpdateNotification } from "./PWAUpdateNotification";
+import { PWAStatus } from "./PWAStatus";
 
 /**
  * PWAManager - Componente principal que gerencia todos os aspectos do PWA
- * 
+ *
  * Funcionalidades:
  * - Prompt de instalação personalizado
  * - Notificação de atualização automática
@@ -19,13 +19,12 @@ export function PWAManager() {
     <>
       {/* Prompt de instalação */}
       <PWAInstallPrompt />
-      
+
       {/* Notificação de atualização */}
       <PWAUpdateNotification />
     </>
-  )
+  );
 }
 
 // Export do status separadamente para usar no header
-export { PWAStatus }
-
+export { PWAStatus };

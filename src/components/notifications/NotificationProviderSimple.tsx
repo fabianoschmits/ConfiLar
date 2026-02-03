@@ -1,23 +1,33 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { useNotificationSound } from '@/hooks/useNotificationSound';
-import { useFloatingChat } from '@/contexts/FloatingChatContextSimple';
-import { NotificationSoundType } from '@/types/sound';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useNotificationSound } from "@/hooks/useNotificationSound";
+import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
+import { NotificationSoundType } from "@/types/sound";
 
 export interface Notification {
   id: string;
   user_id: string;
   title: string;
   message: string;
-  type: 'info' | 'success' | 'warning' | 'error' | 'message' | 'review' | 'booking' | 'verification' | 'achievement' | 'system';
+  type:
+    | "info"
+    | "success"
+    | "warning"
+    | "error"
+    | "message"
+    | "review"
+    | "booking"
+    | "verification"
+    | "achievement"
+    | "system";
   is_read: boolean;
   action_url?: string;
   metadata?: any;
-  priority: 'low' | 'normal' | 'high' | 'urgent';
+  priority: "low" | "normal" | "high" | "urgent";
   timestamp: Date;
   created_at: Date;
 }
@@ -25,7 +35,12 @@ export interface Notification {
 interface NotificationContextType {
   notifications: Notification[];
   unreadCount: number;
-  addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'is_read' | 'created_at'>) => void;
+  addNotification: (
+    notification: Omit<
+      Notification,
+      "id" | "timestamp" | "is_read" | "created_at"
+    >,
+  ) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   removeNotification: (id: string) => void;
@@ -37,12 +52,16 @@ interface NotificationContextType {
   refreshNotifications: () => Promise<void>;
 }
 
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
+const NotificationContext = createContext<NotificationContextType | undefined>(
+  undefined,
+);
 
 export const useNotifications = () => {
   const context = useContext(NotificationContext);
   if (!context) {
-    throw new Error('useNotifications must be used within a NotificationProvider');
+    throw new Error(
+      "useNotifications must be used within a NotificationProvider",
+    );
   }
   return context;
 };
@@ -51,7 +70,9 @@ interface NotificationProviderProps {
   children: React.ReactNode;
 }
 
-export const NotificationProviderSimple: React.FC<NotificationProviderProps> = ({ children }) => {
+export const NotificationProviderSimple: React.FC<
+  NotificationProviderProps
+> = ({ children }) => {
   const { user } = useAuthContext();
   const { playSound, isEnabled: soundEnabled } = useNotificationSound();
   const { openChat } = useFloatingChat();
@@ -59,49 +80,69 @@ export const NotificationProviderSimple: React.FC<NotificationProviderProps> = (
   const [hasPermission, setHasPermission] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
 
-  console.log('🔔 NotificationProviderSimple: Renderizando com user:', user?.id || 'null');
+  console.log(
+    "🔔 NotificationProviderSimple: Renderizando com user:",
+    user?.id || "null",
+  );
 
   // Carregar notificações do banco de dados
   const loadNotifications = async () => {
     try {
       if (!user) {
-        console.log('🔔 NotificationProviderSimple: Usuário não autenticado, pulando carregamento')
+        console.log(
+          "🔔 NotificationProviderSimple: Usuário não autenticado, pulando carregamento",
+        );
         return;
       }
 
-      console.log('🔔 NotificationProviderSimple: Carregando notificações para usuário:', user.id)
+      console.log(
+        "🔔 NotificationProviderSimple: Carregando notificações para usuário:",
+        user.id,
+      );
 
       const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
         .limit(50);
 
       if (error) {
-        console.error('❌ Erro ao carregar notificações:', error);
+        console.error("❌ Erro ao carregar notificações:", error);
         return;
       }
 
-      console.log(`🔔 NotificationProviderSimple: ${data?.length || 0} notificações carregadas`)
+      console.log(
+        `🔔 NotificationProviderSimple: ${data?.length || 0} notificações carregadas`,
+      );
 
-      const formattedNotifications = data?.map(notification => ({
-        ...notification,
-        timestamp: new Date(notification.created_at),
-        created_at: new Date(notification.created_at),
-      })) || [];
+      const formattedNotifications =
+        data?.map((notification) => ({
+          ...notification,
+          timestamp: new Date(notification.created_at),
+          created_at: new Date(notification.created_at),
+        })) || [];
 
       setNotifications(formattedNotifications);
-      
-      const unreadCount = formattedNotifications.filter(n => !n.is_read).length
-      console.log(`🔔 NotificationProviderSimple: ${unreadCount} notificações não lidas`)
+
+      const unreadCount = formattedNotifications.filter(
+        (n) => !n.is_read,
+      ).length;
+      console.log(
+        `🔔 NotificationProviderSimple: ${unreadCount} notificações não lidas`,
+      );
     } catch (error) {
-      console.error('❌ Erro ao carregar notificações:', error);
+      console.error("❌ Erro ao carregar notificações:", error);
     }
   };
 
   // Adicionar notificação
-  const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'is_read' | 'created_at'>) => {
+  const addNotification = (
+    notification: Omit<
+      Notification,
+      "id" | "timestamp" | "is_read" | "created_at"
+    >,
+  ) => {
     const newNotification: Notification = {
       ...notification,
       id: crypto.randomUUID(),
@@ -110,13 +151,15 @@ export const NotificationProviderSimple: React.FC<NotificationProviderProps> = (
       created_at: new Date(),
     };
 
-    setNotifications(prev => [newNotification, ...prev]);
-    
+    setNotifications((prev) => [newNotification, ...prev]);
+
     // Tocar som da notificação
     if (soundEnabled) {
-      playSound(notification.type as NotificationSoundType).catch(console.error);
+      playSound(notification.type as NotificationSoundType).catch(
+        console.error,
+      );
     }
-    
+
     // Mostrar toast
     toast(notification.title, {
       description: notification.message,
@@ -127,45 +170,48 @@ export const NotificationProviderSimple: React.FC<NotificationProviderProps> = (
   const markAsRead = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('notifications')
+        .from("notifications")
         .update({ is_read: true })
-        .eq('id', id);
+        .eq("id", id);
 
       if (error) {
-        console.error('Erro ao marcar notificação como lida:', error);
+        console.error("Erro ao marcar notificação como lida:", error);
         return;
       }
 
-      setNotifications(prev =>
-        prev.map(n => n.id === id ? { ...n, is_read: true } : n)
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)),
       );
     } catch (error) {
-      console.error('Erro ao marcar notificação como lida:', error);
+      console.error("Erro ao marcar notificação como lida:", error);
     }
   };
 
   // Marcar todas como lidas
   const markAllAsRead = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session?.user) return;
 
       const { error } = await supabase
-        .from('notifications')
+        .from("notifications")
         .update({ is_read: true })
-        .eq('user_id', session.user.id)
-        .eq('is_read', false);
+        .eq("user_id", session.user.id)
+        .eq("is_read", false);
 
       if (error) {
-        console.error('Erro ao marcar todas as notificações como lidas:', error);
+        console.error(
+          "Erro ao marcar todas as notificações como lidas:",
+          error,
+        );
         return;
       }
 
-      setNotifications(prev =>
-        prev.map(n => ({ ...n, is_read: true }))
-      );
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
     } catch (error) {
-      console.error('Erro ao marcar todas as notificações como lidas:', error);
+      console.error("Erro ao marcar todas as notificações como lidas:", error);
     }
   };
 
@@ -173,75 +219,80 @@ export const NotificationProviderSimple: React.FC<NotificationProviderProps> = (
   const removeNotification = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('notifications')
+        .from("notifications")
         .delete()
-        .eq('id', id);
+        .eq("id", id);
 
       if (error) {
-        console.error('Erro ao remover notificação:', error);
+        console.error("Erro ao remover notificação:", error);
         return;
       }
 
-      setNotifications(prev => prev.filter(n => n.id !== id));
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
     } catch (error) {
-      console.error('Erro ao remover notificação:', error);
+      console.error("Erro ao remover notificação:", error);
     }
   };
 
   // Limpar todas
   const clearAll = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session?.user) return;
 
       const { error } = await supabase
-        .from('notifications')
+        .from("notifications")
         .delete()
-        .eq('user_id', session.user.id);
+        .eq("user_id", session.user.id);
 
       if (error) {
-        console.error('Erro ao limpar notificações:', error);
+        console.error("Erro ao limpar notificações:", error);
         return;
       }
 
       setNotifications([]);
     } catch (error) {
-      console.error('Erro ao limpar notificações:', error);
+      console.error("Erro ao limpar notificações:", error);
     }
   };
 
   // Solicitar permissão para notificações
   const requestPermission = async (): Promise<boolean> => {
-    if (!('Notification' in window)) {
-      console.warn('Este navegador não suporta notificações');
+    if (!("Notification" in window)) {
+      console.warn("Este navegador não suporta notificações");
       return false;
     }
 
-    if (Notification.permission === 'granted') {
+    if (Notification.permission === "granted") {
       setHasPermission(true);
       return true;
     }
 
-    if (Notification.permission === 'denied') {
+    if (Notification.permission === "denied") {
       return false;
     }
 
     const permission = await Notification.requestPermission();
-    const granted = permission === 'granted';
+    const granted = permission === "granted";
     setHasPermission(granted);
     return granted;
   };
 
   // Enviar notificação push
-  const sendPushNotification = (title: string, options?: NotificationOptions) => {
+  const sendPushNotification = (
+    title: string,
+    options?: NotificationOptions,
+  ) => {
     if (!hasPermission) {
-      console.warn('Permissão para notificações não concedida');
+      console.warn("Permissão para notificações não concedida");
       return;
     }
 
     new Notification(title, {
-      icon: '/icon-192x192.png',
-      badge: '/icon-192x192.png',
+      icon: "/icon-192x192.png",
+      badge: "/icon-192x192.png",
       ...options,
     });
   };
@@ -252,170 +303,204 @@ export const NotificationProviderSimple: React.FC<NotificationProviderProps> = (
   };
 
   // Calcular contagem de não lidas
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   // Carregar notificações na inicialização e quando o usuário estiver disponível
   useEffect(() => {
     if (user) {
-      console.log('🔔 NotificationProviderSimple: Usuário disponível, carregando notificações')
+      console.log(
+        "🔔 NotificationProviderSimple: Usuário disponível, carregando notificações",
+      );
       loadNotifications();
     }
   }, [user]);
 
   // Configurar realtime para notificações
   useEffect(() => {
-    if (!user) return
+    if (!user) return;
 
-    console.log('🔔 Configurando realtime para notificações do usuário:', user.id)
+    console.log(
+      "🔔 Configurando realtime para notificações do usuário:",
+      user.id,
+    );
 
     const channel = supabase
-      .channel('notifications-realtime')
+      .channel("notifications-realtime")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
-          console.log('🔔 Nova notificação recebida via realtime:', payload.new)
-          const newNotification = payload.new as Notification
-          
+          console.log(
+            "🔔 Nova notificação recebida via realtime:",
+            payload.new,
+          );
+          const newNotification = payload.new as Notification;
+
           // Adicionar nova notificação ao estado (com prevenção de duplicação)
-          setNotifications(prev => {
+          setNotifications((prev) => {
             // Verificar se já existe
-            const exists = prev.some(n => n.id === newNotification.id)
+            const exists = prev.some((n) => n.id === newNotification.id);
             if (exists) {
-              console.log('⏭️ Notificação já existe no estado, ignorando:', newNotification.id)
-              return prev
+              console.log(
+                "⏭️ Notificação já existe no estado, ignorando:",
+                newNotification.id,
+              );
+              return prev;
             }
-            console.log('✅ Adicionando nova notificação ao estado:', newNotification.id)
-            return [newNotification, ...prev]
-          })
-          
+            console.log(
+              "✅ Adicionando nova notificação ao estado:",
+              newNotification.id,
+            );
+            return [newNotification, ...prev];
+          });
+
           // Tocar som da notificação
           if (soundEnabled) {
-            playSound(newNotification.type as NotificationSoundType).catch(console.error);
+            playSound(newNotification.type as NotificationSoundType).catch(
+              console.error,
+            );
           }
-          
+
           // Mostrar toast para nova notificação
           toast(newNotification.title, {
             description: newNotification.message,
-            action: newNotification.action_url ? {
-              label: 'Ver',
-              onClick: () => {
-                if (newNotification.action_url?.startsWith('#')) {
-                  // Se for um fragmento (como #chat), não abrir em nova aba
-                  window.location.hash = newNotification.action_url
-                } else {
-                  window.open(newNotification.action_url, '_blank')
+            action: newNotification.action_url
+              ? {
+                  label: "Ver",
+                  onClick: () => {
+                    if (newNotification.action_url?.startsWith("#")) {
+                      // Se for um fragmento (como #chat), não abrir em nova aba
+                      window.location.hash = newNotification.action_url;
+                    } else {
+                      window.open(newNotification.action_url, "_blank");
+                    }
+                  },
                 }
-              }
-            } : undefined
-          })
-          
+              : undefined,
+          });
+
           // Se for notificação de mensagem, abrir chat flutuante automaticamente
-          const titleLower = newNotification.title?.toLowerCase() || ''
-          if (newNotification.type === 'message' || titleLower.includes('mensagem')) {
+          const titleLower = newNotification.title?.toLowerCase() || "";
+          if (
+            newNotification.type === "message" ||
+            titleLower.includes("mensagem")
+          ) {
             try {
-              const metadata = newNotification.metadata || {}
-              const senderId = metadata.sender_id
-              const senderName = metadata.sender_name
-              const conversationId = metadata.conversation_id || metadata.chat_id
-              
-              console.log('💬 Notificação de mensagem recebida via realtime, abrindo chat:', { senderId, senderName, conversationId })
-              
+              const metadata = newNotification.metadata || {};
+              const senderId = metadata.sender_id;
+              const senderName = metadata.sender_name;
+              const conversationId =
+                metadata.conversation_id || metadata.chat_id;
+
+              console.log(
+                "💬 Notificação de mensagem recebida via realtime, abrindo chat:",
+                { senderId, senderName, conversationId },
+              );
+
               // Se tiver conversation_id, abrir com o ID da conversa
               if (conversationId) {
-                openChat(conversationId)
-              } 
+                openChat(conversationId);
+              }
               // Se tiver sender_id, abrir chat com o usuário
               else if (senderId && senderName) {
-                openChat(senderId, senderName)
+                openChat(senderId, senderName);
               }
               // Caso contrário, apenas abrir a lista de conversas
               else {
-                openChat()
+                openChat();
               }
             } catch (error) {
-              console.error('❌ Erro ao abrir chat flutuante via realtime:', error)
+              console.error(
+                "❌ Erro ao abrir chat flutuante via realtime:",
+                error,
+              );
             }
           }
-        }
+        },
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`
+          event: "UPDATE",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
-          console.log('🔔 Notificação atualizada via realtime:', payload.new)
-          const updatedNotification = payload.new as Notification
-          
+          console.log("🔔 Notificação atualizada via realtime:", payload.new);
+          const updatedNotification = payload.new as Notification;
+
           // Atualizar notificação no estado
-          setNotifications(prev => 
-            prev.map(notification => 
-              notification.id === updatedNotification.id ? updatedNotification : notification
-            )
-          )
-        }
+          setNotifications((prev) =>
+            prev.map((notification) =>
+              notification.id === updatedNotification.id
+                ? updatedNotification
+                : notification,
+            ),
+          );
+        },
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`
+          event: "DELETE",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
-          console.log('🔔 Notificação deletada via realtime:', payload.old)
-          const deletedNotification = payload.old as Notification
-          
+          console.log("🔔 Notificação deletada via realtime:", payload.old);
+          const deletedNotification = payload.old as Notification;
+
           // Remover notificação do estado
-          setNotifications(prev => 
-            prev.filter(notification => notification.id !== deletedNotification.id)
-          )
-        }
+          setNotifications((prev) =>
+            prev.filter(
+              (notification) => notification.id !== deletedNotification.id,
+            ),
+          );
+        },
       )
       .subscribe((status) => {
-        console.log('📡 Status da conexão realtime de notificações:', status)
-        
-        if (status === 'SUBSCRIBED') {
-          console.log('✅ Realtime de notificações CONECTADO com sucesso!')
-          console.log('⚡ Sistema pronto para receber notificações instantâneas')
-        } else if (status === 'CLOSED') {
-          console.log('🔴 Conexão realtime FECHADA')
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('❌ ERRO no canal realtime de notificações')
-          console.log('🔄 Tentando reconectar em 5 segundos...')
+        console.log("📡 Status da conexão realtime de notificações:", status);
+
+        if (status === "SUBSCRIBED") {
+          console.log("✅ Realtime de notificações CONECTADO com sucesso!");
+          console.log(
+            "⚡ Sistema pronto para receber notificações instantâneas",
+          );
+        } else if (status === "CLOSED") {
+          console.log("🔴 Conexão realtime FECHADA");
+        } else if (status === "CHANNEL_ERROR") {
+          console.error("❌ ERRO no canal realtime de notificações");
+          console.log("🔄 Tentando reconectar em 5 segundos...");
           // Tentar reconectar após 5 segundos
           setTimeout(() => {
-            console.log('🔄 Recarregando notificações (fallback)...')
-            loadNotifications()
-          }, 5000)
-        } else if (status === 'TIMED_OUT') {
-          console.error('⏱️ TIMEOUT na conexão realtime')
-          console.log('🔄 Recarregando notificações...')
-          loadNotifications()
+            console.log("🔄 Recarregando notificações (fallback)...");
+            loadNotifications();
+          }, 5000);
+        } else if (status === "TIMED_OUT") {
+          console.error("⏱️ TIMEOUT na conexão realtime");
+          console.log("🔄 Recarregando notificações...");
+          loadNotifications();
         }
-      })
+      });
 
     // Cleanup
     return () => {
-      console.log('🛑 Desconectando realtime de notificações')
-      channel.unsubscribe()
-    }
-  }, [user, openChat])
+      console.log("🛑 Desconectando realtime de notificações");
+      channel.unsubscribe();
+    };
+  }, [user, openChat]);
 
   // Verificar permissão na inicialização
   useEffect(() => {
-    if ('Notification' in window) {
-      setHasPermission(Notification.permission === 'granted');
+    if ("Notification" in window) {
+      setHasPermission(Notification.permission === "granted");
     }
   }, []);
 
@@ -440,14 +525,3 @@ export const NotificationProviderSimple: React.FC<NotificationProviderProps> = (
     </NotificationContext.Provider>
   );
 };
-
-
-
-
-
-
-
-
-
-
-

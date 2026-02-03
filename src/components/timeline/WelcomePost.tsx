@@ -1,17 +1,25 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { UserAvatar } from '@/components/ui/UserAvatar'
-import { Heart, MessageCircle, MapPin, Star, Eye, User, UserCheck } from 'lucide-react'
-import Link from 'next/link'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { ReactionButton } from './ReactionButton'
-import { CommentSection } from './CommentSection'
-import { 
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/UserAvatar";
+import {
+  Heart,
+  MessageCircle,
+  MapPin,
+  Star,
+  Eye,
+  User,
+  UserCheck,
+} from "lucide-react";
+import Link from "next/link";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { ReactionButton } from "./ReactionButton";
+import { CommentSection } from "./CommentSection";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -20,64 +28,68 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { Trash2, Loader2 } from 'lucide-react'
+} from "@/components/ui/alert-dialog";
+import { Trash2, Loader2 } from "lucide-react";
 
 interface WelcomePostProps {
   post: {
-    id: string
-    title: string
-    user_id?: string
-    created_at: string
+    id: string;
+    title: string;
+    user_id?: string;
+    created_at: string;
     metadata?: {
-      type?: string
-      user?: string
-      user_type?: string
-      location_city?: string
-      location_state?: string
-      bio?: string
-      avatar_url?: string
-    }
-  }
-  onDelete?: (postId: string) => void
-  isDeleting?: boolean
-  showComments?: boolean
+      type?: string;
+      user?: string;
+      user_type?: string;
+      location_city?: string;
+      location_state?: string;
+      bio?: string;
+      avatar_url?: string;
+    };
+  };
+  onDelete?: (postId: string) => void;
+  isDeleting?: boolean;
+  showComments?: boolean;
 }
 
-export function WelcomePost({ 
-  post, 
-  onDelete, 
-  isDeleting = false, 
-  showComments = true 
+export function WelcomePost({
+  post,
+  onDelete,
+  isDeleting = false,
+  showComments = true,
 }: WelcomePostProps) {
-  const { user } = useAuthContext()
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [showCommentSection, setShowCommentSection] = useState(false)
+  const { user } = useAuthContext();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showCommentSection, setShowCommentSection] = useState(false);
 
   const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+    );
+
     if (diffInHours < 1) {
-      const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
-      return `${diffInMinutes}m`
+      const diffInMinutes = Math.floor(
+        (now.getTime() - date.getTime()) / (1000 * 60),
+      );
+      return `${diffInMinutes}m`;
     } else if (diffInHours < 24) {
-      return `${diffInHours}h`
+      return `${diffInHours}h`;
     } else {
-      const diffInDays = Math.floor(diffInHours / 24)
-      return `${diffInDays}d`
+      const diffInDays = Math.floor(diffInHours / 24);
+      return `${diffInDays}d`;
     }
-  }
+  };
 
   const handleDelete = () => {
     if (onDelete) {
-      onDelete(post.id)
-      setShowDeleteDialog(false)
+      onDelete(post.id);
+      setShowDeleteDialog(false);
     }
-  }
+  };
 
-  const canDelete = user && user.id === post.user_id
+  const canDelete = user && user.id === post.user_id;
 
   return (
     <>
@@ -87,10 +99,10 @@ export function WelcomePost({
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0">
-                <UserAvatar 
+                <UserAvatar
                   src={post.metadata?.avatar_url}
-                  alt={post.metadata?.user || 'Usuário'}
-                  fallback={post.metadata?.user?.charAt(0).toUpperCase() || 'P'}
+                  alt={post.metadata?.user || "Usuário"}
+                  fallback={post.metadata?.user?.charAt(0).toUpperCase() || "P"}
                   size="lg"
                   userId={post.user_id}
                   showReferralBadge={true}
@@ -100,11 +112,11 @@ export function WelcomePost({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 cursor-pointer transition-colors">
-                    <Link href={`/perfil/${post.user_id || ''}`}>
+                    <Link href={`/perfil/${post.user_id || ""}`}>
                       {post.metadata?.user}
                     </Link>
                   </h3>
-                  <Badge 
+                  <Badge
                     variant="default"
                     className="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-800 border border-green-200 shadow-sm flex items-center gap-1"
                   >
@@ -114,14 +126,18 @@ export function WelcomePost({
                 </div>
                 <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mb-2">
                   <MapPin className="h-3 w-3 mr-1" />
-                  {(post.metadata?.location_city && post.metadata.location_city !== 'null') ? post.metadata.location_city : 'Cidade'}, {post.metadata?.location_state || 'Estado'}
+                  {post.metadata?.location_city &&
+                  post.metadata.location_city !== "null"
+                    ? post.metadata.location_city
+                    : "Cidade"}
+                  , {post.metadata?.location_state || "Estado"}
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   {formatTimeAgo(post.created_at)}
                 </div>
               </div>
             </div>
-            
+
             {canDelete && (
               <Button
                 variant="ghost"
@@ -148,11 +164,12 @@ export function WelcomePost({
                   {post.metadata?.user} se juntou à comunidade!
                 </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Seja bem-vindo(a) à nossa plataforma de profissionais qualificados.
+                  Seja bem-vindo(a) à nossa plataforma de profissionais
+                  qualificados.
                 </p>
               </div>
             </div>
-            
+
             {/* Bio do usuário */}
             {post.metadata?.bio && (
               <p className="text-gray-600 text-sm mb-4 line-clamp-2">
@@ -162,11 +179,11 @@ export function WelcomePost({
 
             {/* Tipo de usuário - Ambos em azul */}
             <div className="flex items-center gap-2 mb-4">
-              <Badge 
+              <Badge
                 variant="outline"
                 className="text-xs font-medium px-2 py-1 rounded-full border-blue-200 text-blue-700 bg-blue-50"
               >
-                {post.metadata?.user_type === 'professional' ? (
+                {post.metadata?.user_type === "professional" ? (
                   <>
                     <UserCheck className="h-3 w-3 mr-1" />
                     Profissional
@@ -185,7 +202,7 @@ export function WelcomePost({
           <div className="flex items-center justify-between pt-4 border-t">
             <div className="flex items-center space-x-3 md:space-x-6">
               <ReactionButton postId={post.id} />
-              <button 
+              <button
                 onClick={() => setShowCommentSection(!showCommentSection)}
                 className="flex items-center space-x-1 md:space-x-2 text-gray-600 dark:text-gray-400 hover:text-blue-500 transition-colors"
               >
@@ -193,18 +210,11 @@ export function WelcomePost({
                 <span className="text-sm md:text-base">0</span>
               </button>
             </div>
-            
+
             <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                  className="text-xs"
-                >
-                  <Link href={`/perfil/${post.user_id || ''}`}>
-                    Ver Perfil
-                  </Link>
-                </Button>
+              <Button variant="outline" size="sm" asChild className="text-xs">
+                <Link href={`/perfil/${post.user_id || ""}`}>Ver Perfil</Link>
+              </Button>
             </div>
           </div>
 
@@ -220,7 +230,8 @@ export function WelcomePost({
           <AlertDialogHeader>
             <AlertDialogTitle>Deletar Post</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja deletar este post de boas-vindas? Esta ação não pode ser desfeita.
+              Tem certeza que deseja deletar este post de boas-vindas? Esta ação
+              não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -238,12 +249,12 @@ export function WelcomePost({
                   Deletando...
                 </>
               ) : (
-                'Deletar'
+                "Deletar"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
+  );
 }

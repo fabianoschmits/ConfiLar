@@ -1,54 +1,56 @@
-import { useState } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
-import { NotificationService } from '@/services/NotificationService'
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { NotificationService } from "@/services/NotificationService";
 
 interface CommentFormData {
-  content: string
-  parent_id?: string
+  content: string;
+  parent_id?: string;
 }
 
 interface UsePostCommentsWithNotificationsProps {
-  postId: string
-  postOwnerId: string
-  postOwnerName: string
+  postId: string;
+  postOwnerId: string;
+  postOwnerName: string;
 }
 
-export function usePostCommentsWithNotifications({ 
-  postId, 
-  postOwnerId, 
-  postOwnerName 
+export function usePostCommentsWithNotifications({
+  postId,
+  postOwnerId,
+  postOwnerName,
 }: UsePostCommentsWithNotificationsProps) {
-  const queryClient = useQueryClient()
-  const [replyTo, setReplyTo] = useState<string | null>(null)
+  const queryClient = useQueryClient();
+  const [replyTo, setReplyTo] = useState<string | null>(null);
 
   const addCommentMutation = useMutation({
     mutationFn: async (commentData: CommentFormData) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Usuário não autenticado')
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
 
       // Extrair menções do conteúdo
-      const mentions = extractMentions(commentData.content)
+      const mentions = extractMentions(commentData.content);
 
       const insertData = {
         post_id: postId,
         user_id: user.id,
         parent_comment_id: commentData.parent_id,
         content: commentData.content,
-        mentions
-      }
+        mentions,
+      };
 
       const { data, error } = await supabase
-        .from('post_comments')
+        .from("post_comments")
         .insert(insertData)
         .select()
-        .single()
+        .single();
 
-      if (error) throw error
+      if (error) throw error;
 
       // Criar notificações
       try {
-        const userName = user.user_metadata?.full_name || 'Usuário'
+        const userName = user.user_metadata?.full_name || "Usuário";
 
         // Notificar o dono do post (se não for o próprio usuário)
         if (postOwnerId !== user.id) {
@@ -57,14 +59,14 @@ export function usePostCommentsWithNotifications({
             postOwnerId,
             user.id,
             userName,
-            commentData.content
-          )
+            commentData.content,
+          );
 
           await NotificationService.sendPushNotification(
             postOwnerId,
-            'Novo comentário!',
-            `${userName} comentou em seu post`
-          )
+            "Novo comentário!",
+            `${userName} comentou em seu post`,
+          );
         }
 
         // Notificar menções
@@ -72,10 +74,10 @@ export function usePostCommentsWithNotifications({
           for (const mention of mentions) {
             // Buscar ID do usuário mencionado
             const { data: mentionedUser } = await supabase
-              .from('profiles')
-              .select('id, full_name')
-              .ilike('full_name', mention.replace('@', ''))
-              .single()
+              .from("profiles")
+              .select("id, full_name")
+              .ilike("full_name", mention.replace("@", ""))
+              .single();
 
             if (mentionedUser && mentionedUser.id !== user.id) {
               await NotificationService.createMentionNotification(
@@ -83,14 +85,14 @@ export function usePostCommentsWithNotifications({
                 mentionedUser.id,
                 user.id,
                 userName,
-                commentData.content
-              )
+                commentData.content,
+              );
 
               await NotificationService.sendPushNotification(
                 mentionedUser.id,
-                'Você foi mencionado!',
-                `${userName} te mencionou em um comentário`
-              )
+                "Você foi mencionado!",
+                `${userName} te mencionou em um comentário`,
+              );
             }
           }
         }
@@ -98,10 +100,12 @@ export function usePostCommentsWithNotifications({
         // Se é resposta a um comentário, notificar o autor do comentário original
         if (commentData.parent_id) {
           const { data: parentComment } = await supabase
-            .from('post_comments')
-            .select('user_id, user:profiles!post_comments_user_id_fkey(full_name)')
-            .eq('id', commentData.parent_id)
-            .single()
+            .from("post_comments")
+            .select(
+              "user_id, user:profiles!post_comments_user_id_fkey(full_name)",
+            )
+            .eq("id", commentData.parent_id)
+            .single();
 
           if (parentComment && parentComment.user_id !== user.id) {
             await NotificationService.createReplyNotification(
@@ -110,62 +114,65 @@ export function usePostCommentsWithNotifications({
               parentComment.user_id,
               user.id,
               userName,
-              commentData.content
-            )
+              commentData.content,
+            );
 
             await NotificationService.sendPushNotification(
               parentComment.user_id,
-              'Nova resposta!',
-              `${userName} respondeu seu comentário`
-            )
+              "Nova resposta!",
+              `${userName} respondeu seu comentário`,
+            );
           }
         }
       } catch (notificationError) {
-        console.warn('Erro ao criar notificações de comentário:', notificationError)
+        console.warn(
+          "Erro ao criar notificações de comentário:",
+          notificationError,
+        );
         // Não falhar a operação por causa das notificações
       }
 
-      return data
+      return data;
     },
     onSuccess: () => {
       // Invalidar cache de comentários
       queryClient.invalidateQueries({
-        queryKey: ['comments', { post_id: postId }]
-      })
-      
+        queryKey: ["comments", { post_id: postId }],
+      });
+
       // Invalidar cache da timeline
       queryClient.invalidateQueries({
-        queryKey: ['unified-timeline']
-      })
+        queryKey: ["unified-timeline"],
+      });
 
-      setReplyTo(null)
-    }
-  })
+      setReplyTo(null);
+    },
+  });
 
   const addComment = (content: string, parentId?: string) => {
     addCommentMutation.mutate({
       content,
-      parent_id: parentId
-    })
-  }
+      parent_id: parentId,
+    });
+  };
 
   return {
     addComment,
     addCommentMutation,
     replyTo,
-    setReplyTo
-  }
+    setReplyTo,
+  };
 }
 
 // Função auxiliar para extrair menções
 function extractMentions(content: string): string[] {
-  const mentionRegex = /@(\w+)/g
-  const mentions: string[] = []
-  let match
+  const mentionRegex = /@(\w+)/g;
+  const mentions: string[] = [];
+  let match;
 
   while ((match = mentionRegex.exec(content)) !== null) {
-    mentions.push(match[0]) // Incluir o @
+    mentions.push(match[0]); // Incluir o @
   }
 
-  return [...new Set(mentions)] // Remover duplicatas
+  return [...new Set(mentions)]; // Remover duplicatas
 }

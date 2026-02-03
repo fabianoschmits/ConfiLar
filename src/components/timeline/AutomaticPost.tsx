@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Trash2, Loader2 } from 'lucide-react'
-import Link from 'next/link'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { 
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Trash2, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useAuthContext } from "@/contexts/AuthContext";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -16,120 +16,173 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
+} from "@/components/ui/alert-dialog";
 
 interface AutomaticPostProps {
   post: {
-    id: string
-    title: string
-    user_id?: string
-    professional_id?: string
-    created_at: string
+    id: string;
+    title: string;
+    user_id?: string;
+    professional_id?: string;
+    created_at: string;
     metadata?: {
-      type?: string
-      user?: string
-      favorited?: string
-      from_user?: string
-      to_user?: string
-      reviewer?: string
-      reviewed?: string
-    }
-  }
-  onDelete?: (postId: string) => void
-  isDeleting?: boolean
+      type?: string;
+      user?: string;
+      favorited?: string;
+      from_user?: string;
+      to_user?: string;
+      reviewer?: string;
+      reviewed?: string;
+    };
+  };
+  onDelete?: (postId: string) => void;
+  isDeleting?: boolean;
 }
 
-export function AutomaticPost({ post, onDelete, isDeleting = false }: AutomaticPostProps) {
-  const { user } = useAuthContext()
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+export function AutomaticPost({
+  post,
+  onDelete,
+  isDeleting = false,
+}: AutomaticPostProps) {
+  const { user } = useAuthContext();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+    );
+
     if (diffInHours < 1) {
-      const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
-      return `${diffInMinutes}m`
+      const diffInMinutes = Math.floor(
+        (now.getTime() - date.getTime()) / (1000 * 60),
+      );
+      return `${diffInMinutes}m`;
     } else if (diffInHours < 24) {
-      return `${diffInHours}h`
+      return `${diffInHours}h`;
     } else {
-      const diffInDays = Math.floor(diffInHours / 24)
-      return `${diffInDays}d`
+      const diffInDays = Math.floor(diffInHours / 24);
+      return `${diffInDays}d`;
     }
-  }
+  };
 
   const getPostIcon = (type: string) => {
     switch (type) {
-      case 'favorite':
-        return '❤️'
-      case 'recommendation':
-        return '💡'
-      case 'review':
-        return '⭐'
-      case 'welcome':
-        return '🎉'
+      case "favorite":
+        return "❤️";
+      case "recommendation":
+        return "💡";
+      case "review":
+        return "⭐";
+      case "welcome":
+        return "🎉";
       default:
-        return '📢'
+        return "📢";
     }
-  }
+  };
 
   const getPostMessage = () => {
-    const { type, user, favorited, from_user, to_user, reviewer, reviewed } = post.metadata || {}
-    
+    const { type, user, favorited, from_user, to_user, reviewer, reviewed } =
+      post.metadata || {};
+
     switch (type) {
-      case 'favorite':
+      case "favorite":
         return (
           <span className="text-sm">
-            {getPostIcon(type)} <Link href={`/perfil/${post.user_id || ''}`} className="text-blue-600 hover:text-blue-800 font-medium">{user}</Link> favoritou <Link href={`/perfil/${post.professional_id || ''}`} className="text-blue-600 hover:text-blue-800 font-medium">{favorited}</Link>
+            {getPostIcon(type)}{" "}
+            <Link
+              href={`/perfil/${post.user_id || ""}`}
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              {user}
+            </Link>{" "}
+            favoritou{" "}
+            <Link
+              href={`/perfil/${post.professional_id || ""}`}
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              {favorited}
+            </Link>
           </span>
-        )
-      case 'recommendation':
+        );
+      case "recommendation":
         return (
           <span className="text-sm">
-            {getPostIcon(type)} <Link href={`/perfil/${post.user_id || ''}`} className="text-blue-600 hover:text-blue-800 font-medium">{from_user}</Link> recomendou <Link href={`/perfil/${post.professional_id || ''}`} className="text-blue-600 hover:text-blue-800 font-medium">{to_user}</Link>
+            {getPostIcon(type)}{" "}
+            <Link
+              href={`/perfil/${post.user_id || ""}`}
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              {from_user}
+            </Link>{" "}
+            recomendou{" "}
+            <Link
+              href={`/perfil/${post.professional_id || ""}`}
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              {to_user}
+            </Link>
           </span>
-        )
-      case 'review':
+        );
+      case "review":
         return (
           <span className="text-sm">
-            {getPostIcon(type)} <Link href={`/perfil/${post.user_id || ''}`} className="text-blue-600 hover:text-blue-800 font-medium">{reviewer}</Link> avaliou <Link href={`/perfil/${post.professional_id || ''}`} className="text-blue-600 hover:text-blue-800 font-medium">{reviewed}</Link>
+            {getPostIcon(type)}{" "}
+            <Link
+              href={`/perfil/${post.user_id || ""}`}
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              {reviewer}
+            </Link>{" "}
+            avaliou{" "}
+            <Link
+              href={`/perfil/${post.professional_id || ""}`}
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              {reviewed}
+            </Link>
           </span>
-        )
-      case 'welcome':
+        );
+      case "welcome":
         return (
           <span className="text-sm">
-            {getPostIcon(type)} <Link href={`/perfil/${post.user_id || ''}`} className="text-blue-600 hover:text-blue-800 font-medium">{user}</Link> se juntou à comunidade
+            {getPostIcon(type)}{" "}
+            <Link
+              href={`/perfil/${post.user_id || ""}`}
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              {user}
+            </Link>{" "}
+            se juntou à comunidade
           </span>
-        )
+        );
       default:
-        return <span className="text-sm">{post.title}</span>
+        return <span className="text-sm">{post.title}</span>;
     }
-  }
+  };
 
   const handleDelete = () => {
     if (onDelete) {
-      onDelete(post.id)
-      setShowDeleteDialog(false)
+      onDelete(post.id);
+      setShowDeleteDialog(false);
     }
-  }
+  };
 
-  const canDelete = user && user.id === post.user_id
+  const canDelete = user && user.id === post.user_id;
 
   return (
     <>
       <Card className="mb-2 bg-gray-50 dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
         <CardContent className="py-2 px-3">
           <div className="flex items-center justify-between">
-            <div className="flex-1 min-w-0">
-              {getPostMessage()}
-            </div>
-            
+            <div className="flex-1 min-w-0">{getPostMessage()}</div>
+
             <div className="flex items-center space-x-2 ml-3">
               <span className="text-xs text-gray-500 dark:text-gray-400">
                 {formatTimeAgo(post.created_at)}
               </span>
-              
+
               {canDelete && (
                 <Button
                   variant="ghost"
@@ -155,7 +208,8 @@ export function AutomaticPost({ post, onDelete, isDeleting = false }: AutomaticP
           <AlertDialogHeader>
             <AlertDialogTitle>Deletar Notificação</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja deletar esta notificação? Esta ação não pode ser desfeita.
+              Tem certeza que deseja deletar esta notificação? Esta ação não
+              pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -173,12 +227,12 @@ export function AutomaticPost({ post, onDelete, isDeleting = false }: AutomaticP
                   Deletando...
                 </>
               ) : (
-                'Deletar'
+                "Deletar"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
+  );
 }
