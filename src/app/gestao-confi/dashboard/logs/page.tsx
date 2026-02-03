@@ -119,19 +119,19 @@ export default function AdminLogsPage() {
 
           // Verificar se o log pertence ao serviço selecionado ou se estamos vendo 'todos'
           const serviceMap: Record<string, string> = {
-            'API': 'api',
-            'AUTH': 'auth',
-            'STORAGE': 'storage',
-            'REALTIME': 'realtime',
-            'DATABASE': 'postgres',
-            'EDGE_FUNCTION': 'edge-function',
-            'POSTS': 'posts',
-            'CLASSIFIEDS': 'classifieds',
-            'USERS': 'users',
-            'POINTS': 'points',
-            'REFERRALS': 'referrals',
-            'SYSTEM': 'system',
-            'ADMIN': 'admin'
+            'api': 'api',
+            'auth': 'auth',
+            'storage': 'storage',
+            'realtime': 'realtime',
+            'postgres': 'postgres',
+            'edge-function': 'edge-function',
+            'posts': 'posts',
+            'classifieds': 'classifieds',
+            'users': 'users',
+            'points': 'points',
+            'referrals': 'referrals',
+            'system': 'system',
+            'admin': 'admin'
           }
 
           const logService = serviceMap[newLog.category] || 'api'

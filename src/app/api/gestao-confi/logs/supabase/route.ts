@@ -42,19 +42,19 @@ export const GET = withAdminAuth(async (request: NextRequest, supabaseAuth, user
 
     // Buscar logs da tabela system_logs do banco
     const categoryMap: Record<string, string> = {
-      'api': 'API',
-      'auth': 'AUTH',
-      'storage': 'STORAGE',
-      'realtime': 'REALTIME',
-      'postgres': 'DATABASE',
-      'edge-function': 'EDGE_FUNCTION',
-      'posts': 'POSTS',
-      'classifieds': 'CLASSIFIEDS',
-      'users': 'USERS',
-      'points': 'POINTS',
-      'referrals': 'REFERRALS',
-      'system': 'SYSTEM',
-      'admin': 'ADMIN'
+      'api': 'api',
+      'auth': 'auth',
+      'storage': 'storage',
+      'realtime': 'realtime',
+      'postgres': 'postgres',
+      'edge-function': 'edge-function',
+      'posts': 'posts',
+      'classifieds': 'classifieds',
+      'users': 'users',
+      'points': 'points',
+      'referrals': 'referrals',
+      'system': 'system',
+      'admin': 'admin'
     }
 
     // Buscar logs das últimas 24 horas
