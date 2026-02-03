@@ -134,7 +134,7 @@ export default function AdminLogsPage() {
             'admin': 'admin'
           }
 
-          const logService = serviceMap[newLog.category] || 'api'
+          const logService = serviceMap[newLog.category?.toLowerCase()] || 'api'
 
           if (selectedService !== 'all' && logService !== selectedService) {
             return
@@ -204,7 +204,8 @@ export default function AdminLogsPage() {
 
     if (selectedLevel !== 'all') {
       filtered = filtered.filter(log =>
-        log.level?.toLowerCase() === selectedLevel.toLowerCase()
+        log.level?.toLowerCase() === selectedLevel.toLowerCase() ||
+        log.level?.toUpperCase() === selectedLevel.toUpperCase()
       )
     }
 

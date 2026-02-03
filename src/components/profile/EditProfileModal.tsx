@@ -229,24 +229,26 @@ export function EditProfileModal({
             <ScrollArea className="flex-1 px-4 sm:px-10 py-8">
               <div className="w-full max-w-4xl mx-auto pb-8">
                 {activeTab === "account" && (
-                  <AccountDataForm onSuccess={() => {}} />
+                  <AccountDataForm onSuccess={() => onOpenChange(false)} />
                 )}
                 {activeTab === "avatar" && (
-                  <AvatarSelectionForm onSuccess={() => {}} />
+                  <AvatarSelectionForm onSuccess={() => onOpenChange(false)} />
                 )}
                 {activeTab === "address" && (
-                  <AddressForm onSuccess={() => {}} />
+                  <AddressForm onSuccess={() => onOpenChange(false)} />
                 )}
                 {activeTab === "type" && (
-                  <AccountTypeForm onSuccess={() => {}} />
+                  <AccountTypeForm onSuccess={() => onOpenChange(false)} />
                 )}
                 {activeTab === "professional" && (
-                  <ProfessionalDataForm onSuccess={() => {}} />
+                  <ProfessionalDataForm onSuccess={() => onOpenChange(false)} />
                 )}
                 {activeTab === "social" && profile && (
                   <SocialLinksEditor profile={profile} />
                 )}
-                {activeTab === "privacy" && <PrivacyAIForm />}
+                {activeTab === "privacy" && (
+                  <PrivacyAIForm onSuccess={() => onOpenChange(false)} />
+                )}
                 {activeTab === "security" && <SecurityForm />}
               </div>
             </ScrollArea>

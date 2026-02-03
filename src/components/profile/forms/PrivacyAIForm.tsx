@@ -10,7 +10,11 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-export function PrivacyAIForm() {
+interface PrivacyAIFormProps {
+  onSuccess?: () => void;
+}
+
+export function PrivacyAIForm({ onSuccess }: PrivacyAIFormProps) {
   const { profile, refreshProfile } = useAuthContext();
   const t = useTranslations("editProfile");
   const [loading, setLoading] = useState(false);
@@ -37,6 +41,7 @@ export function PrivacyAIForm() {
 
       await refreshProfile();
       toast.success(t("profileUpdated"));
+      onSuccess?.();
     } catch (error) {
       console.error("Error updating AI indexing preference:", error);
       toast.error(t("errorSaving"));

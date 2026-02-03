@@ -10,34 +10,66 @@ import { useTranslations } from "next-intl";
 import { useTutorial } from "@/contexts/TutorialContext";
 
 export function AIAnnouncement() {
-  const { profile } = useAuthContext();
+  const { profile, updateProfile } = useAuthContext();
   const { isActive: isTutorialActive } = useTutorial();
   const [isVisible, setIsVisible] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const t = useTranslations("editProfile");
 
   useEffect(() => {
-    // Only show to professionals
-    if (profile?.user_type !== "professional") return;
-
-    // Don't show if tutorial is active
-    if (isTutorialActive) {
-      if (isVisible) setIsVisible(false); // Hide if already visible
+    // Se não for profissional ou já tiver indexação ativa, garantir que o banner esteja oculto
+    if (
+      profile?.user_type !== "professional" ||
+      profile?.allow_ai_indexing ||
+      profile?.hide_ai_announcement
+    ) {
+      if (isVisible) setIsVisible(false);
       return;
     }
 
-    // Check if already dismissed
-    const dismissed = localStorage.getItem(
-      "confilar_ai_announcement_dismissed",
+    // Não mostrar se o tutorial estiver ativo
+    if (isTutorialActive) {
+      if (isVisible) setIsVisible(false);
+      return;
+    }
+
+    // Verificar se já foi descartado nesta SESSÃO (aparece de novo no próximo login)
+    const sessionDismissed = sessionStorage.getItem(
+      "confilar_ai_announcement_session_dismissed",
     );
-    if (!dismissed) {
+
+    if (!sessionDismissed) {
       const timer = setTimeout(() => setIsVisible(true), 3000);
       return () => clearTimeout(timer);
+    } else {
+      if (isVisible) setIsVisible(false);
     }
-  }, [profile, isTutorialActive, isVisible]);
+  }, [
+    profile?.user_type,
+    profile?.allow_ai_indexing,
+    profile?.hide_ai_announcement,
+    isTutorialActive,
+    isVisible,
+  ]);
 
-  const dismiss = () => {
+  const dismissTemporarily = () => {
     setIsVisible(false);
-    localStorage.setItem("confilar_ai_announcement_dismissed", "true");
+    sessionStorage.setItem(
+      "confilar_ai_announcement_session_dismissed",
+      "true",
+    );
+  };
+
+  const dismissPermanently = async () => {
+    try {
+      setIsUpdating(true);
+      await updateProfile({ hide_ai_announcement: true });
+      setIsVisible(false);
+    } catch (error) {
+      console.error("Erro ao ocultar anúncio de IA permanentemente:", error);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   if (!isVisible) return null;
@@ -64,7 +96,7 @@ export function AIAnnouncement() {
                 </h3>
               </div>
               <button
-                onClick={dismiss}
+                onClick={dismissTemporarily}
                 className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-all"
               >
                 <X className="w-5 h-5" />
@@ -81,7 +113,7 @@ export function AIAnnouncement() {
                 size="sm"
                 className="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-semibold shadow-md active:scale-95 transition-all"
                 onClick={() => {
-                  dismiss();
+                  dismissTemporarily();
                   window.location.href = "/conta?tab=privacy"; // Ajustado para ser mais provável que funcione
                 }}
               >
@@ -91,12 +123,20 @@ export function AIAnnouncement() {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={dismiss}
+                onClick={dismissTemporarily}
                 className="border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900"
               >
                 Depois
               </Button>
             </div>
+
+            <button
+              onClick={dismissPermanently}
+              disabled={isUpdating}
+              className="mt-4 text-[10px] text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 transition-colors w-full text-center hover:underline"
+            >
+              {isUpdating ? "Salvando..." : "Não mostrar este aviso novamente"}
+            </button>
           </CardContent>
         </Card>
       </motion.div>

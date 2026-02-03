@@ -100,7 +100,7 @@ export function AdminLogsViewer() {
       }
 
       if (selectedCategory !== "all") {
-        query = query.eq("category", selectedCategory);
+        query = query.ilike("category", selectedCategory.toLowerCase());
       }
 
       const { data, error } = await query;

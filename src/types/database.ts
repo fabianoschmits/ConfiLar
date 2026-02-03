@@ -59,6 +59,7 @@ export interface Database {
           professional_portfolio_url?: string | null;
           idade?: number | null;
           allow_ai_indexing?: boolean;
+          hide_ai_announcement?: boolean;
           escolaridade?:
             | "ensino_fundamental_incompleto"
             | "ensino_fundamental_completo"
@@ -909,6 +910,7 @@ export interface Profile {
   tiktok_url?: string | null;
   whatsapp_number?: string | null;
   allow_ai_indexing?: boolean;
+  hide_ai_announcement?: boolean;
 }
 
 export type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];

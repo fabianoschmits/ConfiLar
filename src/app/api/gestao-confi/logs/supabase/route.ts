@@ -75,8 +75,8 @@ export const GET = withAdminAuth(async (request: NextRequest, supabaseAuth, user
       .limit(500)
 
     if (serviceLower !== 'all') {
-      const category = categoryMap[serviceLower] || 'API'
-      query = query.eq('category', category)
+      const category = categoryMap[serviceLower] || serviceLower
+      query = query.ilike('category', category)
     }
 
     const { data: systemLogs, error: logsError } = await query
