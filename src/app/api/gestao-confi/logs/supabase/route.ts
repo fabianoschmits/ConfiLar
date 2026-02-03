@@ -63,7 +63,13 @@ export const GET = withAdminAuth(async (request: NextRequest, supabaseAuth, user
 
     let query = adminSupabase
       .from('system_logs')
-      .select('*')
+      .select(`
+        *,
+        profiles:user_id (
+          full_name,
+          avatar_url
+        )
+      `)
       .gte('created_at', yesterday.toISOString())
       .order('created_at', { ascending: false })
       .limit(500)
@@ -101,7 +107,9 @@ export const GET = withAdminAuth(async (request: NextRequest, supabaseAuth, user
         action: log.action,
         endpoint: log.endpoint,
         status_code: log.status_code,
-        user_id: log.user_id
+        user_id: log.user_id,
+        user_name: log.profiles?.full_name,
+        user_avatar: log.profiles?.avatar_url
       },
       service: (log.category?.toLowerCase() || 'api') as any
     }))

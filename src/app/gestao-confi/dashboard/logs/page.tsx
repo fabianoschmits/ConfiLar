@@ -28,6 +28,7 @@ import { toast } from 'sonner'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { supabase } from '@/lib/supabase'
 
 interface SupabaseLog {
   id: string
@@ -99,6 +100,94 @@ export default function AdminLogsPage() {
       fetchSupabaseLogs()
     }
   }, [projectId, selectedService, fetchSupabaseLogs])
+
+  // Realtime Subscription
+  useEffect(() => {
+    if (!projectId) return
+
+    const channel = supabase
+      .channel('system_logs_realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'system_logs'
+        },
+        async (payload) => {
+          const newLog = payload.new as any
+
+          // Verificar se o log pertence ao serviço selecionado ou se estamos vendo 'todos'
+          const serviceMap: Record<string, string> = {
+            'API': 'api',
+            'AUTH': 'auth',
+            'STORAGE': 'storage',
+            'REALTIME': 'realtime',
+            'DATABASE': 'postgres',
+            'EDGE_FUNCTION': 'edge-function',
+            'POSTS': 'posts',
+            'CLASSIFIEDS': 'classifieds',
+            'USERS': 'users',
+            'POINTS': 'points',
+            'REFERRALS': 'referrals',
+            'SYSTEM': 'system',
+            'ADMIN': 'admin'
+          }
+
+          const logService = serviceMap[newLog.category] || 'api'
+
+          if (selectedService !== 'all' && logService !== selectedService) {
+            return
+          }
+
+          // Buscar info de perfil se houver user_id
+          let user_name = null
+          let user_avatar = null
+
+          if (newLog.user_id) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('full_name, avatar_url')
+              .eq('id', newLog.user_id)
+              .single()
+
+            if (profile) {
+              user_name = profile.full_name
+              user_avatar = profile.avatar_url
+            }
+          }
+
+          const formattedLog: SupabaseLog = {
+            id: newLog.id,
+            timestamp: newLog.created_at,
+            level: newLog.level || 'INFO',
+            message: newLog.message || newLog.action || '',
+            service: logService,
+            metadata: {
+              ...newLog.details,
+              category: newLog.category,
+              action: newLog.action,
+              endpoint: newLog.endpoint,
+              status_code: newLog.status_code,
+              user_id: newLog.user_id,
+              user_name,
+              user_avatar
+            }
+          }
+
+          setLogs(currentLogs => [formattedLog, ...currentLogs].slice(0, 500))
+          toast.info('Nova atividade registrada', {
+            description: formattedLog.message,
+            duration: 3000
+          })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [projectId, selectedService])
 
   // Filtrar logs por busca e nível
   useEffect(() => {
@@ -372,55 +461,87 @@ export default function AdminLogsPage() {
               </div>
             </div>
           ) : (
-            <div className="divide-y max-h-[600px] overflow-y-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredLogs.map((log) => (
-                <div
+                <Card
                   key={log.id}
-                  className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  className="flex flex-col h-full hover:shadow-md transition-shadow duration-200 border-gray-200 dark:border-gray-800"
                 >
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap items-center gap-2 mb-2">
-                      {getLevelIcon(log.level)}
-                      {getLevelBadge(log.level)}
-                      {getServiceBadge(log.service)}
-                      <span className="text-xs text-gray-500 ml-auto">
+                  <CardHeader className="p-4 pb-2 space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        {getLevelIcon(log.level)}
+                        {getLevelBadge(log.level)}
+                      </div>
+                      <span className="text-[10px] text-gray-400 font-medium">
                         {log.timestamp ? formatDistanceToNow(new Date(log.timestamp), {
                           addSuffix: true,
                           locale: ptBR
                         }) : 'Agora'}
                       </span>
                     </div>
+                    <div className="flex items-center gap-2">
+                      {getServiceBadge(log.service)}
+                    </div>
+                  </CardHeader>
 
-                    <p className="text-sm font-mono break-words whitespace-pre-wrap">{log.message}</p>
+                  <CardContent className="p-4 pt-2 flex-grow space-y-4">
+                    {/* Mensagem Principal */}
+                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 min-h-[2.5rem]">
+                      {log.message}
+                    </p>
 
-                    {log.metadata && Object.keys(log.metadata).length > 0 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleLogExpansion(log.id)}
-                        className="mt-2 h-8 px-2"
-                      >
-                        {expandedLogs.has(log.id) ? (
-                          <>
-                            <ChevronUp className="h-3 w-3 mr-1" />
-                            <span className="text-xs">Ocultar detalhes</span>
-                          </>
+                    {/* Informações do Usuário */}
+                    {(log.metadata?.user_id || log.metadata?.user_name) && (
+                      <div className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-100 dark:border-gray-800">
+                        {log.metadata?.user_avatar ? (
+                          <img
+                            src={log.metadata.user_avatar}
+                            alt={log.metadata.user_name || 'User'}
+                            className="h-9 w-9 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+                          />
                         ) : (
-                          <>
-                            <ChevronDown className="h-3 w-3 mr-1" />
-                            <span className="text-xs">Ver detalhes {log.metadata && Object.keys(log.metadata).length > 0 && `(${Object.keys(log.metadata).length})`}</span>
-                          </>
+                          <div className="h-9 w-9 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                            <span className="text-xs font-bold">
+                              {(log.metadata?.user_name || 'U').substring(0, 1).toUpperCase()}
+                            </span>
+                          </div>
                         )}
-                      </Button>
-                    )}
-
-                    {expandedLogs.has(log.id) && log.metadata && (
-                      <div className="mt-2 p-3 bg-gray-100 dark:bg-gray-900 rounded text-xs font-mono overflow-x-auto">
-                        <pre>{JSON.stringify(log.metadata, null, 2)}</pre>
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                            {log.metadata?.user_name || 'Usuário Desconhecido'}
+                          </span>
+                          <span className="text-[10px] text-gray-500 truncate font-mono">
+                            {log.metadata?.user_id?.substring(0, 8)}...
+                          </span>
+                        </div>
                       </div>
                     )}
-                  </div>
-                </div>
+
+                    {/* Botão de Detalhes */}
+                    {log.metadata && Object.keys(log.metadata).length > 0 && (
+                      <div className="pt-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleLogExpansion(log.id)}
+                          className="w-full h-8 justify-between hover:bg-gray-100 dark:hover:bg-gray-800"
+                        >
+                          <span className="text-xs font-medium">
+                            {expandedLogs.has(log.id) ? 'Ocultar Detalhes' : `Ver Detalhes (${Object.keys(log.metadata).length})`}
+                          </span>
+                          {expandedLogs.has(log.id) ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </Button>
+
+                        {expandedLogs.has(log.id) && (
+                          <div className="mt-3 p-3 bg-gray-900 text-gray-300 rounded-md text-[10px] font-mono overflow-auto max-h-40 custom-scrollbar">
+                            <pre className="whitespace-pre-wrap">{JSON.stringify(log.metadata, null, 2)}</pre>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}
