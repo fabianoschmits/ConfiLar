@@ -72,6 +72,13 @@ export function EditProfileModal({
       bgColor: "bg-purple-50",
     },
     {
+      id: "social",
+      label: "Redes Sociais",
+      icon: Link2,
+      color: "text-cyan-500",
+      bgColor: "bg-cyan-50",
+    },
+    {
       id: "address",
       label: "Endereço",
       icon: MapPin,
@@ -96,13 +103,6 @@ export function EditProfileModal({
           },
         ]
       : []),
-    {
-      id: "social",
-      label: "Redes Sociais",
-      icon: Link2,
-      color: "text-cyan-500",
-      bgColor: "bg-cyan-50",
-    },
     {
       id: "security",
       label: "Segurança",
