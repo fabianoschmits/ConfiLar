@@ -58,6 +58,19 @@ export function LocationComboboxesMultiCountry({
   const [stateCode, setStateCode] = useState<string>(initialStateCode || "");
   const [city, setCity] = useState<string>(initialCity || "");
 
+  // Atualizar estado interno quando as props mudarem
+  useEffect(() => {
+    if (initialCountry) setCountry(initialCountry);
+  }, [initialCountry]);
+
+  useEffect(() => {
+    if (initialStateCode) setStateCode(initialStateCode);
+  }, [initialStateCode]);
+
+  useEffect(() => {
+    if (initialCity) setCity(initialCity);
+  }, [initialCity]);
+
   const [states, setStates] = useState<State[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [loadingStates, setLoadingStates] = useState(false);

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
+import { ValidationUtils } from "@/lib/validation";
 
 interface SocialLinksEditorProps {
   profile: Profile | CompleteProfileData;
@@ -272,15 +273,18 @@ export function SocialLinksEditor({
             id="whatsapp_number"
             type="tel"
             value={formData.whatsapp_number}
-            onChange={(e) => handleChange("whatsapp_number", e.target.value)}
-            placeholder="+55 11 98765-4321"
+            onChange={(e) => {
+              const formatted = ValidationUtils.formatPhone(e.target.value);
+              handleChange("whatsapp_number", formatted);
+            }}
+            placeholder="(00) 00000-0000"
             className={errors.whatsapp_number ? "border-red-500" : ""}
           />
           {errors.whatsapp_number && (
             <p className="text-sm text-red-500">{errors.whatsapp_number}</p>
           )}
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Formato internacional recomendado: +55 11 98765-4321
+            O número será formatado automaticamente.
           </p>
         </div>
       </div>

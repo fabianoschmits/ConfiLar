@@ -93,7 +93,7 @@ export function AIAnnouncement() {
                   <Bot className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                 </div>
                 <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-                  Novidade IA{" "}
+                  {t("announcementTitle")}{" "}
                   <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
                 </h3>
               </div>
@@ -106,8 +106,7 @@ export function AIAnnouncement() {
             </div>
 
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-5 leading-relaxed">
-              Deseja que assistentes de IA (como ChatGPT) recomendem você para
-              clientes? Ative a indexação inteligente agora!
+              {t("announcementBody")}
             </p>
 
             <div className="flex gap-3">
@@ -123,7 +122,7 @@ export function AIAnnouncement() {
                   window.dispatchEvent(event);
                 }}
               >
-                Ativar Agora
+                {t("activateNow")}
                 <ArrowRight className="w-4 h-4 ml-1.5" />
               </Button>
               <Button
@@ -132,7 +131,7 @@ export function AIAnnouncement() {
                 onClick={dismissTemporarily}
                 className="border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900"
               >
-                Depois
+                {t("later")}
               </Button>
             </div>
 
@@ -151,7 +150,7 @@ export function AIAnnouncement() {
                   htmlFor="dont-show"
                   className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-300 cursor-pointer"
                 >
-                  {isUpdating ? "Salvando..." : "Não mostrar novamente"}
+                  {isUpdating ? t("saving") : t("dontShowAgain")}
                 </Label>
               </div>
             </div>

@@ -272,15 +272,57 @@ export function AccountDataForm({ onSuccess }: { onSuccess?: () => void }) {
                 <SelectValue placeholder="Selecione" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="ensino_fundamental_incompleto">
+                  Ensino Fundamental Incompleto
+                </SelectItem>
+                <SelectItem value="ensino_fundamental_completo">
+                  Ensino Fundamental Completo
+                </SelectItem>
+                <SelectItem value="ensino_medio_incompleto">
+                  Ensino Médio Incompleto
+                </SelectItem>
                 <SelectItem value="ensino_medio_completo">
                   Ensino Médio Completo
+                </SelectItem>
+                <SelectItem value="ensino_superior_incompleto">
+                  Ensino Superior Incompleto
                 </SelectItem>
                 <SelectItem value="ensino_superior_completo">
                   Ensino Superior Completo
                 </SelectItem>
                 <SelectItem value="pos_graduacao">Pós-Graduação</SelectItem>
+                <SelectItem value="mestrado">Mestrado</SelectItem>
+                <SelectItem value="doutorado">Doutorado</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Estado Civil</Label>
+            <Select
+              value={watchedValues.estado_civil || ""}
+              onValueChange={(v) => setValue("estado_civil", v as any)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="solteiro">Solteiro(a)</SelectItem>
+                <SelectItem value="casado">Casado(a)</SelectItem>
+                <SelectItem value="divorciado">Divorciado(a)</SelectItem>
+                <SelectItem value="viuvo">Viúvo(a)</SelectItem>
+                <SelectItem value="uniao_estavel">União Estável</SelectItem>
+                <SelectItem value="outro">Outro</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Filhos</Label>
+            <Input
+              type="number"
+              min={0}
+              max={20}
+              {...register("filhos", { valueAsNumber: true })}
+            />
           </div>
         </div>
 

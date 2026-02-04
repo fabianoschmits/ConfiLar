@@ -42,7 +42,37 @@ const PROFESSIONAL_BIO_PHRASES = [
 ];
 
 // Frases adicionais baseadas na localização
-const LOCATION_BASED_PHRASES = {
+// Frases baseadas na localização para CLIENTES
+const CLIENT_LOCATION_PHRASES = {
+  SP: [
+    "Morando em São Paulo e buscando os melhores serviços! 🏙️",
+    "Paulista em busca de qualidade e excelência. 🌆",
+    "Em São Paulo, valorizo profissionais comprometidos. 🏢",
+  ],
+  RJ: [
+    "Morando no Rio de Janeiro e buscando serviços de qualidade! 🏖️",
+    "Carioca em busca de bons profissionais. 🌊",
+    "No Rio, valorizo quem trabalha bem! 🏔️",
+  ],
+  MG: [
+    "Morando em Minas Gerais e valorizando a tradição! ⛰️",
+    "Mineiro em busca de excelência nos serviços. 🏔️",
+    "Em MG, procuro profissionais dedicados! 🌄",
+  ],
+  RS: [
+    "Morando no Rio Grande do Sul e buscando qualidade! 🤠",
+    "Em busca do melhor atendimento no RS. 🌾",
+    "Valorizo a tradição e qualidade aqui no Sul! 🏞️",
+  ],
+  PR: [
+    "Morando no Paraná e buscando bons profissionais! 🌲",
+    "Paranaense exigente com qualidade de serviços. 🏔️",
+    "Em busca de excelência aqui no PR! 🌿",
+  ],
+};
+
+// Frases baseadas na localização para PROFISSIONAIS
+const PROFESSIONAL_LOCATION_PHRASES = {
   SP: [
     "Atuando em São Paulo com dedicação e qualidade! 🏙️",
     "Profissional paulista, sempre em busca da excelência! 🌆",
@@ -118,15 +148,21 @@ export function generateAutoBio(
 
   // Adicionar frase baseada na localização se disponível
   let locationPhrase = "";
+
+  const locationPhrasesMap =
+    userType === "client"
+      ? CLIENT_LOCATION_PHRASES
+      : PROFESSIONAL_LOCATION_PHRASES;
+
   if (
     userData?.location_state &&
-    LOCATION_BASED_PHRASES[
-      userData.location_state as keyof typeof LOCATION_BASED_PHRASES
+    locationPhrasesMap[
+      userData.location_state as keyof typeof locationPhrasesMap
     ]
   ) {
     const locationPhrases =
-      LOCATION_BASED_PHRASES[
-        userData.location_state as keyof typeof LOCATION_BASED_PHRASES
+      locationPhrasesMap[
+        userData.location_state as keyof typeof locationPhrasesMap
       ];
     locationPhrase =
       locationPhrases[Math.floor(Math.random() * locationPhrases.length)];

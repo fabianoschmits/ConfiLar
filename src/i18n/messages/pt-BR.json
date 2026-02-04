@@ -758,7 +758,12 @@
     "aiIndexingTitle": "Privacidade e IA",
     "allowAiIndexing": "Permitir indexação por IA",
     "aiIndexingDescription": "Permite que assistentes de IA (como ChatGPT e Perplexity) encontrem seu perfil para recomendações de serviços. Seus dados profissionais (Nome, Cidade, Serviços e Telefone) serão compartilhados de forma estruturada.",
-    "aiIndexingHelp": "Ao ativar esta opção, seus dados profissionais básicos tornam-se legíveis por robôs de busca especializados em inteligência artificial."
+    "aiIndexingHelp": "Ao ativar esta opção, seus dados profissionais básicos tornam-se legíveis por robôs de busca especializados em inteligência artificial.",
+    "announcementTitle": "Novidade IA",
+    "announcementBody": "Deseja que assistentes de IA (como ChatGPT) recomendem você para clientes? Ative a indexação inteligente agora!",
+    "activateNow": "Ativar Agora",
+    "later": "Depois",
+    "dontShowAgain": "Não mostrar novamente"
   },
   "help": {
     "title": "Central de Ajuda",

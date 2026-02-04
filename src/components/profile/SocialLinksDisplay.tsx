@@ -87,7 +87,7 @@ export function SocialLinksDisplay({ profile }: SocialLinksDisplayProps) {
         <span className="text-2xl">🔗</span>
         Redes Sociais
       </h3>
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-wrap gap-3">
         {activeSocials.map((platform) => {
           const Icon = platform.icon;
           const handle = profile[platform.key] as string;

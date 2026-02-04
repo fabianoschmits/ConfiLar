@@ -13,6 +13,7 @@ import { Save } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { ValidationUtils } from "@/lib/validation";
 import { LocationComboboxesMultiCountry } from "@/components/ui/LocationComboboxesMultiCountry";
 
 const addressSchema = z.object({
@@ -88,7 +89,8 @@ export function AddressForm({ onSuccess }: { onSuccess?: () => void }) {
         setValue("neighborhood", profile.neighborhood || "");
         setValue("address", profile.address || "");
         setValue("address_number", profile.address_number || "");
-        setValue("zip_code", profile.zip_code || "");
+        setValue("address_number", profile.address_number || "");
+        setValue("zip_code", ValidationUtils.formatCEP(profile.zip_code || ""));
       }
     };
     loadProfileData();
@@ -115,6 +117,10 @@ export function AddressForm({ onSuccess }: { onSuccess?: () => void }) {
           country: data.country,
           location_state: data.location_state,
           location_city: data.location_city,
+          neighborhood: data.neighborhood,
+          address: data.address,
+          address_number: data.address_number,
+          zip_code: data.zip_code.replace(/\D/g, ""),
         },
       });
       toast.success("🎉 Endereço salvo!");
@@ -162,28 +168,37 @@ export function AddressForm({ onSuccess }: { onSuccess?: () => void }) {
             <Input {...register("neighborhood")} />
           </div>
           <div className="space-y-2">
-            <Label>CEP</Label>
-            <Input {...register("zip_code")} />
-          </div>
-          <div className="space-y-2 md:col-span-2 lg:col-span-3">
-            <Label>Endereço e Número</Label>
-            <div className="flex gap-2">
-              <Input {...register("address")} className="flex-1" />
-              <Input {...register("address_number")} className="w-24" />
+            <div className="space-y-2">
+              <Label>CEP</Label>
+              <Input
+                {...register("zip_code")}
+                onChange={(e) => {
+                  const formatted = ValidationUtils.formatCEP(e.target.value);
+                  setValue("zip_code", formatted);
+                }}
+                maxLength={9}
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2 lg:col-span-3">
+              <Label>Endereço e Número</Label>
+              <div className="flex gap-2">
+                <Input {...register("address")} className="flex-1" />
+                <Input {...register("address_number")} className="w-24" />
+              </div>
             </div>
           </div>
+          <div className="flex justify-end pt-4">
+            <LoadingButton
+              type="submit"
+              isLoading={isLoading}
+              className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
+            >
+              <Save className="w-4 h-4 mr-2" /> Salvar Endereço
+            </LoadingButton>
+          </div>
+          {/* Espaçador extra para evitar que o teclado cubra os campos finais no mobile */}
+          <div className="h-40 sm:h-0" />
         </div>
-        <div className="flex justify-end pt-4">
-          <LoadingButton
-            type="submit"
-            isLoading={isLoading}
-            className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
-          >
-            <Save className="w-4 h-4 mr-2" /> Salvar Endereço
-          </LoadingButton>
-        </div>
-        {/* Espaçador extra para evitar que o teclado cubra os campos finais no mobile */}
-        <div className="h-40 sm:h-0" />
       </form>
     </div>
   );
