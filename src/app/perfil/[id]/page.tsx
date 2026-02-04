@@ -41,6 +41,7 @@ import {
   Layers,
   Sparkles,
   ThumbsUp,
+  Quote,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -199,456 +200,417 @@ export default function ProfilePage() {
   return (
     <MainLayout requireAuth={false}>
       {profile && <AIProfileSchema profile={profile} />}
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-primary-100 to-primary-50 dark:from-gray-950 dark:via-primary-950 dark:to-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Header Criativo Portfolio Style */}
-          <div className="mb-12">
-            <Card className="border-0 shadow-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
-              <CardContent className="p-12">
-                <div className="flex flex-col lg:flex-row gap-12 items-center lg:items-start">
-                  {/* Foto Grande com Efeito Artístico */}
-                  <div className="flex-shrink-0 relative">
-                    <div className="absolute -inset-6 bg-gradient-to-r from-primary-400 via-primary-500 to-primary-600 rounded-full blur-2xl opacity-30 animate-pulse"></div>
-                    <div className="relative">
-                      <UserAvatar
-                        src={profile.avatar_url || profile.profile_photo_url}
-                        alt={profile.full_name || "Usuário"}
-                        fallback={
-                          profile.full_name?.charAt(0).toUpperCase() || "U"
-                        }
-                        size="xl"
-                        userId={profile.id}
-                        showReferralBadge={true}
-                        className="ring-4 ring-primary-200 dark:ring-primary-800 shadow-2xl transform hover:scale-105 transition-transform"
-                      />
-                      {profile.is_verified && (
-                        <div className="absolute -bottom-3 -right-3 bg-gradient-to-r from-success-400 to-success-600 rounded-full p-2 shadow-lg">
-                          <CheckCircle className="w-6 h-6 text-white" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
+      <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+          {/* Header Minimalista */}
+          {/* Header Minimalista Unificado */}
+          <div className="flex flex-col items-center text-center mb-12">
+            {/* Identity Card Container */}
+            <div className="relative group w-full max-w-2xl mx-auto mb-12">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-[2rem] blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
 
-                  {/* Informações Criativas */}
-                  <div className="flex-1 min-w-0 text-center lg:text-left">
-                    <div className="mb-6">
-                      <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#00b0b0] via-cyan-600 to-blue-600 mb-4">
+              <div className="relative px-6 py-10 bg-card/50 backdrop-blur-xl border border-white/10 dark:border-white/5 rounded-[1.8rem] shadow-2xl flex flex-col items-center">
+                {/* Unified Avatar & Info */}
+                <div className="flex flex-col items-center -mt-20 sm:-mt-24 mb-6">
+                  <div className="relative p-1.5 rounded-full bg-background/50 backdrop-blur shadow-sm border border-border/50">
+                    <UserAvatar
+                      src={profile.avatar_url || profile.profile_photo_url}
+                      alt={profile.full_name || "Usuário"}
+                      fallback={
+                        profile.full_name?.charAt(0).toUpperCase() || "U"
+                      }
+                      size="xl"
+                      userId={profile.id}
+                      showReferralBadge={true}
+                      className="w-32 h-32 sm:w-40 sm:h-40 shadow-inner"
+                    />
+                    {profile.is_verified && (
+                      <div className="absolute bottom-2 right-2 bg-blue-500 text-white p-1.5 rounded-full ring-4 ring-background shadow-lg">
+                        <CheckCircle className="w-5 h-5" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-4 max-w-lg w-full">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-center gap-2 flex-wrap">
+                      <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70">
                         {profile.full_name || "Usuário"}
                       </h1>
-                      {profile.bio && (
-                        <p className="text-xl text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-                          {profile.bio}
-                        </p>
-                      )}
-                      <div className="flex flex-wrap justify-center lg:justify-start gap-3 mb-6">
-                        {profile.is_verified && (
-                          <Badge className="bg-gradient-to-r from-green-400 to-green-600 text-white px-4 py-1.5 text-sm">
-                            <CheckCircle className="w-4 h-4 mr-1" />
-                            {t("verified")}
-                          </Badge>
-                        )}
-                        <Badge
-                          className={`px-4 py-1.5 text-sm ${isProfessional ? "bg-gradient-to-r from-blue-400 to-blue-600 text-white" : "bg-gradient-to-r from-gray-400 to-gray-600 text-white"}`}
-                        >
-                          {isProfessional ? t("professional") : t("client")}
-                        </Badge>
-                        {isProfessional && (
-                          <Badge
-                            className={`px-4 py-1.5 text-sm ${profile.is_available ? "bg-gradient-to-r from-green-400 to-green-600 text-white" : "bg-gradient-to-r from-red-400 to-red-600 text-white"}`}
-                          >
-                            {profile.is_available
-                              ? t("available")
-                              : t("unavailable")}
-                          </Badge>
-                        )}
-                      </div>
                     </div>
 
-                    {/* Grid de Métricas Criativo */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                      <div className="bg-gradient-to-br from-yellow-100 to-yellow-200 dark:from-yellow-900/30 dark:to-yellow-800/30 rounded-2xl p-4 text-center transform hover:scale-105 transition-transform">
-                        <Star className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
-                        <div className="text-3xl font-black text-gray-900 dark:text-white">
-                          {profile.rating.toFixed(1)}
-                        </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                          {t("rating")}
-                        </div>
-                      </div>
-                      <div className="bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/30 rounded-2xl p-4 text-center transform hover:scale-105 transition-transform">
-                        <Users className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                        <div className="text-3xl font-black text-gray-900 dark:text-white">
-                          {profile.total_reviews}
-                        </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                          {t("reviews")}
-                        </div>
-                      </div>
-                      <div className="bg-gradient-to-br from-teal-100 to-teal-200 dark:from-teal-900/30 dark:to-teal-800/30 rounded-2xl p-4 text-center transform hover:scale-105 transition-transform">
-                        <Eye className="w-8 h-8 text-[#00b0b0] mx-auto mb-2" />
-                        <div className="text-3xl font-black text-gray-900 dark:text-white">
-                          {viewStats?.total_views?.toLocaleString("pt-BR") ||
-                            "0"}
-                        </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                          {t("views")}
-                        </div>
-                      </div>
-                      <div className="bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-800/30 rounded-2xl p-4 text-center transform hover:scale-105 transition-transform">
-                        <Award className="w-8 h-8 text-orange-600 mx-auto mb-2" />
-                        <div className="flex justify-center items-center mb-2">
-                          {referralLoading ? (
-                            <div className="text-2xl font-black text-gray-400">
-                              ...
-                            </div>
-                          ) : (
-                            <ReferralBadgeLarge
-                              tier={referralStats?.tier || "none"}
-                              totalReferrals={
-                                referralStats?.totalReferrals || 0
-                              }
-                            />
-                          )}
-                        </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                          {t("badgeReferrals")}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Redes Sociais */}
-                    <SocialLinksDisplay profile={profile} />
-
-                    {/* Informações Rápidas em Grid Criativo */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
+                    <div className="flex flex-wrap justify-center gap-2">
+                      <Badge
+                        variant="secondary"
+                        className="bg-secondary/50 text-secondary-foreground hover:bg-secondary/70 transition-colors border-0"
+                      >
+                        {isProfessional ? t("professional") : t("client")}
+                      </Badge>
                       {profile.location_city && profile.location_state && (
-                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
-                          <MapPin className="w-5 h-5 text-red-500" />
-                          <span className="text-sm font-medium">
+                        <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted/50 text-muted-foreground">
+                          <MapPin className="w-3 h-3" />
+                          <span>
                             {profile.location_city}, {profile.location_state}
                           </span>
                         </div>
                       )}
-                      {profile.idade && (
-                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
-                          <Calendar className="w-5 h-5 text-blue-500" />
-                          <span className="text-sm font-medium">
-                            {profile.idade} {t("years")}
-                          </span>
-                        </div>
-                      )}
-                      {profile.escolaridade && (
-                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
-                          <GraduationCap className="w-5 h-5 text-[#00b0b0]" />
-                          <span className="text-sm font-medium truncate">
-                            {formatEscolaridade(profile.escolaridade)}
-                          </span>
-                        </div>
-                      )}
-                      {profile.estado_civil && (
-                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
-                          <Heart className="w-5 h-5 text-cyan-500" />
-                          <span className="text-sm font-medium">
-                            {formatEstadoCivil(profile.estado_civil)}
-                          </span>
-                        </div>
-                      )}
-                      {profile.filhos !== null &&
-                        profile.filhos !== undefined && (
-                          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
-                            <Users className="w-5 h-5 text-green-500" />
-                            <span className="text-sm font-medium">
-                              {profile.filhos}{" "}
-                              {profile.filhos === 1
-                                ? t("child")
-                                : t("children")}
-                            </span>
-                          </div>
-                        )}
-                      {isProfessional &&
-                        profile.professional_experience_years !== undefined &&
-                        profile.professional_experience_years !== null &&
-                        profile.professional_experience_years > 0 && (
-                          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
-                            <Briefcase className="w-5 h-5 text-indigo-500" />
-                            <span className="text-sm font-medium">
-                              {profile.professional_experience_years}{" "}
-                              {profile.professional_experience_years === 1
-                                ? t("year")
-                                : t("years")}
-                            </span>
-                          </div>
-                        )}
-                    </div>
-
-                    {/* Botões de Ação */}
-                    <div className="flex flex-wrap justify-center lg:justify-start gap-3">
-                      {!isOwnProfile && (
-                        <Button
-                          onClick={handleContact}
-                          className="bg-gradient-to-r from-[#00b0b0] to-cyan-600 hover:from-[#00a0a0] hover:to-cyan-700 text-white px-8 py-6 text-lg font-bold shadow-lg transform hover:scale-105 transition-transform"
-                        >
-                          <MessageCircle className="w-5 h-5 mr-2" />
-                          {t("contact")}
-                        </Button>
-                      )}
-                      <Button
-                        variant="outline"
-                        className="px-8 py-6 text-lg font-bold border-2"
-                        onClick={handleShare}
-                      >
-                        <Share2 className="w-5 h-5 mr-2" />
-                        {t("share")}
-                      </Button>
                     </div>
                   </div>
+
+                  {profile.bio && (
+                    <div className="mt-4 relative">
+                      <Quote className="w-8 h-8 text-primary/10 absolute -top-4 -left-2 transform -scale-x-100" />
+                      <p className="text-base sm:text-lg text-muted-foreground leading-relaxed italic relative z-10 px-4">
+                        {profile.bio}
+                      </p>
+                      <Quote className="w-8 h-8 text-primary/10 absolute -bottom-4 -right-2" />
+                    </div>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+
+            {/* Botões de Ação Minimalistas */}
+            <div className="flex flex-wrap justify-center gap-3 mb-10 w-full sm:w-auto">
+              {!isOwnProfile && (
+                <Button
+                  onClick={handleContact}
+                  className="rounded-full px-8 py-6 font-semibold shadow-sm hover:shadow-md transition-all w-full sm:w-auto"
+                >
+                  <MessageCircle className="w-5 h-5 mr-2" />
+                  {t("contact")}
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                className="rounded-full px-8 py-6 font-medium border-2 hover:bg-muted w-full sm:w-auto"
+                onClick={handleShare}
+              >
+                <Share2 className="w-5 h-5 mr-2" />
+                {t("share")}
+              </Button>
+            </div>
+
+            {/* Redes Sociais */}
+            <div className="w-full max-w-lg mx-auto mb-10">
+              <SocialLinksDisplay profile={profile} />
+            </div>
+
+            {/* Métricas Clean (Row) */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-3xl mx-auto border-y border-border py-6 mb-8">
+              <div className="text-center p-2">
+                <div className="flex flex-col items-center">
+                  <span className="text-2xl font-bold text-foreground">
+                    {profile.rating.toFixed(1)}
+                  </span>
+                  <span className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                    <Star className="w-3 h-3" /> {t("rating")}
+                  </span>
+                </div>
+              </div>
+              <div className="text-center p-2 border-l border-border/50">
+                <div className="flex flex-col items-center">
+                  <span className="text-2xl font-bold text-foreground">
+                    {profile.total_reviews}
+                  </span>
+                  <span className="text-sm text-muted-foreground mt-1">
+                    {t("reviews")}
+                  </span>
+                </div>
+              </div>
+              <div className="text-center p-2 border-l border-border/50">
+                <div className="flex flex-col items-center">
+                  <span className="text-2xl font-bold text-foreground">
+                    {viewStats?.total_views?.toLocaleString("pt-BR") || "0"}
+                  </span>
+                  <span className="text-sm text-muted-foreground mt-1">
+                    {t("views")}
+                  </span>
+                </div>
+              </div>
+              <div className="text-center p-2 border-l border-border/50">
+                <div className="flex flex-col items-center justify-center h-full">
+                  <div className="transform scale-90 origin-center">
+                    {referralLoading ? (
+                      <span className="text-muted-foreground">...</span>
+                    ) : (
+                      <ReferralBadgeLarge
+                        tier={referralStats?.tier || "none"}
+                        totalReferrals={referralStats?.totalReferrals || 0}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Informações Rápidas (Icon Grid) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-muted-foreground w-full max-w-3xl mx-auto">
+              {profile.location_city && profile.location_state && (
+                <div className="flex items-center justify-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  <span>
+                    {profile.location_city}, {profile.location_state}
+                  </span>
+                </div>
+              )}
+              {profile.escolaridade && (
+                <div className="flex items-center justify-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                  <GraduationCap className="w-4 h-4 text-primary" />
+                  <span className="truncate max-w-[200px]">
+                    {formatEscolaridade(profile.escolaridade)}
+                  </span>
+                </div>
+              )}
+              {isProfessional &&
+                profile.professional_experience_years &&
+                profile.professional_experience_years > 0 && (
+                  <div className="flex items-center justify-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                    <Briefcase className="w-4 h-4 text-primary" />
+                    <span>
+                      {profile.professional_experience_years}{" "}
+                      {profile.professional_experience_years === 1
+                        ? t("year")
+                        : t("years")}{" "}
+                      exp.
+                    </span>
+                  </div>
+                )}
+            </div>
           </div>
 
-          {/* Tabs Portfolio Style */}
-          <Tabs defaultValue="recommendations" className="space-y-8">
+          {/* Tabs Minimalista */}
+          <Tabs
+            defaultValue="recommendations"
+            className="space-y-8 w-full max-w-4xl mx-auto"
+          >
             <TabsList
-              className={`grid w-full ${isProfessional ? "grid-cols-5" : "grid-cols-4"} bg-white/50 dark:bg-gray-900/50 backdrop-blur-lg border-2 border-gray-200 dark:border-gray-800 rounded-xl p-2`}
+              className={`w-full h-auto flex flex-wrap justify-center gap-2 bg-transparent p-0 border-b border-border mb-8 rounded-none`}
             >
               <TabsTrigger
                 value="recommendations"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00b0b0] data-[state=active]:to-cyan-500 data-[state=active]:text-white rounded-lg"
+                className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:font-semibold transition-all hover:text-primary/80"
               >
                 Recomend.
               </TabsTrigger>
               {isProfessional && (
                 <TabsTrigger
                   value="services"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00b0b0] data-[state=active]:to-cyan-500 data-[state=active]:text-white rounded-lg"
+                  className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:font-semibold transition-all hover:text-primary/80"
                 >
                   {t("services")}
                 </TabsTrigger>
               )}
               <TabsTrigger
                 value="reviews"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00b0b0] data-[state=active]:to-cyan-500 data-[state=active]:text-white rounded-lg"
+                className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:font-semibold transition-all hover:text-primary/80"
               >
                 {t("reviews")}
               </TabsTrigger>
               {isProfessional && (
                 <TabsTrigger
                   value="portfolio"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00b0b0] data-[state=active]:to-cyan-500 data-[state=active]:text-white rounded-lg"
+                  className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:font-semibold transition-all hover:text-primary/80"
                 >
                   {t("portfolio")}
                 </TabsTrigger>
               )}
               <TabsTrigger
                 value="about"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00b0b0] data-[state=active]:to-cyan-500 data-[state=active]:text-white rounded-lg"
+                className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:font-semibold transition-all hover:text-primary/80"
               >
                 Sobre
               </TabsTrigger>
             </TabsList>
 
             {/* Aba de Recomendações */}
-            <TabsContent value="recommendations" className="space-y-6">
-              <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
-                <CardHeader className="bg-gradient-to-r from-cyan-500 to-[#00b0b0] text-white rounded-t-lg">
-                  <CardTitle className="flex items-center gap-2">
-                    <ThumbsUp className="w-5 h-5" />
-                    {t("recommendations")}
-                    {recommendations.length > 0 && (
-                      <Badge
-                        variant="secondary"
-                        className="ml-2 bg-white/20 text-white"
-                      >
-                        {recommendations.length}
-                      </Badge>
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  {recommendationsLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {Array.from({ length: 4 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3 animate-pulse"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-                            <div className="flex-1 space-y-2">
-                              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+            <TabsContent
+              value="recommendations"
+              className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <ThumbsUp className="w-5 h-5 text-primary" />
+                <h2 className="text-xl font-semibold">
+                  {t("recommendations")}
+                </h2>
+                {recommendations.length > 0 && (
+                  <Badge variant="outline" className="ml-2">
+                    {recommendations.length}
+                  </Badge>
+                )}
+              </div>
+
+              {recommendationsLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="border border-border rounded-lg p-4 space-y-3 animate-pulse bg-card"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-muted rounded-full"></div>
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 bg-muted rounded w-3/4"></div>
+                          <div className="h-3 bg-muted rounded w-1/2"></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : recommendations.length === 0 ? (
+                <EmptyState
+                  icon={
+                    <ThumbsUp className="h-12 w-12 text-muted-foreground/50" />
+                  }
+                  title="Nenhuma recomendação"
+                  description="Este usuário ainda não recebeu recomendações."
+                />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {recommendations.map((rec) => (
+                    <Link
+                      key={rec.id}
+                      href={`/perfil/${rec.recommender.id}`}
+                      className="block group"
+                    >
+                      <Card className="hover:shadow-md transition-all cursor-pointer h-full border border-border bg-card group-hover:border-primary/50">
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-3">
+                            <UserAvatar
+                              src={rec.recommender.avatar_url}
+                              alt={rec.recommender.full_name}
+                              fallback={
+                                rec.recommender.full_name?.charAt(0) || "U"
+                              }
+                              size="md"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                                  {rec.recommender.full_name}
+                                </h4>
+                                {rec.recommender.is_verified && (
+                                  <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                                )}
+                              </div>
+                              {rec.recommender.location_city &&
+                                rec.recommender.location_state && (
+                                  <p className="text-xs text-muted-foreground flex items-center gap-1 mb-2">
+                                    <MapPin className="w-3 h-3" />
+                                    {rec.recommender.location_city},{" "}
+                                    {rec.recommender.location_state}
+                                  </p>
+                                )}
+                              <div className="flex items-center gap-2 mb-2">
+                                {rec.recommender.rating > 0 && (
+                                  <div className="flex items-center gap-1">
+                                    <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                                    <span className="text-xs font-medium text-foreground">
+                                      {rec.recommender.rating.toFixed(1)}
+                                    </span>
+                                  </div>
+                                )}
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] px-1.5 py-0 h-5"
+                                >
+                                  {rec.recommender.user_type === "professional"
+                                    ? t("professional")
+                                    : t("client")}
+                                </Badge>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : recommendations.length === 0 ? (
-                    <EmptyState
-                      icon={<ThumbsUp className="h-12 w-12 text-gray-400" />}
-                      title="Nenhuma recomendação encontrada"
-                      description="Este usuário ainda não recebeu recomendações."
-                    />
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {recommendations.map((rec) => (
-                        <Link
-                          key={rec.id}
-                          href={`/perfil/${rec.recommender.id}`}
-                          className="block"
-                        >
-                          <Card className="hover:shadow-xl transition-shadow cursor-pointer h-full border-0 shadow-lg bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 transform hover:scale-105">
-                            <CardContent className="p-4">
-                              <div className="flex items-start gap-3">
-                                <UserAvatar
-                                  src={rec.recommender.avatar_url}
-                                  alt={rec.recommender.full_name}
-                                  fallback={
-                                    rec.recommender.full_name?.charAt(0) || "U"
-                                  }
-                                  size="md"
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h4 className="font-semibold text-gray-900 dark:text-white truncate">
-                                      {rec.recommender.full_name}
-                                    </h4>
-                                    {rec.recommender.is_verified && (
-                                      <CheckCircle className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                                    )}
-                                  </div>
-                                  {rec.recommender.location_city &&
-                                    rec.recommender.location_state && (
-                                      <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-2">
-                                        <MapPin className="w-3 h-3" />
-                                        {rec.recommender.location_city},{" "}
-                                        {rec.recommender.location_state}
-                                      </p>
-                                    )}
-                                  <div className="flex items-center gap-2 mb-2">
-                                    {rec.recommender.rating > 0 && (
-                                      <div className="flex items-center gap-1">
-                                        <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                          {rec.recommender.rating.toFixed(1)}
-                                        </span>
-                                      </div>
-                                    )}
-                                    <Badge
-                                      variant={
-                                        rec.recommender.user_type ===
-                                        "professional"
-                                          ? "default"
-                                          : "secondary"
-                                      }
-                                      className="text-xs"
-                                    >
-                                      {rec.recommender.user_type ===
-                                      "professional"
-                                        ? t("professional")
-                                        : t("client")}
-                                    </Badge>
-                                  </div>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                    <Clock className="w-3 h-3" />
-                                    {format(
-                                      new Date(rec.created_at),
-                                      "dd 'de' MMM 'de' yyyy",
-                                      { locale: ptBR },
-                                    )}
-                                  </p>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </TabsContent>
 
-            <TabsContent value="about" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
-                  <CardHeader className="bg-gradient-to-r from-blue-500 to-[#00b0b0] text-white rounded-t-lg">
-                    <CardTitle className="flex items-center gap-2">
-                      <User className="w-5 h-5" />
+            <TabsContent
+              value="about"
+              className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2 mb-4 border-b border-border pb-2">
+                    <User className="w-5 h-5 text-primary" />
+                    <h3 className="text-lg font-semibold">
                       Informações Pessoais
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-6 space-y-4">
+                    </h3>
+                  </div>
+                  <div className="space-y-4">
                     {profile.gender && (
-                      <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-                        <span className="text-gray-600 dark:text-gray-400">
-                          Gênero
-                        </span>
-                        <span className="font-semibold">
+                      <div className="flex justify-between items-center py-2">
+                        <span className="text-muted-foreground">Gênero</span>
+                        <span className="font-medium text-foreground">
                           {formatGender(profile.gender)}
                         </span>
                       </div>
                     )}
                     {profile.idade && (
-                      <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-                        <span className="text-gray-600 dark:text-gray-400">
+                      <div className="flex justify-between items-center py-2 border-t border-border/50">
+                        <span className="text-muted-foreground">
                           {t("age")}
                         </span>
-                        <span className="font-semibold">
+                        <span className="font-medium text-foreground">
                           {profile.idade} {t("years")}
                         </span>
                       </div>
                     )}
                     {profile.escolaridade && (
-                      <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-                        <span className="text-gray-600 dark:text-gray-400">
+                      <div className="flex justify-between items-center py-2 border-t border-border/50">
+                        <span className="text-muted-foreground">
                           {t("education")}
                         </span>
-                        <span className="font-semibold text-right">
+                        <span className="font-medium text-foreground text-right">
                           {formatEscolaridade(profile.escolaridade)}
                         </span>
                       </div>
                     )}
                     {profile.estado_civil && (
-                      <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-                        <span className="text-gray-600 dark:text-gray-400">
+                      <div className="flex justify-between items-center py-2 border-t border-border/50">
+                        <span className="text-muted-foreground">
                           {t("maritalStatus")}
                         </span>
-                        <span className="font-semibold">
+                        <span className="font-medium text-foreground">
                           {formatEstadoCivil(profile.estado_civil)}
                         </span>
                       </div>
                     )}
                     {profile.filhos !== null &&
                       profile.filhos !== undefined && (
-                        <div className="flex justify-between py-3">
-                          <span className="text-gray-600 dark:text-gray-400">
+                        <div className="flex justify-between items-center py-2 border-t border-border/50">
+                          <span className="text-muted-foreground">
                             {t("childrenLabel")}
                           </span>
-                          <span className="font-semibold">
+                          <span className="font-medium text-foreground">
                             {profile.filhos}{" "}
                             {profile.filhos === 1 ? t("child") : t("children")}
                           </span>
                         </div>
                       )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
                 {isProfessional && (
-                  <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
-                    <CardHeader className="bg-gradient-to-r from-[#00b0b0] to-cyan-500 text-white rounded-t-lg">
-                      <CardTitle className="flex items-center gap-2">
-                        <Briefcase className="w-5 h-5" />
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-2 mb-4 border-b border-border pb-2">
+                      <Briefcase className="w-5 h-5 text-primary" />
+                      <h3 className="text-lg font-semibold">
                         {t("professionalInfo")}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-6 space-y-4">
+                      </h3>
+                    </div>
+                    <div className="space-y-4">
                       {profile.professional_experience_years && (
-                        <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-                          <span className="text-gray-600 dark:text-gray-400">
+                        <div className="flex justify-between items-center py-2">
+                          <span className="text-muted-foreground">
                             {t("experience")}
                           </span>
-                          <span className="font-semibold">
+                          <span className="font-medium text-foreground">
                             {profile.professional_experience_years}{" "}
                             {profile.professional_experience_years === 1
                               ? t("year")
@@ -657,180 +619,184 @@ export default function ProfilePage() {
                         </div>
                       )}
                       {profile.turno_trabalho && (
-                        <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-                          <span className="text-gray-600 dark:text-gray-400">
+                        <div className="flex justify-between items-center py-2 border-t border-border/50">
+                          <span className="text-muted-foreground">
                             {t("shift")}
                           </span>
-                          <span className="font-semibold">
+                          <span className="font-medium text-foreground">
                             {formatTurnoTrabalho(profile.turno_trabalho)}
                           </span>
                         </div>
                       )}
                       {profile.referencia_profissional && (
-                        <div className="py-3">
-                          <span className="text-gray-600 dark:text-gray-400 block mb-2">
+                        <div className="py-2 border-t border-border/50">
+                          <span className="text-muted-foreground block mb-2 text-sm">
                             {t("professionalReference")}
                           </span>
-                          <p className="text-sm text-gray-900 dark:text-white leading-relaxed">
+                          <p className="text-foreground bg-muted/30 p-3 rounded-lg text-sm leading-relaxed">
                             {profile.referencia_profissional}
                           </p>
                         </div>
                       )}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 )}
               </div>
             </TabsContent>
 
-            <TabsContent value="services">
+            <TabsContent
+              value="services"
+              className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+            >
               {isProfessional ? (
-                <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
-                  <CardHeader className="bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-t-lg">
-                    <CardTitle className="flex items-center gap-2">
-                      <Briefcase className="w-5 h-5" />
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Briefcase className="w-5 h-5 text-primary" />
+                    <h2 className="text-xl font-semibold">
                       {t("servicesOffered")}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-6">
-                    {profile.professional_services &&
-                    profile.professional_services.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {profile.professional_services.map((service, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg border border-green-200 dark:border-green-800"
-                          >
-                            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                            <span className="text-gray-900 dark:text-white font-medium">
-                              {service}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <EmptyState
-                        icon={<Briefcase className="h-12 w-12 text-gray-400" />}
-                        title={t("noServices")}
-                        description={t("noServicesDescription")}
-                      />
-                    )}
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
-                  <CardContent className="p-8 text-center">
-                    <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                      {t("client")}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Este usuário é um cliente e não oferece serviços.
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
+                    </h2>
+                  </div>
 
-            <TabsContent value="reviews">
-              <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
-                <CardHeader className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-t-lg">
-                  <CardTitle className="flex items-center gap-2">
-                    <Star className="w-5 h-5" />
-                    {t("reviews")}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  {reviewsLoading ? (
-                    <div className="space-y-4">
-                      {Array.from({ length: 3 }).map((_, i) => (
+                  {profile.professional_services &&
+                  profile.professional_services.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {profile.professional_services.map((service, index) => (
                         <div
-                          key={i}
-                          className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 animate-pulse"
+                          key={index}
+                          className="flex items-center gap-3 p-4 bg-card rounded-lg border border-border hover:border-primary/50 transition-colors"
                         >
-                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                          <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                          <span className="text-foreground font-medium">
+                            {service}
+                          </span>
                         </div>
-                      ))}
-                    </div>
-                  ) : reviews && reviews.length > 0 ? (
-                    <div className="space-y-4">
-                      {reviews.map((review) => (
-                        <ReviewCard
-                          key={review.id}
-                          review={review}
-                          currentUserId={user?.id}
-                          profileOwnerId={userId}
-                          onRespond={async (reviewId, responseText) => {
-                            const result = await respondToReview(
-                              reviewId,
-                              responseText,
-                            );
-
-                            // Aguardar um pouco para garantir que o banco foi atualizado
-                            // e então refazer a busca para atualizar os dados
-                            if (userId && !result.error) {
-                              setTimeout(async () => {
-                                await fetchUserReviews(userId);
-                              }, 1000);
-                            }
-                            return result;
-                          }}
-                          onEdit={async (reviewToEdit) => {
-                            // Abrir modal de edição ou atualizar diretamente
-                            // Por enquanto, apenas recarregar após edição
-                            fetchUserReviews(userId);
-                          }}
-                          onDelete={async (reviewId) => {
-                            const result = await deleteReview(reviewId);
-                            if (!result.error) {
-                              toast.success("Avaliação excluída com sucesso");
-                              // Recarregar avaliações após excluir
-                              fetchUserReviews(userId);
-                            } else {
-                              toast.error("Erro ao excluir avaliação");
-                            }
-                          }}
-                        />
                       ))}
                     </div>
                   ) : (
                     <EmptyState
-                      icon={<Star className="h-12 w-12 text-gray-400" />}
-                      title="Nenhuma avaliação encontrada"
-                      description="Este usuário ainda não recebeu avaliações."
+                      icon={
+                        <Briefcase className="h-12 w-12 text-muted-foreground/50" />
+                      }
+                      title={t("noServices")}
+                      description={t("noServicesDescription")}
                     />
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center p-12 text-center bg-muted/20 rounded-lg border border-border border-dashed">
+                  <User className="w-16 h-16 text-muted-foreground/50 mb-4" />
+                  <h3 className="text-lg font-medium text-foreground mb-2">
+                    {t("client")}
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Este usuário é um cliente e não oferece serviços.
+                  </p>
+                </div>
+              )}
             </TabsContent>
 
-            <TabsContent value="portfolio">
-              <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
-                <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <Briefcase className="w-5 h-5" />
-                      {t("portfolio")}
-                    </CardTitle>
+            <TabsContent
+              value="reviews"
+              className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+            >
+              <div className="space-y-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Star className="w-5 h-5 text-primary" />
+                  <h2 className="text-xl font-semibold">{t("reviews")}</h2>
+                </div>
+
+                {reviewsLoading ? (
+                  <div className="space-y-4">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="border border-border rounded-lg p-4 animate-pulse bg-card"
+                      >
+                        <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                        <div className="h-4 bg-muted rounded w-1/2"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : reviews && reviews.length > 0 ? (
+                  <div className="space-y-4">
+                    {reviews.map((review) => (
+                      <ReviewCard
+                        key={review.id}
+                        review={review}
+                        currentUserId={user?.id}
+                        profileOwnerId={userId}
+                        onRespond={async (reviewId, responseText) => {
+                          const result = await respondToReview(
+                            reviewId,
+                            responseText,
+                          );
+
+                          if (userId && !result.error) {
+                            setTimeout(async () => {
+                              await fetchUserReviews(userId);
+                            }, 1000);
+                          }
+                          return result;
+                        }}
+                        onEdit={async (reviewToEdit) => {
+                          fetchUserReviews(userId);
+                        }}
+                        onDelete={async (reviewId) => {
+                          const result = await deleteReview(reviewId);
+                          if (!result.error) {
+                            toast.success("Avaliação excluída com sucesso");
+                            fetchUserReviews(userId);
+                          } else {
+                            toast.error("Erro ao excluir avaliação");
+                          }
+                        }}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState
+                    icon={
+                      <Star className="h-12 w-12 text-muted-foreground/50" />
+                    }
+                    title="Nenhuma avaliação encontrada"
+                    description="Este usuário ainda não recebeu avaliações."
+                  />
+                )}
+              </div>
+            </TabsContent>
+
+            {isProfessional && (
+              <TabsContent
+                value="portfolio"
+                className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+              >
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      {/* Using Briefcase as placeholder if LayoutGrid is not imported, or replace with Briefcase if consistent */}
+                      <Briefcase className="w-5 h-5 text-primary" />
+                      <h2 className="text-xl font-semibold">
+                        {t("portfolio")}
+                      </h2>
+                    </div>
                     {isOwnProfile && (
                       <Button
                         asChild
                         size="sm"
-                        variant="secondary"
-                        className="bg-white/20 hover:bg-white/30 text-white border-0"
+                        variant="outline"
+                        className="rounded-full"
                       >
                         <Link href="/portfolio">Gerenciar Portfólio</Link>
                       </Button>
                     )}
                   </div>
-                </CardHeader>
-                <CardContent className="pt-6">
+
                   {portfolioLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {Array.from({ length: 3 }).map((_, i) => (
                         <div
                           key={i}
-                          className="h-64 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"
+                          className="aspect-[4/3] bg-muted animate-pulse rounded-lg"
                         />
                       ))}
                     </div>
@@ -846,14 +812,16 @@ export default function ProfilePage() {
                     </div>
                   ) : (
                     <EmptyState
-                      icon={<Briefcase className="h-12 w-12 text-gray-400" />}
-                      title="Nenhum projeto encontrado"
-                      description="Este usuário ainda não adicionou projetos ao portfólio."
+                      icon={
+                        <Briefcase className="h-12 w-12 text-muted-foreground/50" />
+                      }
+                      title={t("noPortfolio")}
+                      description={t("noPortfolioDescription")}
                     />
                   )}
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </div>
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </div>
