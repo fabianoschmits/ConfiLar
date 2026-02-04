@@ -142,6 +142,13 @@ export default function ProfilePage() {
     fetchViewStats();
   }, [userId, mounted, getViewStats]);
 
+  // Forçar scroll para o topo quando o perfil terminar de carregar
+  useEffect(() => {
+    if (mounted && !loading) {
+      window.scrollTo(0, 0);
+    }
+  }, [mounted, loading]);
+
   const handleContact = () => {
     if (!user) {
       toast.error("Login necessário");
