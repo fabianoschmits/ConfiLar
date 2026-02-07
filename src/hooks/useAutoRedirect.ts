@@ -29,8 +29,8 @@ export function useAutoRedirect() {
         "/gestao-confi",
       ];
 
-      // Se não estamos em uma página que requer autenticação, redirecionar
-      if (!authRequiredPaths.some((path) => currentPath.startsWith(path))) {
+      // Redirecionar para home apenas se estiver em uma rota protegida e não estiver logado
+      if (authRequiredPaths.some((path) => currentPath.startsWith(path))) {
         router.push("/");
       }
     }

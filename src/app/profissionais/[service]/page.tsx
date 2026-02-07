@@ -61,8 +61,44 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     .order("rating", { ascending: false })
     .limit(50);
 
+  // Generate JSON-LD Structured Data for AI
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: `Profissionais de ${service.name} em ConfiLar`,
+    description: `Lista de profissionais de ${service.name.toLowerCase()} verificados na plataforma ConfiLar.`,
+    itemListElement: (professionals || []).map((prof, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "Person",
+        name: prof.full_name,
+        url: `https://appconfilar.com.br/perfil/${prof.id}`,
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: prof.location_city,
+          addressRegion: prof.location_state,
+          addressCountry: "BR",
+        },
+        jobTitle: service.name,
+        image: prof.avatar_url || prof.profile_photo_url,
+        aggregateRating: prof.rating
+          ? {
+              "@type": "AggregateRating",
+              ratingValue: prof.rating,
+              reviewCount: prof.total_reviews || 0,
+            }
+          : undefined,
+      },
+    })),
+  };
+
   return (
     <MainLayout requireAuth={false}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="bg-gray-50 dark:bg-black min-h-screen py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
