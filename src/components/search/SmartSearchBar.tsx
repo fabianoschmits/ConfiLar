@@ -15,8 +15,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useIBGE } from "@/hooks/useIBGE";
-import { EstadoCombobox } from "./EstadoCombobox";
-import { CidadeCombobox } from "./CidadeCombobox";
+import {
+  EstadoCombobox,
+  CidadeCombobox,
+} from "@/components/ui/LocationComboboxes";
 import { services } from "@/data/services";
 import { normalizeSearchTerm, SYNONYM_MAP } from "@/lib/searchUtils";
 
@@ -300,67 +302,118 @@ export function SmartSearchBar({
 
   return (
     <div className={`relative ${className}`}>
-      {/* Barra de busca principal */}
-      <div className="relative">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
-          <Input
-            ref={inputRef}
-            value={query}
-            onChange={(e) => handleInputChange(e.target.value)}
-            onKeyDown={handleKeyPress}
-            onFocus={() => setShowSuggestions(true)}
-            placeholder={placeholder}
-            className="pl-8 pr-16 h-9 text-sm border border-gray-300 dark:border-gray-600 focus:border-blue-500 rounded-lg"
-          />
-          <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
-            {showAdvancedFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowFilters(!showFilters)}
-                className={`h-7 px-1.5 ${showFilters ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : ""}`}
+      {/* Barra de busca principal - Estilo Marketplace */}
+      <div className="flex flex-col md:flex-row gap-2 bg-white dark:bg-gray-900 p-2 rounded-xl shadow-md border border-gray-200 dark:border-gray-800">
+        {/* Campo 1: O Que Pesquisar (Serviços) */}
+        <div className="flex-1 md:flex-none md:w-64 lg:w-80 relative">
+          <div className="flex items-center px-3 h-10">
+            <Search className="text-gray-400 dark:text-gray-500 h-5 w-5 mr-3 shrink-0" />
+            <Input
+              ref={inputRef}
+              value={query}
+              onChange={(e) => handleInputChange(e.target.value)}
+              onKeyDown={handleKeyPress}
+              onFocus={() => setShowSuggestions(true)}
+              placeholder="Encontre serviços ou profissionais..."
+              className="border-none focus-visible:ring-0 bg-transparent p-0 text-base h-full placeholder:text-gray-400"
+            />
+            {query && (
+              <button
+                onClick={() => setQuery("")}
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
               >
-                <Filter className="h-3 w-3" />
-              </Button>
+                <X className="h-4 w-4 text-gray-400" />
+              </button>
             )}
-            <Button
-              onClick={handleSearch}
-              size="sm"
-              className="h-7 px-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-xs"
-            >
-              Buscar
-            </Button>
+          </div>
+
+          {/* Sugestões de Serviço */}
+          {showSuggestions &&
+            suggestions.filter((s) => s.type === "service").length > 0 && (
+              <Card className="absolute top-full left-0 right-0 mt-3 z-50 shadow-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 max-h-60 overflow-y-auto">
+                <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
+                  Serviços Recomendados
+                </div>
+                <CardContent className="p-0">
+                  {suggestions
+                    .filter((s) => s.type === "service")
+                    .map((suggestion) => (
+                      <button
+                        key={suggestion.id}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="w-full px-4 py-2 text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center gap-3 transition-colors text-sm"
+                      >
+                        <span>{suggestion.icon}</span>
+                        <span className="font-medium text-gray-900 dark:text-gray-100">
+                          {suggestion.text}
+                        </span>
+                      </button>
+                    ))}
+                </CardContent>
+              </Card>
+            )}
+        </div>
+
+        {/* Divisor Visual (Desktop) */}
+        <div className="hidden md:block w-[1px] bg-gray-200 dark:bg-gray-800 my-2"></div>
+
+        {/* Campo 2: Onde Pesquisar (Localização) */}
+        <div className="w-full md:w-auto md:max-w-xs lg:max-w-sm relative">
+          <div className="flex flex-col md:flex-row md:items-center gap-2 px-3 py-2 md:py-0 md:h-10">
+            <MapPin className="hidden md:block text-gray-400 dark:text-gray-500 h-5 w-5 mr-2 shrink-0" />
+            <div className="flex flex-col md:flex-row flex-1 gap-2">
+              <div className="flex-1 min-w-0">
+                <EstadoCombobox
+                  value={filters.state}
+                  onValueChange={(val) => {
+                    const newFilters = { ...filters, state: val, city: "" };
+                    setFilters(newFilters);
+                    loadCidades(val);
+                    onFiltersChange(newFilters);
+                  }}
+                  className="w-full"
+                />
+              </div>
+              {filters.state && (
+                <div className="flex-1 min-w-0">
+                  <CidadeCombobox
+                    estadoSigla={filters.state}
+                    value={filters.city}
+                    onValueChange={(val) => {
+                      const newFilters = { ...filters, city: val };
+                      setFilters(newFilters);
+                      onFiltersChange(newFilters);
+                    }}
+                    className="w-full"
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Sugestões */}
-        {showSuggestions && suggestions.length > 0 && (
-          <Card
-            ref={suggestionsRef}
-            className="absolute top-full left-0 right-0 mt-1 z-50 shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 max-h-60 overflow-y-auto"
+        {/* Divisor Visual (Desktop) */}
+        <div className="hidden md:block w-[1px] bg-gray-200 dark:bg-gray-800 my-2"></div>
+
+        {/* Botão de Busca e Filtros */}
+        <div className="flex items-center gap-2 px-1">
+          {showAdvancedFilters && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setShowFilters(!showFilters)}
+              className={`h-10 w-10 shrink-0 border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 ${showFilters ? "bg-blue-50 border-blue-200 text-blue-600" : "text-gray-600 dark:text-gray-400"}`}
+            >
+              <Filter className="h-5 w-5" />
+            </Button>
+          )}
+          <Button
+            onClick={handleSearch}
+            className="h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] shrink-0"
           >
-            <CardContent className="p-0">
-              {suggestions.map((suggestion) => (
-                <button
-                  key={suggestion.id}
-                  onClick={() => handleSuggestionClick(suggestion)}
-                  className="w-full px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 last:border-b-0 text-sm"
-                >
-                  <span className="text-sm">{suggestion.icon}</span>
-                  <div>
-                    <div className="font-medium text-gray-900 dark:text-white text-sm">
-                      {suggestion.text}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                      {suggestion.type}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </CardContent>
-          </Card>
-        )}
+            Buscar
+          </Button>
+        </div>
       </div>
 
       {/* Filtros visuais com chips */}
@@ -440,7 +493,7 @@ export function SmartSearchBar({
                 onValueChange={(newCity) =>
                   setFilters((prev) => ({ ...prev, city: newCity }))
                 }
-                estadoSelecionado={filters.state}
+                estadoSigla={filters.state}
                 placeholder="Digite ou selecione a cidade"
                 className="w-full"
               />

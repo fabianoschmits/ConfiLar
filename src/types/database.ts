@@ -60,6 +60,8 @@ export interface Database {
           idade?: number | null;
           allow_ai_indexing?: boolean;
           hide_ai_announcement?: boolean;
+          is_approved: boolean;
+          is_active: boolean;
           escolaridade?:
             | "ensino_fundamental_incompleto"
             | "ensino_fundamental_completo"
@@ -132,6 +134,8 @@ export interface Database {
           professional_certifications?: string[] | null;
           professional_portfolio_url?: string | null;
           idade?: number | null;
+          is_approved?: boolean;
+          is_active?: boolean;
           escolaridade?:
             | "ensino_fundamental_incompleto"
             | "ensino_fundamental_completo"
@@ -202,6 +206,8 @@ export interface Database {
           professional_certifications?: string[] | null;
           professional_portfolio_url?: string | null;
           idade?: number | null;
+          is_approved?: boolean;
+          is_active?: boolean;
           escolaridade?:
             | "ensino_fundamental_incompleto"
             | "ensino_fundamental_completo"
@@ -911,6 +917,8 @@ export interface Profile {
   whatsapp_number?: string | null;
   allow_ai_indexing?: boolean;
   hide_ai_announcement?: boolean;
+  is_approved: boolean;
+  is_active: boolean;
 }
 
 export type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];

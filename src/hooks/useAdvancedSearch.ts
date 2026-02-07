@@ -47,16 +47,50 @@ export const useAdvancedSearch = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Carregar todos os usuários do Supabase
-  const loadUsers = useCallback(async () => {
+  // Carregar usuários do Supabase com filtros no servidor
+  const loadUsers = useCallback(async (currentFilters: SearchFilters) => {
     try {
       setLoading(true);
       setError(null);
+      // Limpar resultados imediatamente para evitar mostrar dados antigos
+      setFilteredUsers([]);
 
-      const { data, error: fetchError } = await supabase
-        .from("profiles")
-        .select("*")
-        .order("created_at", { ascending: false });
+      let query = supabase.from("profiles").select("*", { count: "exact" });
+
+      // 1. Regras de Visibilidade Base (Marketplace)
+      // Mostrar tanto profissionais quanto clientes, dependendo do filtro userType
+      if (currentFilters.userType && currentFilters.userType !== "all") {
+        query = query.eq("user_type", currentFilters.userType);
+
+        // Apenas profissionais precisam estar aprovados
+        if (currentFilters.userType === "professional") {
+          query = query.eq("is_approved", true);
+        }
+      }
+      // Se userType for "all" ou não especificado, não filtrar por tipo
+
+      // 2. Filtros de Localização (SQL)
+      if (currentFilters.state) {
+        query = query.eq("location_state", currentFilters.state);
+      }
+      if (currentFilters.city) {
+        query = query.eq("location_city", currentFilters.city);
+      }
+
+      // 3. Filtro de Categoria (SQL)
+      if (currentFilters.category && currentFilters.category !== "all") {
+        query = query.contains("professional_services", [
+          currentFilters.category,
+        ]);
+      }
+
+      // Ordenação Padrão
+      query = query.order("rating", { ascending: false });
+
+      // Limite para performance (Paginação pode ser adicionada depois)
+      query = query.limit(100);
+
+      const { data, error: fetchError } = await query;
 
       if (fetchError) {
         console.error("❌ Erro ao carregar usuários:", fetchError);
@@ -66,11 +100,14 @@ export const useAdvancedSearch = () => {
         return;
       }
 
-      if (data) {
-        console.log("📊 Usuários carregados:", data.length);
-        setAllUsers(data as unknown as Profile[]);
-      } else {
-        setAllUsers([]);
+      console.log("📊 Usuários carregados (SQL):", data?.length || 0);
+
+      // Sempre atualizar, mesmo se vazio
+      const users = (data || []) as unknown as Profile[];
+      setAllUsers(users);
+
+      // Se não houver dados, limpar filteredUsers imediatamente
+      if (users.length === 0) {
         setFilteredUsers([]);
       }
     } catch (err) {
@@ -88,12 +125,11 @@ export const useAdvancedSearch = () => {
     (users: Profile[], currentFilters: SearchFilters) => {
       let filtered = [...users];
 
-      // Filtro por termo de busca
+      // Filtro por termo de busca (Refinado cliente-side para manter expansão inteligente)
       if (currentFilters.searchTerm.trim()) {
         const expandedTerms = expandSearchTerm(currentFilters.searchTerm);
 
         filtered = filtered.filter((user) => {
-          // Busca por nome
           const nameMatch = expandedTerms.some((term) =>
             user.full_name
               ?.toLowerCase()
@@ -101,8 +137,6 @@ export const useAdvancedSearch = () => {
               .replace(/[\u0300-\u036f]/g, "")
               .includes(term),
           );
-
-          // Busca por bio
           const bioMatch = expandedTerms.some((term) =>
             user.bio
               ?.toLowerCase()
@@ -110,115 +144,20 @@ export const useAdvancedSearch = () => {
               .replace(/[\u0300-\u036f]/g, "")
               .includes(term),
           );
-
-          // Busca por serviços profissionais
-          const servicesMatch =
-            (user.user_type === "professional" &&
-              user.professional_services?.some((service) => {
-                const normalizedService = normalizeSearchTerm(service);
-                return expandedTerms.some(
-                  (term) =>
-                    normalizedService.includes(term) ||
-                    term.includes(normalizedService),
-                );
-              })) ||
-            false;
-
-          // Busca por especialidades/certificações
-          const certificationsMatch =
-            (user.user_type === "professional" &&
-              user.professional_certifications?.some((cert) => {
-                const normalizedCert = normalizeSearchTerm(cert);
-                return expandedTerms.some(
-                  (term) =>
-                    normalizedCert.includes(term) ||
-                    term.includes(normalizedCert),
-                );
-              })) ||
-            false;
-
-          return nameMatch || bioMatch || servicesMatch || certificationsMatch;
+          const servicesMatch = user.professional_services?.some((service) => {
+            const normalizedService = normalizeSearchTerm(service);
+            return expandedTerms.some(
+              (term) =>
+                normalizedService.includes(term) ||
+                term.includes(normalizedService),
+            );
+          });
+          return nameMatch || bioMatch || servicesMatch;
         });
       }
 
-      // Filtro por tipo de usuário
-      if (currentFilters.userType !== "all") {
-        filtered = filtered.filter(
-          (user) => user.user_type === currentFilters.userType,
-        );
-      }
-
-      // Filtro por categoria (apenas para profissionais)
-      if (currentFilters.category && currentFilters.category !== "all") {
-        filtered = filtered.filter(
-          (user) =>
-            (user.user_type === "professional" &&
-              user.professional_services?.some((service) =>
-                service
-                  .toLowerCase()
-                  .includes(currentFilters.category.toLowerCase()),
-              )) ||
-            false,
-        );
-      }
-
-      // Filtro por estado (aceita tanto sigla quanto nome completo)
-      if (currentFilters.state) {
-        filtered = filtered.filter((user) => {
-          const userState = user.location_state;
-          const filterState = currentFilters.state;
-
-          // Verificar se é uma sigla (2 caracteres) ou nome completo
-          if (filterState.length === 2) {
-            // É uma sigla, comparar diretamente
-            return userState === filterState;
-          } else {
-            // É um nome completo, verificar se corresponde à sigla do usuário
-            // Mapear nomes para siglas
-            const stateMapping: { [key: string]: string } = {
-              "Rio Grande do Sul": "RS",
-              "São Paulo": "SP",
-              "Rio de Janeiro": "RJ",
-              "Minas Gerais": "MG",
-              Bahia: "BA",
-              Paraná: "PR",
-              "Santa Catarina": "SC",
-              Goiás: "GO",
-              Pernambuco: "PE",
-              Ceará: "CE",
-              Pará: "PA",
-              Maranhão: "MA",
-              Paraíba: "PB",
-              Amazonas: "AM",
-              "Espírito Santo": "ES",
-              Piauí: "PI",
-              Alagoas: "AL",
-              Tocantins: "TO",
-              "Rio Grande do Norte": "RN",
-              Acre: "AC",
-              Amapá: "AP",
-              Rondônia: "RO",
-              Roraima: "RR",
-              Sergipe: "SE",
-              "Mato Grosso": "MT",
-              "Mato Grosso do Sul": "MS",
-              "Distrito Federal": "DF",
-            };
-
-            const expectedSigla = stateMapping[filterState];
-            return expectedSigla
-              ? userState === expectedSigla
-              : userState === filterState;
-          }
-        });
-      }
-
-      // Filtro por cidade
-      if (currentFilters.city) {
-        filtered = filtered.filter(
-          (user) => user.location_city === currentFilters.city,
-        );
-      }
+      // Os filtros de Categoria, Cidade e Estado agora são feitos no SQL (loadUsers)
+      // Mantemos aqui outros filtros específicos que são mais fáceis de aplicar no cliente
 
       // Filtro por avaliação mínima
       if (currentFilters.minRating > 0) {
@@ -338,10 +277,16 @@ export const useAdvancedSearch = () => {
     setFilteredUsers(sorted);
   }, [allUsers, filters, applyFilters, sortUsers]);
 
-  // Carregar usuários na inicialização
+  // Carregar usuários quando os filtros de SQL mudarem
   useEffect(() => {
-    loadUsers();
-  }, [loadUsers]);
+    loadUsers(filters);
+  }, [
+    filters.category,
+    filters.city,
+    filters.state,
+    filters.userType,
+    loadUsers,
+  ]);
 
   // Atualizar filtros
   const updateFilters = useCallback((newFilters: Partial<SearchFilters>) => {

@@ -68,8 +68,11 @@ export function EstadoCombobox({
         >
           {value ? (
             <>
-              <MapPin className="mr-2 h-4 w-4" />
-              {selectedEstado?.nome} ({selectedEstado?.sigla})
+              <span className="md:hidden">
+                <MapPin className="mr-2 h-4 w-4 inline" />
+                {selectedEstado?.nome}
+              </span>
+              <span className="hidden md:inline">{selectedEstado?.sigla}</span>
             </>
           ) : (
             <>
@@ -209,8 +212,15 @@ export function CidadeCombobox({
         >
           {value ? (
             <>
-              <MapPin className="mr-2 h-4 w-4" />
-              {selectedCidade?.nome || value}
+              <span className="md:hidden">
+                <MapPin className="mr-2 h-4 w-4 inline" />
+                {selectedCidade?.nome || value}
+              </span>
+              <span className="hidden md:inline">
+                {selectedCidade?.nome && selectedCidade.nome.length > 10
+                  ? selectedCidade.nome.substring(0, 10) + "..."
+                  : selectedCidade?.nome || value}
+              </span>
             </>
           ) : (
             <>
