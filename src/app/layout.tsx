@@ -34,6 +34,7 @@ import { HelpChatProvider } from "@/contexts/HelpChatContext";
 import HelpChatWindow from "@/components/help/HelpChatWindow";
 import HelpChatButton from "@/components/help/HelpChatButton";
 import "@/utils/errorInterceptor"; // Interceptor de erros
+import { Analytics } from "@vercel/analytics/next";
 // import { AuthContextDebug } from "@/components/debug/AuthContextDebug"
 
 export const metadata: Metadata = {
@@ -183,6 +184,7 @@ export default async function RootLayout({
             </QueryProvider>
           </ErrorBoundary>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
