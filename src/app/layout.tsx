@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 
 // Forçar todas as páginas a serem dinâmicas
 export const dynamic = "force-dynamic";
@@ -183,6 +184,7 @@ export default async function RootLayout({
             </QueryProvider>
           </ErrorBoundary>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
