@@ -216,9 +216,10 @@ tests/**/*.md
 testsprite_tests/**/*.md
 
 # =====================================================
-# ARQUIVOS SQL - TODOS IGNORADOS
+# ARQUIVOS SQL - TODOS IGNORADOS EXCETO MIGRAÇÕES
 # =====================================================
 *.sql
+!supabase/migrations/*.sql
 
 # =====================================================
 # ARQUIVOS DE TESTE E DEBUG
