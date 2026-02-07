@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { Bot, Sparkles, X, ArrowRight } from "lucide-react";
+import { Bot, Sparkles, X, ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,56 +16,89 @@ export function AIAnnouncement() {
   const { isActive: isTutorialActive } = useTutorial();
   const [isVisible, setIsVisible] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   const t = useTranslations("editProfile");
 
   useEffect(() => {
+    // Se não houver profile, não podemos fazer nada ainda
+    if (!profile?.id) return;
+
     // Se não for profissional ou já tiver indexação ativa, garantir que o banner esteja oculto
     if (
       profile?.user_type !== "professional" ||
       profile?.allow_ai_indexing ||
       profile?.hide_ai_announcement
     ) {
-      if (isVisible) setIsVisible(false);
+      setIsVisible(false);
       return;
     }
 
     // Não mostrar se o tutorial estiver ativo
     if (isTutorialActive) {
-      if (isVisible) setIsVisible(false);
+      setIsVisible(false);
       return;
     }
 
-    // Verificar se já foi descartado nesta SESSÃO (aparece de novo no próximo login)
-    const sessionDismissed = sessionStorage.getItem(
-      "confilar_ai_announcement_session_dismissed",
-    );
+    // Usar uma chave única por usuário para evitar conflitos em máquinas compartilhadas
+    const sessionKey = `confilar_ai_dismissed_${profile.id}`;
+    const sessionDismissed = sessionStorage.getItem(sessionKey);
 
     if (!sessionDismissed) {
-      const timer = setTimeout(() => setIsVisible(true), 3000);
+      // Usar uma variável local para evitar problemas se o useEffect rodar de novo
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+      }, 3000);
       return () => clearTimeout(timer);
     } else {
-      if (isVisible) setIsVisible(false);
+      setIsVisible(false);
     }
   }, [
+    profile?.id,
     profile?.user_type,
     profile?.allow_ai_indexing,
     profile?.hide_ai_announcement,
     isTutorialActive,
-    isVisible,
   ]);
 
   const dismissTemporarily = () => {
     setIsVisible(false);
-    sessionStorage.setItem(
-      "confilar_ai_announcement_session_dismissed",
-      "true",
-    );
+    if (profile?.id) {
+      const sessionKey = `confilar_ai_dismissed_${profile.id}`;
+      sessionStorage.setItem(sessionKey, "true");
+    }
+  };
+
+  const handleOk = async () => {
+    if (dontShowAgain) {
+      await dismissPermanently();
+    } else {
+      dismissTemporarily();
+    }
+  };
+
+  const handleActivate = async () => {
+    if (dontShowAgain) {
+      // Se marcou para não mostrar, ocultar permanentemente mesmo se for ativar agora
+      await updateProfile({ hide_ai_announcement: true });
+    }
+
+    dismissTemporarily();
+    // Disparar evento para abrir o modal de perfil na aba de privacidade
+    const event = new CustomEvent("confilar:open-profile-modal", {
+      detail: { tab: "privacy" },
+    });
+    window.dispatchEvent(event);
   };
 
   const dismissPermanently = async () => {
     try {
       setIsUpdating(true);
       await updateProfile({ hide_ai_announcement: true });
+      // Também marcar na sessão para evitar que o timer reative o banner antes do estado do profile atualizar
+      if (profile?.id) {
+        const sessionKey = `confilar_ai_dismissed_${profile.id}`;
+        sessionStorage.setItem(sessionKey, "true");
+      }
       setIsVisible(false);
     } catch (error) {
       console.error("Erro ao ocultar anúncio de IA permanentemente:", error);
@@ -113,14 +146,7 @@ export function AIAnnouncement() {
               <Button
                 size="sm"
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md active:scale-95 transition-all dark:bg-primary-600 dark:hover:bg-primary-700"
-                onClick={() => {
-                  dismissTemporarily();
-                  // Disparar evento para abrir o modal de perfil na aba de privacidade
-                  const event = new CustomEvent("confilar:open-profile-modal", {
-                    detail: { tab: "privacy" },
-                  });
-                  window.dispatchEvent(event);
-                }}
+                onClick={handleActivate}
               >
                 {t("activateNow")}
                 <ArrowRight className="w-4 h-4 ml-1.5" />
@@ -128,29 +154,27 @@ export function AIAnnouncement() {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={dismissTemporarily}
-                className="border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900"
+                disabled={isUpdating}
+                onClick={handleOk}
+                className="border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 min-w-[80px]"
               >
-                {t("later")}
+                {isUpdating ? t("saving") : t("ok")}
               </Button>
             </div>
 
             <div className="mt-4 flex items-center justify-center gap-2">
-              <div className="flex items-center space-x-2 bg-gray-50 dark:bg-gray-900/50 px-3 py-2 rounded-full border border-gray-200 dark:border-gray-800">
-                <Switch
+              <div className="flex items-center space-x-2 bg-gray-50 dark:bg-gray-900/50 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-800 transition-colors hover:border-primary-500/30">
+                <Checkbox
                   id="dont-show"
-                  checked={false}
-                  onCheckedChange={(checked) => {
-                    if (checked) dismissPermanently();
-                  }}
+                  checked={dontShowAgain}
+                  onCheckedChange={(checked) => setDontShowAgain(!!checked)}
                   disabled={isUpdating}
-                  className="data-[state=checked]:bg-primary-600"
                 />
                 <Label
                   htmlFor="dont-show"
-                  className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-300 cursor-pointer"
+                  className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-300 cursor-pointer select-none"
                 >
-                  {isUpdating ? t("saving") : t("dontShowAgain")}
+                  {t("dontShowAgain")}
                 </Label>
               </div>
             </div>

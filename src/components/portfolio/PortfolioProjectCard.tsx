@@ -29,16 +29,16 @@ export function PortfolioProjectCard({
 }: PortfolioProjectCardProps) {
   return (
     <Card
-      className={`group overflow-hidden border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 transition-all duration-300 hover:shadow-xl ${onClick ? "cursor-pointer" : ""}`}
+      className={`group overflow-hidden border-border/50 bg-card/30 backdrop-blur-xl transition-all duration-500 hover:border-primary/40 rounded-2xl ${onClick ? "cursor-pointer" : ""}`}
       onClick={() => onClick && onClick(project)}
     >
-      <div className="relative aspect-video w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+      <div className="relative aspect-video w-full overflow-hidden bg-muted/20">
         {project.image_url ? (
           <Image
             src={project.image_url}
             alt={project.title}
             fill
-            className="object-cover transition-transform duration-500 group-hover:scale-110"
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-gray-400">
@@ -46,8 +46,8 @@ export function PortfolioProjectCard({
           </div>
         )}
 
-        {/* Overlay com gradiente para melhor leitura do texto se necessário ou efeitos de hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        {/* Overlay com gradiente mais suave */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
         {isOwner && (
           <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
@@ -79,31 +79,29 @@ export function PortfolioProjectCard({
 
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="font-semibold text-lg text-gray-900 dark:text-white line-clamp-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+          <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors line-clamp-1">
             {project.title}
           </h3>
           {project.category && (
-            <Badge variant="secondary" className="text-xs shrink-0">
+            <Badge
+              variant="secondary"
+              className="text-[10px] uppercase tracking-wider px-2 py-0 h-5 bg-secondary/40 text-secondary-foreground border-0"
+            >
               {project.category}
             </Badge>
           )}
         </div>
 
-        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 h-10">
+        <p className="text-sm text-muted-foreground line-clamp-2 mb-4 h-10 leading-relaxed italic opacity-80">
           {project.description || "Sem descrição"}
         </p>
 
-        <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-500">
-          <div className="flex items-center gap-1">
+        <div className="flex items-center gap-4 text-[10px] text-muted-foreground/60 font-medium uppercase tracking-widest">
+          <div className="flex items-center gap-1.5">
             <Eye className="h-3 w-3" />
             <span>{project.views_count || 0}</span>
           </div>
-          {/* Rating futuro */}
-          {/* <div className="flex items-center gap-1">
-            <Star className="h-3 w-3" />
-            <span>{project.rating || 0}</span>
-          </div> */}
-          <div className="flex items-center gap-1 ml-auto">
+          <div className="flex items-center gap-1.5 ml-auto">
             <Calendar className="h-3 w-3" />
             <span>
               {format(new Date(project.created_at), "d MMM, yy", {
@@ -121,13 +119,13 @@ export function PortfolioProjectCard({
             {project.tags.slice(0, 3).map((tag, index) => (
               <span
                 key={index}
-                className="text-[10px] px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full"
+                className="text-[10px] px-2 py-0.5 bg-secondary/30 text-secondary-foreground rounded-lg border border-border/30"
               >
                 {tag}
               </span>
             ))}
             {project.tags.length > 3 && (
-              <span className="text-[10px] px-2 py-0.5 text-gray-400">
+              <span className="text-[10px] px-2 py-0.5 text-muted-foreground/50">
                 +{project.tags.length - 3}
               </span>
             )}

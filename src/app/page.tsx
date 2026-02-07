@@ -38,6 +38,7 @@ import { supabase } from "@/lib/supabase";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { LanguageSelector } from "@/components/ui/LanguageSelector";
 import { useTranslations } from "next-intl";
+import { services } from "@/data/services";
 
 // Página Inicial Principal - Hero com Imagem de Fundo Full + Overlay
 function HomeContent() {
@@ -805,6 +806,30 @@ function HomeContent() {
                 <p className="text-gray-400 text-sm leading-relaxed mb-6">
                   {t("footer.description")}
                 </p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-bold mb-4">Categorias Populares</h3>
+                <ul className="space-y-3 text-sm">
+                  {services.slice(0, 6).map((service) => (
+                    <li key={service.id}>
+                      <Link
+                        href={`/profissionais/${service.id}`}
+                        className="text-gray-400 hover:text-[#00b0b0] transition-colors"
+                      >
+                        {service.name}
+                      </Link>
+                    </li>
+                  ))}
+                  <li>
+                    <Link
+                      href="/buscar"
+                      className="text-[#00b0b0] hover:underline font-medium"
+                    >
+                      Ver todos →
+                    </Link>
+                  </li>
+                </ul>
               </div>
 
               <div>

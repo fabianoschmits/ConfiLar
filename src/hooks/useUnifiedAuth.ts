@@ -249,6 +249,8 @@ export function useAuth(
         updated_at: new Date().toISOString(),
         credits_ad_premium_1d: 0,
         credits_ad_premium_7d: 0,
+        allow_ai_indexing: false,
+        hide_ai_announcement: false,
       } as Profile;
     },
     [],

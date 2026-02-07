@@ -481,7 +481,7 @@ export default function ProfilePage() {
                       href={`/perfil/${rec.recommender.id}`}
                       className="block group"
                     >
-                      <Card className="hover:shadow-md transition-all cursor-pointer h-full border border-border bg-card group-hover:border-primary/50">
+                      <Card className="transition-all cursor-pointer h-full border border-border/50 bg-card/30 backdrop-blur-xl group-hover:border-primary/40 rounded-2xl">
                         <CardContent className="p-4">
                           <div className="flex items-start gap-3">
                             <UserAvatar
@@ -666,14 +666,16 @@ export default function ProfilePage() {
 
                   {profile.professional_services &&
                   profile.professional_services.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {profile.professional_services.map((service, index) => (
                         <div
                           key={index}
-                          className="flex items-center gap-3 p-4 bg-card rounded-lg border border-border hover:border-primary/50 transition-colors"
+                          className="flex items-center gap-4 p-5 bg-card/30 backdrop-blur-sm rounded-2xl border border-border/50 hover:border-primary/40 transition-all group"
                         >
-                          <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
-                          <span className="text-foreground font-medium">
+                          <div className="p-2 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
+                            <CheckCircle className="w-5 h-5 text-primary" />
+                          </div>
+                          <span className="text-foreground font-semibold tracking-tight">
                             {service}
                           </span>
                         </div>

@@ -298,4 +298,6 @@ export const ProfileSchema = z.object({
   avatar_url: z.string().optional(),
   services_offered: z.array(z.string()).optional(),
   experience_years: z.string().optional(),
+  allow_ai_indexing: z.boolean().optional(),
+  hide_ai_announcement: z.boolean().optional(),
 });

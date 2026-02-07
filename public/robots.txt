@@ -6,19 +6,26 @@ Disallow: /api/
 
 # AI Crawler Rules
 User-agent: GPTBot
+Allow: /
+Allow: /buscar
 Allow: /perfil/
-Disallow: /
+Disallow: /admin/
+Disallow: /gestao-confi/
 
 User-agent: ChatGPT-User
+Allow: /
+Allow: /buscar
 Allow: /perfil/
-Disallow: /
+Disallow: /admin/
+Disallow: /gestao-confi/
 
 User-agent: ClaudeBot
+Allow: /
 Allow: /perfil/
-Disallow: /
+Disallow: /admin/
 
 User-agent: PerplexityBot
+Allow: /
 Allow: /perfil/
-Disallow: /
 
 Sitemap: https://appconfilar.com.br/sitemap.xml

@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
 import { createAdminSupabaseClient } from "@/lib/supabase";
+import { services } from "@/data/services";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createAdminSupabaseClient();
@@ -27,7 +28,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // 2. Dynamic Profiles (Only those that allowed AI Indexing)
+  // 2. Service Category Routes
+  const categoryRoutes: MetadataRoute.Sitemap = services.map((service) => ({
+    url: `${baseUrl}/profissionais/${service.id}`,
+    lastModified: new Date(),
+    changeFrequency: "daily",
+    priority: 0.9,
+  }));
+
+  // 3. Dynamic Profiles (Only those that allowed AI Indexing)
   try {
     const { data: profiles } = await supabase
       .from("profiles")
@@ -43,9 +52,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }),
     );
 
-    return [...staticRoutes, ...profileRoutes];
+    return [...staticRoutes, ...categoryRoutes, ...profileRoutes];
   } catch (error) {
     console.error("Error generating dynamic sitemap:", error);
-    return staticRoutes;
+    return [...staticRoutes, ...categoryRoutes];
   }
 }

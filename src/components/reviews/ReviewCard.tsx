@@ -15,6 +15,8 @@ import {
   Trash2,
   MoreVertical,
   Flag,
+  Check,
+  X,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -94,20 +96,7 @@ export function ReviewCard({
   };
 
   const getRatingColor = (rating: number) => {
-    switch (rating) {
-      case 5:
-        return "bg-green-100 text-green-800";
-      case 4:
-        return "bg-blue-100 text-blue-800";
-      case 3:
-        return "bg-yellow-100 text-yellow-800";
-      case 2:
-        return "bg-orange-100 text-orange-800";
-      case 1:
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
+    return "bg-secondary/50 text-secondary-foreground border border-border/50";
   };
 
   const handleSubmitResponse = async () => {
@@ -161,7 +150,7 @@ export function ReviewCard({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 hover:shadow-lg transition-shadow">
+    <div className="bg-card/30 backdrop-blur-xl rounded-2xl border border-border/50 p-4 sm:p-6 transition-all hover:border-primary/30 group">
       <div className="flex flex-col sm:flex-row sm:items-start gap-4">
         {/* Avatar - Mobile: topo, Desktop: lado */}
         <div className="flex items-center gap-3 sm:flex-col sm:items-center sm:gap-2">
@@ -392,8 +381,8 @@ export function ReviewCard({
 
           {/* Comentário */}
           {review.comment && (
-            <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 mb-4 border border-gray-100 dark:border-gray-700">
-              <p className="modern-body text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+            <div className="bg-muted/30 rounded-xl p-4 mb-4 border border-border/40">
+              <p className="modern-body text-foreground/80 dark:text-gray-300 whitespace-pre-wrap leading-relaxed text-sm sm:text-base">
                 {review.comment}
               </p>
             </div>
@@ -401,14 +390,15 @@ export function ReviewCard({
 
           {/* Resposta do Avaliado */}
           {review.response_text && review.response_text.trim() && (
-            <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4 mb-4 border border-blue-200 dark:border-blue-800 ml-4">
+            <div className="bg-primary/5 dark:bg-primary/10 rounded-xl p-4 mb-4 border border-primary/10 ml-4 sm:ml-8 relative">
+              <div className="absolute left-[-1rem] top-4 w-4 h-[1px] bg-primary/20 hidden sm:block"></div>
               <div className="flex items-center gap-2 mb-2">
-                <Reply className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                <span className="font-medium text-blue-900 dark:text-blue-300">
+                <Reply className="h-4 w-4 text-primary/60" />
+                <span className="font-semibold text-primary/80 text-sm">
                   Resposta de {review.reviewed?.full_name || "Usuário"}
                 </span>
                 {review.response_date && (
-                  <span className="text-xs text-blue-600 dark:text-blue-400">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
                     {formatDistanceToNow(new Date(review.response_date), {
                       addSuffix: true,
                       locale: ptBR,
@@ -416,7 +406,7 @@ export function ReviewCard({
                   </span>
                 )}
               </div>
-              <p className="text-blue-800 dark:text-blue-200 whitespace-pre-wrap leading-relaxed">
+              <p className="text-foreground/80 dark:text-gray-200 whitespace-pre-wrap leading-relaxed text-sm italic">
                 {review.response_text}
               </p>
             </div>
@@ -431,14 +421,14 @@ export function ReviewCard({
               {/* Pontos Positivos */}
               {((review as any).pros?.length > 0 ||
                 (review as any).positive_points?.length > 0) && (
-                <div className="bg-green-50 dark:bg-green-900/30 rounded-lg p-3 sm:p-4 border border-green-100 dark:border-green-800">
+                <div className="bg-background/40 rounded-xl p-3 sm:p-4 border border-border/50">
                   <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                    <ThumbsUp className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
-                    <span className="font-medium text-green-800 dark:text-green-300 text-sm sm:text-base">
+                    <ThumbsUp className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                    <span className="font-semibold text-foreground/80 text-xs sm:text-sm uppercase tracking-wider">
                       Pontos Positivos
                     </span>
                   </div>
-                  <ul className="space-y-1">
+                  <ul className="space-y-1.5">
                     {(
                       (review as any).pros ||
                       (review as any).positive_points ||
@@ -446,11 +436,9 @@ export function ReviewCard({
                     ).map((point: string, index: number) => (
                       <li
                         key={index}
-                        className="text-xs sm:text-sm text-green-700 dark:text-green-300 flex items-start gap-2"
+                        className="text-xs sm:text-sm text-muted-foreground flex items-start gap-2"
                       >
-                        <span className="text-green-500 dark:text-green-400 font-bold flex-shrink-0">
-                          •
-                        </span>
+                        <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
                         <span className="break-words">{point}</span>
                       </li>
                     ))}
@@ -461,14 +449,14 @@ export function ReviewCard({
               {/* Pontos Negativos */}
               {((review as any).cons?.length > 0 ||
                 (review as any).negative_points?.length > 0) && (
-                <div className="bg-red-50 dark:bg-red-900/30 rounded-lg p-3 sm:p-4 border border-red-100 dark:border-red-800">
+                <div className="bg-background/40 rounded-xl p-3 sm:p-4 border border-border/50">
                   <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                    <ThumbsDown className="h-4 w-4 text-red-600 dark:text-red-400 flex-shrink-0" />
-                    <span className="font-medium text-red-800 dark:text-red-300 text-sm sm:text-base">
+                    <ThumbsDown className="h-4 w-4 text-rose-500 flex-shrink-0" />
+                    <span className="font-semibold text-foreground/80 text-xs sm:text-sm uppercase tracking-wider">
                       Pontos a Melhorar
                     </span>
                   </div>
-                  <ul className="space-y-1">
+                  <ul className="space-y-1.5">
                     {(
                       (review as any).cons ||
                       (review as any).negative_points ||
@@ -476,11 +464,9 @@ export function ReviewCard({
                     ).map((point: string, index: number) => (
                       <li
                         key={index}
-                        className="text-xs sm:text-sm text-red-700 dark:text-red-300 flex items-start gap-2"
+                        className="text-xs sm:text-sm text-muted-foreground flex items-start gap-2"
                       >
-                        <span className="text-red-500 dark:text-red-400 font-bold flex-shrink-0">
-                          •
-                        </span>
+                        <X className="h-3 w-3 text-rose-500 mt-0.5 flex-shrink-0" />
                         <span className="break-words">{point}</span>
                       </li>
                     ))}
