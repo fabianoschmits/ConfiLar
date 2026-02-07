@@ -61,6 +61,7 @@ import { useIBGE } from "@/hooks/useIBGE";
 import { services } from "@/data/services";
 import { useProfileViews } from "@/hooks/useProfileViews";
 import { useSupabaseReviews } from "@/hooks/useSupabaseReviews";
+import { getRecommendedCategories } from "@/lib/searchUtils";
 import { supabase } from "@/lib/supabase";
 import { RecommendationButton } from "@/components/ui/RecommendationButton";
 import { FavoriteButton } from "@/components/ui/FavoriteButton";
@@ -760,29 +761,140 @@ export default function BuscarPage() {
             {loading ? (
               <UserListSkeleton count={6} />
             ) : displayProfiles.length === 0 ? (
-              <EmptyState
-                icon={<Search className="h-12 w-12 text-gray-400" />}
-                title={t("noResults")}
-                description={
-                  filters.searchTerm ||
-                  filters.state ||
-                  filters.city ||
-                  filters.service !== "all"
-                    ? t("noResultsDescription")
-                    : t("noUsersDescription")
-                }
-                action={
-                  filters.searchTerm ||
-                  filters.state ||
-                  filters.city ||
-                  filters.service !== "all"
-                    ? {
-                        label: t("clearFilters"),
-                        onClick: clearFilters,
-                      }
-                    : undefined
-                }
-              />
+              <div className="space-y-8">
+                <EmptyState
+                  icon={<Search className="h-12 w-12 text-gray-400" />}
+                  title={t("noResults")}
+                  description={
+                    filters.searchTerm ||
+                    filters.state ||
+                    filters.city ||
+                    filters.service !== "all"
+                      ? t("noResultsDescription")
+                      : t("noUsersDescription")
+                  }
+                  action={
+                    filters.searchTerm ||
+                    filters.state ||
+                    filters.city ||
+                    filters.service !== "all"
+                      ? {
+                          label: t("clearFilters"),
+                          onClick: clearFilters,
+                        }
+                      : undefined
+                  }
+                />
+
+                {/* Profissionais Recomendados */}
+                {stats.recommendations && stats.recommendations.length > 0 && (
+                  <div className="mt-12">
+                    <div className="text-center mb-8">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Não encontramos exatamente o que você procurou, mas
+                        estes profissionais podem ajudar:
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                        Baseado no seu termo de busca "
+                        {filters.searchTerm || filters.service}"
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                      {stats.recommendations.map((profile) => (
+                        <Card
+                          key={profile.id}
+                          className="shadow-md hover:shadow-lg transition-all duration-300 relative border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
+                        >
+                          <CardContent className="p-5">
+                            <div className="flex items-center space-x-3 mb-4">
+                              <UserAvatar
+                                src={profile.avatar_url}
+                                alt={profile.full_name}
+                                fallback={
+                                  profile.full_name?.charAt(0).toUpperCase() ||
+                                  "P"
+                                }
+                                size="md"
+                                userId={profile.id}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+                                  {profile.full_name}
+                                </h4>
+                                <div className="flex items-center text-xs text-gray-500">
+                                  <MapPin className="h-3 w-3 mr-1" />
+                                  {profile.location_city},{" "}
+                                  {profile.location_state}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-wrap gap-1 mb-3">
+                              {profile.professional_services
+                                ?.slice(0, 2)
+                                .map((service, idx) => (
+                                  <Badge
+                                    key={idx}
+                                    variant="secondary"
+                                    className="text-[10px] py-0 px-2"
+                                  >
+                                    {service}
+                                  </Badge>
+                                ))}
+                            </div>
+
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="w-full text-xs h-8"
+                              onClick={() => handleProfileClick(profile.id)}
+                            >
+                              Ver Perfil
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Recomendações de Categorias */}
+                {(filters.searchTerm || filters.service !== "all") && (
+                  <div className="mt-12 text-center">
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-6">
+                      Ou explore categorias semelhantes:
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                      {getRecommendedCategories(
+                        filters.searchTerm || filters.service,
+                        services.map((s) => s.name),
+                      ).map((catName) => {
+                        const service = services.find(
+                          (s) => s.name === catName,
+                        );
+                        return (
+                          <Link
+                            key={catName}
+                            href={`/profissionais/${service?.id || "buscar"}`}
+                          >
+                            <Card className="hover:shadow-md transition-all cursor-pointer border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 overflow-hidden group">
+                              <CardContent className="p-3 flex items-center space-x-3">
+                                <span className="text-xl group-hover:scale-110 transition-transform">
+                                  {service?.icon || "🔍"}
+                                </span>
+                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300 line-clamp-1">
+                                  {catName}
+                                </span>
+                              </CardContent>
+                            </Card>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
             ) : (
               <div
                 className={`grid gap-6 ${

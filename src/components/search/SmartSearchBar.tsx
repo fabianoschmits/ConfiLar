@@ -18,6 +18,7 @@ import { useIBGE } from "@/hooks/useIBGE";
 import { EstadoCombobox } from "./EstadoCombobox";
 import { CidadeCombobox } from "./CidadeCombobox";
 import { services } from "@/data/services";
+import { normalizeSearchTerm, SYNONYM_MAP } from "@/lib/searchUtils";
 
 interface SearchSuggestion {
   id: string;
@@ -90,11 +91,16 @@ export function SmartSearchBar({
 
     const generateSuggestions = (): SearchSuggestion[] => {
       const queryLower = debouncedQuery.toLowerCase();
+      const normalizedQuery = normalizeSearchTerm(debouncedQuery);
       const suggestions: SearchSuggestion[] = [];
 
-      // Sugestões de serviços
+      // 1. Sugestões de categorias exatas (usando termo normalizado para bater plurais)
       services.forEach((service) => {
-        if (service.name.toLowerCase().includes(queryLower)) {
+        const normalizedServiceName = normalizeSearchTerm(service.name);
+        if (
+          service.name.toLowerCase().includes(queryLower) ||
+          normalizedServiceName.includes(normalizedQuery)
+        ) {
           suggestions.push({
             id: `service-${service.name}`,
             text: service.name,
@@ -104,7 +110,38 @@ export function SmartSearchBar({
         }
       });
 
-      // Sugestões de estados
+      // 2. Sugestões baseadas em sinônimos
+      if (suggestions.length < 5) {
+        Object.entries(SYNONYM_MAP).forEach(([category, synonyms]) => {
+          const alreadyAdded = suggestions.some(
+            (s) => s.text.toLowerCase() === category.toLowerCase(),
+          );
+          if (alreadyAdded) return;
+
+          const match = synonyms.some((syn) => {
+            const normalizedSyn = normalizeSearchTerm(syn);
+            return (
+              syn.toLowerCase().includes(queryLower) ||
+              normalizedSyn.includes(normalizedQuery)
+            );
+          });
+
+          if (match) {
+            // Tentar achar o ícone do serviço correspondente
+            const service = services.find(
+              (s) => s.name.toLowerCase() === category.toLowerCase(),
+            );
+            suggestions.push({
+              id: `synonym-${category}`,
+              text: category.charAt(0).toUpperCase() + category.slice(1),
+              type: "service",
+              icon: service?.icon || "🔍",
+            });
+          }
+        });
+      }
+
+      // 3. Sugestões de estados
       estados.forEach((estado) => {
         if (estado.nome.toLowerCase().includes(queryLower)) {
           suggestions.push({
@@ -116,7 +153,7 @@ export function SmartSearchBar({
         }
       });
 
-      // Sugestões de cidades (se estado selecionado)
+      // 4. Sugestões de cidades (se estado selecionado)
       if (filters.state && cidades.length > 0) {
         cidades.forEach((cidade) => {
           if (cidade.nome.toLowerCase().includes(queryLower)) {
@@ -130,61 +167,11 @@ export function SmartSearchBar({
         });
       }
 
-      // Sugestões de profissionais comuns
-      const commonProfessionals = [
-        "Pedreiro",
-        "Eletricista",
-        "Encanador",
-        "Pintor",
-        "Marceneiro",
-        "Diarista",
-        "Faxineira",
-        "Babá",
-        "Cuidador",
-        "Jardineiro",
-        "Cabeleireiro",
-        "Manicure",
-        "Personal Trainer",
-        "Nutricionista",
-      ];
-
-      commonProfessionals.forEach((prof) => {
-        if (prof.toLowerCase().includes(queryLower)) {
-          suggestions.push({
-            id: `professional-${prof}`,
-            text: prof,
-            type: "professional",
-            icon: "👨‍💼",
-          });
-        }
-      });
-
-      return suggestions.slice(0, 6); // Limitar a 6 sugestões
+      return suggestions.slice(0, 8); // Aumentar limite para 8
     };
 
     setSuggestions(generateSuggestions());
   }, [debouncedQuery, estados, cidades, filters.state]);
-
-  // Busca semântica inteligente
-  const getSemanticQuery = (query: string): string => {
-    const semanticMap: Record<string, string[]> = {
-      pedreiro: ["construção", "obra", "alvenaria", "tijolo", "cimento"],
-      eletricista: ["elétrica", "luz", "energia", "fiação", "tomada"],
-      encanador: ["água", "cano", "vazamento", "hidráulica", "torneira"],
-      pintor: ["pintura", "tinta", "parede", "cor", "verniz"],
-      diarista: ["limpeza", "faxina", "doméstica", "casa", "limpar"],
-      babá: ["criança", "bebê", "cuidador infantil", "creche"],
-      jardineiro: ["jardim", "planta", "paisagismo", "poda", "verde"],
-    };
-
-    const queryLower = query.toLowerCase();
-    for (const [key, synonyms] of Object.entries(semanticMap)) {
-      if (synonyms.some((synonym) => queryLower.includes(synonym))) {
-        return key;
-      }
-    }
-    return query;
-  };
 
   const handleInputChange = (value: string) => {
     setQuery(value);
@@ -197,24 +184,35 @@ export function SmartSearchBar({
 
     // Aplicar filtro baseado no tipo de sugestão
     if (suggestion.type === "service") {
-      setFilters((prev) => ({ ...prev, service: suggestion.text }));
+      const newFilters = {
+        ...filters,
+        service: suggestion.text,
+        searchTerm: suggestion.text,
+      };
+      setFilters(newFilters);
+      onSearch(suggestion.text, newFilters);
+      onFiltersChange(newFilters);
     } else if (suggestion.type === "location") {
       // Detectar se é estado ou cidade
       const estado = estados.find((estado) => estado.nome === suggestion.text);
       if (estado) {
-        setFilters((prev) => ({ ...prev, state: suggestion.text, city: "" }));
-        loadCidades(estado.sigla); // Passar a SIGLA do estado, não o nome
+        const newFilters = { ...filters, state: suggestion.text, city: "" };
+        setFilters(newFilters);
+        loadCidades(estado.sigla);
+        onFiltersChange(newFilters);
       } else {
-        setFilters((prev) => ({ ...prev, city: suggestion.text }));
+        const newFilters = { ...filters, city: suggestion.text };
+        setFilters(newFilters);
+        onFiltersChange(newFilters);
       }
     }
   };
 
   const handleSearch = () => {
-    const semanticQuery = getSemanticQuery(query);
-    const searchFilters = { ...filters, searchTerm: semanticQuery };
+    const normalizedQuery = normalizeSearchTerm(query);
+    const searchFilters = { ...filters, searchTerm: query }; // Manter query original para UI mas hook usa normalize internamente
     setFilters(searchFilters);
-    onSearch(semanticQuery, searchFilters);
+    onSearch(query, searchFilters);
     onFiltersChange(searchFilters);
     setShowSuggestions(false);
   };

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Profile } from "@/types/database";
 import { supabase } from "@/lib/supabase";
+import { normalizeSearchTerm, expandSearchTerm } from "@/lib/searchUtils";
 export interface SearchFilters {
   searchTerm: string;
   category: string;
@@ -89,28 +90,51 @@ export const useAdvancedSearch = () => {
 
       // Filtro por termo de busca
       if (currentFilters.searchTerm.trim()) {
-        const term = currentFilters.searchTerm.toLowerCase();
+        const expandedTerms = expandSearchTerm(currentFilters.searchTerm);
+
         filtered = filtered.filter((user) => {
           // Busca por nome
-          const nameMatch = user.full_name?.toLowerCase().includes(term);
+          const nameMatch = expandedTerms.some((term) =>
+            user.full_name
+              ?.toLowerCase()
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .includes(term),
+          );
 
           // Busca por bio
-          const bioMatch = user.bio?.toLowerCase().includes(term);
+          const bioMatch = expandedTerms.some((term) =>
+            user.bio
+              ?.toLowerCase()
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .includes(term),
+          );
 
           // Busca por serviços profissionais
           const servicesMatch =
             (user.user_type === "professional" &&
-              user.professional_services?.some((service) =>
-                service.toLowerCase().includes(term),
-              )) ||
+              user.professional_services?.some((service) => {
+                const normalizedService = normalizeSearchTerm(service);
+                return expandedTerms.some(
+                  (term) =>
+                    normalizedService.includes(term) ||
+                    term.includes(normalizedService),
+                );
+              })) ||
             false;
 
           // Busca por especialidades/certificações
           const certificationsMatch =
             (user.user_type === "professional" &&
-              user.professional_certifications?.some((cert) =>
-                cert.toLowerCase().includes(term),
-              )) ||
+              user.professional_certifications?.some((cert) => {
+                const normalizedCert = normalizeSearchTerm(cert);
+                return expandedTerms.some(
+                  (term) =>
+                    normalizedCert.includes(term) ||
+                    term.includes(normalizedCert),
+                );
+              })) ||
             false;
 
           return nameMatch || bioMatch || servicesMatch || certificationsMatch;
@@ -347,6 +371,39 @@ export const useAdvancedSearch = () => {
     ).length;
     const verifiedCount = allUsers.filter((u) => u.is_verified).length;
 
+    // Lógica de Recomendações Profissionais
+    let recommendations: Profile[] = [];
+    if (
+      filteredCount === 0 &&
+      (filters.searchTerm || filters.category !== "all")
+    ) {
+      const expandedTerms = expandSearchTerm(
+        filters.searchTerm || filters.category,
+      );
+
+      recommendations = allUsers
+        .filter(
+          (user) =>
+            user.user_type === "professional" &&
+            user.professional_services?.some((service) => {
+              const normalized = normalizeSearchTerm(service);
+              return expandedTerms.some(
+                (term) =>
+                  normalized.includes(term) || term.includes(normalized),
+              );
+            }),
+        )
+        .slice(0, 3);
+
+      // Se ainda não tiver nada, pegar profissionais aleatórios (ou mais recentes)
+      if (recommendations.length === 0) {
+        recommendations = allUsers
+          .filter((u) => u.user_type === "professional")
+          .sort(() => 0.5 - Math.random()) // Fake shuffle for recommendations
+          .slice(0, 3);
+      }
+    }
+
     return {
       totalUsers,
       filteredCount,
@@ -355,6 +412,7 @@ export const useAdvancedSearch = () => {
       verifiedCount,
       hasResults: filteredCount > 0,
       hasFilters: JSON.stringify(filters) !== JSON.stringify(DEFAULT_FILTERS),
+      recommendations,
     };
   }, [allUsers, filteredUsers, filters]);
 
