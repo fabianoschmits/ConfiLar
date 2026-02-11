@@ -38,7 +38,7 @@ export function usePointsPackages() {
       if (error) throw error;
       return data as PointsPackage[];
     },
-    staleTime: 1000 * 60 * 10, // 10 minutos
+    staleTime: 1000 * 30, // 30 segundos
   });
 
   return {

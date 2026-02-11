@@ -5,10 +5,11 @@
 // ============================================
 
 export const PREMIUM_PRICES = {
-  // Curtida Premium
+  // Curtida Premium (Deflação: 100 pontos gastos, 75 pontos recebidos)
   LIKE: {
-    POINTS: 10,
-    BRL: 0.1,
+    POINTS: 100, // Custo para quem curte
+    REWARD_POINTS: 75, // Pontos que o criador recebe
+    BRL: 1.0,
     DESCRIPTION: "Curtida com destaque especial",
     DURATION: "Permanente",
   },

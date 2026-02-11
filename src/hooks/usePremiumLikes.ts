@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { PREMIUM_PRICES } from "@/constants/premiumPrices";
 
 export interface PremiumLike {
   id: string;
@@ -102,7 +103,8 @@ export function usePremiumLikes(postId: string) {
       return data;
     },
     onMutate: async () => {
-      const requiredPoints = 5;
+      const requiredPoints = PREMIUM_PRICES.LIKE.POINTS;
+      const rewardPoints = PREMIUM_PRICES.LIKE.REWARD_POINTS;
 
       // Verificar saldo atual (após possíveis updates otimistas anteriores)
       const currentBalance = queryClient.getQueryData([
@@ -140,9 +142,9 @@ export function usePremiumLikes(postId: string) {
         post_id: postId,
         user_id: user!.id,
         is_premium: true,
-        points_spent: 5,
-        points_transferred: 5,
-        premium_points_spent: 5,
+        points_spent: requiredPoints,
+        points_transferred: rewardPoints,
+        premium_points_spent: requiredPoints,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -176,17 +178,18 @@ export function usePremiumLikes(postId: string) {
               post_created_at: "",
               total_likes: ((previousLikes as PremiumLike[]) || []).length + 1,
               premium_likes: 1,
-              total_points_received: 5,
-              avg_points_per_premium_like: 5,
+              total_points_received: rewardPoints,
+              avg_points_per_premium_like: rewardPoints,
             };
           }
           return {
             ...oldStats,
             total_likes: (oldStats.total_likes || 0) + 1,
             premium_likes: (oldStats.premium_likes || 0) + 1,
-            total_points_received: (oldStats.total_points_received || 0) + 5,
+            total_points_received:
+              (oldStats.total_points_received || 0) + rewardPoints,
             avg_points_per_premium_like:
-              ((oldStats.total_points_received || 0) + 5) /
+              ((oldStats.total_points_received || 0) + rewardPoints) /
               ((oldStats.premium_likes || 0) + 1),
           };
         },

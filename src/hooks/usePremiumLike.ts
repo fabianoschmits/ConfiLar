@@ -40,22 +40,6 @@ export function usePremiumLike({
         );
       }
 
-      // Verificar se já curtiu
-      const { data: existingLike, error: likeError } = await supabase
-        .from("feed_posts_likes")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("post_id", postId)
-        .single();
-
-      if (likeError && likeError.code !== "PGRST116") {
-        throw new Error("Erro ao verificar curtida existente");
-      }
-
-      if (existingLike) {
-        throw new Error("Você já curtiu este post");
-      }
-
       // Criar curtida premium
       const { data, error } = await supabase
         .from("feed_posts_likes")
@@ -70,7 +54,7 @@ export function usePremiumLike({
 
       if (error) throw error;
 
-      // Deduzir pontos
+      // Deduzir pontos do usuário que curtiu
       const { error: pointsError } = await supabase.rpc("add_points", {
         p_user_id: user.id,
         p_points: -PREMIUM_PRICES.LIKE.POINTS,

@@ -184,9 +184,6 @@ export function PremiumLikeButton({
             <p className="text-xs">
               💰 Gasta {PREMIUM_PRICES.LIKE.POINTS} ConfiPoints
             </p>
-            <p className="text-xs">
-              🎁 Recompensa o criador com {PREMIUM_PRICES.LIKE.POINTS} pontos
-            </p>
 
             {!hasEnoughPoints ? (
               <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">

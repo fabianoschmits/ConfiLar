@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/authenticatedRoute";
 import { createAdminSupabaseClient } from "@/lib/supabase";
+import { PREMIUM_PRICES } from "@/constants/premiumPrices";
 
 /**
  * POST /api/points/premium-like
@@ -86,7 +87,8 @@ export const POST = withAuth(
         );
       }
 
-      const pointsCost = 5; // Custo de uma curtida premium
+      const pointsCost = PREMIUM_PRICES.LIKE.POINTS;
+      const pointsReward = PREMIUM_PRICES.LIKE.REWARD_POINTS;
 
       if (!balance || balance.balance < pointsCost) {
         return NextResponse.json(
@@ -178,10 +180,10 @@ export const POST = withAuth(
         );
       }
 
-      // 3. Adicionar pontos ao criador do post
+      // 3. Adicionar pontos ao criador do post (75 pontos - deflação)
       const { error: rewardError } = await supabase.rpc("add_points", {
         p_user_id: postCreatorId,
-        p_points: pointsCost,
+        p_points: pointsReward,
         p_source: "receive_premium_like",
         p_description: "Recebeu curtida premium em post",
         p_metadata: {
@@ -223,14 +225,14 @@ export const POST = withAuth(
           user_id: postCreatorId,
           type: "achievement",
           title: "💰 Curtida Premium Recebida!",
-          message: `${likerName} deu uma curtida premium em "${postTitle.substring(0, 30)}${postTitle.length > 30 ? "..." : ""}" (+${pointsCost} pontos)`,
+          message: `${likerName} deu uma curtida premium em "${postTitle.substring(0, 30)}${postTitle.length > 30 ? "..." : ""}" (+${pointsReward} pontos)`,
           action_url: `/feed?post=${postId}`,
           priority: "high",
           metadata: {
             post_id: postId,
             from_user_id: authenticatedUserId, // 🔒 Sempre ID autenticado
             from_user_name: likerName,
-            points_received: pointsCost,
+            points_received: pointsReward,
             type: "premium_like_received",
           },
           is_read: false,
@@ -243,7 +245,7 @@ export const POST = withAuth(
           await NotificationService.sendPushNotification(
             postCreatorId,
             "💰 Curtida Premium Recebida!",
-            `${likerName} deu uma curtida premium no seu post (+${pointsCost} pontos)`,
+            `${likerName} deu uma curtida premium no seu post (+${pointsReward} pontos)`,
           );
         } catch (pushError) {
           console.warn(
@@ -269,7 +271,7 @@ export const POST = withAuth(
         success: true,
         like: premiumLike,
         pointsSpent: pointsCost,
-        pointsRewarded: pointsCost,
+        pointsRewarded: pointsReward,
       });
     } catch (error) {
       console.error("Erro ao processar premium like:", error);
