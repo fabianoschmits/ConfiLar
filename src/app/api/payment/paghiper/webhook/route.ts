@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     // Note: status check endpoint usually requires POST with token/apiKey/notification_id
     const verifyPayload = {
       token: PAGHIPER_TOKEN,
-      apiKey: PAGHIPER_API_KEY,
+      api_key: PAGHIPER_API_KEY,
       notification_id: notification_id,
       transaction_id: transaction_id,
     };
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     const verifyData = await verifyResponse.json();
 
-    if (verifyData.status_request.result !== "success") {
+    if (verifyData.status_request?.result !== "success") {
       console.error("PagHiper verification failed:", verifyData);
       return NextResponse.json(
         { error: "Verification failed" },
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     const { data: existingOrder, error: fetchError } = await supabase
       .from("points_purchases")
       .select("id, status")
-      .eq("transaction_id", transaction_id)
+      .eq("payment_id", transaction_id)
       .single();
 
     if (fetchError || !existingOrder) {

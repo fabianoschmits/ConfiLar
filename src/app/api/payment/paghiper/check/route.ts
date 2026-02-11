@@ -47,13 +47,13 @@ export const GET = withAuth(
       }
 
       // 2. Se estiver pendente, verificar na PagHiper
-      if (purchase.status === "pending" && purchase.transaction_id) {
+      if (purchase.status === "pending" && purchase.payment_id) {
         const statusUrl = "https://pix.paghiper.com/invoice/status/";
 
         const verifyPayload = {
           token: PAGHIPER_TOKEN,
-          apiKey: PAGHIPER_API_KEY,
-          transaction_id: purchase.transaction_id,
+          api_key: PAGHIPER_API_KEY,
+          transaction_id: purchase.payment_id,
         };
 
         const response = await fetch(statusUrl, {

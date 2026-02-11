@@ -67,99 +67,94 @@ export default function ComprarPontosPage() {
   /* Added manually since I cannot add imports easily with replace_file_content if they are far away */
   /* Actually I will modify the whole file content to include imports and the new logic */
 
-  // Configuração visual dos pacotes baseada no slug
-  const packageVisuals: Record<string, any> = {
+  // Configuração visual estática dos pacotes baseada no slug
+  const packageVisuals: Record<
+    string,
+    { icon: React.ReactNode; color: string }
+  > = {
     basic: {
       icon: <Heart className="w-8 h-8" />,
       color: "pink",
-      features: [
-        `300 ${t("title")}`,
-        `${Math.floor(300 / PREMIUM_PRICES.LIKE.POINTS)} ${t("premiumLikes")}`,
-        `Ideal para quem está começando`,
-      ],
-      uses: `${Math.floor(300 / PREMIUM_PRICES.LIKE.POINTS)} ${t("premiumLikes")}`,
     },
     starter: {
       icon: <Zap className="w-8 h-8" />,
       color: "blue",
-      features: [
-        `1.000 ${t("title")}`,
-        `${Math.floor(1000 / PREMIUM_PRICES.LIKE.POINTS)} ${t("premiumLikes")}`,
-        `${Math.floor(1000 / PREMIUM_PRICES.POST.POINTS)} ${t("premiumPost")}`,
-        `${Math.floor(1000 / PREMIUM_PRICES.AD_1_DAY.POINTS)} ${t("premiumAd")}`,
-      ],
-      uses: `1 ${t("premiumPost")} ${t("or")} ${Math.floor(1000 / PREMIUM_PRICES.LIKE.POINTS)} ${t("premiumLikes")}`,
     },
     popular: {
       icon: <Star className="w-8 h-8" />,
       color: "green",
-      features: [
-        `5.000 ${t("title")}`,
-        `+500 ${t("bonusPoints")}`,
-        `${Math.floor(5500 / PREMIUM_PRICES.LIKE.POINTS)} ${t("premiumLikes")}`,
-        `${Math.floor(5500 / PREMIUM_PRICES.POST.POINTS)} ${t("premiumPosts")}`,
-        `${Math.floor(5500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} ${t("premiumAds")}`,
-        t("emailSupport"),
-      ],
-      uses: `${Math.floor(5500 / PREMIUM_PRICES.POST.POINTS)} ${t("premiumPosts")} ${t("or")} ${Math.floor(5500 / PREMIUM_PRICES.LIKE.POINTS)} ${t("premiumLikes")}`,
     },
     professional: {
       icon: <Crown className="w-8 h-8" />,
       color: "purple",
-      features: [
-        `10.000 ${t("title")}`,
-        `+1.500 ${t("bonusPoints")} (15%)`,
-        `${Math.floor(11500 / PREMIUM_PRICES.LIKE.POINTS)} ${t("premiumLikes")}`,
-        `${Math.floor(11500 / PREMIUM_PRICES.POST.POINTS)} ${t("premiumPosts")}`,
-        `${Math.floor(11500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} ${t("premiumAds")}`,
-        t("emailSupport"),
-        t("exclusiveBadge"),
-      ],
-      uses: `${Math.floor(11500 / PREMIUM_PRICES.POST.POINTS)} ${t("premiumPosts")} ${t("or")} ${Math.floor(11500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} ${t("premiumAds")}`,
     },
     enterprise: {
       icon: <Gift className="w-8 h-8" />,
       color: "amber",
-      features: [
-        `25.000 ${t("title")}`,
-        `+5.000 ${t("bonusPoints")} (20%)`,
-        `${Math.floor(30000 / PREMIUM_PRICES.LIKE.POINTS)} ${t("premiumLikes")}`,
-        `${Math.floor(30000 / PREMIUM_PRICES.POST.POINTS)} ${t("premiumPosts")}`,
-        `${Math.floor(30000 / PREMIUM_PRICES.AD_1_DAY.POINTS)} ${t("premiumAds")}`,
-        t("emailSupport"),
-        t("advancedReports"),
-        t("premiumConsulting"),
-      ],
-      uses: `${Math.floor(30000 / PREMIUM_PRICES.POST.POINTS)} ${t("premiumPosts")} ${t("or")} ${Math.floor(30000 / PREMIUM_PRICES.AD_1_DAY.POINTS)} ${t("premiumAds")}`,
     },
     mega: {
       icon: <TrendingUp className="w-8 h-8" />,
       color: "red",
-      features: [
-        `50.000 ${t("title")}`,
-        `+12.500 ${t("bonusPoints")} (25%)`,
-        `${Math.floor(62500 / PREMIUM_PRICES.LIKE.POINTS)} ${t("premiumLikes")}`,
-        `${Math.floor(62500 / PREMIUM_PRICES.POST.POINTS)} ${t("premiumPosts")}`,
-        `${Math.floor(62500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} ${t("premiumAds")}`,
-        t("emailSupport"),
-        t("maximumPriority"),
-        t("earlyAccess"),
-        t("vipBadge"),
-      ],
-      uses: `${Math.floor(62500 / PREMIUM_PRICES.POST.POINTS)} ${t("premiumPosts")} ${t("or")} ${Math.floor(62500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} ${t("premiumAds")}`,
     },
   };
 
   const packages = dbPackages
     .filter((pkg) => Object.keys(packageVisuals).includes(pkg.slug))
     .map((pkg) => {
-      // Tenta encontrar visual pelo slug, ou usa 'starter' como fallback
       const visual = packageVisuals[pkg.slug] || packageVisuals.starter;
-      // Calcula bônus real baseado nos dados do banco
       const bonusPoints = pkg.total_points - pkg.points;
+      const totalPoints = pkg.total_points;
+
+      // Cálculo dinâmico de funcionalidades baseadas nos pontos totais e preços atuais
+      const likesCount = Math.floor(totalPoints / PREMIUM_PRICES.LIKE.POINTS);
+      const postsCount = Math.floor(totalPoints / PREMIUM_PRICES.POST.POINTS);
+      const adsCount = Math.floor(totalPoints / PREMIUM_PRICES.AD_1_DAY.POINTS);
+
+      const features: string[] = [
+        `${totalPoints.toLocaleString("pt-BR")} ${t("title")}`,
+      ];
+
+      if (likesCount > 0)
+        features.push(
+          `${likesCount.toLocaleString("pt-BR")} ${t("premiumLikes")}`,
+        );
+      if (postsCount > 0)
+        features.push(
+          `${postsCount.toLocaleString("pt-BR")} ${t("premiumPosts")}`,
+        );
+      if (adsCount > 0)
+        features.push(`${adsCount.toLocaleString("pt-BR")} ${t("premiumAds")}`);
+
+      // Adicionar features extras para pacotes maiores
+      if (
+        pkg.slug === "popular" ||
+        pkg.slug === "professional" ||
+        pkg.slug === "enterprise" ||
+        pkg.slug === "mega"
+      ) {
+        features.push(t("emailSupport"));
+      }
+      if (pkg.slug === "professional") features.push(t("exclusiveBadge"));
+      if (pkg.slug === "enterprise") {
+        features.push(t("advancedReports"));
+        features.push(t("premiumConsulting"));
+      }
+      if (pkg.slug === "mega") {
+        features.push(t("maximumPriority"));
+        features.push(t("earlyAccess"));
+        features.push(t("vipBadge"));
+      }
+
+      // Descrição de uso dinâmico (O que você pode fazer?)
+      let uses = "";
+      if (postsCount > 0) {
+        uses = `${postsCount} ${t(postsCount > 1 ? "premiumPosts" : "premiumPost")} ${t("or")} ${likesCount} ${t("premiumLikes")}`;
+      } else {
+        uses = `${likesCount} ${t("premiumLikes")}`;
+      }
 
       return {
-        id: pkg.id, // UUID real do banco
+        id: pkg.id,
         slug: pkg.slug,
         name: pkg.name,
         points: pkg.points,
@@ -173,8 +168,8 @@ export default function ComprarPontosPage() {
         description: pkg.description || "",
         icon: visual.icon,
         color: visual.color,
-        features: visual.features, // Poderíamos ter features no banco também
-        uses: visual.uses,
+        features,
+        uses,
       };
     })
     .sort((a, b) => a.priceValue - b.priceValue);
