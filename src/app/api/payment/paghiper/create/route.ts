@@ -43,16 +43,21 @@ export const POST = withAuth(
 
             const orderId = crypto.randomUUID();
 
-            // 2. Criar Ordem Interna
+            // Clean phone
+            const phoneClean = customer.phone ? customer.phone.replace(/\D/g, "") : "";
+
+            // 2. Criar Ordem na Tabela `points_purchases` (corrigido de point_orders)
             const { error: orderError } = await supabaseAuth
-                .from("point_orders")
+                .from("points_purchases")
                 .insert({
                     id: orderId,
                     user_id: user.id,
-                    points: pointsAmount,
-                    price: amountInCentavos,
+                    package_id: package_id,
+                    points_received: pointsAmount,
+                    amount_brl: amountInCentavos / 100, // Saving in BRL
+                    payment_method: "pix",
                     status: "pending",
-                    details: { provider: "paghiper" } // Tagging provider
+                    metadata: { provider: "paghiper", phone: phoneClean }
                 });
 
             if (orderError) {
@@ -64,8 +69,6 @@ export const POST = withAuth(
             }
 
             // 3. Montar Payload PagHiper
-            // Clean phone
-            const phoneClean = customer.phone ? customer.phone.replace(/\D/g, "") : "";
 
             const paghiperPayload = {
                 apiKey: PAGHIPER_API_KEY,
