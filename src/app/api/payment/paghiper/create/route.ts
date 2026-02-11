@@ -1,11 +1,17 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/authenticatedRoute";
-
+import { createClient } from "@supabase/supabase-js";
 
 const PAGHIPER_API_KEY = process.env.PAGHIPER_API_KEY!;
 const PAGHIPER_TOKEN = process.env.PAGHIPER_TOKEN!;
 const PAGHIPER_PIX_URL = "https://pix.paghiper.com/invoice/create/";
+
+// Admin client for database operations to bypass RLS
+const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export const POST = withAuth(
     async (request: NextRequest, supabaseAuth, user) => {
@@ -20,9 +26,10 @@ export const POST = withAuth(
                 );
             }
 
-            // 1. Buscar pacote
-            const { data: pack } = await supabaseAuth
-                .from("point_packages")
+            // 1. Buscar pacote (Using admin to ensure we can read configs if needed, or public)
+            // Table is `points_packages` NOT `point_packages`
+            const { data: pack } = await supabaseAdmin
+                .from("points_packages")
                 .select("*")
                 .eq("id", package_id)
                 .single();
@@ -34,20 +41,19 @@ export const POST = withAuth(
                 );
             }
 
-            const amountInCentavos = pack ? pack.price : Math.round(body.amount * 100);
-            const pointsAmount = pack ? pack.points : body.points;
+            const amountInCentavos = pack ? Math.round(pack.price_brl * 100) : Math.round(body.amount * 100);
+            // Note: pack.price might be decimal, pack.price_brl is likely the column name in new schema?
+            // Checking economy.ts: `price_brl: number` is correct. `price` was checked previously but `price_brl` is interface.
 
-            // PagHiper uses cents for creating transaction? No, most use ID but let's check doc or assume BRL logic then confirm. 
-            // Actually standard for these APIs is usually cents. Let's re-read doc if needed or stick to cents.
-            // Wait, PagHiper `value_cents` field name implies cents.
+            const pointsAmount = pack ? pack.points : body.points;
 
             const orderId = crypto.randomUUID();
 
             // Clean phone
             const phoneClean = customer.phone ? customer.phone.replace(/\D/g, "") : "";
 
-            // 2. Criar Ordem na Tabela `points_purchases` (corrigido de point_orders)
-            const { error: orderError } = await supabaseAuth
+            // 2. Criar Ordem na Tabela `points_purchases`
+            const { error: orderError } = await supabaseAdmin
                 .from("points_purchases")
                 .insert({
                     id: orderId,
@@ -63,13 +69,12 @@ export const POST = withAuth(
             if (orderError) {
                 console.error("Erro ao criar ordem:", orderError);
                 return NextResponse.json(
-                    { error: "Erro ao criar ordem interna." },
+                    { error: "Erro ao criar ordem interna.", details: orderError.message },
                     { status: 500 }
                 );
             }
 
             // 3. Montar Payload PagHiper
-
             const paghiperPayload = {
                 apiKey: PAGHIPER_API_KEY,
                 order_id: orderId,
@@ -84,8 +89,8 @@ export const POST = withAuth(
                         description: `Compra de ${pointsAmount} pontos ConfiLar`,
                         quantity: 1,
                         item_id: package_id || "custom_points",
-                        price_cents: amountInCentavos, // SDK uses this
-                        value_cents: amountInCentavos, // Common pattern, adding for safety
+                        price_cents: amountInCentavos,
+                        value_cents: amountInCentavos,
                     }
                 ]
             };
@@ -102,10 +107,14 @@ export const POST = withAuth(
 
             const data = await response.json();
 
-            if (data.pix_create_request.result !== "success") {
+            if (data.pix_create_request?.result !== "success") {
                 console.error("Erro PagHiper:", data);
+                // Rollback or update status to failed?
+                // Ideally cancel the pending order
+                await supabaseAdmin.from("points_purchases").delete().eq("id", orderId);
+
                 return NextResponse.json(
-                    { error: data.pix_create_request.response_message || "Erro ao criar PIX na PagHiper" },
+                    { error: data.pix_create_request?.response_message || "Erro ao criar PIX na PagHiper" },
                     { status: 400 }
                 );
             }
@@ -122,8 +131,9 @@ export const POST = withAuth(
             }
 
             // 5. Atualizar Ordem com ID da transação
-            await supabaseAuth
-                .from("point_orders")
+            // Use `points_purchases` NOT `point_orders`
+            await supabaseAdmin
+                .from("points_purchases")
                 .update({ transaction_id: transactionId })
                 .eq("id", orderId);
 
@@ -132,7 +142,7 @@ export const POST = withAuth(
                 qrCode: pixQrCodeUrl,
                 pixCode: pixCode,
                 transactionId: transactionId,
-                expiresAt: new Date(Date.now() + 3 * 24 * 3600 * 1000).toISOString(), // 3 days approx 
+                expiresAt: new Date(Date.now() + 3 * 24 * 3600 * 1000).toISOString(),
             });
 
         } catch (error: any) {
