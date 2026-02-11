@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { ChangeEmailForm } from "@/components/forms/ChangeEmailForm";
 import { ValidationUtils } from "@/lib/validation";
 import { Badge } from "@/components/ui/badge";
+import { useProfileUpdate } from "@/hooks/useProfileUpdate";
 
 const accountDataSchema = z.object({
   full_name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -146,37 +147,29 @@ export function AccountDataForm({ onSuccess }: { onSuccess?: () => void }) {
     loadProfileData();
   }, [user, setValue]);
 
+  const { updateProfile, isUpdating: isProfileUpdating } = useProfileUpdate();
+
   const onSubmit = async (data: AccountDataFormData) => {
     if (!user) return;
     setIsLoading(true);
     try {
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({
-          full_name: data.full_name,
-          phone: data.phone,
-          cpf_cnpj: data.cpf_cnpj,
-          birth_date: data.birth_date,
-          bio: data.bio || null,
-          escolaridade: data.escolaridade || null,
-          filhos: data.filhos || 0,
-          estado_civil: data.estado_civil || null,
-        })
-        .eq("id", user.id);
-      if (profileError) throw profileError;
-      await supabase.auth.updateUser({
-        data: {
-          full_name: data.full_name,
-          phone: data.phone,
-          birth_date: data.birth_date,
-          bio: data.bio,
-        },
+      const { success } = await updateProfile({
+        full_name: data.full_name,
+        phone: data.phone,
+        cpf_cnpj: data.cpf_cnpj,
+        birth_date: data.birth_date,
+        bio: data.bio || null,
+        escolaridade: data.escolaridade || null,
+        filhos: data.filhos || 0,
+        estado_civil: data.estado_civil || null,
       });
-      toast.success("🎉 Dados atualizados!");
-      await refreshAuth();
-      if (onSuccess) onSuccess();
+
+      if (success) {
+        toast.success("🎉 Dados atualizados!");
+        if (onSuccess) onSuccess();
+      }
     } catch (error: any) {
-      toast.error("Erro ao atualizar", { description: error.message });
+      console.error("Erro ao atualizar dados da conta:", error);
     } finally {
       setIsLoading(false);
     }

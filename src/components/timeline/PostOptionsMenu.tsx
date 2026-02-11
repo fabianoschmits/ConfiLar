@@ -8,16 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 
 import {
   MoreHorizontal,
@@ -157,41 +148,33 @@ export function PostOptionsMenu({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="bg-white dark:bg-black border border-gray-200 dark:border-gray-900">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-gray-900 dark:text-white">
-              {isSuperAdmin && !isOwner
-                ? "Deletar Post (Super Admin)"
-                : "Deletar Post"}
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-600 dark:text-gray-400">
-              {isSuperAdmin && !isOwner ? (
-                <>
-                  Você está deletando este post como{" "}
-                  <strong>Super Administrador</strong>. Esta ação não pode ser
-                  desfeita. O post e todas as suas interações (curtidas,
-                  comentários) serão removidas permanentemente.
-                </>
-              ) : (
-                <>
-                  Tem certeza que deseja deletar este post? Esta ação não pode
-                  ser desfeita. O post e todas as suas interações (curtidas,
-                  comentários) serão removidas permanentemente.
-                </>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel
+      <ResponsiveModal
+        isOpen={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title={
+          isSuperAdmin && !isOwner
+            ? "Deletar Post (Super Admin)"
+            : "Deletar Post"
+        }
+        description={
+          isSuperAdmin && !isOwner
+            ? "Você está deletando este post como Super Administrador. Esta ação não pode ser desfeita. O post e todas as suas interações serão removidas permanentemente."
+            : "Tem certeza que deseja deletar este post? Esta ação não pode ser desfeita. O post e todas as suas interações serão removidas permanentemente."
+        }
+        footer={
+          <div className="flex gap-2 w-full sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
               disabled={isDeleting}
-              className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-800 border-gray-300 dark:border-gray-700"
+              className="flex-1 sm:flex-none bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-800 border-gray-300 dark:border-gray-700"
             >
               Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction
+            </Button>
+            <Button
+              variant="destructive"
               onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white"
               disabled={isDeleting}
             >
               {isDeleting ? (
@@ -202,10 +185,12 @@ export function PostOptionsMenu({
               ) : (
                 "Deletar"
               )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </div>
+        }
+      >
+        <div />
+      </ResponsiveModal>
 
       <ReportDialog
         isOpen={showReportDialog}

@@ -57,7 +57,7 @@ import {
 } from "@/components/gestao-confi/ReportDetailsModal";
 import { AdminPageHeader } from "@/components/gestao-confi/AdminPageHeader";
 import { ResponsiveTable } from "@/components/gestao-confi/ResponsiveTable";
-import { ResponsiveModal } from "@/components/gestao-confi/ResponsiveModal";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";

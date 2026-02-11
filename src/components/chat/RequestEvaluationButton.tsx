@@ -3,14 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { LoadingButton } from "@/components/ui/LoadingButton";
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Star, Loader2, CheckCircle, Clock } from "lucide-react";
 import { useEvaluationRequests } from "@/hooks/useEvaluationRequests";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -171,20 +164,20 @@ export function RequestEvaluationButton({
         <span className="text-xs">{buttonState.text}</span>
       </Button>
 
-      {/* Dialog para solicitar avaliação */}
-      <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
-        <AlertDialogContent className="max-w-sm">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <Star className="h-4 w-4 text-yellow-500" />
-              Solicitar Avaliação
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Você deseja solicitar uma avaliação de {targetUserName}?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <Button variant="outline" onClick={() => setShowDialog(false)}>
+      {/* Modal para solicitar avaliação */}
+      <ResponsiveModal
+        isOpen={showDialog}
+        onOpenChange={setShowDialog}
+        title="Solicitar Avaliação"
+        description={`Você deseja solicitar uma avaliação de ${targetUserName}?`}
+        footer={
+          <div className="flex gap-2 w-full sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setShowDialog(false)}
+              disabled={isLoading}
+              className="flex-1 sm:flex-none"
+            >
               Cancelar
             </Button>
             <LoadingButton
@@ -192,12 +185,20 @@ export function RequestEvaluationButton({
               disabled={isLoading}
               isLoading={isLoading}
               loadingText="Enviando..."
+              className="flex-1 sm:flex-none"
             >
               Solicitar
             </LoadingButton>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          </div>
+        }
+      >
+        <div className="text-gray-600 space-y-3 pb-4">
+          <p className="text-sm">
+            Ao solicitar, uma notificação será enviada para o usuário. Assim que
+            ele aceitar, ambos poderão avaliar um ao outro.
+          </p>
+        </div>
+      </ResponsiveModal>
 
       {/* Modal de avaliação */}
       {showEvaluationModal && currentRequest && (

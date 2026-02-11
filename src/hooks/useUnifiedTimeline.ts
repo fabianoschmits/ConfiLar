@@ -930,7 +930,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
             );
 
             // Usar API de admin para deletar
-            const response = await fetch(`/api/admin/posts/${postId}`, {
+            const response = await fetch(`/api/gestao-confi/posts/${postId}`, {
               method: "DELETE",
             });
 

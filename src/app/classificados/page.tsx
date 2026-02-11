@@ -544,26 +544,14 @@ export default function ClassificadosPage() {
         .single();
 
       const isOwner = adData?.user_id === user.id;
+      const isSuperAdminCheck = isSuperAdmin;
 
-      // Se não for o dono, verificar se é super_admin
-      let isSuperAdminCheck = false;
-      if (!isOwner) {
-        const { data: adminData } = await supabase
-          .from("admins")
-          .select("role")
-          .eq("user_id", user.id)
-          .eq("is_active", true)
-          .single();
-
-        isSuperAdminCheck = adminData?.role === "super_admin";
-
-        if (!isSuperAdminCheck) {
-          toast.error("Você não tem permissão para deletar este anúncio");
-          setShowDeleteDialog(false);
-          setDeletingAdId(null);
-          setIsDeleting(false);
-          return;
-        }
+      if (!isOwner && !isSuperAdminCheck) {
+        toast.error("Você não tem permissão para deletar este anúncio");
+        setShowDeleteDialog(false);
+        setDeletingAdId(null);
+        setIsDeleting(false);
+        return;
       }
 
       if (isSuperAdminCheck) {

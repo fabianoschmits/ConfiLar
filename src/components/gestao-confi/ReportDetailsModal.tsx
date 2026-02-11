@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Button } from "@/components/ui/button";
@@ -107,7 +109,7 @@ export function ReportDetailsModal({
       isOpen={isOpen}
       onOpenChange={onOpenChange}
       title="Detalhes da Denúncia"
-      description={`Protocolo: ${report.id}`}
+      description={`Protocolo: ${report.id} `}
       className="max-w-2xl"
       footer={
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
@@ -209,7 +211,7 @@ export function ReportDetailsModal({
                   {report.reporter?.email}
                 </p>
                 <a
-                  href={`/perfil/${report.reporter?.id}`}
+                  href={`/ perfil / ${report.reporter?.id} `}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-blue-600 flex items-center gap-1 mt-1 hover:underline"
@@ -243,7 +245,7 @@ export function ReportDetailsModal({
                 </p>
                 {report.reported_user?.id && (
                   <a
-                    href={`/perfil/${report.reported_user.id}`}
+                    href={`/ perfil / ${report.reported_user.id} `}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs text-blue-600 flex items-center gap-1 mt-1 hover:underline"

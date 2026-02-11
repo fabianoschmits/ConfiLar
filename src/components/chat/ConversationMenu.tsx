@@ -17,16 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { ConversationReportDialog } from "./ConversationReportModal";
 import { toast } from "sonner";
 import { useCloseOnScroll } from "@/hooks/useCloseOnScroll";
@@ -166,48 +157,46 @@ export function ConversationMenu({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Dialog de Confirmação de Exclusão */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="bg-white border border-gray-200 shadow-xl rounded-lg max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 font-semibold text-gray-900 text-lg">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
-              Deletar Conversa
-            </AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div className="text-gray-600 space-y-3">
-                <p>Tem certeza que deseja remover esta conversa?</p>
-                <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
-                  <p className="text-sm font-medium text-blue-800 mb-2">
-                    ℹ️ Informação:
-                  </p>
-                  <ul className="text-sm text-blue-700 space-y-1">
-                    <li>• A conversa será removida apenas da sua lista</li>
-                    <li>• O outro participante ainda terá acesso à conversa</li>
-                    <li>• Você não receberá mais mensagens desta conversa</li>
-                    <li>• Esta ação não pode ser desfeita</li>
-                  </ul>
-                </div>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="gap-3">
-            <AlertDialogCancel
+      {/* Modal de Confirmação de Exclusão */}
+      <ResponsiveModal
+        isOpen={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Deletar Conversa"
+        description="Tem certeza que deseja remover esta conversa?"
+        footer={
+          <div className="flex gap-3 w-full sm:justify-end">
+            <Button
+              variant="outline"
               onClick={() => setShowDeleteDialog(false)}
-              className="bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+              className="flex-1 sm:flex-none bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
             >
               Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction
+            </Button>
+            <Button
+              variant="destructive"
               onClick={handleDelete}
               disabled={isDeleting}
-              className="bg-red-500 text-white hover:bg-red-600 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 sm:flex-none bg-red-500 text-white hover:bg-red-600 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isDeleting ? "Deletando..." : "Deletar"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </div>
+        }
+      >
+        <div className="text-gray-600 space-y-3 pb-4">
+          <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+            <p className="text-sm font-medium text-blue-800 mb-2 flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-blue-500" /> Informação:
+            </p>
+            <ul className="text-sm text-blue-700 space-y-1">
+              <li>• A conversa será removida apenas da sua lista</li>
+              <li>• O outro participante ainda terá acesso à conversa</li>
+              <li>• Você não receberá mais mensagens desta conversa</li>
+              <li>• Esta ação não pode ser desfeita</li>
+            </ul>
+          </div>
+        </div>
+      </ResponsiveModal>
 
       {/* Dialog de Denúncia */}
       {conversationData && messages && (

@@ -7,16 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useAuthContext } from "@/contexts/AuthContext";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
+import { useDateFormat } from "@/hooks/useDateFormat";
 
 interface AutomaticPostProps {
   post: {
@@ -47,25 +39,7 @@ export function AutomaticPost({
   const { user } = useAuthContext();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
-    );
-
-    if (diffInHours < 1) {
-      const diffInMinutes = Math.floor(
-        (now.getTime() - date.getTime()) / (1000 * 60),
-      );
-      return `${diffInMinutes}m`;
-    } else if (diffInHours < 24) {
-      return `${diffInHours}h`;
-    } else {
-      const diffInDays = Math.floor(diffInHours / 24);
-      return `${diffInDays}d`;
-    }
-  };
+  const { formatTimeAgo } = useDateFormat();
 
   const getPostIcon = (type: string) => {
     switch (type) {
@@ -203,22 +177,25 @@ export function AutomaticPost({
         </CardContent>
       </Card>
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Deletar Notificação</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja deletar esta notificação? Esta ação não
-              pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>
+      <ResponsiveModal
+        isOpen={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Deletar Notificação"
+        description="Tem certeza que deseja deletar esta notificação? Esta ação não pode ser desfeita."
+        footer={
+          <div className="flex gap-2 w-full sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={isDeleting}
+              className="flex-1 sm:flex-none"
+            >
               Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction
+            </Button>
+            <Button
+              variant="destructive"
               onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700"
+              className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white"
               disabled={isDeleting}
             >
               {isDeleting ? (
@@ -229,10 +206,12 @@ export function AutomaticPost({
               ) : (
                 "Deletar"
               )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </div>
+        }
+      >
+        <div />
+      </ResponsiveModal>
     </>
   );
 }

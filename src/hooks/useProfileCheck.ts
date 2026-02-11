@@ -1,102 +1,89 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 
+/**
+ * Hook centralizado para verificar se o perfil do usuário está completo.
+ * Redireciona para o onboarding se faltarem informações essenciais.
+ */
 export function useProfileCheck() {
   const { user, profile } = useAuthContext();
   const router = useRouter();
+  const pathname = usePathname();
   const [isChecking, setIsChecking] = useState(true);
 
+  const checkProfile = useCallback(async () => {
+    if (!user) {
+      setIsChecking(false);
+      return;
+    }
+
+    // Evitar loop de redirecionamento em páginas de edição/onboarding
+    const excludedPaths = ["/onboarding", "/editarperfil", "/editar-perfil"];
+    if (excludedPaths.some((path) => pathname?.startsWith(path))) {
+      setIsChecking(false);
+      return;
+    }
+
+    // Se já temos o perfil no contexto, verificar se o perfil_completed está marcado
+    if (profile && profile.profile_completed) {
+      setIsChecking(false);
+      return;
+    }
+
+    try {
+      // Buscar do banco se não estiver no contexto ou se precisarmos de confirmação
+      const { data: profileData, error } = await supabase
+        .from("profiles")
+        .select(
+          "id, full_name, phone, location_state, location_city, profile_completed",
+        )
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Erro ao verificar perfil no Supabase:", error);
+        return;
+      }
+
+      if (!profileData) {
+        console.log("🔍 Perfil não encontrado, enviando para onboarding");
+        router.push("/onboarding");
+        return;
+      }
+
+      const isProfileCompleted = profileData.profile_completed === true;
+
+      // Verificação de segurança adicional para campos essenciais
+      const hasEssentialData =
+        profileData.full_name &&
+        profileData.full_name !== "Usuário" &&
+        profileData.phone &&
+        profileData.location_state &&
+        profileData.location_city;
+
+      if (!isProfileCompleted || !hasEssentialData) {
+        console.log("🔍 Perfil incompleto ou não marcado como completo");
+        router.push("/onboarding");
+      }
+    } catch (error) {
+      console.error("Erro crítico na verificação de perfil:", error);
+    } finally {
+      setIsChecking(false);
+    }
+  }, [user, profile, router, pathname]);
+
   useEffect(() => {
-    const checkProfile = async () => {
-      if (!user) {
-        setIsChecking(false);
-        return;
-      }
-
-      // Verificar se já está na página de onboarding ou editar perfil para evitar loop
-      const currentPath = window.location.pathname;
-      if (
-        currentPath === "/onboarding" ||
-        currentPath.startsWith("/editarperfil") ||
-        currentPath === "/editar-perfil"
-      ) {
-        setIsChecking(false);
-        return;
-      }
-
-      try {
-        // Buscar perfil no banco para verificação completa
-        const { data: profileData, error } = await supabase
-          .from("profiles")
-          .select(
-            "id, full_name, phone, location_state, location_city, profile_completed, user_type",
-          )
-          .eq("id", user.id)
-          .maybeSingle();
-
-        if (error) {
-          console.error("Erro ao verificar perfil:", error);
-          setIsChecking(false);
-          return;
-        }
-
-        // Se não tem perfil no banco, redirecionar para onboarding
-        if (!profileData) {
-          console.log(
-            "🔍 Perfil não encontrado, redirecionando para onboarding",
-          );
-          router.push("/onboarding");
-          setIsChecking(false);
-          return;
-        }
-
-        // Verificar se o perfil tem dados básicos preenchidos
-        const hasBasicData =
-          profileData.full_name &&
-          profileData.full_name !== "Usuário" &&
-          profileData.full_name.trim() !== "" &&
-          profileData.phone &&
-          profileData.phone.trim() !== "" &&
-          profileData.location_state &&
-          profileData.location_city;
-
-        // Verificar se o perfil foi marcado como completado
-        const isProfileCompleted = profileData.profile_completed === true;
-
-        console.log("🔍 Verificação do perfil:", {
-          hasBasicData,
-          isProfileCompleted,
-          full_name: profileData.full_name,
-          phone: profileData.phone,
-          location_state: profileData.location_state,
-          location_city: profileData.location_city,
-        });
-
-        // Se o perfil não tem dados básicos OU não foi marcado como completado, redirecionar para onboarding
-        if (!hasBasicData || !isProfileCompleted) {
-          console.log("🔍 Perfil incompleto, redirecionando para onboarding");
-          router.push("/onboarding");
-        } else {
-          console.log("✅ Perfil completo, permitindo acesso");
-        }
-      } catch (error) {
-        console.error("Erro ao verificar perfil:", error);
-      } finally {
-        setIsChecking(false);
-      }
-    };
-
-    // Adicionar um delay para evitar verificações muito rápidas
+    // Delay estratégico para permitir que o AuthContext carregue
     const timeoutId = setTimeout(() => {
       checkProfile();
-    }, 300);
+    }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [user, profile, router]);
+  }, [checkProfile]);
 
   return { isChecking };
 }

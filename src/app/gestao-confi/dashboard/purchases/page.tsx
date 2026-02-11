@@ -106,7 +106,7 @@ export default function AdminPurchasesPage() {
   const fetchStats = useCallback(async () => {
     setStatsLoading(true);
     try {
-      const response = await fetch("/api/admin/purchases/stats");
+      const response = await fetch("/api/gestao-confi/purchases/stats");
       if (response.ok) {
         const data = await response.json();
         setStats(data);
@@ -130,7 +130,7 @@ export default function AdminPurchasesPage() {
       params.append("page", filters.page.toString());
       params.append("limit", filters.limit.toString());
 
-      const response = await fetch(`/api/admin/purchases?${params}`);
+      const response = await fetch(`/api/gestao-confi/purchases?${params}`);
       if (response.ok) {
         const data = await response.json();
         setPurchases(data.purchases);

@@ -54,7 +54,7 @@ export function PurchaseDetailModal({
   const fetchPurchaseDetails = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/purchases/${purchaseId}`);
+      const response = await fetch(`/api/gestao-confi/purchases/${purchaseId}`);
       if (response.ok) {
         const data = await response.json();
         setPurchase(data.purchase);
@@ -74,14 +74,17 @@ export function PurchaseDetailModal({
   const handleApprove = async () => {
     setActionLoading(true);
     try {
-      const response = await fetch(`/api/admin/purchases/${purchaseId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "approve",
-          admin_note: adminNote,
-        }),
-      });
+      const response = await fetch(
+        `/api/gestao-confi/purchases/${purchaseId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "approve",
+            admin_note: adminNote,
+          }),
+        },
+      );
 
       if (response.ok) {
         toast.success("Compra aprovada com sucesso!");
@@ -106,14 +109,17 @@ export function PurchaseDetailModal({
 
     setActionLoading(true);
     try {
-      const response = await fetch(`/api/admin/purchases/${purchaseId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "reject",
-          admin_note: adminNote,
-        }),
-      });
+      const response = await fetch(
+        `/api/gestao-confi/purchases/${purchaseId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "reject",
+            admin_note: adminNote,
+          }),
+        },
+      );
 
       if (response.ok) {
         toast.success("Compra rejeitada");

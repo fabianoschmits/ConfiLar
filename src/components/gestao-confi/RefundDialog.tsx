@@ -35,7 +35,7 @@ export function RefundDialog({
     setLoading(true);
     try {
       const response = await fetch(
-        `/api/admin/purchases/${purchaseId}/refund`,
+        `/api/gestao-confi/purchases/${purchaseId}/refund`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

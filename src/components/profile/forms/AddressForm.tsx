@@ -15,6 +15,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { ValidationUtils } from "@/lib/validation";
 import { LocationComboboxesMultiCountry } from "@/components/ui/LocationComboboxesMultiCountry";
+import { useProfileUpdate } from "@/hooks/useProfileUpdate";
 
 const addressSchema = z.object({
   country: z.string(),
@@ -96,38 +97,29 @@ export function AddressForm({ onSuccess }: { onSuccess?: () => void }) {
     loadProfileData();
   }, [user, setValue]);
 
+  const { updateProfile, isUpdating: isProfileUpdating } = useProfileUpdate();
+
   const onSubmit = async (data: AddressFormData) => {
     if (!user) return;
     setIsLoading(true);
     try {
-      await supabase
-        .from("profiles")
-        .update({
-          country: data.country,
-          location_state: data.location_state,
-          location_city: data.location_city,
-          neighborhood: data.neighborhood,
-          address: data.address,
-          address_number: data.address_number,
-          zip_code: data.zip_code.replace(/\D/g, ""),
-        })
-        .eq("id", user.id);
-      await supabase.auth.updateUser({
-        data: {
-          country: data.country,
-          location_state: data.location_state,
-          location_city: data.location_city,
-          neighborhood: data.neighborhood,
-          address: data.address,
-          address_number: data.address_number,
-          zip_code: data.zip_code.replace(/\D/g, ""),
-        },
+      const { success } = await updateProfile({
+        country: data.country,
+        location_state: data.location_state,
+        location_city: data.location_city,
+        neighborhood: data.neighborhood,
+        address: data.address,
+        address_number: data.address_number,
+        zip_code: data.zip_code.replace(/\D/g, ""),
       });
-      toast.success("🎉 Endereço salvo!");
-      await refreshAuth();
-      if (onSuccess) onSuccess();
+
+      if (success) {
+        toast.success("🎉 Endereço salvo!");
+        if (onSuccess) onSuccess();
+      }
     } catch (error: any) {
-      toast.error("Erro ao salvar");
+      // O hook já mostra toast de erro genérico, mas podemos adicionar contexto se necessário
+      console.error("Erro ao salvar endereço:", error);
     } finally {
       setIsLoading(false);
     }

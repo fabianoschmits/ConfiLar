@@ -7,6 +7,7 @@ import { Camera, Upload, RefreshCw, Save, Sparkles } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useProfileUpdate } from "@/hooks/useProfileUpdate";
 
 export function AvatarSelectionForm({ onSuccess }: { onSuccess?: () => void }) {
   const { user, profile, refreshAuth } = useAuthContext();
@@ -67,6 +68,8 @@ export function AvatarSelectionForm({ onSuccess }: { onSuccess?: () => void }) {
     }
   };
 
+  const { updateProfile, isUpdating: isProfileUpdating } = useProfileUpdate();
+
   const handleSave = async () => {
     if (!user || !preview) return;
     setIsLoading(true);
@@ -78,15 +81,17 @@ export function AvatarSelectionForm({ onSuccess }: { onSuccess?: () => void }) {
         avatarUrl = supabase.storage.from("avatars").getPublicUrl(fileName)
           .data.publicUrl;
       }
-      await supabase
-        .from("profiles")
-        .update({ avatar_url: avatarUrl })
-        .eq("id", user.id);
-      toast.success("🎉 Avatar atualizado!");
-      await refreshAuth();
-      if (onSuccess) onSuccess();
+
+      const { success } = await updateProfile({
+        avatar_url: avatarUrl,
+      });
+
+      if (success) {
+        toast.success("🎉 Avatar atualizado!");
+        if (onSuccess) onSuccess();
+      }
     } catch (error) {
-      toast.error("Erro ao salvar");
+      console.error("Erro ao salvar avatar:", error);
     } finally {
       setIsLoading(false);
     }

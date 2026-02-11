@@ -35,6 +35,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { services } from "@/data/services";
 import { toast } from "sonner";
+import { useProfileUpdate } from "@/hooks/useProfileUpdate";
 
 const professionalDataSchema = z.object({
   experience_years: z.string().optional(),
@@ -119,26 +120,27 @@ export function ProfessionalDataForm({
     loadProfileData();
   }, [user, setValue]);
 
+  const { updateProfile, isUpdating: isProfileUpdating } = useProfileUpdate();
+
   const onSubmit = async (data: ProfessionalDataFormData) => {
     if (!user) return;
     setIsLoading(true);
     try {
-      await supabase
-        .from("profiles")
-        .update({
-          professional_experience_years: data.experience_years
-            ? parseInt(data.experience_years)
-            : 0,
-          professional_services: selectedServices,
-          referencia_profissional: data.referencia_profissional || null,
-          turno_trabalho: data.turno_trabalho || null,
-        })
-        .eq("id", user.id);
-      toast.success("🎉 Dados profissionais salvos!");
-      await refreshAuth();
-      if (onSuccess) onSuccess();
+      const { success } = await updateProfile({
+        professional_experience_years: data.experience_years
+          ? parseInt(data.experience_years)
+          : 0,
+        professional_services: selectedServices,
+        referencia_profissional: data.referencia_profissional || null,
+        turno_trabalho: data.turno_trabalho || null,
+      });
+
+      if (success) {
+        toast.success("🎉 Dados profissionais salvos!");
+        if (onSuccess) onSuccess();
+      }
     } catch (error) {
-      toast.error("Erro ao salvar");
+      console.error("Erro ao salvar dados profissionais:", error);
     } finally {
       setIsLoading(false);
     }

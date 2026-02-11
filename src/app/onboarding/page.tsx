@@ -149,8 +149,12 @@ type AvatarSelection = {
   preview?: string;
 };
 
+import { LoadingButton } from "@/components/ui/LoadingButton";
+import { useProfileUpdate } from "@/hooks/useProfileUpdate";
+
 export default function OnboardingPage() {
   const { user, refreshAuth } = useAuthContext();
+  const { updateProfile } = useProfileUpdate();
   const {
     country: contextCountry,
     locale: contextLocale,
@@ -473,34 +477,13 @@ export default function OnboardingPage() {
   };
 
   // Formatação automática para telefone
-  const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, "");
-    if (numbers.length <= 2) return numbers;
-    if (numbers.length <= 6)
-      return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
-    if (numbers.length <= 10)
-      return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
-    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
-  };
-
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhone(e.target.value);
+    const formatted = ValidationUtils.formatPhone(e.target.value);
     setValue("phone", formatted);
   };
 
-  // Formatação automática para CPF
-  const formatCPF = (value: string) => {
-    const numbers = value.replace(/\D/g, "");
-    if (numbers.length <= 3) return numbers;
-    if (numbers.length <= 6)
-      return `${numbers.slice(0, 3)}.${numbers.slice(3)}`;
-    if (numbers.length <= 9)
-      return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`;
-    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9, 11)}`;
-  };
-
   const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatCPF(e.target.value);
+    const formatted = ValidationUtils.formatCPF(e.target.value);
     setValue("cpf_cnpj", formatted);
   };
 
@@ -749,62 +732,12 @@ export default function OnboardingPage() {
         // A idade será calculada automaticamente pelo trigger no banco
       };
 
-      // Usar upsert para inserir ou atualizar na tabela profiles
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .upsert(profileData, {
-          onConflict: "id",
-        });
+      const { success } = await updateProfile(profileData);
 
-      if (profileError) {
-        console.error("❌ Erro ao salvar perfil:", profileError);
-        toast.error("Erro ao salvar perfil: " + profileError.message);
+      if (!success) {
+        // O erro já foi logado e mostrado no toast pelo hook
+        setIsLoading(false);
         return;
-      }
-
-      // Atualizar metadados do usuário no auth.users para aparecer no dashboard do Supabase
-      const { error: userUpdateError } = await supabase.auth.updateUser({
-        data: {
-          // Dados básicos
-          full_name: data.full_name,
-          phone: data.phone,
-          user_type: data.user_type,
-          avatar_url: avatarUrl,
-          onboarding_completed: true,
-
-          // Dados pessoais completos
-          bio: autoBio,
-          cpf_cnpj: finalCpf, // CPF digitado no formulário (tem prioridade) ou do banco como fallback
-          birth_date: data.birth_date,
-          gender: data.gender,
-
-          // Dados de localização
-          country: data.country || "BR",
-          locale: data.locale || "pt-BR",
-          location_state: data.location_state,
-          location_city: data.location_city,
-          neighborhood: data.neighborhood,
-          address: data.address,
-
-          // Dados profissionais
-          services_offered: selectedServices,
-          experience_years: data.experience_years,
-          professional_experience_years: data.experience_years
-            ? parseInt(data.experience_years.split("-")[0]) || 0
-            : 0,
-
-          // Dados de verificação
-          email_verified: true,
-          phone_verified: false,
-        },
-      });
-
-      if (userUpdateError) {
-        console.warn(
-          "⚠️ Erro ao atualizar metadados do usuário:",
-          userUpdateError,
-        );
-        // Não falhar o processo, apenas avisar
       }
 
       console.log("✅ Perfil salvo com sucesso!");

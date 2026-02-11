@@ -19,16 +19,7 @@ import Link from "next/link";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { ReactionButton } from "./ReactionButton";
 import { CommentSection } from "./CommentSection";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Trash2, Loader2 } from "lucide-react";
 
 interface WelcomePostProps {
@@ -225,22 +216,25 @@ export function WelcomePost({
         </CardContent>
       </Card>
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Deletar Post</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja deletar este post de boas-vindas? Esta ação
-              não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>
+      <ResponsiveModal
+        isOpen={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Deletar Post"
+        description="Tem certeza que deseja deletar este post de boas-vindas? Esta ação não pode ser desfeita."
+        footer={
+          <div className="flex gap-2 w-full sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={isDeleting}
+              className="flex-1 sm:flex-none"
+            >
               Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction
+            </Button>
+            <Button
+              variant="destructive"
               onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700"
+              className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white"
               disabled={isDeleting}
             >
               {isDeleting ? (
@@ -251,10 +245,12 @@ export function WelcomePost({
               ) : (
                 "Deletar"
               )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </div>
+        }
+      >
+        <div />
+      </ResponsiveModal>
     </>
   );
 }
