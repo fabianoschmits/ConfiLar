@@ -417,9 +417,11 @@ export default function ComprasPage() {
                                 <div>
                                   <div className="flex flex-wrap items-center gap-2">
                                     <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
-                                      {purchase.package_id
-                                        ? `Pacote ${purchase.package_id}`
-                                        : "Compra Personalizada"}
+                                      {purchase.package?.name
+                                        ? `Pacote ${purchase.package.name}`
+                                        : purchase.package_id
+                                          ? `Pacote ${purchase.package_id.substring(0, 8)}`
+                                          : "Compra Personalizada"}
                                     </h3>
                                     <Badge className={status.color}>
                                       <span className="flex items-center gap-1">
@@ -642,7 +644,9 @@ export default function ComprasPage() {
             selectedPurchase
               ? {
                   id: selectedPurchase.id,
-                  name: `Compra #${selectedPurchase.id.substring(0, 8)}`,
+                  name: selectedPurchase.package?.name
+                    ? `Pacote ${selectedPurchase.package.name}`
+                    : `Compra #${selectedPurchase.id.substring(0, 8)}`,
                   points: selectedPurchase.points_received || 0,
                   price: formatCurrency(selectedPurchase.amount_brl || 0),
                   priceValue: selectedPurchase.amount_brl || 0,

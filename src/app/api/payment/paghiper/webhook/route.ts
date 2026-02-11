@@ -7,7 +7,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
-const PAGHIPER_TOKEN = "8PT5PS2TTQ2AZ9U05BQJB91TDF11SBE7QPQQXMQRAY8Y";
+const PAGHIPER_TOKEN = process.env.PAGHIPER_TOKEN!;
 const PAGHIPER_API_KEY = process.env.PAGHIPER_API_KEY!;
 
 export async function POST(request: NextRequest) {
@@ -21,8 +21,10 @@ export async function POST(request: NextRequest) {
     if (contentType.includes("application/json")) {
       body = await request.json();
     } else {
-      const formData = await request.formData();
-      body = Object.fromEntries(formData);
+      // Handle x-www-form-urlencoded more robustly
+      const text = await request.text();
+      const params = new URLSearchParams(text);
+      body = Object.fromEntries(params);
     }
 
     const { transaction_id, notification_id, apiKey } = body;
@@ -52,7 +54,7 @@ export async function POST(request: NextRequest) {
     // Note: status check endpoint usually requires POST with token/apiKey/notification_id
     const verifyPayload = {
       token: PAGHIPER_TOKEN,
-      api_key: PAGHIPER_API_KEY,
+      apiKey: PAGHIPER_API_KEY,
       notification_id: notification_id,
       transaction_id: transaction_id,
     };

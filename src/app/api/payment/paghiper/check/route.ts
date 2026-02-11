@@ -3,7 +3,7 @@ import { withAuth } from "@/lib/authenticatedRoute";
 import { createClient } from "@supabase/supabase-js";
 
 // Token fornecido pelo usuário para verificação
-const PAGHIPER_TOKEN = "8PT5PS2TTQ2AZ9U05BQJB91TDF11SBE7QPQQXMQRAY8Y";
+const PAGHIPER_TOKEN = process.env.PAGHIPER_TOKEN!;
 const PAGHIPER_API_KEY = process.env.PAGHIPER_API_KEY!;
 
 const supabaseAdmin = createClient(
@@ -52,7 +52,7 @@ export const GET = withAuth(
 
         const verifyPayload = {
           token: PAGHIPER_TOKEN,
-          api_key: PAGHIPER_API_KEY,
+          apiKey: PAGHIPER_API_KEY,
           transaction_id: purchase.payment_id,
         };
 
@@ -126,7 +126,7 @@ export const GET = withAuth(
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                  api_key: PAGHIPER_API_KEY,
+                  apiKey: PAGHIPER_API_KEY,
                   token: PAGHIPER_TOKEN,
                   transaction_id: transactionIdFromDB,
                 }),

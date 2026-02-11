@@ -14,6 +14,7 @@ import {
   Activity,
   LogOut,
   Menu,
+  ShoppingCart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -35,6 +36,12 @@ export const adminNavItems = [
     label: "Usuários",
     icon: Users,
     description: "Gerenciar usuários",
+  },
+  {
+    href: "/gestao-confi/dashboard/purchases",
+    label: "Compras",
+    icon: ShoppingCart,
+    description: "Gerenciar compras de pontos",
   },
   {
     href: "/gestao-confi/dashboard/posts",
