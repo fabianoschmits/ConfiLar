@@ -178,461 +178,248 @@ export default function ComprasPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-black p-4 sm:p-6">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <ShoppingBag className="w-6 h-6 sm:w-8 sm:h-8" />
-                Minhas Compras
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">
-                Histórico completo de suas compras de ConfiPoints
-              </p>
-            </div>
-            <Link href="/confipoints/comprar">
-              <Button className="w-full sm:w-auto">
-                <Package className="w-4 h-4 mr-2" />
-                Nova Compra
-              </Button>
-            </Link>
-          </div>
-
-          {/* Estatísticas - Mobile: Lista compacta, Desktop: Cards */}
-          <div className="sm:hidden">
-            {/* Versão Mobile: Lista compacta */}
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-2">
-              <div className="flex items-center justify-between py-1.5 border-b border-gray-200 dark:border-gray-800">
-                <div className="flex items-center gap-2">
-                  <ShoppingBag className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  <span className="text-xs text-gray-600 dark:text-gray-400">
-                    Total de Compras
-                  </span>
+          <div className="mb-8">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center">
+                  <ShoppingBag className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                 </div>
-                <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                  {stats.total}
-                </span>
-              </div>
-              <div className="flex items-center justify-between py-1.5 border-b border-gray-200 dark:border-gray-800">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
-                  <span className="text-xs text-gray-600 dark:text-gray-400">
-                    Aprovadas
-                  </span>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    Minhas Compras
+                  </h1>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Acompanhe seu histórico de aquisição de ConfiPoints
+                  </p>
                 </div>
-                <span className="text-sm font-semibold text-green-600 dark:text-green-400">
-                  {stats.approved}
-                </span>
               </div>
-              <div className="flex items-center justify-between py-1.5 border-b border-gray-200 dark:border-gray-800">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
-                  <span className="text-xs text-gray-600 dark:text-gray-400">
-                    Pendentes
-                  </span>
-                </div>
-                <span className="text-sm font-semibold text-yellow-600 dark:text-yellow-400">
-                  {stats.pending}
-                </span>
-              </div>
-              <div className="flex items-center justify-between py-1.5">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                  <span className="text-xs text-gray-600 dark:text-gray-400">
-                    Total Gasto
-                  </span>
-                </div>
-                <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                  {formatCurrency(stats.totalSpent)}
-                </span>
-              </div>
+              <Link href="/confipoints/comprar">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hidden sm:flex gap-2"
+                >
+                  <Package className="w-4 h-4" />
+                  Nova Compra
+                </Button>
+              </Link>
             </div>
           </div>
 
-          {/* Versão Desktop: Cards */}
-          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
+          {/* Estatísticas - Ajustadas com Detalhe da Marca */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <ShoppingBag className="w-5 h-5 text-[#00b0b0]" />
+                  </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Total de Compras
+                    <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                      Totais
                     </p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                    <p className="text-base font-bold text-gray-900 dark:text-white">
                       {stats.total}
                     </p>
                   </div>
-                  <ShoppingBag className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
+            <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <CheckCircle2 className="w-5 h-5 text-[#00b0b0]" />
+                  </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
                       Aprovadas
                     </p>
-                    <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
+                    <p className="text-base font-bold text-gray-900 dark:text-white">
                       {stats.approved}
                     </p>
                   </div>
-                  <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
+            <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <Clock className="w-5 h-5 text-[#00b0b0]" />
+                  </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
                       Pendentes
                     </p>
-                    <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mt-1">
+                    <p className="text-base font-bold text-gray-900 dark:text-white">
                       {stats.pending}
                     </p>
                   </div>
-                  <Clock className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
+            <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <CreditCard className="w-5 h-5 text-[#00b0b0]" />
+                  </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Total Gasto
+                    <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                      Investido
                     </p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                    <p className="text-base font-bold text-gray-900 dark:text-white">
                       {formatCurrency(stats.totalSpent)}
                     </p>
                   </div>
-                  <CreditCard className="w-8 h-8 text-purple-600 dark:text-purple-400" />
                 </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Filtros */}
-          <Card>
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
-                  <Input
-                    placeholder="Buscar por ID, código de pagamento, nome ou email..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 sm:pl-10"
-                  />
-                </div>
-                <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
-                  <Button
-                    variant={statusFilter === "all" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setStatusFilter("all")}
-                    className="whitespace-nowrap"
-                  >
-                    <Filter className="w-4 h-4 mr-2" />
-                    Todas
-                  </Button>
-                  <Button
-                    variant={statusFilter === "pending" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setStatusFilter("pending")}
-                    className="whitespace-nowrap"
-                  >
-                    Pendentes
-                  </Button>
-                  <Button
-                    variant={
-                      statusFilter === "approved" ? "default" : "outline"
-                    }
-                    size="sm"
-                    onClick={() => setStatusFilter("approved")}
-                    className="whitespace-nowrap"
-                  >
-                    Aprovadas
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex flex-col sm:flex-row gap-4 items-center">
+            <div className="relative w-full sm:flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Buscar por ID..."
+                className="pl-9 h-9 text-sm border-gray-200 dark:border-gray-800 focus-visible:ring-purple-500"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button
+                variant={statusFilter === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setStatusFilter("all")}
+                className="h-9 px-4 text-xs"
+              >
+                Todas
+              </Button>
+              <Button
+                variant={statusFilter === "pending" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setStatusFilter("pending")}
+                className="h-9 px-4 text-xs"
+              >
+                Pendentes
+              </Button>
+              <Button
+                variant={statusFilter === "approved" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setStatusFilter("approved")}
+                className="h-9 px-4 text-xs"
+              >
+                Aprovadas
+              </Button>
+            </div>
+          </div>
 
-          {/* Lista de Compras */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Histórico de Compras</span>
-                <span className="text-sm font-normal text-gray-600 dark:text-gray-400">
-                  {filteredPurchases.length}{" "}
-                  {filteredPurchases.length === 1 ? "compra" : "compras"}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0 sm:p-6">
-              {filteredPurchases.length === 0 ? (
-                <div className="text-center py-12 px-4">
-                  <ShoppingBag className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    Nenhuma compra encontrada
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-6">
-                    {searchTerm || statusFilter !== "all"
-                      ? "Tente ajustar os filtros de busca"
-                      : "Você ainda não realizou nenhuma compra de ConfiPoints"}
-                  </p>
-                  {!searchTerm && statusFilter === "all" && (
-                    <Link href="/confipoints/comprar">
-                      <Button>
-                        <Package className="w-4 h-4 mr-2" />
-                        Fazer Primeira Compra
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-              ) : (
-                <div className="divide-y divide-gray-200 dark:divide-gray-800">
-                  {filteredPurchases.map((purchase) => {
-                    const status =
-                      statusConfig[purchase.status as PurchaseStatus] ||
-                      statusConfig.pending;
-                    const customerData = purchase.customer_data as any;
-                    const paymentData = purchase.payment_data as any;
-
-                    return (
-                      <div
-                        key={purchase.id}
-                        className="p-4 sm:p-6 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
-                      >
-                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                          {/* Informações principais */}
-                          <div className="flex-1 space-y-3">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                              <div className="flex items-center gap-3">
-                                <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-                                  <Package className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                                </div>
-                                <div>
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
-                                      {purchase.package?.name
-                                        ? `Pacote ${purchase.package.name}`
-                                        : purchase.package_id
-                                          ? `Pacote ${purchase.package_id.substring(0, 8)}`
-                                          : "Compra Personalizada"}
-                                    </h3>
-                                    <Badge className={status.color}>
-                                      <span className="flex items-center gap-1">
-                                        {status.icon}
-                                        {status.label}
-                                      </span>
-                                    </Badge>
-                                  </div>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-mono">
-                                      ID: {purchase.id}
-                                    </p>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-6 w-6"
-                                      onClick={() => {
-                                        navigator.clipboard.writeText(
-                                          purchase.id,
-                                        );
-                                        toast.success("ID copiado!");
-                                      }}
-                                    >
-                                      <Copy className="h-3 w-3" />
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-sm">
-                              <div className="flex items-center gap-2">
-                                <Coins className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
-                                <div>
-                                  <p className="text-gray-600 dark:text-gray-400">
-                                    Pontos
-                                  </p>
-                                  <p className="font-semibold text-gray-900 dark:text-white">
-                                    {(
-                                      purchase.points_received || 0
-                                    ).toLocaleString("pt-BR")}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <CreditCard className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                                <div>
-                                  <p className="text-gray-600 dark:text-gray-400">
-                                    Valor
-                                  </p>
-                                  <p className="font-semibold text-gray-900 dark:text-white">
-                                    {formatCurrency(purchase.amount_brl || 0)}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                                <div>
-                                  <p className="text-gray-600 dark:text-gray-400">
-                                    Data
-                                  </p>
-                                  <p className="font-semibold text-gray-900 dark:text-white text-xs sm:text-sm">
-                                    {formatDate(purchase.created_at)}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <CreditCard className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                <div>
-                                  <p className="text-gray-600 dark:text-gray-400">
-                                    Método
-                                  </p>
-                                  <p className="font-semibold text-gray-900 dark:text-white text-xs sm:text-sm">
-                                    {getPaymentMethodLabel(
-                                      purchase.payment_method || "pix",
-                                    )}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Informações do cliente (se disponível) */}
-                            {customerData && (
-                              <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
-                                <p className="text-xs text-gray-600 dark:text-gray-400">
-                                  <span className="font-medium">Cliente:</span>{" "}
-                                  {customerData.name || "N/A"}
-                                  {customerData.email &&
-                                    ` • ${customerData.email}`}
-                                </p>
-                              </div>
-                            )}
-
-                            {/* Informações de pagamento (se disponível) */}
-                            {purchase.payment_id && (
-                              <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
-                                <p className="text-xs text-gray-600 dark:text-gray-400">
-                                  <span className="font-medium">
-                                    ID Pagamento:
-                                  </span>{" "}
-                                  {purchase.payment_id}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Ações */}
-                          <div className="flex flex-col sm:flex-row gap-3 lg:ml-4 items-center">
-                            {purchase.status === "pending" && (
-                              <>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="w-full sm:w-auto hover:bg-gray-100 dark:hover:bg-gray-800"
-                                  onClick={async () => {
-                                    setIsCheckingPayment(purchase.id);
-                                    try {
-                                      const response = await fetch(
-                                        `/api/payment/paghiper/check?purchase_id=${purchase.id}`,
-                                        { method: "GET" },
-                                      );
-                                      const data = await response.json();
-
-                                      if (response.ok) {
-                                        // Invalidar cache para atualizar UI
-                                        queryClient.invalidateQueries({
-                                          queryKey: [
-                                            "points-purchases",
-                                            user?.id,
-                                          ],
-                                        });
-                                        queryClient.invalidateQueries({
-                                          queryKey: [
-                                            "user-points-balance",
-                                            user?.id,
-                                          ],
-                                        });
-
-                                        if (
-                                          data.status === "approved" ||
-                                          data.paymentStatus === "PAID"
-                                        ) {
-                                          toast.success(
-                                            "Pagamento confirmado! Pontos creditados.",
-                                          );
-                                          setTimeout(() => refetch(), 500);
-                                        } else {
-                                          toast.info(
-                                            `Status processado: ${data.status === "pending" ? "Pendente" : data.status}`,
-                                          );
-                                        }
-                                      } else {
-                                        toast.error(
-                                          data.error || "Erro ao verificar",
-                                        );
-                                      }
-                                    } catch (err) {
-                                      toast.error("Erro de conexão");
-                                    } finally {
-                                      setIsCheckingPayment(null);
-                                    }
-                                  }}
-                                  disabled={isCheckingPayment === purchase.id}
-                                >
-                                  {isCheckingPayment === purchase.id ? (
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                  ) : (
-                                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                                  )}
-                                  Verificar
-                                </Button>
-
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="w-full sm:w-auto hover:bg-gray-100 dark:hover:bg-gray-800"
-                                  onClick={() => {
-                                    setSelectedPurchase(purchase);
-                                    setIsCheckoutOpen(true);
-                                  }}
-                                >
-                                  <ExternalLink className="w-4 h-4 mr-2" />
-                                  Ver QR Code
-                                </Button>
-                              </>
-                            )}
-
-                            {purchase.status === "approved" && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="w-full sm:w-auto text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
-                                disabled
-                              >
-                                <CheckCircle2 className="w-4 h-4 mr-2" />
-                                Concluído
-                              </Button>
-                            )}
+          {/* Lista de Registros */}
+          <div className="space-y-3">
+            {filteredPurchases.length > 0 ? (
+              filteredPurchases.map((purchase) => (
+                <Card
+                  key={purchase.id}
+                  className="border-gray-100 dark:border-gray-800 shadow-none hover:bg-gray-50/50 dark:hover:bg-gray-900/50 transition-colors"
+                >
+                  <CardContent className="p-3">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center">
+                          <Coins className="h-5 w-5 text-purple-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                            Compra de Pontos
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] font-normal py-0 px-1.5 h-4 opacity-70"
+                            >
+                              #{purchase.id.slice(0, 8)}
+                            </Badge>
+                          </p>
+                          <div className="flex items-center gap-3 mt-0.5">
+                            <span className="text-[11px] text-gray-500 flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              {formatDate(purchase.created_at)}
+                            </span>
+                            <span className="text-[11px] text-gray-500 flex items-center gap-1">
+                              <CreditCard className="w-3 h-3" />
+                              {getPaymentMethodLabel(
+                                purchase.payment_method || "pix",
+                              )}
+                            </span>
                           </div>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+
+                      <div className="flex items-center justify-between md:justify-end gap-6 md:gap-8 pt-3 md:pt-0 border-t md:border-0 border-gray-100 dark:border-gray-800">
+                        <div className="text-left md:text-right">
+                          <p className="text-sm font-bold text-gray-900 dark:text-white">
+                            {(purchase.points_received || 0).toLocaleString()}{" "}
+                            pts
+                          </p>
+                          <p className="text-[10px] text-gray-500">
+                            {formatCurrency(purchase.amount_brl || 0)}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium border ${
+                              purchase.status === "approved"
+                                ? "bg-green-50 text-green-700 border-green-100 dark:bg-green-900/10 dark:text-green-400 dark:border-green-800/30"
+                                : purchase.status === "pending" ||
+                                    purchase.status === "processing"
+                                  ? "bg-yellow-50 text-yellow-700 border-yellow-100 dark:bg-yellow-900/10 dark:text-yellow-400 dark:border-yellow-800/30"
+                                  : "bg-red-50 text-red-700 border-red-100 dark:bg-red-900/10 dark:text-red-400 dark:border-red-800/30"
+                            }`}
+                          >
+                            {purchase.status === "approved" ? (
+                              <CheckCircle2 className="w-3 h-3" />
+                            ) : (
+                              <Clock className="w-3 h-3" />
+                            )}
+                            <span className="capitalize">
+                              {purchase.status}
+                            </span>
+                          </div>
+
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-gray-400 hover:text-purple-600 transition-colors"
+                            onClick={() => {
+                              setSelectedPurchase(purchase);
+                              setIsCheckoutOpen(true);
+                            }}
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="text-center py-12 border-2 border-dashed border-gray-100 dark:border-gray-900 rounded-xl">
+                <ShoppingBag className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-sm text-gray-500">
+                  Nenhuma compra encontrada.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Modal de Checkout para visualizar QR Code */}
       {selectedPurchase && (
         <CheckoutModal
           isOpen={isCheckoutOpen}
@@ -640,36 +427,28 @@ export default function ComprasPage() {
             setIsCheckoutOpen(false);
             setSelectedPurchase(null);
           }}
-          packageData={
-            selectedPurchase
-              ? {
-                  id: selectedPurchase.id,
-                  name: selectedPurchase.package?.name
-                    ? `Pacote ${selectedPurchase.package.name}`
-                    : `Compra #${selectedPurchase.id.substring(0, 8)}`,
-                  points: selectedPurchase.points_received || 0,
-                  price: formatCurrency(selectedPurchase.amount_brl || 0),
-                  priceValue: selectedPurchase.amount_brl || 0,
-                  bonus: 0,
-                }
-              : null
-          }
-          existingPurchase={
-            selectedPurchase
-              ? {
-                  id: selectedPurchase.id,
-                  status: selectedPurchase.status,
-                  payment_id: selectedPurchase.payment_id,
-                  payment_url: selectedPurchase.payment_url,
-                  payment_data: selectedPurchase.payment_data,
-                  points_received: selectedPurchase.points_received || 0,
-                  amount_brl: selectedPurchase.amount_brl || 0,
-                  customer_data: selectedPurchase.customer_data,
-                  expires_at: selectedPurchase.expires_at,
-                  created_at: selectedPurchase.created_at,
-                }
-              : null
-          }
+          packageData={{
+            id: selectedPurchase.id,
+            name:
+              selectedPurchase.package?.name ||
+              `Compra #${selectedPurchase.id.substring(0, 8)}`,
+            points: selectedPurchase.points_received || 0,
+            price: formatCurrency(selectedPurchase.amount_brl || 0),
+            priceValue: selectedPurchase.amount_brl || 0,
+            bonus: 0,
+          }}
+          existingPurchase={{
+            id: selectedPurchase.id,
+            status: selectedPurchase.status,
+            payment_id: selectedPurchase.payment_id,
+            payment_url: selectedPurchase.payment_url,
+            payment_data: selectedPurchase.payment_data,
+            points_received: selectedPurchase.points_received || 0,
+            amount_brl: selectedPurchase.amount_brl || 0,
+            customer_data: selectedPurchase.customer_data,
+            expires_at: selectedPurchase.expires_at,
+            created_at: selectedPurchase.created_at,
+          }}
         />
       )}
     </MainLayout>

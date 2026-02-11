@@ -10,6 +10,10 @@ import { Progress } from "@/components/ui/progress";
 import {
   Coins,
   TrendingUp,
+  TrendingDown,
+  PlusCircle,
+  Trophy,
+  Target,
   Users,
   ShoppingBag,
   ArrowUpRight,
@@ -25,6 +29,7 @@ import {
   DollarSign,
   Zap,
   Star,
+  Plus,
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { usePoints, usePointsHistory } from "@/hooks/usePoints";
@@ -321,192 +326,204 @@ export default function ConfiPointsDashboardPage() {
           <div className="mx-auto max-w-6xl">
             {/* Header */}
             <div className="mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <Coins className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                      {t("myConfiPoints")}
-                    </h1>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      {t("managePoints")}
-                    </p>
-                  </div>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center">
+                  <Coins className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {t("myConfiPoints")}
+                  </h1>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t("managePoints")}
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Cards de Resumo */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              {/* Saldo Atual */}
-              <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-yellow-200 dark:border-yellow-800">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      {t("balance")}
+            {/* Resumo de Saldo e Nível - Sutil com Cor da Marca */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              {/* Card de Saldo */}
+              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <Coins className="w-5 h-5 text-[#00b0b0]" />
                     </div>
-                    <Coins className="h-5 w-5 text-yellow-600" />
-                  </div>
-                  <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                    {loadingPoints
-                      ? "..."
-                      : (balance?.balance || 0).toLocaleString("pt-BR")}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      className={`${currentLevel.bgColor} ${currentLevel.color} border-0`}
-                    >
-                      {currentLevel.icon} {currentLevel.name}
-                    </Badge>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                        {t("balance")}
+                      </p>
+                      <p className="text-base font-bold text-gray-900 dark:text-white">
+                        {loadingPoints
+                          ? "..."
+                          : (balance?.balance || 0).toLocaleString("pt-BR")}
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Total Ganho */}
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      {t("totalEarned")}
+              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <TrendingUp className="w-5 h-5 text-[#00b0b0]" />
                     </div>
-                    <ArrowUpRight className="h-5 w-5 text-green-600" />
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                        {t("totalEarned")}
+                      </p>
+                      <p className="text-base font-bold text-gray-900 dark:text-white">
+                        {loadingPoints
+                          ? "..."
+                          : (balance?.total_earned || 0).toLocaleString(
+                              "pt-BR",
+                            )}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                    {loadingPoints
-                      ? "..."
-                      : (balance?.total_earned || 0).toLocaleString("pt-BR")}
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {t("pointsReceived")}
-                  </p>
                 </CardContent>
               </Card>
 
               {/* Total Gasto */}
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      {t("totalSpent")}
+              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <TrendingDown className="w-5 h-5 text-[#00b0b0]" />
                     </div>
-                    <ArrowDownRight className="h-5 w-5 text-red-600" />
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                        {t("totalSpent")}
+                      </p>
+                      <p className="text-base font-bold text-gray-900 dark:text-white">
+                        {loadingPoints
+                          ? "..."
+                          : (balance?.total_spent || 0).toLocaleString("pt-BR")}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                    {loadingPoints
-                      ? "..."
-                      : (balance?.total_spent || 0).toLocaleString("pt-BR")}
+                </CardContent>
+              </Card>
+
+              {/* Nível e Progresso */}
+              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Trophy className="w-4 h-4 text-[#00b0b0]" />
+                      <span className="text-xs font-bold text-gray-900 dark:text-white capitalize">
+                        {currentLevel.name}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-medium text-gray-500">
+                      {Math.round(progress)}%
+                    </span>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {t("pointsUsed")}
-                  </p>
+                  <Progress
+                    value={progress}
+                    className="h-1.5 bg-gray-100 dark:bg-gray-800 [&>div]:bg-[#00b0b0]"
+                  />
                 </CardContent>
               </Card>
             </div>
 
-            {/* Progresso para Próximo Nível */}
-            {nextLevel && (
-              <Card className="mb-8">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">
-                        {t("progressTo")} {nextLevel.name}
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {t("pointsRemaining")}{" "}
-                        {(
-                          nextLevel.target - (balance?.balance || 0)
-                        ).toLocaleString("pt-BR")}{" "}
-                        {t("points")}
-                      </p>
-                    </div>
-                    <Badge variant="outline">{Math.round(progress)}%</Badge>
-                  </div>
-                  <Progress value={progress} className="h-3" />
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Tabs */}
-            <Tabs
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="space-y-6"
-            >
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="visao-geral">{t("overview")}</TabsTrigger>
-                <TabsTrigger value="ganhar">{t("howToEarn")}</TabsTrigger>
-                <TabsTrigger value="usar">{t("howToUse")}</TabsTrigger>
-                <TabsTrigger value="historico">{t("history")}</TabsTrigger>
+            {/* Seção Principal */}
+            <Tabs defaultValue="visao-geral" className="space-y-6">
+              <TabsList className="bg-gray-100/50 dark:bg-gray-900/50 p-1 border border-gray-200 dark:border-gray-800 rounded-lg">
+                <TabsTrigger
+                  value="visao-geral"
+                  className="rounded-md px-4 py-2 text-xs"
+                >
+                  {t("overview")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="ganhar"
+                  className="rounded-md px-4 py-2 text-xs"
+                >
+                  {t("howToEarn")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="usar"
+                  className="rounded-md px-4 py-2 text-xs"
+                >
+                  {t("howToUse")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="historico"
+                  className="rounded-md px-4 py-2 text-xs"
+                >
+                  {t("history")}
+                </TabsTrigger>
               </TabsList>
 
               {/* Visão Geral */}
               <TabsContent value="visao-geral" className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Ações Rápidas */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Zap className="h-5 w-5 text-yellow-600" />
-                        Ações Rápidas
+                  <Card className="border-gray-200 dark:border-gray-800 shadow-none">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                        <Zap className="h-4 w-4 text-yellow-600" />
+                        {t("quickActions")}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-3">
-                      <Link href="/confipoints/comprar">
+                    <CardContent className="space-y-2">
+                      <Link href="/confipoints/comprar" className="block">
                         <Button
-                          className="w-full justify-between"
+                          className="w-full justify-between h-10 px-3 bg-white hover:bg-gray-50 text-gray-900 border-gray-200 dark:bg-gray-900 dark:text-white dark:border-gray-800 shadow-none"
                           variant="outline"
                         >
-                          <span className="flex items-center gap-2">
-                            <Crown className="h-4 w-4" />
-                            {t("premiumStore")}
+                          <span className="flex items-center gap-2 text-xs">
+                            <PlusCircle className="h-4 w-4 text-purple-600" />
+                            {t("buyPoints")}
                           </span>
-                          <ChevronRight className="h-4 w-4" />
+                          <ChevronRight className="h-3 w-3 text-gray-400" />
                         </Button>
                       </Link>
-                      <Link href="/confipoints/transferir">
+                      <Link href="/confipoints/transferir" className="block">
                         <Button
-                          className="w-full justify-between"
+                          className="w-full justify-between h-10 px-3 bg-white hover:bg-gray-50 text-gray-900 border-gray-200 dark:bg-gray-900 dark:text-white dark:border-gray-800 shadow-none"
                           variant="outline"
                         >
-                          <span className="flex items-center gap-2">
-                            <Send className="h-4 w-4" />
+                          <span className="flex items-center gap-2 text-xs">
+                            <Send className="h-4 w-4 text-purple-600" />
                             {t("transferPoints")}
                           </span>
-                          <ChevronRight className="h-4 w-4" />
+                          <ChevronRight className="h-3 w-3 text-gray-400" />
                         </Button>
                       </Link>
                     </CardContent>
                   </Card>
 
                   {/* Transações Recentes */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <History className="h-5 w-5 text-blue-600" />
+                  <Card className="border-gray-200 dark:border-gray-800 shadow-none">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                        <History className="h-4 w-4 text-blue-600" />
                         {t("latestTransactions")}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       {allTransactions.length === 0 ? (
-                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 text-center py-4">
                           {t("noTransactions")}
                         </p>
                       ) : (
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                           {allTransactions.slice(0, 5).map((transaction) => (
                             <div
                               key={transaction.id}
-                              className="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700"
+                              className="flex items-center justify-between p-2 rounded-md border border-gray-100 dark:border-gray-800"
                             >
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2">
                                 <div
-                                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                                  className={`w-7 h-7 rounded-full flex items-center justify-center ${
                                     transaction.amount > 0
-                                      ? "bg-green-100 dark:bg-green-900/20"
-                                      : "bg-red-100 dark:bg-red-900/20"
+                                      ? "bg-green-50 dark:bg-green-900/10"
+                                      : "bg-red-50 dark:bg-red-900/10"
                                   }`}
                                 >
                                   <div
@@ -519,11 +536,11 @@ export default function ConfiPointsDashboardPage() {
                                     {getTransactionIcon(transaction.type)}
                                   </div>
                                 </div>
-                                <div>
-                                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                <div className="min-w-0">
+                                  <p className="text-xs font-medium text-gray-900 dark:text-white truncate max-w-[150px] sm:max-w-[200px]">
                                     {transaction.description}
                                   </p>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  <p className="text-[10px] text-gray-500">
                                     {formatDistanceToNow(
                                       new Date(transaction.date),
                                       { addSuffix: true, locale: ptBR },
@@ -532,10 +549,10 @@ export default function ConfiPointsDashboardPage() {
                                 </div>
                               </div>
                               <div
-                                className={`text-sm font-bold ${transaction.amount > 0 ? "text-green-600" : "text-red-600"}`}
+                                className={`text-xs font-bold ${transaction.amount > 0 ? "text-green-600" : "text-red-600"}`}
                               >
                                 {transaction.amount > 0 ? "+" : ""}
-                                {transaction.amount}
+                                {transaction.amount.toLocaleString()}
                               </div>
                             </div>
                           ))}

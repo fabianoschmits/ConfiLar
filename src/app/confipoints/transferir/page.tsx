@@ -133,15 +133,15 @@ export default function TransferirConfiPointsPage() {
           <div className="mx-auto max-w-4xl">
             {/* Header */}
             <div className="mb-8">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-                  <Send className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center">
+                  <Send className="h-6 w-6 text-[#00b0b0]" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                     {t("transferPoints")}
                   </h1>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     {t("sendPointsToUsers")}
                   </p>
                 </div>
@@ -150,19 +150,19 @@ export default function TransferirConfiPointsPage() {
 
             {/* Saldo Atual */}
             {balance && (
-              <Card className="mb-8 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Coins className="w-8 h-8 text-purple-600 dark:text-purple-400" />
-                      <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {t("availableBalance")}
-                        </p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                          {balance.balance.toLocaleString()} {t("points")}
-                        </p>
-                      </div>
+              <Card className="mb-8 border-gray-200 dark:border-gray-800 shadow-none">
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <Coins className="w-5 h-5 text-[#00b0b0]" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                        {t("availableBalance")}
+                      </p>
+                      <p className="text-lg font-bold text-gray-900 dark:text-white">
+                        {balance.balance.toLocaleString()} {t("points")}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -372,22 +372,26 @@ export default function TransferirConfiPointsPage() {
                       return (
                         <div
                           key={transfer.id}
-                          className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700"
+                          className="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-gray-800 hover:bg-gray-50/50 transition-colors"
                         >
-                          <div className="flex items-center gap-3 flex-1">
-                            {isSent ? (
-                              <ArrowUpRight className="w-5 h-5 text-red-600 dark:text-red-400" />
-                            ) : (
-                              <ArrowDownRight className="w-5 h-5 text-green-600 dark:text-green-400" />
-                            )}
-                            <Avatar className="w-10 h-10">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div
+                              className={`p-1.5 rounded-full ${isSent ? "bg-red-50 dark:bg-red-900/10" : "bg-green-50 dark:bg-green-900/10"}`}
+                            >
+                              {isSent ? (
+                                <ArrowUpRight className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+                              ) : (
+                                <ArrowDownRight className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+                              )}
+                            </div>
+                            <Avatar className="w-8 h-8">
                               <AvatarImage src={otherUser?.avatar_url} />
-                              <AvatarFallback>
+                              <AvatarFallback className="text-[10px]">
                                 {otherUser?.full_name?.charAt(0) || "U"}
                               </AvatarFallback>
                             </Avatar>
-                            <div className="flex-1">
-                              <p className="font-medium text-gray-900 dark:text-white">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium text-gray-900 dark:text-white truncate">
                                 {isSent ? t("sentTo") : t("receivedFrom")}{" "}
                                 {otherUser?.id ? (
                                   <Link
@@ -400,30 +404,33 @@ export default function TransferirConfiPointsPage() {
                                   tCommon("user")
                                 )}
                               </p>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                              <p className="text-[10px] text-gray-500 dark:text-gray-400">
                                 {new Date(
                                   transfer.created_at,
                                 ).toLocaleDateString("pt-BR")}{" "}
-                                {t("at")}{" "}
+                                •{" "}
                                 {new Date(
                                   transfer.created_at,
-                                ).toLocaleTimeString("pt-BR")}
+                                ).toLocaleTimeString("pt-BR", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
                               </p>
                               {transfer.message && (
-                                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 italic">
+                                <p className="text-[10px] text-gray-400 mt-0.5 italic truncate max-w-[200px]">
                                   "{transfer.message}"
                                 </p>
                               )}
                             </div>
                           </div>
-                          <div className="text-right">
+                          <div className="text-right ml-4">
                             <p
-                              className={`font-semibold text-lg ${isSent ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}
+                              className={`font-bold text-sm ${isSent ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}
                             >
                               {isSent ? "-" : "+"}
                               {transfer.points_amount.toLocaleString()}
                             </p>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                            <p className="text-[9px] text-gray-500 uppercase font-medium">
                               {t("points")}
                             </p>
                           </div>

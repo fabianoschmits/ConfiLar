@@ -203,7 +203,7 @@ export function ModernSidebar() {
             id: "confipoints",
             title: "ConfiPoints",
             icon: <Coins className="h-5 w-5" />,
-            color: "yellow",
+            color: "teal",
             items: [
               {
                 id: "confipoints-dashboard",
@@ -386,6 +386,7 @@ export function ModernSidebar() {
       indigo: "text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-900",
       red: "text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-900",
       gray: "text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-900",
+      teal: "text-[#00b0b0] dark:text-[#00b0b0] bg-[#00b0b0]/10 dark:bg-[#00b0b0]/20",
     };
     return colors[color as keyof typeof colors] || colors.gray;
   };

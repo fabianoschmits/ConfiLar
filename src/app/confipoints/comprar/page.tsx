@@ -159,11 +159,11 @@ export default function ComprarPontosPage() {
       <div className="min-h-screen bg-white dark:bg-black">
         <div className="container py-4 sm:py-8 px-4">
           <div className="mx-auto max-w-6xl">
-            {/* Header - Mobile Optimized */}
+            {/* Header - Mobile Optimized with Brand Color */}
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center">
-                  <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-gray-900 dark:text-white" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center">
+                  <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-[#00b0b0]" />
                 </div>
                 <div>
                   <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
@@ -181,7 +181,7 @@ export default function ComprarPontosPage() {
               <div className="mb-3 p-2 border border-gray-200 dark:border-gray-800 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Coins className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                    <Coins className="h-4 w-4 text-[#00b0b0]" />
                     <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         {t("balance")}
@@ -205,7 +205,7 @@ export default function ComprarPontosPage() {
             <div className="mb-4 p-3 border border-gray-200 dark:border-gray-800 rounded-lg">
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div className="flex items-center gap-2">
-                  <Coins className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  <Coins className="h-4 w-4 text-[#00b0b0]" />
                   <span className="text-sm font-semibold text-gray-900 dark:text-white">
                     {t("conversionExample")}
                   </span>
@@ -244,7 +244,7 @@ export default function ComprarPontosPage() {
                     <div className="space-y-6">
                       {/* Icon & Description */}
                       <div className="text-center">
-                        <div className="mx-auto mb-3 w-16 h-16 border-2 border-gray-300 dark:border-gray-700 rounded-full flex items-center justify-center text-gray-900 dark:text-white">
+                        <div className="mx-auto mb-3 w-16 h-16 bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center text-[#00b0b0]">
                           {activePackage.icon}
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -258,7 +258,7 @@ export default function ComprarPontosPage() {
                           {activePackage.price}
                         </div>
                         <div className="flex items-center justify-center gap-2 mb-2">
-                          <Coins className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                          <Coins className="w-5 h-5 text-[#00b0b0]" />
                           <span className="text-lg font-semibold text-gray-700 dark:text-gray-300">
                             {activePackage.points.toLocaleString("pt-BR")}{" "}
                             pontos
@@ -298,7 +298,7 @@ export default function ComprarPontosPage() {
                       <Button
                         className={`w-full h-12 text-base ${
                           activePackage.popular
-                            ? "bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-900"
+                            ? "bg-[#00b0b0] hover:bg-[#009090] text-white"
                             : "bg-gray-800 hover:bg-gray-900 dark:bg-gray-200 dark:hover:bg-gray-300 text-white dark:text-gray-900"
                         }`}
                         onClick={() => {
@@ -343,7 +343,7 @@ export default function ComprarPontosPage() {
                           </Badge>
                         )}
 
-                        <div className="mb-2 mx-auto w-8 h-8 border border-gray-300 dark:border-gray-700 rounded-full flex items-center justify-center text-gray-900 dark:text-white">
+                        <div className="mb-2 mx-auto w-8 h-8 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center text-[#00b0b0]">
                           {pkg.icon}
                         </div>
 
@@ -356,7 +356,7 @@ export default function ComprarPontosPage() {
                         </p>
 
                         <div className="flex items-center justify-center gap-1">
-                          <Coins className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+                          <Coins className="w-3 h-3 text-[#00b0b0]" />
                           <span className="text-xs text-gray-700 dark:text-gray-300">
                             {pkg.points.toLocaleString("pt-BR")}
                           </span>
