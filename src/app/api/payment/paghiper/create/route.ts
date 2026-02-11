@@ -26,8 +26,8 @@ export const POST = withAuth(
                 );
             }
 
-            // 1. Buscar pacote (Using admin to ensure we can read configs if needed, or public)
-            // Table is `points_packages` NOT `point_packages`
+            // 1. Buscar pacote para garantir que existe e pegar valores
+            // Table is `points_packages`
             const { data: pack } = await supabaseAdmin
                 .from("points_packages")
                 .select("*")
@@ -41,35 +41,30 @@ export const POST = withAuth(
                 );
             }
 
+            // Calculate values
             const amountInCentavos = pack ? Math.round(pack.price_brl * 100) : Math.round(body.amount * 100);
-            // Note: pack.price might be decimal, pack.price_brl is likely the column name in new schema?
-            // Checking economy.ts: `price_brl: number` is correct. `price` was checked previously but `price_brl` is interface.
-
             const pointsAmount = pack ? pack.points : body.points;
-
-            const orderId = crypto.randomUUID();
-
-            // Clean phone
             const phoneClean = customer.phone ? customer.phone.replace(/\D/g, "") : "";
 
-            // 2. Criar Ordem na Tabela `points_purchases`
-            const { error: orderError } = await supabaseAdmin
-                .from("points_purchases")
-                .insert({
-                    id: orderId,
-                    user_id: user.id,
-                    package_id: package_id,
-                    points_received: pointsAmount,
-                    amount_brl: amountInCentavos / 100, // Saving in BRL
-                    payment_method: "pix",
-                    status: "pending",
-                    metadata: { provider: "paghiper", phone: phoneClean }
-                });
+            // 2. Criar Ordem usando RPC (Padrão do sistema)
+            // Isso garante que todas as regras de negócio do banco sejam aplicadas
+            const { data: orderId, error: rpcError } = await supabaseAuth.rpc("create_points_purchase", {
+                p_user_id: user.id,
+                p_package_id: package_id,
+                p_payment_method: "pix",
+            });
 
-            if (orderError) {
-                console.error("Erro ao criar ordem:", orderError);
+            if (rpcError) {
+                console.error("Erro ao criar ordem (RPC):", rpcError);
                 return NextResponse.json(
-                    { error: "Erro ao criar ordem interna.", details: orderError.message },
+                    { error: "Erro ao criar ordem interna.", details: rpcError.message },
+                    { status: 500 }
+                );
+            }
+
+            if (!orderId) {
+                return NextResponse.json(
+                    { error: "Erro ao obter ID da ordem." },
                     { status: 500 }
                 );
             }
@@ -77,7 +72,7 @@ export const POST = withAuth(
             // 3. Montar Payload PagHiper
             const paghiperPayload = {
                 apiKey: PAGHIPER_API_KEY,
-                order_id: orderId,
+                order_id: orderId, // Usar o ID gerado pelo banco
                 payer_email: customer.email,
                 payer_name: customer.name,
                 payer_cpf_cnpj: customer.cpf.replace(/\D/g, ""),
@@ -109,8 +104,7 @@ export const POST = withAuth(
 
             if (data.pix_create_request?.result !== "success") {
                 console.error("Erro PagHiper:", data);
-                // Rollback or update status to failed?
-                // Ideally cancel the pending order
+                // Cancelar a ordem criada se falhar no PagHiper
                 await supabaseAdmin.from("points_purchases").delete().eq("id", orderId);
 
                 return NextResponse.json(
@@ -130,12 +124,24 @@ export const POST = withAuth(
                 pixQrCodeUrl = `data:image/png;base64,${pixQrCodeBase64}`;
             }
 
-            // 5. Atualizar Ordem com ID da transação
-            // Use `points_purchases` NOT `point_orders`
-            await supabaseAdmin
+            // 5. Atualizar Ordem com ID da transação e metadados
+            // Usamos supabaseAdmin para garantir permissão de update
+            const { error: updateError } = await supabaseAdmin
                 .from("points_purchases")
-                .update({ transaction_id: transactionId })
+                .update({
+                    transaction_id: transactionId,
+                    metadata: {
+                        provider: "paghiper",
+                        phone: phoneClean,
+                        generated_at: new Date().toISOString()
+                    }
+                })
                 .eq("id", orderId);
+
+            if (updateError) {
+                console.error("Erro ao atualizar ordem com ID transação:", updateError);
+                // Não falhamos o request aqui pois o PIX foi gerado, mas logamos erro crítico
+            }
 
             return NextResponse.json({
                 orderId,
