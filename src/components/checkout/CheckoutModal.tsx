@@ -209,11 +209,12 @@ export function CheckoutModal({
       return;
     }
 
+
     // Intervalo de verificação: a cada 5 segundos
     const checkInterval = setInterval(async () => {
       try {
         const response = await fetch(
-          `/api/payment/pagouai/check?id=${paymentData.paymentId}&purchase_id=${paymentData.purchaseId}`,
+          `/api/payment/paghiper/check?purchase_id=${paymentData.purchaseId}`,
           {
             method: "GET",
             headers: {
@@ -397,7 +398,7 @@ export function CheckoutModal({
     setError(null);
 
     try {
-      const response = await fetch("/api/payment/pagouai/create", {
+      const response = await fetch("/api/payment/paghiper/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -433,7 +434,7 @@ export function CheckoutModal({
 
       setPaymentData({
         qrCode: data.pixCode, // O código copia e cola vem no campo pixCode
-        qrCodeImage: `data:image/png;base64,${data.qrCode}`, // O base64 vem no campo qrCode
+        qrCodeImage: data.qrCode, // O URL ou Base64 vem no campo qrCode
         paymentId: data.transactionId,
         paymentUrl: data.pixCode,
         expiresAt: data.expiresAt, // Se não vier, deixamos undefined
@@ -468,7 +469,7 @@ export function CheckoutModal({
   };
 
   const checkPaymentStatus = async () => {
-    if (!paymentData?.paymentId || !paymentData?.purchaseId) {
+    if (!paymentData?.purchaseId) {
       toast.error("Dados do pagamento não encontrados");
       return;
     }
@@ -478,7 +479,7 @@ export function CheckoutModal({
 
     try {
       const response = await fetch(
-        `/api/payment/pagouai/check?id=${paymentData.paymentId}&purchase_id=${paymentData.purchaseId}`,
+        `/api/payment/paghiper/check?purchase_id=${paymentData.purchaseId}`,
         {
           method: "GET",
           headers: {

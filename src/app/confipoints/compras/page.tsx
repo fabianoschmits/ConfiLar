@@ -522,7 +522,7 @@ export default function ComprasPage() {
                                     setIsCheckingPayment(purchase.id);
                                     try {
                                       const response = await fetch(
-                                        `/api/payment/pagouai/check?id=${purchase.payment_id}&purchase_id=${purchase.id}`,
+                                        `/api/payment/paghiper/check?purchase_id=${purchase.id}`,
                                         {
                                           method: "GET",
                                           headers: {
@@ -603,7 +603,7 @@ export default function ComprasPage() {
                                       } else {
                                         toast.error(
                                           data.error ||
-                                            "Erro ao verificar pagamento",
+                                          "Erro ao verificar pagamento",
                                         );
                                       }
                                     } catch (err: any) {
@@ -632,21 +632,21 @@ export default function ComprasPage() {
                             {(purchase.payment_url ||
                               purchase.payment_id ||
                               purchase.payment_data) && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedPurchase(purchase);
-                                  setIsCheckoutOpen(true);
-                                }}
-                                className="w-full sm:w-auto"
-                              >
-                                <ExternalLink className="w-4 h-4 mr-2" />
-                                {purchase.status === "approved"
-                                  ? "Ver Detalhes"
-                                  : "Ver QR Code"}
-                              </Button>
-                            )}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedPurchase(purchase);
+                                    setIsCheckoutOpen(true);
+                                  }}
+                                  className="w-full sm:w-auto"
+                                >
+                                  <ExternalLink className="w-4 h-4 mr-2" />
+                                  {purchase.status === "approved"
+                                    ? "Ver Detalhes"
+                                    : "Ver QR Code"}
+                                </Button>
+                              )}
                           </div>
                         </div>
                       </div>
@@ -670,28 +670,28 @@ export default function ComprasPage() {
           packageData={
             selectedPurchase
               ? {
-                  id: selectedPurchase.id,
-                  name: `Compra #${selectedPurchase.id.substring(0, 8)}`,
-                  points: selectedPurchase.points_received || 0,
-                  price: formatCurrency(selectedPurchase.amount_brl || 0),
-                  priceValue: selectedPurchase.amount_brl || 0,
-                  bonus: 0,
-                }
+                id: selectedPurchase.id,
+                name: `Compra #${selectedPurchase.id.substring(0, 8)}`,
+                points: selectedPurchase.points_received || 0,
+                price: formatCurrency(selectedPurchase.amount_brl || 0),
+                priceValue: selectedPurchase.amount_brl || 0,
+                bonus: 0,
+              }
               : null
           }
           existingPurchase={
             selectedPurchase
               ? {
-                  id: selectedPurchase.id,
-                  status: selectedPurchase.status,
-                  payment_id: selectedPurchase.payment_id,
-                  payment_url: selectedPurchase.payment_url,
-                  payment_data: selectedPurchase.payment_data,
-                  points_received: selectedPurchase.points_received || 0,
-                  amount_brl: selectedPurchase.amount_brl || 0,
-                  customer_data: selectedPurchase.customer_data,
-                  created_at: selectedPurchase.created_at,
-                }
+                id: selectedPurchase.id,
+                status: selectedPurchase.status,
+                payment_id: selectedPurchase.payment_id,
+                payment_url: selectedPurchase.payment_url,
+                payment_data: selectedPurchase.payment_data,
+                points_received: selectedPurchase.points_received || 0,
+                amount_brl: selectedPurchase.amount_brl || 0,
+                customer_data: selectedPurchase.customer_data,
+                created_at: selectedPurchase.created_at,
+              }
               : null
           }
         />
