@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -110,19 +103,91 @@ export function ReportDetailsModal({
   ];
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <ShieldAlert className="h-5 w-5 text-red-500" />
-            Detalhes da Denúncia
-          </DialogTitle>
-          <DialogDescription>
-            Protocolo: <span className="font-mono">{report.id}</span>
-          </DialogDescription>
-        </DialogHeader>
+    <ResponsiveModal
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      title="Detalhes da Denúncia"
+      description={`Protocolo: ${report.id}`}
+      className="max-w-2xl"
+      footer={
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
+          {/* Primary Workflow Actions */}
+          {report.status === "pending" && (
+            <Button
+              variant="outline"
+              onClick={() => onUnderReview(report.id)}
+              className="w-full text-xs sm:text-sm px-2"
+            >
+              <Clock className="mr-1.5 h-4 w-4 shrink-0" /> Iniciar Análise
+            </Button>
+          )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+          {(report.status === "pending" || report.status === "reviewing") && (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => onDismiss(report.id)}
+                className="w-full text-xs sm:text-sm px-2"
+              >
+                <Archive className="mr-1.5 h-4 w-4 shrink-0" /> Arquivar
+              </Button>
+              <Button
+                onClick={() => onResolve(report.id)}
+                className="w-full bg-green-600 hover:bg-green-700 text-xs sm:text-sm px-2"
+              >
+                <CheckCircle className="mr-1.5 h-4 w-4 shrink-0" /> Resolver
+              </Button>
+            </>
+          )}
+
+          {/* Revert Action */}
+          {(report.status === "reviewing" ||
+            report.status === "resolved" ||
+            report.status === "dismissed") && (
+            <Button
+              variant="outline"
+              onClick={() => onRevert(report.id)}
+              className="w-full text-xs sm:text-sm px-2"
+            >
+              <RefreshCcw className="mr-1.5 h-4 w-4 shrink-0" /> Reverter
+            </Button>
+          )}
+
+          {/* Ban Action - Only if reported user exists */}
+          {report.reported_user?.id && onBan && (
+            <Button
+              variant="destructive"
+              onClick={() => onBan(report.reported_user!.id)}
+              className="w-full text-xs sm:text-sm px-2"
+            >
+              <Trash2 className="mr-1.5 h-4 w-4 shrink-0" /> Banir
+            </Button>
+          )}
+
+          {/* Delete Action - Only for archived/resolved reports */}
+          {(report.status === "resolved" || report.status === "dismissed") &&
+            onDelete && (
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (
+                    confirm(
+                      "Tem certeza que deseja DELETAR permanentemente esta denúncia? Esta ação não pode ser desfeita.",
+                    )
+                  ) {
+                    onDelete(report.id);
+                  }
+                }}
+                className="w-full text-xs sm:text-sm px-2 bg-red-700 hover:bg-red-800"
+              >
+                <Trash2 className="mr-1.5 h-4 w-4 shrink-0" /> Deletar
+              </Button>
+            )}
+        </div>
+      }
+    >
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Reporter Info */}
           <div className="space-y-3 p-4 border rounded-lg bg-muted/20">
             <h4 className="text-sm font-semibold flex items-center gap-2">
@@ -191,7 +256,7 @@ export function ReportDetailsModal({
           </div>
         </div>
 
-        <div className="space-y-2 mt-4">
+        <div className="space-y-2">
           <h4 className="font-semibold text-sm">Motivo & Descrição</h4>
           <div className="bg-muted p-4 rounded-md space-y-2">
             <Badge variant="outline" className="mb-2">
@@ -214,7 +279,7 @@ export function ReportDetailsModal({
           report.reported_post_id ||
           report.reported_classified_id ||
           report.reported_message_id) && (
-          <div className="space-y-3 mt-4">
+          <div className="space-y-3">
             <h4 className="text-sm font-bold flex items-center gap-2 text-primary">
               {report.reported_content ? (
                 <Eye className="h-4 w-4" />
@@ -317,84 +382,7 @@ export function ReportDetailsModal({
             </Button>
           </div>
         </div>
-
-        <DialogFooter className="border-t pt-4 mt-4">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
-            {/* Primary Workflow Actions */}
-            {report.status === "pending" && (
-              <Button
-                variant="outline"
-                onClick={() => onUnderReview(report.id)}
-                className="w-full text-xs sm:text-sm px-2"
-              >
-                <Clock className="mr-1.5 h-4 w-4 shrink-0" /> Iniciar Análise
-              </Button>
-            )}
-
-            {(report.status === "pending" || report.status === "reviewing") && (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => onDismiss(report.id)}
-                  className="w-full text-xs sm:text-sm px-2"
-                >
-                  <Archive className="mr-1.5 h-4 w-4 shrink-0" /> Arquivar
-                </Button>
-                <Button
-                  onClick={() => onResolve(report.id)}
-                  className="w-full bg-green-600 hover:bg-green-700 text-xs sm:text-sm px-2"
-                >
-                  <CheckCircle className="mr-1.5 h-4 w-4 shrink-0" /> Resolver
-                </Button>
-              </>
-            )}
-
-            {/* Revert Action */}
-            {(report.status === "reviewing" ||
-              report.status === "resolved" ||
-              report.status === "dismissed") && (
-              <Button
-                variant="outline"
-                onClick={() => onRevert(report.id)}
-                className="w-full text-xs sm:text-sm px-2"
-              >
-                <RefreshCcw className="mr-1.5 h-4 w-4 shrink-0" /> Reverter
-              </Button>
-            )}
-
-            {/* Ban Action - Only if reported user exists */}
-            {report.reported_user?.id && onBan && (
-              <Button
-                variant="destructive"
-                onClick={() => onBan(report.reported_user!.id)}
-                className="w-full text-xs sm:text-sm px-2"
-              >
-                <Trash2 className="mr-1.5 h-4 w-4 shrink-0" /> Banir
-              </Button>
-            )}
-
-            {/* Delete Action - Only for archived/resolved reports */}
-            {(report.status === "resolved" || report.status === "dismissed") &&
-              onDelete && (
-                <Button
-                  variant="destructive"
-                  onClick={() => {
-                    if (
-                      confirm(
-                        "Tem certeza que deseja DELETAR permanentemente esta denúncia? Esta ação não pode ser desfeita.",
-                      )
-                    ) {
-                      onDelete(report.id);
-                    }
-                  }}
-                  className="w-full text-xs sm:text-sm px-2 bg-red-700 hover:bg-red-800"
-                >
-                  <Trash2 className="mr-1.5 h-4 w-4 shrink-0" /> Deletar
-                </Button>
-              )}
-          </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </ResponsiveModal>
   );
 }

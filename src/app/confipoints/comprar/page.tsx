@@ -17,7 +17,7 @@ import {
   TrendingUp,
   Info,
   Heart,
-  X,
+  ArrowRight,
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { DashboardSkeleton } from "@/components/ui/skeleton";
@@ -30,6 +30,7 @@ import { toast } from "sonner";
 import { CheckoutModal } from "@/components/checkout/CheckoutModal";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 
 export default function ComprarPontosPage() {
   const t = useTranslations("confipoints");
@@ -100,41 +101,6 @@ export default function ComprarPontosPage() {
       const postsCount = Math.floor(totalPoints / PREMIUM_PRICES.POST.POINTS);
       const adsCount = Math.floor(totalPoints / PREMIUM_PRICES.AD_1_DAY.POINTS);
 
-      const features: string[] = [
-        `${totalPoints.toLocaleString("pt-BR")} ${t("title")}`,
-      ];
-
-      if (likesCount > 0)
-        features.push(
-          `${likesCount.toLocaleString("pt-BR")} ${t("premiumLikes")}`,
-        );
-      if (postsCount > 0)
-        features.push(
-          `${postsCount.toLocaleString("pt-BR")} ${t("premiumPosts")}`,
-        );
-      if (adsCount > 0)
-        features.push(`${adsCount.toLocaleString("pt-BR")} ${t("premiumAds")}`);
-
-      // Adicionar features extras para pacotes maiores
-      if (
-        pkg.slug === "popular" ||
-        pkg.slug === "premium" ||
-        pkg.slug === "enterprise" ||
-        pkg.slug === "mega"
-      ) {
-        features.push(t("emailSupport"));
-      }
-      if (pkg.slug === "premium") features.push(t("exclusiveBadge"));
-      if (pkg.slug === "enterprise") {
-        features.push(t("advancedReports"));
-        features.push(t("premiumConsulting"));
-      }
-      if (pkg.slug === "mega") {
-        features.push(t("maximumPriority"));
-        features.push(t("earlyAccess"));
-        features.push(t("vipBadge"));
-      }
-
       // Descrição de uso dinâmico (O que você pode fazer?)
       let uses = "";
       if (postsCount > 0) {
@@ -158,11 +124,12 @@ export default function ComprarPontosPage() {
         description: pkg.description || "",
         icon: visual.icon,
         color: visual.color,
-        features,
         uses,
       };
     })
     .sort((a, b) => a.priceValue - b.priceValue);
+
+  const activePackage = packages.find((pkg) => pkg.slug === expandedPackage);
 
   const benefits = [
     {
@@ -266,15 +233,103 @@ export default function ComprarPontosPage() {
                 {t("choosePackage")}
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
+                {/* Package Details Modal */}
+                <ResponsiveModal
+                  isOpen={expandedPackage !== null}
+                  onOpenChange={(open) => !open && setExpandedPackage(null)}
+                  title={activePackage?.name}
+                  className="max-w-md"
+                >
+                  {activePackage && (
+                    <div className="space-y-6">
+                      {/* Icon & Description */}
+                      <div className="text-center">
+                        <div className="mx-auto mb-3 w-16 h-16 border-2 border-gray-300 dark:border-gray-700 rounded-full flex items-center justify-center text-gray-900 dark:text-white">
+                          {activePackage.icon}
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {activePackage.description}
+                        </p>
+                      </div>
+
+                      {/* Price */}
+                      <div className="p-4 border border-gray-200 dark:border-gray-800 rounded-lg text-center">
+                        <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                          {activePackage.price}
+                        </div>
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <Coins className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                          <span className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                            {activePackage.points.toLocaleString("pt-BR")}{" "}
+                            pontos
+                          </span>
+                        </div>
+                        {activePackage.bonus > 0 && (
+                          <>
+                            <Badge
+                              variant="secondary"
+                              className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700"
+                            >
+                              +{activePackage.bonus.toLocaleString("pt-BR")}{" "}
+                              bônus
+                            </Badge>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 font-semibold">
+                              Total:{" "}
+                              {(
+                                activePackage.points + activePackage.bonus
+                              ).toLocaleString("pt-BR")}{" "}
+                              pontos
+                            </p>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Equivalent */}
+                      <div className="p-3 border border-gray-200 dark:border-gray-800 rounded-lg">
+                        <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                          Equivalente a:
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {activePackage.uses}
+                        </p>
+                      </div>
+
+                      {/* Purchase Button */}
+                      <Button
+                        className={`w-full h-12 text-base ${
+                          activePackage.popular
+                            ? "bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-900"
+                            : "bg-gray-800 hover:bg-gray-900 dark:bg-gray-200 dark:hover:bg-gray-300 text-white dark:text-gray-900"
+                        }`}
+                        onClick={() => {
+                          setSelectedPackage({
+                            id: activePackage.id,
+                            name: activePackage.name,
+                            points: activePackage.points,
+                            price: activePackage.price,
+                            priceValue: activePackage.priceValue,
+                            bonus: activePackage.bonus,
+                          });
+                          setExpandedPackage(null);
+                          setIsCheckoutOpen(true);
+                        }}
+                      >
+                        <CreditCard className="w-5 h-5 mr-2" />
+                        Comprar Agora
+                      </Button>
+                    </div>
+                  )}
+                </ResponsiveModal>
+
                 {packages.map((pkg) => {
-                  const isExpanded = expandedPackage === pkg.id;
+                  const isExpanded = expandedPackage === pkg.slug;
 
                   return (
                     <div key={pkg.id} className="relative">
                       {/* Compact Card */}
                       <button
                         onClick={() =>
-                          setExpandedPackage(isExpanded ? null : pkg.id)
+                          setExpandedPackage(isExpanded ? null : pkg.slug)
                         }
                         className={`w-full p-3 border rounded-lg transition-all text-center ${
                           pkg.popular
@@ -320,119 +375,6 @@ export default function ComprarPontosPage() {
                           {isExpanded ? "Fechar" : "Ver mais"}
                         </p>
                       </button>
-
-                      {/* Expanded Modal (Mobile) */}
-                      {isExpanded && (
-                        <div className="fixed inset-0 bg-black/50 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
-                          <div className="bg-white dark:bg-black w-full sm:max-w-md sm:rounded-lg border-t sm:border border-gray-200 dark:border-gray-800 max-h-[90vh] overflow-y-auto">
-                            <div className="sticky top-0 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 p-4 flex items-center justify-between">
-                              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                                {pkg.name}
-                              </h3>
-                              <button
-                                onClick={() => setExpandedPackage(null)}
-                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full"
-                              >
-                                <X className="w-5 h-5 text-gray-900 dark:text-white" />
-                              </button>
-                            </div>
-
-                            <div className="p-4 space-y-4">
-                              {/* Icon & Description */}
-                              <div className="text-center">
-                                <div className="mx-auto mb-3 w-16 h-16 border-2 border-gray-300 dark:border-gray-700 rounded-full flex items-center justify-center text-gray-900 dark:text-white">
-                                  {pkg.icon}
-                                </div>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">
-                                  {pkg.description}
-                                </p>
-                              </div>
-
-                              {/* Price */}
-                              <div className="p-4 border border-gray-200 dark:border-gray-800 rounded-lg text-center">
-                                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                                  {pkg.price}
-                                </div>
-                                <div className="flex items-center justify-center gap-2 mb-2">
-                                  <Coins className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                                  <span className="text-lg font-semibold text-gray-700 dark:text-gray-300">
-                                    {pkg.points.toLocaleString("pt-BR")} pontos
-                                  </span>
-                                </div>
-                                {pkg.bonus > 0 && (
-                                  <>
-                                    <Badge
-                                      variant="secondary"
-                                      className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700"
-                                    >
-                                      +{pkg.bonus.toLocaleString("pt-BR")} bônus
-                                    </Badge>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 font-semibold">
-                                      Total:{" "}
-                                      {(pkg.points + pkg.bonus).toLocaleString(
-                                        "pt-BR",
-                                      )}{" "}
-                                      pontos
-                                    </p>
-                                  </>
-                                )}
-                              </div>
-
-                              {/* Equivalent */}
-                              <div className="p-3 border border-gray-200 dark:border-gray-800 rounded-lg">
-                                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                                  Equivalente a:
-                                </p>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">
-                                  {pkg.uses}
-                                </p>
-                              </div>
-
-                              {/* Features */}
-                              <div>
-                                <p className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                                  O que está incluído:
-                                </p>
-                                <ul className="space-y-2">
-                                  {pkg.features.map((feature, index) => (
-                                    <li
-                                      key={index}
-                                      className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400"
-                                    >
-                                      <CheckCircle className="w-4 h-4 text-gray-500 dark:text-gray-500 flex-shrink-0 mt-0.5" />
-                                      <span>{feature}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-
-                              {/* Purchase Button */}
-                              <Button
-                                className={`w-full h-12 text-base ${
-                                  pkg.popular
-                                    ? "bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-900"
-                                    : "bg-gray-800 hover:bg-gray-900 dark:bg-gray-200 dark:hover:bg-gray-300 text-white dark:text-gray-900"
-                                }`}
-                                onClick={() => {
-                                  setSelectedPackage({
-                                    id: pkg.id,
-                                    name: pkg.name,
-                                    points: pkg.points,
-                                    price: pkg.price,
-                                    priceValue: pkg.priceValue,
-                                    bonus: pkg.bonus,
-                                  });
-                                  setExpandedPackage(null);
-                                  setIsCheckoutOpen(true);
-                                }}
-                              >
-                                <CreditCard className="w-5 h-5 mr-2" />
-                                Comprar Agora
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   );
                 })}
