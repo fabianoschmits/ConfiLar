@@ -22,10 +22,11 @@ export function useProfileUpdate() {
     setIsUpdating(true);
     try {
       // 1. Atualizar ou inserir na tabela profiles no banco de dados
-      // Injetamos o ID do usuário para garantir que o RLS permita a operação
+      // Injetamos o ID e o Email do usuário para garantir que o RLS e as constraints permitam a operação
       const profileData = {
         ...data,
         id: user.id,
+        email: user.email,
       };
 
       const { error: profileError } = await supabase
