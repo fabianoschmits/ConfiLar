@@ -81,7 +81,8 @@ export const POST = withAuth(
                         description: `Compra de ${pointsAmount} pontos ConfiLar`,
                         quantity: 1,
                         item_id: package_id || "custom_points",
-                        price_cents: amountInCentavos
+                        price_cents: amountInCentavos, // SDK uses this
+                        value_cents: amountInCentavos, // Common pattern, adding for safety
                     }
                 ]
             };
@@ -108,8 +109,14 @@ export const POST = withAuth(
 
             const transactionId = data.pix_create_request.transaction_id;
             const pixCode = data.pix_create_request.pix_code.emv;
-            const pixQrCodeUrl = data.pix_create_request.pix_code.qrcode_image_url;
-            // Some versions return base64, others URL. The verification check earlier suggested `qrcode_image_url`.
+
+            // Handle QR Code URL or Base64
+            let pixQrCodeUrl = data.pix_create_request.pix_code.qrcode_image_url;
+            const pixQrCodeBase64 = data.pix_create_request.pix_code.qrcode_base64;
+
+            if (!pixQrCodeUrl && pixQrCodeBase64) {
+                pixQrCodeUrl = `data:image/png;base64,${pixQrCodeBase64}`;
+            }
 
             // 5. Atualizar Ordem com ID da transação
             await supabaseAuth
@@ -119,7 +126,7 @@ export const POST = withAuth(
 
             return NextResponse.json({
                 orderId,
-                qrCode: pixQrCodeUrl, // Frontend will handle if it's URL or Base64 (likely URL for PagHiper)
+                qrCode: pixQrCodeUrl,
                 pixCode: pixCode,
                 transactionId: transactionId,
                 expiresAt: new Date(Date.now() + 3 * 24 * 3600 * 1000).toISOString(), // 3 days approx 
