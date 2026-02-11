@@ -48,7 +48,8 @@ export const POST = withAuth(
 
             // 2. Criar Ordem usando RPC (Padrão do sistema)
             // Isso garante que todas as regras de negócio do banco sejam aplicadas
-            const { data: orderId, error: rpcError } = await supabaseAuth.rpc("create_points_purchase", {
+            // Usando supabaseAdmin para garantir privilégios se necessário
+            const { data: orderId, error: rpcError } = await supabaseAdmin.rpc("create_points_purchase", {
                 p_user_id: user.id,
                 p_package_id: package_id,
                 p_payment_method: "pix",
@@ -57,7 +58,7 @@ export const POST = withAuth(
             if (rpcError) {
                 console.error("Erro ao criar ordem (RPC):", rpcError);
                 return NextResponse.json(
-                    { error: "Erro ao criar ordem interna.", details: rpcError.message },
+                    { error: `Erro ao criar ordem interna: ${rpcError.message}`, details: rpcError },
                     { status: 500 }
                 );
             }
