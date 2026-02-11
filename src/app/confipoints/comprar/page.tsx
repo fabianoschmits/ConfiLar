@@ -21,6 +21,7 @@ import {
 import { useAuthContext } from "@/contexts/AuthContext";
 import { DashboardSkeleton } from "@/components/ui/skeleton";
 import { usePoints } from "@/hooks/usePoints";
+import { usePointsPackages } from "@/hooks/useEconomy";
 import { PREMIUM_PRICES } from "@/constants/premiumPrices";
 import { MicroInteraction } from "@/components/ui/MicroInteraction";
 import { PackageSkeleton } from "@/components/ui/skeleton";
@@ -34,6 +35,8 @@ export default function ComprarPontosPage() {
   const tCommon = useTranslations("common");
   const { user, profile } = useAuthContext();
   const { balance: pointsData, loading: pointsLoading } = usePoints(user?.id);
+  const { packages: dbPackages, loading: packagesLoading } =
+    usePointsPackages();
   const [selectedPackage, setSelectedPackage] = useState<{
     id: string;
     name: string;
@@ -44,7 +47,7 @@ export default function ComprarPontosPage() {
   } | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
-  if (pointsLoading) {
+  if (pointsLoading || packagesLoading) {
     return (
       <MainLayout requireAuth={true}>
         <div className="min-h-screen bg-gray-50 dark:bg-black p-6">
@@ -56,16 +59,27 @@ export default function ComprarPontosPage() {
     );
   }
 
-  const packages = [
-    {
-      id: "starter",
-      name: t("packageStarter"),
-      points: 1000,
-      price: "R$ 10,00",
-      priceValue: 10,
-      bonus: 0,
-      popular: false,
-      description: t("packageStarterDesc"),
+  /* import { usePointsPackages } from "@/hooks/useEconomy"; */
+  /* Added manually since I cannot add imports easily with replace_file_content if they are far away */
+  /* Actually I will modify the whole file content to include imports and the new logic */
+
+  /* import { usePointsPackages } from "@/hooks/useEconomy"; */
+  /* Added manually since I cannot add imports easily with replace_file_content if they are far away */
+  /* Actually I will modify the whole file content to include imports and the new logic */
+
+  // Configuração visual dos pacotes baseada no slug
+  const packageVisuals: Record<string, any> = {
+    basic: {
+      icon: <Heart className="w-8 h-8" />,
+      color: "pink",
+      features: [
+        `300 ${t("title")}`,
+        `${Math.floor(300 / PREMIUM_PRICES.LIKE.POINTS)} ${t("premiumLikes")}`,
+        `Ideal para quem está começando`,
+      ],
+      uses: `${Math.floor(300 / PREMIUM_PRICES.LIKE.POINTS)} ${t("premiumLikes")}`,
+    },
+    starter: {
       icon: <Zap className="w-8 h-8" />,
       color: "blue",
       features: [
@@ -76,15 +90,7 @@ export default function ComprarPontosPage() {
       ],
       uses: `1 ${t("premiumPost")} ${t("or")} ${Math.floor(1000 / PREMIUM_PRICES.LIKE.POINTS)} ${t("premiumLikes")}`,
     },
-    {
-      id: "popular",
-      name: t("packagePopular"),
-      points: 5000,
-      price: "R$ 50,00",
-      priceValue: 50,
-      bonus: 500,
-      popular: true,
-      description: t("packagePopularDesc"),
+    popular: {
       icon: <Star className="w-8 h-8" />,
       color: "green",
       features: [
@@ -97,15 +103,7 @@ export default function ComprarPontosPage() {
       ],
       uses: `${Math.floor(5500 / PREMIUM_PRICES.POST.POINTS)} ${t("premiumPosts")} ${t("or")} ${Math.floor(5500 / PREMIUM_PRICES.LIKE.POINTS)} ${t("premiumLikes")}`,
     },
-    {
-      id: "professional",
-      name: t("packageProfessional"),
-      points: 10000,
-      price: "R$ 100,00",
-      priceValue: 100,
-      bonus: 1500,
-      popular: false,
-      description: t("packageProfessionalDesc"),
+    professional: {
       icon: <Crown className="w-8 h-8" />,
       color: "purple",
       features: [
@@ -119,15 +117,7 @@ export default function ComprarPontosPage() {
       ],
       uses: `${Math.floor(11500 / PREMIUM_PRICES.POST.POINTS)} ${t("premiumPosts")} ${t("or")} ${Math.floor(11500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} ${t("premiumAds")}`,
     },
-    {
-      id: "enterprise",
-      name: t("packageEnterprise"),
-      points: 25000,
-      price: "R$ 250,00",
-      priceValue: 250,
-      bonus: 5000,
-      popular: false,
-      description: t("packageEnterpriseDesc"),
+    enterprise: {
       icon: <Gift className="w-8 h-8" />,
       color: "amber",
       features: [
@@ -142,15 +132,7 @@ export default function ComprarPontosPage() {
       ],
       uses: `${Math.floor(30000 / PREMIUM_PRICES.POST.POINTS)} ${t("premiumPosts")} ${t("or")} ${Math.floor(30000 / PREMIUM_PRICES.AD_1_DAY.POINTS)} ${t("premiumAds")}`,
     },
-    {
-      id: "mega",
-      name: t("packageMega"),
-      points: 50000,
-      price: "R$ 500,00",
-      priceValue: 500,
-      bonus: 12500,
-      popular: false,
-      description: t("packageMegaDesc"),
+    mega: {
       icon: <TrendingUp className="w-8 h-8" />,
       color: "red",
       features: [
@@ -166,7 +148,36 @@ export default function ComprarPontosPage() {
       ],
       uses: `${Math.floor(62500 / PREMIUM_PRICES.POST.POINTS)} ${t("premiumPosts")} ${t("or")} ${Math.floor(62500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} ${t("premiumAds")}`,
     },
-  ];
+  };
+
+  const packages = dbPackages
+    .filter((pkg) => Object.keys(packageVisuals).includes(pkg.slug))
+    .map((pkg) => {
+      // Tenta encontrar visual pelo slug, ou usa 'starter' como fallback
+      const visual = packageVisuals[pkg.slug] || packageVisuals.starter;
+      // Calcula bônus real baseado nos dados do banco
+      const bonusPoints = pkg.total_points - pkg.points;
+
+      return {
+        id: pkg.id, // UUID real do banco
+        slug: pkg.slug,
+        name: pkg.name,
+        points: pkg.points,
+        price: pkg.price_brl.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }),
+        priceValue: pkg.price_brl,
+        bonus: bonusPoints,
+        popular: pkg.is_featured,
+        description: pkg.description || "",
+        icon: visual.icon,
+        color: visual.color,
+        features: visual.features, // Poderíamos ter features no banco também
+        uses: visual.uses,
+      };
+    })
+    .sort((a, b) => a.priceValue - b.priceValue);
 
   const benefits = [
     {

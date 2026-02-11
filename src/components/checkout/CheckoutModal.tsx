@@ -39,6 +39,7 @@ interface ExistingPurchase {
   points_received: number;
   amount_brl: number;
   customer_data?: any;
+  expires_at?: string;
   created_at: string;
 }
 
@@ -146,47 +147,40 @@ export function CheckoutModal({
         let expiresAt = null;
 
         if (existingPurchase.payment_data) {
-          const paymentData = existingPurchase.payment_data;
+          const pData = existingPurchase.payment_data;
+          // Formato { data: { ... } } ou direto
+          const innerData = pData.data || pData;
 
-          // Tentar extrair do formato { data: { ... } }
-          if (paymentData.data) {
-            qrCode = paymentData.data.brCode;
-            qrCodeImage = paymentData.data.brCodeBase64;
-            expiresAt = paymentData.data.expiresAt;
-          }
-          // Tentar extrair diretamente
-          else if (paymentData.brCode) {
-            qrCode = paymentData.brCode;
-            qrCodeImage = paymentData.brCodeBase64;
-            expiresAt = paymentData.expiresAt;
-          }
+          // Campos da PagHiper ou padronizados
+          qrCode = innerData.brCode || innerData.pixCode || innerData.emv;
+          qrCodeImage =
+            innerData.brCodeBase64 ||
+            innerData.qrCode ||
+            innerData.qrcode_base64 ||
+            innerData.qrcode_image_url;
+          expiresAt =
+            innerData.expiresAt ||
+            innerData.expires_at ||
+            existingPurchase.expires_at;
         }
 
-        // Se não encontrou no payment_data, tentar payment_url
-        if (!qrCode && existingPurchase.payment_url) {
-          // Se payment_url é uma imagem base64
-          if (existingPurchase.payment_url.startsWith("data:image")) {
-            qrCodeImage = existingPurchase.payment_url;
-            // Tentar extrair código PIX do payment_data se existir
-            if (existingPurchase.payment_data?.data?.brCode) {
-              qrCode = existingPurchase.payment_data.data.brCode;
-            } else if (existingPurchase.payment_data?.brCode) {
-              qrCode = existingPurchase.payment_data.brCode;
-            }
-          } else {
-            // Se payment_url é o código PIX
-            qrCode = existingPurchase.payment_url;
-          }
-        }
+        // Fallbacks adicionais
+        if (!qrCode) qrCode = existingPurchase.payment_url;
+        if (!qrCodeImage) qrCodeImage = existingPurchase.payment_url;
 
         setPaymentData({
-          qrCode: qrCode || existingPurchase.payment_url || "",
-          qrCodeImage: qrCodeImage,
+          qrCode: qrCode || "",
+          qrCodeImage: qrCodeImage || "",
           paymentId: existingPurchase.payment_id,
-          paymentUrl: existingPurchase.payment_url || qrCode || "",
-          expiresAt: expiresAt,
+          paymentUrl: undefined,
+          expiresAt: expiresAt || existingPurchase.expires_at,
           purchaseId: existingPurchase.id,
         });
+
+        // Se a compra está pendente, disparar uma verificação imediata para atualizar o status e recuperar QR Code se necessário
+        if (existingPurchase.status === "pending") {
+          checkPaymentStatus();
+        }
       } else {
         // Se não tem QR Code ainda, mostrar formulário
         setStep("form");
@@ -209,7 +203,6 @@ export function CheckoutModal({
       return;
     }
 
-
     // Intervalo de verificação: a cada 5 segundos
     const checkInterval = setInterval(async () => {
       try {
@@ -225,60 +218,66 @@ export function CheckoutModal({
 
         const data = await response.json();
 
-        if (response.ok) {
-          // Se pagamento aprovado, ir automaticamente para o modal de sucesso
-          if (
-            data.status === "approved" ||
-            data.paymentStatus === "PAID" ||
-            data.paymentStatus === "paid"
-          ) {
-            clearInterval(checkInterval);
-            setStep("success");
-            toast.success(
-              "Pagamento confirmado! Seus pontos foram creditados.",
-            );
+        if (!response.ok) {
+          throw new Error(data.error || "Erro ao verificar pagamento");
+        }
 
-            // Invalidar e refetch cache para atualizar a lista de compras
-            if (user?.id) {
-              // Aguardar um pouco para garantir que a atualização no banco foi concluída
-              setTimeout(async () => {
-                queryClient.invalidateQueries({
+        // Se vieram novos dados de PIX (recuperação), atualizar o state
+        if (data.pixCode || data.qrCode) {
+          setPaymentData((prev) => ({
+            ...prev!,
+            qrCode: data.pixCode || prev?.qrCode,
+            qrCodeImage: data.qrCode || prev?.qrCodeImage,
+            expiresAt: data.expiresAt || prev?.expiresAt,
+          }));
+        }
+
+        // Se pagamento aprovado, ir automaticamente para o modal de sucesso
+        if (
+          data.status === "approved" ||
+          data.paymentStatus === "PAID" ||
+          data.paymentStatus === "paid"
+        ) {
+          clearInterval(checkInterval);
+          setStep("success");
+          toast.success("Pagamento confirmado! Seus pontos foram creditados.");
+
+          // Invalidar e refetch cache para atualizar a lista de compras
+          if (user?.id) {
+            // Aguardar um pouco para garantir que a atualização no banco foi concluída
+            setTimeout(async () => {
+              queryClient.invalidateQueries({
+                queryKey: ["points-purchases", user.id],
+              });
+              queryClient.invalidateQueries({
+                queryKey: ["user-points-balance", user.id],
+              });
+              await queryClient.refetchQueries(
+                {
                   queryKey: ["points-purchases", user.id],
-                });
-                queryClient.invalidateQueries({
-                  queryKey: ["user-points-balance", user.id],
-                });
-                await queryClient.refetchQueries(
-                  {
-                    queryKey: ["points-purchases", user.id],
-                    type: "active",
-                  },
-                  { cancelRefetch: false },
-                );
-              }, 500);
-            }
-          } else if (
-            data.status === "cancelled" ||
-            data.paymentStatus === "EXPIRED" ||
-            data.paymentStatus === "CANCELLED" ||
-            data.paymentStatus === "expired"
-          ) {
-            // Se expirado ou cancelado, parar verificação
-            console.log("❌ Pagamento expirado ou cancelado.");
-            clearInterval(checkInterval);
-            toast.error(
-              "Pagamento expirado ou cancelado. Gere um novo QR Code.",
-            );
-            setStep("form");
-            setPaymentData(null);
-          } else {
-            // Se ainda estiver pendente, continuar verificando
-            console.log(
-              `⏳ Pagamento ainda pendente (status: ${data.status}), continuando verificação...`,
-            );
+                  type: "active",
+                },
+                { cancelRefetch: false },
+              );
+            }, 500);
           }
+        } else if (
+          data.status === "cancelled" ||
+          data.paymentStatus === "EXPIRED" ||
+          data.paymentStatus === "CANCELLED" ||
+          data.paymentStatus === "expired"
+        ) {
+          // Se expirado ou cancelado, parar verificação
+          console.log("❌ Pagamento expirado ou cancelado.");
+          clearInterval(checkInterval);
+          toast.error("Pagamento expirado ou cancelado. Gere um novo QR Code.");
+          setStep("form");
+          setPaymentData(null);
         } else {
-          console.error("❌ Erro na resposta da verificação:", data);
+          // Se ainda estiver pendente, continuar verificando
+          console.log(
+            `⏳ Pagamento ainda pendente (status: ${data.status}), continuando verificação...`,
+          );
         }
       } catch (err) {
         // Em caso de erro, apenas logar (não mostrar toast para não poluir a tela)
@@ -436,7 +435,6 @@ export function CheckoutModal({
         qrCode: data.pixCode, // O código copia e cola vem no campo pixCode
         qrCodeImage: data.qrCode, // O URL ou Base64 vem no campo qrCode
         paymentId: data.transactionId,
-        paymentUrl: data.pixCode,
         expiresAt: data.expiresAt, // Se não vier, deixamos undefined
         purchaseId: data.orderId,
       });

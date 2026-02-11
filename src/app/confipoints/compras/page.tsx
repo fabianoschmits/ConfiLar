@@ -21,6 +21,7 @@ import {
   Coins,
   Package,
   ExternalLink,
+  Copy,
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { usePointsPurchases } from "@/hooks/useEconomy";
@@ -427,9 +428,24 @@ export default function ComprasPage() {
                                       </span>
                                     </Badge>
                                   </div>
-                                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                    ID: {purchase.id?.substring(0, 8)}...
-                                  </p>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-mono">
+                                      ID: {purchase.id}
+                                    </p>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-6 w-6"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(
+                                          purchase.id,
+                                        );
+                                        toast.success("ID copiado!");
+                                      }}
+                                    >
+                                      <Copy className="h-3 w-3" />
+                                    </Button>
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -511,30 +527,24 @@ export default function ComprasPage() {
                           </div>
 
                           {/* Ações */}
-                          <div className="flex flex-col sm:flex-row gap-2 lg:ml-4">
-                            {purchase.status === "pending" &&
-                              purchase.payment_id && (
+                          <div className="flex flex-col sm:flex-row gap-3 lg:ml-4 items-center">
+                            {purchase.status === "pending" && (
+                              <>
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="w-full sm:w-auto"
+                                  className="w-full sm:w-auto hover:bg-gray-100 dark:hover:bg-gray-800"
                                   onClick={async () => {
                                     setIsCheckingPayment(purchase.id);
                                     try {
                                       const response = await fetch(
                                         `/api/payment/paghiper/check?purchase_id=${purchase.id}`,
-                                        {
-                                          method: "GET",
-                                          headers: {
-                                            "Content-Type": "application/json",
-                                          },
-                                        },
+                                        { method: "GET" },
                                       );
                                       const data = await response.json();
 
                                       if (response.ok) {
-                                        // Forçar atualização imediata do cache
-                                        // Primeiro invalidar para marcar como stale
+                                        // Invalidar cache para atualizar UI
                                         queryClient.invalidateQueries({
                                           queryKey: [
                                             "points-purchases",
@@ -548,68 +558,26 @@ export default function ComprasPage() {
                                           ],
                                         });
 
-                                        // Aguardar um pouco para garantir que a atualização no banco foi concluída
-                                        await new Promise((resolve) =>
-                                          setTimeout(resolve, 500),
-                                        );
-
-                                        // Forçar refetch imediato ignorando staleTime
-                                        await queryClient.refetchQueries(
-                                          {
-                                            queryKey: [
-                                              "points-purchases",
-                                              user?.id,
-                                            ],
-                                            type: "active",
-                                          },
-                                          { cancelRefetch: false },
-                                        );
-
-                                        // Refetch manual também
-                                        if (refetch) {
-                                          await refetch();
-                                        }
-
                                         if (
                                           data.status === "approved" ||
-                                          data.paymentStatus === "PAID" ||
-                                          data.paymentStatus === "paid"
+                                          data.paymentStatus === "PAID"
                                         ) {
                                           toast.success(
-                                            "Pagamento confirmado! Seus pontos foram creditados.",
+                                            "Pagamento confirmado! Pontos creditados.",
                                           );
-
-                                          // Aguardar mais um pouco e forçar refetch novamente para garantir
-                                          setTimeout(async () => {
-                                            await queryClient.refetchQueries(
-                                              {
-                                                queryKey: [
-                                                  "points-purchases",
-                                                  user?.id,
-                                                ],
-                                                type: "active",
-                                              },
-                                              { cancelRefetch: false },
-                                            );
-                                            if (refetch) {
-                                              await refetch();
-                                            }
-                                          }, 1000);
+                                          setTimeout(() => refetch(), 500);
                                         } else {
                                           toast.info(
-                                            `Status do pagamento: ${data.status || data.paymentStatus}`,
+                                            `Status processado: ${data.status === "pending" ? "Pendente" : data.status}`,
                                           );
                                         }
                                       } else {
                                         toast.error(
-                                          data.error ||
-                                          "Erro ao verificar pagamento",
+                                          data.error || "Erro ao verificar",
                                         );
                                       }
-                                    } catch (err: any) {
-                                      toast.error(
-                                        "Erro ao verificar pagamento",
-                                      );
+                                    } catch (err) {
+                                      toast.error("Erro de conexão");
                                     } finally {
                                       setIsCheckingPayment(null);
                                     }
@@ -617,36 +585,39 @@ export default function ComprasPage() {
                                   disabled={isCheckingPayment === purchase.id}
                                 >
                                   {isCheckingPayment === purchase.id ? (
-                                    <>
-                                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                      Verificando...
-                                    </>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                   ) : (
-                                    <>
-                                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                                      Verificar
-                                    </>
+                                    <CheckCircle2 className="w-4 h-4 mr-2" />
                                   )}
+                                  Verificar
                                 </Button>
-                              )}
-                            {(purchase.payment_url ||
-                              purchase.payment_id ||
-                              purchase.payment_data) && (
+
                                 <Button
                                   variant="outline"
                                   size="sm"
+                                  className="w-full sm:w-auto hover:bg-gray-100 dark:hover:bg-gray-800"
                                   onClick={() => {
                                     setSelectedPurchase(purchase);
                                     setIsCheckoutOpen(true);
                                   }}
-                                  className="w-full sm:w-auto"
                                 >
                                   <ExternalLink className="w-4 h-4 mr-2" />
-                                  {purchase.status === "approved"
-                                    ? "Ver Detalhes"
-                                    : "Ver QR Code"}
+                                  Ver QR Code
                                 </Button>
-                              )}
+                              </>
+                            )}
+
+                            {purchase.status === "approved" && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full sm:w-auto text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
+                                disabled
+                              >
+                                <CheckCircle2 className="w-4 h-4 mr-2" />
+                                Concluído
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -670,28 +641,29 @@ export default function ComprasPage() {
           packageData={
             selectedPurchase
               ? {
-                id: selectedPurchase.id,
-                name: `Compra #${selectedPurchase.id.substring(0, 8)}`,
-                points: selectedPurchase.points_received || 0,
-                price: formatCurrency(selectedPurchase.amount_brl || 0),
-                priceValue: selectedPurchase.amount_brl || 0,
-                bonus: 0,
-              }
+                  id: selectedPurchase.id,
+                  name: `Compra #${selectedPurchase.id.substring(0, 8)}`,
+                  points: selectedPurchase.points_received || 0,
+                  price: formatCurrency(selectedPurchase.amount_brl || 0),
+                  priceValue: selectedPurchase.amount_brl || 0,
+                  bonus: 0,
+                }
               : null
           }
           existingPurchase={
             selectedPurchase
               ? {
-                id: selectedPurchase.id,
-                status: selectedPurchase.status,
-                payment_id: selectedPurchase.payment_id,
-                payment_url: selectedPurchase.payment_url,
-                payment_data: selectedPurchase.payment_data,
-                points_received: selectedPurchase.points_received || 0,
-                amount_brl: selectedPurchase.amount_brl || 0,
-                customer_data: selectedPurchase.customer_data,
-                created_at: selectedPurchase.created_at,
-              }
+                  id: selectedPurchase.id,
+                  status: selectedPurchase.status,
+                  payment_id: selectedPurchase.payment_id,
+                  payment_url: selectedPurchase.payment_url,
+                  payment_data: selectedPurchase.payment_data,
+                  points_received: selectedPurchase.points_received || 0,
+                  amount_brl: selectedPurchase.amount_brl || 0,
+                  customer_data: selectedPurchase.customer_data,
+                  expires_at: selectedPurchase.expires_at,
+                  created_at: selectedPurchase.created_at,
+                }
               : null
           }
         />
