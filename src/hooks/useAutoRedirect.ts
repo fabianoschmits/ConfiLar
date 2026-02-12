@@ -19,7 +19,6 @@ export function useAutoRedirect() {
       const authRequiredPaths = [
         "/editarperfil",
         "/editar-perfil",
-        "/feed",
         "/perfil",
         "/favoritos",
         "/avaliacoes",

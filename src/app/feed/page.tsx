@@ -68,6 +68,7 @@ import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
 import { getCategoryById } from "@/data/serviceCategories";
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import { useNavigationShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { GuestBlurOverlay } from "@/components/auth/GuestBlurOverlay";
 
 export default function FeedPage() {
   const t = useTranslations("feed");
@@ -1042,6 +1043,8 @@ function InstagramPost({
     });
   }
 
+  const isGuest = !user;
+
   return (
     <article
       id={`post-${post.id}`}
@@ -1121,21 +1124,41 @@ function InstagramPost({
         />
       </div>
 
-      {/* MÍDIA (FOTOS E/OU VÍDEO) - Sempre mostrar se houver */}
-      {postImages.length > 0 || youtubeVideos.length > 0 || youtubeVideoId ? (
-        <>
-          <PostMedia
-            images={postImages}
-            youtubeVideoId={youtubeVideoId}
-            onDoubleClick={handleLikeClick}
-            isLiking={isLiking}
-            isPremiumLiking={isPremiumLiking}
-          />
-          {/* DESCRIÇÃO - Mostrar abaixo da mídia se houver texto */}
-          {finalDisplayText && (
-            <div className="px-4 py-3">
+      {/* MÍDIA E CONTEÚDO SENSÍVEL COM BLUR PARA GUESTS */}
+      <GuestBlurOverlay isGuest={isGuest}>
+        {/* MÍDIA (FOTOS E/OU VÍDEO) - Sempre mostrar se houver */}
+        {postImages.length > 0 || youtubeVideos.length > 0 || youtubeVideoId ? (
+          <>
+            <PostMedia
+              images={postImages}
+              youtubeVideoId={youtubeVideoId}
+              onDoubleClick={handleLikeClick}
+              isLiking={isLiking}
+              isPremiumLiking={isPremiumLiking}
+            />
+            {/* DESCRIÇÃO - Mostrar abaixo da mídia se houver texto */}
+            {finalDisplayText && (
+              <div className="px-4 py-3">
+                <p className="text-sm text-gray-900 dark:text-white whitespace-pre-wrap break-words leading-relaxed">
+                  <MentionText text={finalDisplayText} />
+                  {shouldTruncate && !showFull && (
+                    <button
+                      onClick={() => setShowFull(true)}
+                      className="text-gray-500 dark:text-gray-400 ml-1 font-medium hover:text-gray-700 dark:hover:text-gray-300"
+                    >
+                      mais
+                    </button>
+                  )}
+                </p>
+              </div>
+            )}
+          </>
+        ) : (
+          /* DESCRIÇÃO NO LUGAR DA MÍDIA - Se não houver mídia */
+          finalDisplayText && (
+            <div className="px-4 py-4 relative">
               <p className="text-sm text-gray-900 dark:text-white whitespace-pre-wrap break-words leading-relaxed">
-                <MentionText text={finalDisplayText} />
+                {finalDisplayText}
                 {shouldTruncate && !showFull && (
                   <button
                     onClick={() => setShowFull(true)}
@@ -1145,307 +1168,289 @@ function InstagramPost({
                   </button>
                 )}
               </p>
-            </div>
-          )}
-        </>
-      ) : (
-        /* DESCRIÇÃO NO LUGAR DA MÍDIA - Se não houver mídia */
-        finalDisplayText && (
-          <div className="px-4 py-4 relative">
-            <p className="text-sm text-gray-900 dark:text-white whitespace-pre-wrap break-words leading-relaxed">
-              {finalDisplayText}
-              {shouldTruncate && !showFull && (
-                <button
-                  onClick={() => setShowFull(true)}
-                  className="text-gray-500 dark:text-gray-400 ml-1 font-medium hover:text-gray-700 dark:hover:text-gray-300"
-                >
-                  mais
-                </button>
-              )}
-            </p>
-            {/* Animações de like para posts sem mídia */}
-            {isLiking && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                <Heart className="h-20 w-20 text-red-500 fill-red-500 animate-ping" />
-              </div>
-            )}
-            {isPremiumLiking && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                <div className="relative h-20 w-20">
-                  <Coins
-                    className="h-20 w-20 absolute inset-0 text-warning-500 animate-ping"
-                    style={{
-                      fill: "currentColor",
-                      stroke: "none",
-                      zIndex: 1,
-                    }}
-                  />
-                  <Coins
-                    className="h-20 w-20 absolute inset-0 text-gray-700 dark:text-gray-300 animate-ping"
-                    style={{
-                      fill: "none",
-                      stroke: "currentColor",
-                      strokeWidth: 3,
-                      zIndex: 2,
-                    }}
-                  />
+              {/* Animações de like para posts sem mídia */}
+              {isLiking && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                  <Heart className="h-20 w-20 text-red-500 fill-red-500 animate-ping" />
                 </div>
-              </div>
-            )}
-          </div>
-        )
-      )}
-
-      {/* AÇÕES */}
-      <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800/50">
-        <div className="flex items-center gap-2">
-          {/* Botão de Like Normal */}
-          <button
-            onClick={handleLikeClick}
-            disabled={isLiking || isReactionLoading}
-            aria-label={isLikedByUser ? "Descurtir post" : "Curtir post"}
-            className="min-h-[44px] min-w-[44px] p-2 transition-transform active:scale-125 disabled:opacity-50 flex items-center gap-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            <Heart
-              className={`h-5 w-5 transition-all ${
-                isLikedByUser
-                  ? "text-red-500 fill-red-500"
-                  : "text-gray-700 dark:text-gray-300"
-              }`}
-            />
-            <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-              {likesCount > 0 ? likesCount.toLocaleString("pt-BR") : "0"}
-            </span>
-          </button>
-
-          {/* Botão de Like Premium */}
-          <PremiumLikeButton
-            postId={post.id}
-            postCreatorId={userId}
-            size="sm"
-            showStats={false}
-            onPremiumLikeClick={() => {
-              setIsPremiumLiking(true);
-              setTimeout(() => setIsPremiumLiking(false), 600); // Duração da animação
-            }}
-          />
-
-          {/* Botão de Comentários */}
-          <button
-            onClick={() => setShowComments(!showComments)}
-            aria-label={
-              showComments ? "Ocultar comentários" : "Ver comentários"
-            }
-            aria-expanded={showComments}
-            className="min-h-[44px] min-w-[44px] p-2 transition-transform active:scale-125 flex items-center gap-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            <MessageCircle
-              className={`h-5 w-5 transition-all ${
-                showComments
-                  ? "text-primary-600 dark:text-primary-400"
-                  : "text-gray-700 dark:text-gray-300"
-              }`}
-            />
-            <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-              {(commentsCount ?? 0).toLocaleString("pt-BR")}
-            </span>
-          </button>
-
-          {/* Botão de Compartilhar */}
-          <button
-            onClick={() => setShowShareModal(true)}
-            aria-label="Compartilhar post"
-            className="min-h-[44px] min-w-[44px] p-2 transition-transform active:scale-125 flex items-center gap-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            <Share2 className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-            <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-              {sharesCount > 0 ? sharesCount.toLocaleString("pt-BR") : "0"}
-            </span>
-          </button>
-        </div>
-
-        {/* Mostrar quem curtiu */}
-        <LikedBy postId={post.id} likesCount={likesCount} />
-      </div>
-
-      {/* COMENTÁRIOS */}
-      {showComments && (
-        <div className="space-y-3 pt-2 border-t border-gray-200 dark:border-gray-900 px-4 pb-3 animate-in fade-in slide-in-from-top-2 duration-200">
-          {/* Lista de comentários */}
-          {commentsLoading ? (
-            <div className="flex justify-center py-4">
-              <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-            </div>
-          ) : comments && comments.length > 0 ? (
-            <div className="space-y-3 max-h-64 overflow-y-auto">
-              {comments.slice(0, 10).map((comment: any) => (
-                <div key={comment.id} className="flex gap-2">
-                  <Avatar className="w-6 h-6">
-                    <AvatarImage src={comment.user?.avatar_url} />
-                    <AvatarFallback className="text-xs">
-                      {comment.user?.full_name?.charAt(0) || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <p className="text-sm">
-                          <span className="font-semibold text-gray-900 dark:text-white">
-                            {comment.user?.full_name || "Usuário"}
-                          </span>{" "}
-                          {editingComment === comment.id ? (
-                            <div className="mt-2 space-y-2">
-                              <MentionInput
-                                value={editCommentContent}
-                                onChange={(value) =>
-                                  setEditCommentContent(value)
-                                }
-                                placeholder={t("editComment")}
-                                className="w-full bg-transparent text-sm text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-800 focus:border-primary-500 dark:focus:border-primary-400 outline-none pb-1"
-                                onKeyPress={(e) => {
-                                  if (e.key === "Enter" && !e.shiftKey) {
-                                    e.preventDefault();
-                                    handleSaveEditComment();
-                                  }
-                                  if (e.key === "Escape") {
-                                    handleCancelEditComment();
-                                  }
-                                }}
-                                minHeight="40px"
-                              />
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={handleSaveEditComment}
-                                  disabled={
-                                    isEditingComment ||
-                                    !editCommentContent.trim()
-                                  }
-                                  className="text-xs text-blue-600 dark:text-blue-400 font-semibold disabled:opacity-50"
-                                >
-                                  Salvar
-                                </button>
-                                <button
-                                  onClick={handleCancelEditComment}
-                                  className="text-xs text-gray-500 dark:text-gray-400"
-                                >
-                                  Cancelar
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-gray-700 dark:text-gray-300">
-                              <MentionText text={comment.content} />
-                            </span>
-                          )}
-                        </p>
-                        {editingComment !== comment.id && (
-                          <div className="flex items-center gap-3 mt-1">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {new Date(comment.created_at).toLocaleDateString(
-                                "pt-BR",
-                                {
-                                  day: "numeric",
-                                  month: "short",
-                                },
-                              )}
-                            </p>
-                            {/* Botão de Like */}
-                            <button
-                              onClick={() => {
-                                likeComment(comment.id);
-                              }}
-                              disabled={isLikingComment}
-                              className={cn(
-                                "flex items-center gap-1 text-xs transition-all duration-200",
-                                comment.is_liked
-                                  ? "text-red-500 hover:text-red-600"
-                                  : "text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400",
-                              )}
-                            >
-                              <Heart
-                                className={cn(
-                                  "w-3.5 h-3.5 transition-all duration-300",
-                                  comment.is_liked && "fill-current",
-                                )}
-                              />
-                              <span className="font-medium">
-                                {comment.likes_count || 0}
-                              </span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                      {editingComment !== comment.id && (
-                        <CommentOptionsMenu
-                          commentId={comment.id}
-                          commentUserId={comment.user?.id || comment.user_id}
-                          onEdit={() =>
-                            handleEditComment(comment.id, comment.content)
-                          }
-                          onDelete={() => handleDeleteComment(comment.id)}
-                          isDeleting={isDeletingComment}
-                        />
-                      )}
-                    </div>
+              )}
+              {isPremiumLiking && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                  <div className="relative h-20 w-20">
+                    <Coins
+                      className="h-20 w-20 absolute inset-0 text-warning-500 animate-ping"
+                      style={{
+                        fill: "currentColor",
+                        stroke: "none",
+                        zIndex: 1,
+                      }}
+                    />
+                    <Coins
+                      className="h-20 w-20 absolute inset-0 text-gray-700 dark:text-gray-300 animate-ping"
+                      style={{
+                        fill: "none",
+                        stroke: "currentColor",
+                        strokeWidth: 3,
+                        zIndex: 2,
+                      }}
+                    />
                   </div>
                 </div>
-              ))}
-              {comments.length > 10 && (
-                <button className="text-xs text-gray-500 dark:text-gray-400">
-                  Ver mais comentários
-                </button>
               )}
             </div>
-          ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-2">
-              Nenhum comentário ainda. Seja o primeiro!
-            </p>
-          )}
+          )
+        )}
 
-          {/* Input de comentário */}
-          <div className="flex gap-2 items-start">
-            {profile?.avatar_url && (
-              <Avatar className="w-6 h-6 mt-1 flex-shrink-0">
-                <AvatarImage src={profile.avatar_url} />
-                <AvatarFallback>
-                  {profile.full_name?.charAt(0) || "U"}
-                </AvatarFallback>
-              </Avatar>
-            )}
-            <div className="flex-1">
-              <MentionInput
-                value={newComment}
-                onChange={(value) => setNewComment(value)}
-                placeholder={t("addComment")}
-                disabled={isAddingComment}
-                className="w-full bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 outline-none border-b border-gray-200 dark:border-gray-800 focus:border-primary-500 dark:focus:border-primary-400 pb-1"
-                onKeyPress={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleAddComment();
-                  }
-                }}
-                minHeight="48px"
+        {/* AÇÕES */}
+        <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800/50">
+          <div className="flex items-center gap-2">
+            {/* Botão de Like Normal */}
+            <button
+              onClick={handleLikeClick}
+              disabled={isLiking || isReactionLoading}
+              aria-label={isLikedByUser ? "Descurtir post" : "Curtir post"}
+              className="min-h-[44px] min-w-[44px] p-2 transition-transform active:scale-125 disabled:opacity-50 flex items-center gap-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <Heart
+                className={`h-5 w-5 transition-all ${
+                  isLikedByUser
+                    ? "text-red-500 fill-red-500"
+                    : "text-gray-700 dark:text-gray-300"
+                }`}
               />
-            </div>
+              <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                {likesCount > 0 ? likesCount.toLocaleString("pt-BR") : "0"}
+              </span>
+            </button>
+
+            {/* Botão de Like Premium */}
+            <PremiumLikeButton
+              postId={post.id}
+              postCreatorId={userId}
+              size="sm"
+              showStats={false}
+              onPremiumLikeClick={() => {
+                setIsPremiumLiking(true);
+                setTimeout(() => setIsPremiumLiking(false), 600); // Duração da animação
+              }}
+            />
+
+            {/* Botão de Comentários */}
+            <button
+              onClick={() => setShowComments(!showComments)}
+              aria-label={
+                showComments ? "Ocultar comentários" : "Ver comentários"
+              }
+              aria-expanded={showComments}
+              className="min-h-[44px] min-w-[44px] p-2 transition-transform active:scale-125 flex items-center gap-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <MessageCircle
+                className={`h-5 w-5 transition-all ${
+                  showComments
+                    ? "text-primary-600 dark:text-primary-400"
+                    : "text-gray-700 dark:text-gray-300"
+                }`}
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                {(commentsCount ?? 0).toLocaleString("pt-BR")}
+              </span>
+            </button>
+
+            {/* Botão de Compartilhar */}
+            <button
+              onClick={() => setShowShareModal(true)}
+              aria-label="Compartilhar post"
+              className="min-h-[44px] min-w-[44px] p-2 transition-transform active:scale-125 flex items-center gap-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <Share2 className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+              <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                {sharesCount > 0 ? sharesCount.toLocaleString("pt-BR") : "0"}
+              </span>
+            </button>
           </div>
-          {newComment.trim() && (
-            <div className="flex justify-end mt-2">
-              <button
-                onClick={handleAddComment}
-                disabled={isAddingComment}
-                className="text-primary-600 dark:text-primary-400 font-semibold text-sm disabled:opacity-50"
-              >
-                {isAddingComment ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Publicar"
-                )}
-              </button>
-            </div>
-          )}
+
+          {/* Mostrar quem curtiu */}
+          <LikedBy postId={post.id} likesCount={likesCount} />
         </div>
-      )}
+
+        {/* COMENTÁRIOS */}
+        {showComments && (
+          <div className="space-y-3 pt-2 border-t border-gray-200 dark:border-gray-900 px-4 pb-3 animate-in fade-in slide-in-from-top-2 duration-200">
+            {/* Lista de comentários */}
+            {commentsLoading ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+              </div>
+            ) : comments && comments.length > 0 ? (
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {comments.slice(0, 10).map((comment: any) => (
+                  <div key={comment.id} className="flex gap-2">
+                    <Avatar className="w-6 h-6">
+                      <AvatarImage src={comment.user?.avatar_url} />
+                      <AvatarFallback className="text-xs">
+                        {comment.user?.full_name?.charAt(0) || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <p className="text-sm">
+                            <span className="font-semibold text-gray-900 dark:text-white">
+                              {comment.user?.full_name || "Usuário"}
+                            </span>{" "}
+                            {editingComment === comment.id ? (
+                              <div className="mt-2 space-y-2">
+                                <MentionInput
+                                  value={editCommentContent}
+                                  onChange={(value) =>
+                                    setEditCommentContent(value)
+                                  }
+                                  placeholder={t("editComment")}
+                                  className="w-full bg-transparent text-sm text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-800 focus:border-primary-500 dark:focus:border-primary-400 outline-none pb-1"
+                                  onKeyPress={(e) => {
+                                    if (e.key === "Enter" && !e.shiftKey) {
+                                      e.preventDefault();
+                                      handleSaveEditComment();
+                                    }
+                                    if (e.key === "Escape") {
+                                      handleCancelEditComment();
+                                    }
+                                  }}
+                                  minHeight="40px"
+                                />
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={handleSaveEditComment}
+                                    disabled={
+                                      isEditingComment ||
+                                      !editCommentContent.trim()
+                                    }
+                                    className="text-xs text-blue-600 dark:text-blue-400 font-semibold disabled:opacity-50"
+                                  >
+                                    Salvar
+                                  </button>
+                                  <button
+                                    onClick={handleCancelEditComment}
+                                    className="text-xs text-gray-500 dark:text-gray-400"
+                                  >
+                                    Cancelar
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-gray-700 dark:text-gray-300">
+                                <MentionText text={comment.content} />
+                              </span>
+                            )}
+                          </p>
+                          {editingComment !== comment.id && (
+                            <div className="flex items-center gap-3 mt-1">
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {new Date(
+                                  comment.created_at,
+                                ).toLocaleDateString("pt-BR", {
+                                  day: "numeric",
+                                  month: "short",
+                                })}
+                              </p>
+                              {/* Botão de Like */}
+                              <button
+                                onClick={() => {
+                                  likeComment(comment.id);
+                                }}
+                                disabled={isLikingComment}
+                                className={cn(
+                                  "flex items-center gap-1 text-xs transition-all duration-200",
+                                  comment.is_liked
+                                    ? "text-red-500 hover:text-red-600"
+                                    : "text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400",
+                                )}
+                              >
+                                <Heart
+                                  className={cn(
+                                    "w-3.5 h-3.5 transition-all duration-300",
+                                    comment.is_liked && "fill-current",
+                                  )}
+                                />
+                                <span className="font-medium">
+                                  {comment.likes_count || 0}
+                                </span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                        {editingComment !== comment.id && (
+                          <CommentOptionsMenu
+                            commentId={comment.id}
+                            commentUserId={comment.user?.id || comment.user_id}
+                            onEdit={() =>
+                              handleEditComment(comment.id, comment.content)
+                            }
+                            onDelete={() => handleDeleteComment(comment.id)}
+                            isDeleting={isDeletingComment}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {comments.length > 10 && (
+                  <button className="text-xs text-gray-500 dark:text-gray-400">
+                    Ver mais comentários
+                  </button>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-2">
+                Nenhum comentário ainda. Seja o primeiro!
+              </p>
+            )}
+
+            {/* Input de comentário */}
+            <div className="flex gap-2 items-start">
+              {profile?.avatar_url && (
+                <Avatar className="w-6 h-6 mt-1 flex-shrink-0">
+                  <AvatarImage src={profile.avatar_url} />
+                  <AvatarFallback>
+                    {profile.full_name?.charAt(0) || "U"}
+                  </AvatarFallback>
+                </Avatar>
+              )}
+              <div className="flex-1">
+                <MentionInput
+                  value={newComment}
+                  onChange={(value) => setNewComment(value)}
+                  placeholder={t("addComment")}
+                  disabled={isAddingComment}
+                  className="w-full bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 outline-none border-b border-gray-200 dark:border-gray-800 focus:border-primary-500 dark:focus:border-primary-400 pb-1"
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleAddComment();
+                    }
+                  }}
+                  minHeight="48px"
+                />
+              </div>
+            </div>
+            {newComment.trim() && (
+              <div className="flex justify-end mt-2">
+                <button
+                  onClick={handleAddComment}
+                  disabled={isAddingComment}
+                  className="text-primary-600 dark:text-primary-400 font-semibold text-sm disabled:opacity-50"
+                >
+                  {isAddingComment ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Publicar"
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </GuestBlurOverlay>
 
       {/* Modal de compartilhamento */}
       <SharePostModal

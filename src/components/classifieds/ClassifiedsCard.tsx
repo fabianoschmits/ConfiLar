@@ -38,6 +38,7 @@ import { PremiumTimeRemaining } from "@/components/classifieds/PremiumTimeRemain
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { getCategoryById } from "@/data/serviceCategories"; // Assuming this helper exists or similar logic
+import { GuestBlurOverlay } from "@/components/auth/GuestBlurOverlay";
 
 // Defining props based on usage
 interface ClassifiedsCardProps {
@@ -282,199 +283,191 @@ export function ClassifiedsCard({
         <h3 className="text-lg font-bold text-gray-900 dark:text-white leading-tight line-clamp-2">
           {ad.title}
         </h3>
-        <div className="mt-2 flex flex-wrap gap-2">
-          <Badge
-            variant="secondary"
-            className="text-[10px] font-medium px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-          >
-            {ad.category}
-          </Badge>
-        </div>
       </div>
 
-      {/* 3. Media Area (Only if images exist) */}
-      {/* 3. Media Area (Only if images exist) */}
-      {/* 3. Media Area (Only if images exist) */}
-      {images && images.length > 0 && (
-        <div
-          className={cn(
-            "w-full bg-gray-50 dark:bg-gray-900 relative overflow-hidden group/media transition-all duration-500 ease-in-out cursor-pointer",
-            isImageExpanded ? "h-auto" : "aspect-video",
-          )}
-          onClick={toggleImageExpand}
-        >
-          <img
-            key={currentImageIndex} // Trigger animation on change
-            src={images[currentImageIndex]}
-            alt={`${ad.title} - Foto ${currentImageIndex + 1}`}
+      <GuestBlurOverlay isGuest={!user} className="flex-1 flex flex-col">
+        {/* 3. Media Area (Only if images exist) */}
+        {images && images.length > 0 && (
+          <div
             className={cn(
-              "w-full animate-in fade-in zoom-in-95 duration-300", // Animation classes
-              isImageExpanded
-                ? "h-auto max-h-[600px] object-contain"
-                : "h-full object-cover group-hover:scale-105 transition-transform",
+              "w-full bg-gray-50 dark:bg-gray-900 relative overflow-hidden group/media transition-all duration-500 ease-in-out cursor-pointer",
+              isImageExpanded ? "h-auto" : "aspect-video",
             )}
-          />
+            onClick={toggleImageExpand}
+          >
+            <img
+              key={currentImageIndex} // Trigger animation on change
+              src={images[currentImageIndex]}
+              alt={`${ad.title} - Foto ${currentImageIndex + 1}`}
+              className={cn(
+                "w-full animate-in fade-in zoom-in-95 duration-300", // Animation classes
+                isImageExpanded
+                  ? "h-auto max-h-[600px] object-contain"
+                  : "h-full object-cover group-hover:scale-105 transition-transform",
+              )}
+            />
 
-          {/* Expand Hint Icon (Only on hover when not expanded) */}
-          {/* Expand Hint Icon (Only on hover when not expanded) - REMOVED */}
+            {/* Expand Hint Icon (Only on hover when not expanded) */}
+            {/* Expand Hint Icon (Only on hover when not expanded) - REMOVED */}
 
-          {/* Navigation Arrows */}
-          {images.length > 1 && (
-            <>
+            {/* Navigation Arrows */}
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={prevImage}
+                  className="absolute left-1 top-1/2 -translate-y-1/2 text-white/90 hover:text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] opacity-0 group-hover/media:opacity-100 transition-all hover:scale-110 z-10"
+                >
+                  <ChevronLeft className="w-8 h-8" />
+                </button>
+                <button
+                  onClick={nextImage}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 text-white/90 hover:text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] opacity-0 group-hover/media:opacity-100 transition-all hover:scale-110 z-10"
+                >
+                  <ChevronRight className="w-8 h-8" />
+                </button>
+              </>
+            )}
+
+            {/* Count badge */}
+            {images.length > 1 && (
+              <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full font-medium pointer-events-none">
+                {currentImageIndex + 1} / {images.length}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 4. Description */}
+        <div className="px-5 py-4">
+          <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+            <MentionText text={displayDescription} />
+            {shouldTruncate && (
               <button
-                onClick={prevImage}
-                className="absolute left-1 top-1/2 -translate-y-1/2 text-white/90 hover:text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] opacity-0 group-hover/media:opacity-100 transition-all hover:scale-110 z-10"
+                onClick={() => setShowFullDescription(!showFullDescription)}
+                className="text-primary-600 dark:text-primary-400 ml-1 font-medium hover:underline text-xs"
               >
-                <ChevronLeft className="w-8 h-8" />
+                {showFullDescription ? "ler menos" : "ler mais"}
               </button>
-              <button
-                onClick={nextImage}
-                className="absolute right-1 top-1/2 -translate-y-1/2 text-white/90 hover:text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] opacity-0 group-hover/media:opacity-100 transition-all hover:scale-110 z-10"
-              >
-                <ChevronRight className="w-8 h-8" />
-              </button>
-            </>
-          )}
+            )}
+          </p>
 
-          {/* Count badge */}
-          {images.length > 1 && (
-            <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full font-medium pointer-events-none">
-              {currentImageIndex + 1} / {images.length}
+          {/* Price Range if available */}
+          {ad.price_range && (
+            <div className="mt-3 flex items-center gap-1 text-sm font-semibold text-gray-900 dark:text-white">
+              <span className="text-green-600 dark:text-green-500">R$</span>
+              {ad.price_range}
             </div>
           )}
         </div>
-      )}
 
-      {/* 4. Description */}
-      <div className="px-5 py-4">
-        <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-          <MentionText text={displayDescription} />
-          {shouldTruncate && (
-            <button
-              onClick={() => setShowFullDescription(!showFullDescription)}
-              className="text-primary-600 dark:text-primary-400 ml-1 font-medium hover:underline text-xs"
-            >
-              {showFullDescription ? "ler menos" : "ler mais"}
-            </button>
-          )}
-        </p>
-
-        {/* Price Range if available */}
-        {ad.price_range && (
-          <div className="mt-3 flex items-center gap-1 text-sm font-semibold text-gray-900 dark:text-white">
-            <span className="text-green-600 dark:text-green-500">R$</span>
-            {ad.price_range}
-          </div>
-        )}
-      </div>
-
-      {/* 5. Footer: User + Contact */}
-      <div className="mt-auto bg-gray-50/50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-800">
-        <div className="px-5 py-4 flex items-center justify-between">
-          {/* User Info with Badge at Bottom Right */}
-          <div className="flex items-center gap-3">
-            <Link href={`/perfil/${ad.user_id}`} className="block">
-              <UserAvatar
-                src={ad.user_avatar_url}
-                alt={ad.user_name}
-                fallback={ad.user_name?.charAt(0).toUpperCase()}
-                size="md"
-                userId={ad.user_id}
-                showReferralBadge={true}
-                badgePlacement="top-right" // Moved to top as requested
-                className="border border-white dark:border-gray-700 shadow-sm"
-              />
-            </Link>
-            <div className="flex flex-col">
-              <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">
-                Anunciante
-              </span>
-              <div className="flex items-center gap-1">
-                <Link
-                  href={`/perfil/${ad.user_id}`}
-                  className="text-sm font-bold text-gray-900 dark:text-white hover:underline truncate max-w-[120px] sm:max-w-[150px]"
-                >
-                  {ad.user_name}
-                </Link>
-                <button
-                  onClick={() => setUserInfoExpanded(!userInfoExpanded)}
-                  className="h-4 w-4 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-400"
-                >
-                  <ChevronDown
-                    className={cn(
-                      "w-2.5 h-2.5 transition-transform",
-                      userInfoExpanded && "transform rotate-180",
-                    )}
-                  />
-                </button>
+        {/* 5. Footer: User + Contact */}
+        <div className="mt-auto bg-gray-50/50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-800">
+          <div className="px-5 py-4 flex items-center justify-between">
+            {/* User Info with Badge at Bottom Right */}
+            <div className="flex items-center gap-3">
+              <Link href={`/perfil/${ad.user_id}`} className="block">
+                <UserAvatar
+                  src={ad.user_avatar_url}
+                  alt={ad.user_name}
+                  fallback={ad.user_name?.charAt(0).toUpperCase()}
+                  size="md"
+                  userId={ad.user_id}
+                  showReferralBadge={true}
+                  badgePlacement="top-right" // Moved to top as requested
+                  className="border border-white dark:border-gray-700 shadow-sm"
+                />
+              </Link>
+              <div className="flex flex-col">
+                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">
+                  Anunciante
+                </span>
+                <div className="flex items-center gap-1">
+                  <Link
+                    href={`/perfil/${ad.user_id}`}
+                    className="text-sm font-bold text-gray-900 dark:text-white hover:underline truncate max-w-[120px] sm:max-w-[150px]"
+                  >
+                    {ad.user_name}
+                  </Link>
+                  <button
+                    onClick={() => setUserInfoExpanded(!userInfoExpanded)}
+                    className="h-4 w-4 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-400"
+                  >
+                    <ChevronDown
+                      className={cn(
+                        "w-2.5 h-2.5 transition-transform",
+                        userInfoExpanded && "transform rotate-180",
+                      )}
+                    />
+                  </button>
+                </div>
               </div>
             </div>
+
+            {/* Contact Button */}
+            <Button
+              onClick={handleContactClick}
+              disabled={isOwner}
+              className={cn(
+                "rounded-full px-5 font-semibold shadow-sm transition-all hover:shadow-md active:scale-95",
+                isOwner ? "opacity-50 cursor-not-allowed" : "",
+              )}
+              variant={isActivePremium ? "default" : "secondary"}
+              size="sm"
+            >
+              Contatar
+            </Button>
           </div>
 
-          {/* Contact Button */}
-          <Button
-            onClick={handleContactClick}
-            disabled={isOwner}
-            className={cn(
-              "rounded-full px-5 font-semibold shadow-sm transition-all hover:shadow-md active:scale-95",
-              isOwner ? "opacity-50 cursor-not-allowed" : "",
-            )}
-            variant={isActivePremium ? "default" : "secondary"}
-            size="sm"
-          >
-            Contatar
-          </Button>
-        </div>
-
-        {/* Expanded User Info (Stats) */}
-        {userInfoExpanded && ad.user_profile && (
-          <div className="px-5 pb-4 pt-0 text-xs animate-in slide-in-from-top-2">
-            <div className="grid grid-cols-2 gap-2 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
-              {ad.user_profile.idade && (
-                <div className="text-gray-600 dark:text-gray-300">
-                  <span className="font-semibold text-gray-900 dark:text-white block text-[10px] uppercase opacity-70">
-                    Idade
-                  </span>
-                  {ad.user_profile.idade} anos
-                </div>
-              )}
-              {ad.user_profile.estado_civil && (
-                <div className="text-gray-600 dark:text-gray-300">
-                  <span className="font-semibold text-gray-900 dark:text-white block text-[10px] uppercase opacity-70">
-                    Estado Civil
-                  </span>
-                  {ad.user_profile.estado_civil}
-                </div>
-              )}
-              {ad.user_profile.escolaridade && (
-                <div className="text-gray-600 dark:text-gray-300 col-span-2">
-                  <span className="font-semibold text-gray-900 dark:text-white block text-[10px] uppercase opacity-70">
-                    Escolaridade
-                  </span>
-                  {ad.user_profile.escolaridade.replace(/_/g, " ")}
-                </div>
-              )}
-              {ad.user_profile.filhos !== undefined &&
-                ad.user_profile.filhos > 0 && (
+          {/* Expanded User Info (Stats) */}
+          {userInfoExpanded && ad.user_profile && (
+            <div className="px-5 pb-4 pt-0 text-xs animate-in slide-in-from-top-2">
+              <div className="grid grid-cols-2 gap-2 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                {ad.user_profile.idade && (
                   <div className="text-gray-600 dark:text-gray-300">
                     <span className="font-semibold text-gray-900 dark:text-white block text-[10px] uppercase opacity-70">
-                      Filhos
+                      Idade
                     </span>
-                    {ad.user_profile.filhos}
+                    {ad.user_profile.idade} anos
                   </div>
                 )}
-              {ad.user_profile.professional_experience_years && (
-                <div className="text-gray-600 dark:text-gray-300">
-                  <span className="font-semibold text-gray-900 dark:text-white block text-[10px] uppercase opacity-70">
-                    Experiência
-                  </span>
-                  {ad.user_profile.professional_experience_years} anos
-                </div>
-              )}
+                {ad.user_profile.estado_civil && (
+                  <div className="text-gray-600 dark:text-gray-300">
+                    <span className="font-semibold text-gray-900 dark:text-white block text-[10px] uppercase opacity-70">
+                      Estado Civil
+                    </span>
+                    {ad.user_profile.estado_civil}
+                  </div>
+                )}
+                {ad.user_profile.escolaridade && (
+                  <div className="text-gray-600 dark:text-gray-300 col-span-2">
+                    <span className="font-semibold text-gray-900 dark:text-white block text-[10px] uppercase opacity-70">
+                      Escolaridade
+                    </span>
+                    {ad.user_profile.escolaridade.replace(/_/g, " ")}
+                  </div>
+                )}
+                {ad.user_profile.filhos !== undefined &&
+                  ad.user_profile.filhos > 0 && (
+                    <div className="text-gray-600 dark:text-gray-300">
+                      <span className="font-semibold text-gray-900 dark:text-white block text-[10px] uppercase opacity-70">
+                        Filhos
+                      </span>
+                      {ad.user_profile.filhos}
+                    </div>
+                  )}
+                {ad.user_profile.professional_experience_years && (
+                  <div className="text-gray-600 dark:text-gray-300">
+                    <span className="font-semibold text-gray-900 dark:text-white block text-[10px] uppercase opacity-70">
+                      Experiência
+                    </span>
+                    {ad.user_profile.professional_experience_years} anos
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </GuestBlurOverlay>
     </div>
   );
 }

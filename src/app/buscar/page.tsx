@@ -67,11 +67,16 @@ import { RecommendationButton } from "@/components/ui/RecommendationButton";
 import { FavoriteButton } from "@/components/ui/FavoriteButton";
 import { SmartSearchBar } from "@/components/search/SmartSearchBar";
 import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { GuestBlurOverlay } from "@/components/auth/GuestBlurOverlay";
 
 export default function BuscarPage() {
   const router = useRouter();
   const t = useTranslations("search");
   const tCommon = useTranslations("common");
+  const { user } = useAuthContext();
+  const isGuest = !user;
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [profileViews, setProfileViews] = useState<Record<string, number>>({});
@@ -769,69 +774,152 @@ export default function BuscarPage() {
                               {profile.full_name}
                             </h3>
                           </div>
-                          <div className="flex items-center gap-2 mt-1 flex-wrap">
-                            {/* Tag de Tipo de Usuário */}
-                            <Badge
-                              variant={
-                                profile.user_type === "professional"
-                                  ? "default"
-                                  : "secondary"
-                              }
-                              className={`text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 transition-all duration-300 ${
-                                profile.user_type === "professional"
-                                  ? "bg-primary-100 text-primary-800 border border-primary-200 shadow-sm"
-                                  : "bg-purple-100 text-purple-800 border border-purple-200 shadow-sm"
-                              }`}
-                            >
-                              {profile.user_type === "professional" ? (
-                                <>
-                                  <Briefcase className="h-3 w-3" />
-                                  Profissional
-                                </>
-                              ) : (
-                                <>
-                                  <User className="h-3 w-3" />
-                                  Cliente
-                                </>
-                              )}
-                            </Badge>
 
-                            {(() => {
-                              // Usar disponibilidade do contexto se disponível, senão usar do perfil
-                              const isAvailable =
-                                userAvailability[profile.id] !== undefined
-                                  ? userAvailability[profile.id]
-                                  : profile.is_available;
+                          <GuestBlurOverlay
+                            isGuest={isGuest}
+                            overlayClassName="rounded-xl"
+                          >
+                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                              {/* Tag de Tipo de Usuário */}
+                              <Badge
+                                variant={
+                                  profile.user_type === "professional"
+                                    ? "default"
+                                    : "secondary"
+                                }
+                                className={`text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 transition-all duration-300 ${
+                                  profile.user_type === "professional"
+                                    ? "bg-primary-100 text-primary-800 border border-primary-200 shadow-sm"
+                                    : "bg-purple-100 text-purple-800 border border-purple-200 shadow-sm"
+                                }`}
+                              >
+                                {profile.user_type === "professional" ? (
+                                  <>
+                                    <Briefcase className="h-3 w-3" />
+                                    Profissional
+                                  </>
+                                ) : (
+                                  <>
+                                    <User className="h-3 w-3" />
+                                    Cliente
+                                  </>
+                                )}
+                              </Badge>
 
-                              return (
-                                <Badge
-                                  variant={
-                                    isAvailable ? "default" : "secondary"
-                                  }
-                                  className={`text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 transition-all duration-300 ${
-                                    isAvailable
-                                      ? "bg-success-100 text-success-800 border border-success-200 shadow-sm"
-                                      : "bg-error-100 text-error-800 border border-error-200 shadow-sm"
-                                  }`}
-                                >
-                                  <div
-                                    className={`w-2 h-2 rounded-full animate-pulse ${
+                              {(() => {
+                                // Usar disponibilidade do contexto se disponível, senão usar do perfil
+                                const isAvailable =
+                                  userAvailability[profile.id] !== undefined
+                                    ? userAvailability[profile.id]
+                                    : profile.is_available;
+
+                                return (
+                                  <Badge
+                                    variant={
+                                      isAvailable ? "default" : "secondary"
+                                    }
+                                    className={`text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 transition-all duration-300 ${
                                       isAvailable
-                                        ? "bg-success-500"
-                                        : "bg-error-500"
+                                        ? "bg-success-100 text-success-800 border border-success-200 shadow-sm"
+                                        : "bg-error-100 text-error-800 border border-error-200 shadow-sm"
                                     }`}
-                                  ></div>
-                                  {isAvailable
-                                    ? t("available")
-                                    : t("unavailable")}
-                                </Badge>
-                              );
-                            })()}
-                            <div className="flex items-center text-xs text-gray-500">
-                              <MapPin className="h-3 w-3 mr-1" />
-                              {profile.location_city}, {profile.location_state}
+                                  >
+                                    <div
+                                      className={`w-2 h-2 rounded-full animate-pulse ${
+                                        isAvailable
+                                          ? "bg-success-500"
+                                          : "bg-error-500"
+                                      }`}
+                                    ></div>
+                                    {isAvailable
+                                      ? t("available")
+                                      : t("unavailable")}
+                                  </Badge>
+                                );
+                              })()}
                             </div>
-                          </div>
+
+                            {/* Detalhes do Profissional */}
+                            <div className="mt-4 space-y-3">
+                              {/* Location */}
+                              {(profile.location_city ||
+                                profile.location_state) && (
+                                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                  <MapPin className="h-4 w-4 mr-2 text-primary-500" />
+                                  <span className="truncate">
+                                    {profile.location_city}
+                                    {profile.location_city &&
+                                      profile.location_state &&
+                                      ", "}
+                                    {profile.location_state}
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* Stats */}
+                              <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-3">
+                                <div className="flex items-center">
+                                  <Star className="h-4 w-4 mr-1 text-yellow-400 fill-yellow-400" />
+                                  <span className="font-medium text-gray-900 dark:text-gray-200">
+                                    {profileStats[profile.id]?.rating.toFixed(
+                                      1,
+                                    ) || "5.0"}
+                                  </span>
+                                </div>
+                                <div className="flex items-center">
+                                  <Eye className="h-4 w-4 mr-1 text-blue-400" />
+                                  <span>{profileViews[profile.id] || 0}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Ações */}
+                            <div className="mt-6 flex items-center gap-2">
+                              {profile.user_type === "professional" && (
+                                <Button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openChat(profile.id, profile.full_name);
+                                  }}
+                                  className="flex-1 rounded-xl shadow-sm font-semibold"
+                                  size="sm"
+                                >
+                                  <MessageCircle className="h-4 w-4 mr-2" />
+                                  Contatar
+                                </Button>
+                              )}
+                              <Button
+                                variant="secondary"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleProfileClick(profile.id);
+                                }}
+                                className={cn(
+                                  "rounded-xl font-semibold",
+                                  profile.user_type === "professional"
+                                    ? "w-10 p-0"
+                                    : "flex-1",
+                                )}
+                                size="sm"
+                              >
+                                {profile.user_type === "professional" ? (
+                                  <UserCheck className="h-4 w-4" />
+                                ) : (
+                                  "Ver Perfil"
+                                )}
+                              </Button>
+                              <div
+                                onClick={(e) => e.stopPropagation()}
+                                className="ml-auto"
+                              >
+                                <FavoriteButton
+                                  userId={profile.id}
+                                  userName={profile.full_name}
+                                  size="sm"
+                                />
+                              </div>
+                            </div>
+                          </GuestBlurOverlay>
                         </div>
                       </div>
 
