@@ -132,6 +132,13 @@ export function ModernSidebar() {
           description: "Visão geral",
         },
         {
+          id: "feed",
+          title: "Feed Social",
+          href: "/feed",
+          icon: <Users className="h-4 w-4" />,
+          description: "Linha do tempo",
+        },
+        {
           id: "classificados",
           title: "Classificados",
           href: "/classificados",

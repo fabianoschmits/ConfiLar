@@ -22,6 +22,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -157,135 +158,193 @@ export function ClassifiedsCard({
       {isHighlighted && (
         <div className="absolute inset-0 rounded-3xl ring-4 ring-blue-500 dark:ring-blue-600 animate-pulse pointer-events-none z-10 shadow-[0_0_25px_rgba(59,130,246,0.6)]" />
       )}
-      {/* 1. Header: Tags + Location */}
-      <div className="flex items-center justify-between px-5 pt-5 pb-2">
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Ad Type Badge */}
-          <Badge
-            variant="secondary"
-            className={cn(
-              "text-[10px] font-semibold px-2 py-0.5 rounded-full",
-              ad.ad_type === "oferecer"
-                ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                : "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-            )}
-          >
-            {ad.ad_type === "oferecer" ? "Oferta" : "Solicitação"}
-          </Badge>
 
-          {/* Location Badge */}
-          {ad.location_city && (
-            <Badge
-              variant="outline"
-              className="text-[10px] font-medium px-2 py-0.5 rounded-full border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 gap-1"
+      {/* Identidade Nítida Sobreposta (Apenas para visitantes) */}
+      {!user && (
+        <div className="absolute top-0 left-0 right-0 z-30 px-5 pt-5 pb-2 border-b border-transparent pointer-events-none">
+          <div className="flex items-center gap-3">
+            <Link
+              href={`/perfil/${ad.user_id}`}
+              className="pointer-events-auto"
             >
-              <MapPin className="w-3 h-3" />
-              {ad.location_city}
-            </Badge>
-          )}
-
-          {/* Premium Badge */}
-          {isActivePremium && (
-            <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm gap-1">
-              <Crown className="h-3 w-3" />
-              Premium
-            </Badge>
-          )}
-
-          {/* Creation Date */}
-          {ad.created_at && (
-            <div
-              className="flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500 ml-1"
-              title={`Criado em: ${new Date(ad.created_at).toLocaleDateString("pt-BR")}`}
+              <Avatar className="h-10 w-10 border border-gray-100 dark:border-gray-800 transition-transform hover:scale-105">
+                <AvatarImage
+                  src={ad.user_avatar || ad.user_avatar_url || ""}
+                  alt={ad.user_name || "Usuário"}
+                />
+                <AvatarFallback className="bg-primary-50 text-primary-700 font-bold uppercase">
+                  {(ad.user_name || "U").charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+            <Link
+              href={`/perfil/${ad.user_id}`}
+              className="text-base font-black text-gray-900 dark:text-white hover:underline transition-all tracking-tight uppercase italic pointer-events-auto"
             >
-              <Clock className="w-3 h-3" />
-              <span className="capitalize">
-                {formatDistanceToNow(new Date(ad.created_at), {
-                  addSuffix: true,
-                  locale: ptBR,
-                })}
-              </span>
-            </div>
-          )}
+              {ad.user_name}
+            </Link>
+          </div>
         </div>
-
-        {/* Options Menu */}
-        {/* Options Menu */}
-        <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {isOwner && (
-              <DropdownMenuItem onClick={() => onEdit && onEdit(ad)}>
-                <Edit className="h-4 w-4 mr-2" />
-                Editar
-              </DropdownMenuItem>
-            )}
-
-            {isOwner && isActivePremium && premiumExpired && (
-              <DropdownMenuItem
-                onClick={() => onRenewPremium && onRenewPremium(ad.id)}
-                className="text-yellow-600 dark:text-yellow-400"
-              >
-                <Crown className="h-4 w-4 mr-2" />
-                Renovar Premium
-              </DropdownMenuItem>
-            )}
-
-            {(isOwner || isAdmin) && (
-              <DropdownMenuItem
-                onClick={() => onDelete && onDelete(ad.id)}
-                className="text-red-600 dark:text-red-400"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                {isAdmin && !isOwner ? "Deletar (Admin)" : "Deletar"}
-              </DropdownMenuItem>
-            )}
-
-            {!isOwner && (
-              <DropdownMenuItem
-                onClick={() => setShowReportDialog(true)}
-                className="text-red-600 hover:text-red-700"
-              >
-                <div className="flex items-center w-full">
-                  <Flag className="h-4 w-4 mr-2" />
-                  Denunciar
-                </div>
-              </DropdownMenuItem>
-            )}
-
-            <DropdownMenuItem onClick={() => onShare && onShare(ad)}>
-              <Share2 className="h-4 w-4 mr-2" />
-              Compartilhar
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <ReportDialog
-          isOpen={showReportDialog}
-          onOpenChange={setShowReportDialog}
-          type="classified"
-          targetId={ad.id}
-          targetName={ad.title}
-          reportedUserId={ad.user_id}
-        />
-      </div>
-
-      {/* 2. Title */}
-      <div className="px-5 pb-3">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white leading-tight line-clamp-2">
-          {ad.title}
-        </h3>
-      </div>
+      )}
 
       <GuestBlurOverlay isGuest={!user} className="flex-1 flex flex-col">
+        {/* Identidade Original (Oculta para visitantes para evitar sobreposição) */}
+        {user && (
+          <div className="px-5 pt-5 pb-2 border-b border-gray-50 dark:border-gray-900/50">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10 border border-gray-100 dark:border-gray-800">
+                <AvatarImage
+                  src={ad.user_avatar || ad.user_avatar_url || ""}
+                  alt={ad.user_name || "Usuário"}
+                />
+                <AvatarFallback className="bg-primary-50 text-primary-700 font-bold uppercase">
+                  {(ad.user_name || "U").charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <p className="text-base font-black text-gray-900 dark:text-white tracking-tight uppercase italic">
+                {ad.user_name}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Identidade Secundária (Rótulo) */}
+        <div className="px-5 pt-3 pb-2">
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col">
+              <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">
+                Anunciante
+              </span>
+            </div>
+          </div>
+        </div>
+        {/* 1. Header: Tags + Location */}
+        <div className="flex items-center justify-between px-5 pt-3 pb-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Ad Type Badge */}
+            <Badge
+              variant="secondary"
+              className={cn(
+                "text-[10px] font-semibold px-2 py-0.5 rounded-full",
+                ad.ad_type === "oferecer"
+                  ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                  : "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+              )}
+            >
+              {ad.ad_type === "oferecer" ? "Oferta" : "Solicitação"}
+            </Badge>
+
+            {/* Location Badge */}
+            {ad.location_city && (
+              <Badge
+                variant="outline"
+                className="text-[10px] font-medium px-2 py-0.5 rounded-full border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 gap-1"
+              >
+                <MapPin className="w-3 h-3" />
+                {ad.location_city}
+              </Badge>
+            )}
+
+            {/* Premium Badge */}
+            {isActivePremium && (
+              <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm gap-1">
+                <Crown className="h-3 w-3" />
+                Premium
+              </Badge>
+            )}
+
+            {/* Creation Date */}
+            {ad.created_at && (
+              <div
+                className="flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500 ml-1"
+                title={`Criado em: ${new Date(ad.created_at).toLocaleDateString("pt-BR")}`}
+              >
+                <Clock className="w-3 h-3" />
+                <span className="capitalize">
+                  {formatDistanceToNow(new Date(ad.created_at), {
+                    addSuffix: true,
+                    locale: ptBR,
+                  })}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Options Menu */}
+          {/* Options Menu */}
+          <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {isOwner && (
+                <DropdownMenuItem onClick={() => onEdit && onEdit(ad)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Editar
+                </DropdownMenuItem>
+              )}
+
+              {isOwner && isActivePremium && premiumExpired && (
+                <DropdownMenuItem
+                  onClick={() => onRenewPremium && onRenewPremium(ad.id)}
+                  className="text-yellow-600 dark:text-yellow-400"
+                >
+                  <Crown className="h-4 w-4 mr-2" />
+                  Renovar Premium
+                </DropdownMenuItem>
+              )}
+
+              {(isOwner || isAdmin) && (
+                <DropdownMenuItem
+                  onClick={() => onDelete && onDelete(ad.id)}
+                  className="text-red-600 dark:text-red-400"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  {isAdmin && !isOwner ? "Deletar (Admin)" : "Deletar"}
+                </DropdownMenuItem>
+              )}
+
+              {!isOwner && (
+                <DropdownMenuItem
+                  onClick={() => setShowReportDialog(true)}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <div className="flex items-center w-full">
+                    <Flag className="h-4 w-4 mr-2" />
+                    Denunciar
+                  </div>
+                </DropdownMenuItem>
+              )}
+
+              <DropdownMenuItem onClick={() => onShare && onShare(ad)}>
+                <Share2 className="h-4 w-4 mr-2" />
+                Compartilhar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <ReportDialog
+            isOpen={showReportDialog}
+            onOpenChange={setShowReportDialog}
+            type="classified"
+            targetId={ad.id}
+            targetName={ad.title}
+            reportedUserId={ad.user_id}
+          />
+        </div>
+
+        {/* 2. Title */}
+        <div className="px-5 pb-3">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white leading-tight line-clamp-2">
+            {ad.title}
+          </h3>
+        </div>
         {/* 3. Media Area (Only if images exist) */}
         {images && images.length > 0 && (
           <div
@@ -362,47 +421,7 @@ export function ClassifiedsCard({
 
         {/* 5. Footer: User + Contact */}
         <div className="mt-auto bg-gray-50/50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-800">
-          <div className="px-5 py-4 flex items-center justify-between">
-            {/* User Info with Badge at Bottom Right */}
-            <div className="flex items-center gap-3">
-              <Link href={`/perfil/${ad.user_id}`} className="block">
-                <UserAvatar
-                  src={ad.user_avatar_url}
-                  alt={ad.user_name}
-                  fallback={ad.user_name?.charAt(0).toUpperCase()}
-                  size="md"
-                  userId={ad.user_id}
-                  showReferralBadge={true}
-                  badgePlacement="top-right" // Moved to top as requested
-                  className="border border-white dark:border-gray-700 shadow-sm"
-                />
-              </Link>
-              <div className="flex flex-col">
-                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">
-                  Anunciante
-                </span>
-                <div className="flex items-center gap-1">
-                  <Link
-                    href={`/perfil/${ad.user_id}`}
-                    className="text-sm font-bold text-gray-900 dark:text-white hover:underline truncate max-w-[120px] sm:max-w-[150px]"
-                  >
-                    {ad.user_name}
-                  </Link>
-                  <button
-                    onClick={() => setUserInfoExpanded(!userInfoExpanded)}
-                    className="h-4 w-4 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-400"
-                  >
-                    <ChevronDown
-                      className={cn(
-                        "w-2.5 h-2.5 transition-transform",
-                        userInfoExpanded && "transform rotate-180",
-                      )}
-                    />
-                  </button>
-                </div>
-              </div>
-            </div>
-
+          <div className="px-5 py-4 flex items-center justify-end">
             {/* Contact Button */}
             <Button
               onClick={handleContactClick}

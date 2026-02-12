@@ -564,6 +564,17 @@ export function ModernHeader({
                             <Button
                               variant="ghost"
                               size="sm"
+                              onClick={() => handleNavigation("/feed")}
+                              className="flex items-center gap-1 text-xs py-1 h-7 text-[#00b0b0]"
+                            >
+                              <Users className="h-3 w-3" />
+                              <span className="truncate">
+                                {t("socialFeed")}
+                              </span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => handleNavigation("/classificados")}
                               className="flex items-center gap-1 text-xs py-1 h-7"
                             >

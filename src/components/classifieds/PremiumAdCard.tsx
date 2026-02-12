@@ -29,6 +29,7 @@ interface PremiumAdCardProps {
     user_id: string;
     user_name: string;
     user_avatar?: string;
+    user_avatar_url?: string;
     user_type: string;
     title: string;
     description: string;
@@ -117,7 +118,7 @@ export function PremiumAdCard({
                 className="hover:opacity-80 transition-opacity relative"
               >
                 <UserAvatar
-                  src={ad.user_avatar}
+                  src={ad.user_avatar || ad.user_avatar_url}
                   alt={ad.user_name}
                   fallback={ad.user_name?.charAt(0).toUpperCase() || "U"}
                   size="lg"

@@ -21,6 +21,7 @@ import {
   RefreshCw,
   Crown,
   Coins,
+  MapPin,
 } from "lucide-react";
 import { useUnifiedTimeline } from "@/hooks/useUnifiedTimeline";
 import { useTimelineRealtime } from "@/hooks/useTimelineRealtime";
@@ -248,17 +249,8 @@ export default function FeedPage() {
   const myStoryGroup = storyGroups.find(
     (group) => group.userId === profile?.id,
   );
+
   const displayStories = [
-    // "Seu story" sempre aparece primeiro
-    {
-      id: "my-story",
-      userId: profile?.id || "",
-      userName: "Seu story",
-      userAvatar: profile?.avatar_url || null,
-      hasNew: false,
-      isMyStory: true,
-      stories: myStoryGroup?.stories || [],
-    },
     // Stories de outros usuários
     ...storyGroups
       .filter((group) => group.userId !== profile?.id)
@@ -273,10 +265,23 @@ export default function FeedPage() {
       })),
   ];
 
+  // Adicionar "Seu story" apenas se logado
+  if (profile) {
+    displayStories.unshift({
+      id: "my-story",
+      userId: profile.id,
+      userName: "Seu story",
+      userAvatar: profile.avatar_url || null,
+      hasNew: false,
+      isMyStory: true,
+      stories: myStoryGroup?.stories || [],
+    });
+  }
+
   if (!mounted) return null;
 
   return (
-    <MainLayout requireAuth={true}>
+    <MainLayout requireAuth={false}>
       {/* Story Viewer */}
       {showStoryViewer && (
         <StoryViewer
@@ -307,13 +312,15 @@ export default function FeedPage() {
                 ConfiLar
               </h1>
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowNewPost(true)}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors"
-                  title={t("createPost")}
-                >
-                  <Plus className="h-5 w-5 text-gray-900 dark:text-white" />
-                </button>
+                {profile && (
+                  <button
+                    onClick={() => setShowNewPost(true)}
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors"
+                    title={t("createPost")}
+                  >
+                    <Plus className="h-5 w-5 text-gray-900 dark:text-white" />
+                  </button>
+                )}
                 <button
                   onClick={() => setShowSearch(!showSearch)}
                   className={`p-2 rounded-full transition-colors ${
@@ -325,13 +332,15 @@ export default function FeedPage() {
                 >
                   <Search className="h-5 w-5" />
                 </button>
-                <button
-                  onClick={() => openChat()}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors relative"
-                >
-                  <MessageCircle className="h-5 w-5 text-gray-900 dark:text-white" />
-                  {/* Chat badge placeholder if needed */}
-                </button>
+                {profile && (
+                  <button
+                    onClick={() => openChat()}
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors relative"
+                  >
+                    <MessageCircle className="h-5 w-5 text-gray-900 dark:text-white" />
+                    {/* Chat badge placeholder if needed */}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -349,23 +358,25 @@ export default function FeedPage() {
 
             {/* Tabs */}
             <div className="flex px-4 pt-1">
-              {(["all", "posts", "notifications"] as const).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`mr-6 pb-2 border-b-2 transition-all font-medium text-sm capitalize ${
-                    activeTab === tab
-                      ? "border-primary-600 text-primary-600 dark:text-primary-400"
-                      : "border-transparent text-gray-500 dark:text-gray-400"
-                  }`}
-                >
-                  {tab === "all"
-                    ? t("all")
-                    : tab === "posts"
-                      ? t("posts")
-                      : t("notifications")}
-                </button>
-              ))}
+              {(["all", "posts", "notifications"] as const)
+                .filter((tab) => (profile ? true : tab !== "notifications"))
+                .map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`mr-6 pb-2 border-b-2 transition-all font-medium text-sm capitalize ${
+                      activeTab === tab
+                        ? "border-primary-600 text-primary-600 dark:text-primary-400"
+                        : "border-transparent text-gray-500 dark:text-gray-400"
+                    }`}
+                  >
+                    {tab === "all"
+                      ? t("all")
+                      : tab === "posts"
+                        ? t("posts")
+                        : t("notifications")}
+                  </button>
+                ))}
             </div>
           </div>
         </header>
@@ -985,6 +996,7 @@ function InstagramPost({
   const userAvatar =
     postUser?.avatar_url ||
     post.user_avatar ||
+    post.user_avatar_url ||
     post.professional?.avatar_url ||
     post.user?.avatar_url ||
     undefined;
@@ -1059,73 +1071,84 @@ function InstagramPost({
       {isHighlighted && (
         <div className="absolute inset-0 rounded-xl ring-4 ring-blue-500 dark:ring-blue-600 animate-pulse pointer-events-none z-10 shadow-[0_0_20px_rgba(59,130,246,0.5)]" />
       )}
-      {/* HEADER */}
-      <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-3">
-          <Link href={`/perfil/${userId}`}>
-            <Avatar className="w-10 h-10 border-2 border-gray-200 dark:border-gray-800">
-              <AvatarImage src={userAvatar} alt={displayUserName} />
-              <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-white font-semibold">
-                {displayUserName.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          </Link>
-          <div>
-            <Link href={`/perfil/${userId}`}>
-              <p className="font-semibold text-sm text-gray-900 dark:text-white">
+      {/* Identidade Nítida Sobreposta (Apenas para visitantes) */}
+      {isGuest && (
+        <div className="absolute top-0 left-0 right-0 z-30 px-4 pt-4 pb-2 border-b border-transparent pointer-events-none">
+          <div className="flex items-center gap-3">
+            <Link href={`/perfil/${userId}`} className="pointer-events-auto">
+              <Avatar className="w-10 h-10 border-2 border-gray-100 dark:border-gray-800 transition-transform hover:scale-105">
+                <AvatarImage src={userAvatar} alt={displayUserName} />
+                <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-white font-semibold">
+                  {displayUserName.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+            <Link href={`/perfil/${userId}`} className="pointer-events-auto">
+              <p className="font-black text-base text-gray-900 dark:text-white hover:underline transition-all tracking-tight uppercase leading-none">
                 {displayUserName}
               </p>
             </Link>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              {post.location_city &&
-                post.location_city !== "null" &&
-                `${post.location_city}, ${post.location_state || ""}`}
-            </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {/* Badge de Serviço */}
-          {serviceCategory && (
-            <Badge
-              variant="outline"
-              className="text-[10px] font-medium px-1.5 py-0.5 rounded-full border-success-200 dark:border-success-800 text-success-700 dark:text-success-400 bg-success-50 dark:bg-success-900/30 flex items-center gap-1"
-            >
-              <span>{serviceCategory.icon}</span>
-              <span>{serviceCategory.name}</span>
-            </Badge>
-          )}
-          {isActivePremium && (
-            <Badge variant="premium" className="text-[10px] px-1.5 py-0.5">
-              <Crown className="h-2.5 w-2.5 mr-1" />
-              Premium
-            </Badge>
-          )}
-          {isTrending && (
-            <Badge className="bg-gradient-to-r from-warning-500 to-error-500 text-white border-0 text-[10px] px-1.5 py-0.5">
-              <Flame className="h-2.5 w-2.5 mr-1" />
-              Popular
-            </Badge>
-          )}
-        </div>
-        <PostOptionsMenu
-          postId={post.id}
-          postUserId={userId}
-          postTitle={post.title || post.description || "Post"}
-          onEdit={(postId) => {
-            if (onEdit) onEdit(postId);
-          }}
-          onDelete={(postId) => {
-            if (onDelete) onDelete(postId);
-          }}
-          onRenewPremium={onRenewPremium}
-          isDeleting={isDeleting}
-          isPremium={isPremium}
-          premiumExpired={premiumExpired}
-        />
-      </div>
+      )}
 
-      {/* MÍDIA E CONTEÚDO SENSÍVEL COM BLUR PARA GUESTS */}
-      <GuestBlurOverlay isGuest={isGuest}>
+      <GuestBlurOverlay isGuest={isGuest} className="flex-1 flex flex-col">
+        {/* Identidade Original (Oculta para visitantes para evitar sobreposição legível) */}
+        {!isGuest && (
+          <div className="px-4 pt-4 pb-2 border-b border-gray-50 dark:border-gray-900/50 opacity-100">
+            <div className="flex items-center gap-3">
+              <Avatar className="w-10 h-10 border-2 border-gray-100 dark:border-gray-800">
+                <AvatarImage src={userAvatar} alt={displayUserName} />
+                <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-white font-semibold">
+                  {displayUserName.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <p className="font-black text-base text-gray-900 dark:text-white tracking-tight uppercase leading-none">
+                {displayUserName}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* HEADER SECUNDÁRIO (Local, Badges, Menu) */}
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                <MapPin className="w-3 h-3" />
+                {post.location_city &&
+                  post.location_city !== "null" &&
+                  `${post.location_city}, ${post.location_state || ""}`}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {/* Badges */}
+            {serviceCategory && (
+              <Badge
+                variant="outline"
+                className="text-[10px] font-medium px-1.5 py-0.5 rounded-full border-success-200 dark:border-success-800 text-success-700 dark:text-success-400 bg-success-50 dark:bg-success-900/30"
+              >
+                {serviceCategory.name}
+              </Badge>
+            )}
+            <PostOptionsMenu
+              postId={post.id}
+              postUserId={userId}
+              postTitle={post.title || post.description || "Post"}
+              onEdit={(postId) => {
+                if (onEdit) onEdit(postId);
+              }}
+              onDelete={(postId) => {
+                if (onDelete) onDelete(postId);
+              }}
+              onRenewPremium={onRenewPremium}
+              isDeleting={isDeleting}
+              isPremium={isPremium}
+              premiumExpired={premiumExpired}
+            />
+          </div>
+        </div>
         {/* MÍDIA (FOTOS E/OU VÍDEO) - Sempre mostrar se houver */}
         {postImages.length > 0 || youtubeVideos.length > 0 || youtubeVideoId ? (
           <>

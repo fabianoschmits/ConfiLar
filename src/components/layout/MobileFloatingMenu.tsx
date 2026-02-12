@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   User,
+  Users,
   UserPlus,
   Menu,
   X,
@@ -54,6 +55,17 @@ export function MobileFloatingMenu() {
 
               {/* Acesso à Conta */}
               <div className="space-y-2 pt-2">
+                <Link href="/feed" onClick={handleClose}>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-[#00b0b0] hover:bg-teal-50 dark:hover:bg-teal-900/10 mb-2"
+                    size="lg"
+                  >
+                    <Users className="h-5 w-5 mr-3" />
+                    Feed Social
+                  </Button>
+                </Link>
+
                 <h4 className="text-xs font-semibold text-gray-500 uppercase px-2">
                   Acesso
                 </h4>

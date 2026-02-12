@@ -704,14 +704,14 @@ export default function BuscarPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="absolute top-2 right-2 h-auto py-1 px-2 text-xs text-primary-600 hover:text-primary-700 hover:bg-primary-50 transition-colors"
+                                className="absolute top-2 right-2 h-auto py-1 px-2 text-xs text-primary-600 hover:text-primary-700 hover:bg-primary-50 transition-colors z-30"
                               >
                                 <Wrench className="h-3 w-3 mr-1" />
                                 Serviços
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent
-                              className="w-80 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700"
+                              className="w-80 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 z-50"
                               align="end"
                             >
                               <div className="space-y-3">
@@ -722,7 +722,7 @@ export default function BuscarPage() {
                                   </h4>
                                 </div>
                                 <div className="max-h-64 overflow-y-auto space-y-2">
-                                  {profile.professional_services.map(
+                                  {(profile.professional_services || []).map(
                                     (service, index) => (
                                       <div
                                         key={index}
@@ -736,155 +736,206 @@ export default function BuscarPage() {
                                     ),
                                   )}
                                 </div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400 text-center pt-2 border-t border-gray-200 dark:border-gray-700">
-                                  {profile.professional_services.length}{" "}
-                                  {profile.professional_services.length === 1
-                                    ? "serviço"
-                                    : "serviços"}
-                                </div>
                               </div>
                             </PopoverContent>
                           </Popover>
                         )}
 
-                      {/* Header do Card */}
-                      <div className="flex items-start space-x-3 mb-4">
-                        <div
-                          onClick={() => handleProfileClick(profile.id)}
-                          className="flex-shrink-0 cursor-pointer"
-                        >
-                          <UserAvatar
-                            src={profile.avatar_url}
-                            alt={profile.full_name}
-                            fallback={
-                              profile.full_name?.charAt(0).toUpperCase() || "P"
-                            }
-                            size="lg"
-                            userId={profile.id}
-                            showReferralBadge={true}
-                            className="hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div
-                            onClick={() => handleProfileClick(profile.id)}
-                            className="cursor-pointer"
-                          >
-                            <h3 className="font-semibold text-gray-900 dark:text-white dark:text-white truncate hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">
-                              {profile.full_name}
-                            </h3>
-                          </div>
-
-                          <GuestBlurOverlay
-                            isGuest={isGuest}
-                            overlayClassName="rounded-xl"
-                          >
-                            <div className="flex items-center gap-2 mt-1 flex-wrap">
-                              {/* Tag de Tipo de Usuário */}
-                              <Badge
-                                variant={
-                                  profile.user_type === "professional"
-                                    ? "default"
-                                    : "secondary"
+                      <div className="relative">
+                        {/* Identidade Nítida Sobreposta (Apenas para visitantes) */}
+                        {isGuest && (
+                          <div className="absolute top-0 left-0 right-0 z-30 px-5 pt-3 pb-3 border-b border-transparent pointer-events-none">
+                            <div className="flex items-center gap-3">
+                              <UserAvatar
+                                src={profile.avatar_url}
+                                alt={profile.full_name}
+                                fallback={
+                                  profile.full_name?.charAt(0).toUpperCase() ||
+                                  "P"
                                 }
-                                className={`text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 transition-all duration-300 ${
-                                  profile.user_type === "professional"
-                                    ? "bg-primary-100 text-primary-800 border border-primary-200 shadow-sm"
-                                    : "bg-purple-100 text-purple-800 border border-purple-200 shadow-sm"
-                                }`}
-                              >
-                                {profile.user_type === "professional" ? (
-                                  <>
-                                    <Briefcase className="h-3 w-3" />
-                                    Profissional
-                                  </>
-                                ) : (
-                                  <>
-                                    <User className="h-3 w-3" />
-                                    Cliente
-                                  </>
-                                )}
-                              </Badge>
+                                size="md"
+                                userId={profile.id}
+                                className="border border-gray-100 dark:border-gray-800 pointer-events-auto"
+                              />
+                              <h3 className="text-base font-black text-gray-900 dark:text-white uppercase italic tracking-tight transition-colors leading-tight pointer-events-auto">
+                                {profile.full_name}
+                              </h3>
+                            </div>
+                          </div>
+                        )}
 
-                              {(() => {
-                                // Usar disponibilidade do contexto se disponível, senão usar do perfil
-                                const isAvailable =
-                                  userAvailability[profile.id] !== undefined
-                                    ? userAvailability[profile.id]
-                                    : profile.is_available;
+                        <GuestBlurOverlay
+                          isGuest={isGuest}
+                          overlayClassName="inset-0 rounded-none bg-black/10"
+                          className="flex-1 flex flex-col h-full"
+                        >
+                          {/* Identidade Original (Oculta para visitantes para evitar sobreposição) */}
+                          {!isGuest && (
+                            <div className="px-5 pt-3 pb-3 border-b border-gray-100 dark:border-gray-800">
+                              <div className="flex items-center gap-3">
+                                <UserAvatar
+                                  src={profile.avatar_url}
+                                  alt={profile.full_name}
+                                  fallback={
+                                    profile.full_name
+                                      ?.charAt(0)
+                                      .toUpperCase() || "P"
+                                  }
+                                  size="md"
+                                  userId={profile.id}
+                                  className="border border-gray-100 dark:border-gray-800"
+                                />
+                                <h3 className="text-base font-black text-gray-900 dark:text-white uppercase italic tracking-tight leading-tight">
+                                  {profile.full_name}
+                                </h3>
+                              </div>
+                            </div>
+                          )}
 
-                                return (
+                          <div className="p-5">
+                            {/* 1. Header: Badges */}
+                            <div className="flex items-start space-x-3 mb-4">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                  {/* Tag de Tipo de Usuário */}
                                   <Badge
                                     variant={
-                                      isAvailable ? "default" : "secondary"
+                                      profile.user_type === "professional"
+                                        ? "default"
+                                        : "secondary"
                                     }
-                                    className={`text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 transition-all duration-300 ${
-                                      isAvailable
-                                        ? "bg-success-100 text-success-800 border border-success-200 shadow-sm"
-                                        : "bg-error-100 text-error-800 border border-error-200 shadow-sm"
-                                    }`}
+                                    className={cn(
+                                      "text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 transition-all duration-300",
+                                      profile.user_type === "professional"
+                                        ? "bg-primary-100 text-primary-800 border border-primary-200 shadow-sm"
+                                        : "bg-purple-100 text-purple-800 border border-purple-200 shadow-sm",
+                                    )}
                                   >
-                                    <div
-                                      className={`w-2 h-2 rounded-full animate-pulse ${
-                                        isAvailable
-                                          ? "bg-success-500"
-                                          : "bg-error-500"
-                                      }`}
-                                    ></div>
-                                    {isAvailable
-                                      ? t("available")
-                                      : t("unavailable")}
+                                    {profile.user_type === "professional" ? (
+                                      <>
+                                        <Briefcase className="h-3 w-3" />
+                                        Profissional
+                                      </>
+                                    ) : (
+                                      <>
+                                        <User className="h-3 w-3" />
+                                        Cliente
+                                      </>
+                                    )}
                                   </Badge>
-                                );
-                              })()}
-                            </div>
 
-                            {/* Detalhes do Profissional */}
-                            <div className="mt-4 space-y-3">
-                              {/* Location */}
-                              {(profile.location_city ||
-                                profile.location_state) && (
-                                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                                  <MapPin className="h-4 w-4 mr-2 text-primary-500" />
-                                  <span className="truncate">
-                                    {profile.location_city}
-                                    {profile.location_city &&
-                                      profile.location_state &&
-                                      ", "}
-                                    {profile.location_state}
-                                  </span>
-                                </div>
-                              )}
+                                  {/* Disponibilidade */}
+                                  {(() => {
+                                    const isAvailable =
+                                      userAvailability[profile.id] !== undefined
+                                        ? userAvailability[profile.id]
+                                        : profile.is_available;
 
-                              {/* Stats */}
-                              <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-3">
-                                <div className="flex items-center">
-                                  <Star className="h-4 w-4 mr-1 text-yellow-400 fill-yellow-400" />
-                                  <span className="font-medium text-gray-900 dark:text-gray-200">
-                                    {profileStats[profile.id]?.rating.toFixed(
-                                      1,
-                                    ) || "5.0"}
-                                  </span>
+                                    return (
+                                      <Badge
+                                        variant={
+                                          isAvailable ? "default" : "secondary"
+                                        }
+                                        className={cn(
+                                          "text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 transition-all duration-300",
+                                          isAvailable
+                                            ? "bg-success-100 text-success-800 border border-success-200 shadow-sm"
+                                            : "bg-error-100 text-error-800 border border-error-200 shadow-sm",
+                                        )}
+                                      >
+                                        <div
+                                          className={cn(
+                                            "w-2 h-2 rounded-full animate-pulse",
+                                            isAvailable
+                                              ? "bg-success-500"
+                                              : "bg-error-500",
+                                          )}
+                                        ></div>
+                                        {isAvailable
+                                          ? t("available")
+                                          : t("unavailable")}
+                                      </Badge>
+                                    );
+                                  })()}
                                 </div>
-                                <div className="flex items-center">
-                                  <Eye className="h-4 w-4 mr-1 text-blue-400" />
-                                  <span>{profileViews[profile.id] || 0}</span>
+
+                                {/* Localização e Distância */}
+                                <div className="mt-3 space-y-1">
+                                  {(profile.location_city ||
+                                    profile.location_state) && (
+                                    <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                      <MapPin className="h-4 w-4 mr-2 text-primary-500 shrink-0" />
+                                      <span className="truncate">
+                                        {profile.location_city}
+                                        {profile.location_city &&
+                                          profile.location_state &&
+                                          ", "}
+                                        {profile.location_state}
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </div>
 
-                            {/* Ações */}
-                            <div className="mt-6 flex items-center gap-2">
+                            {/* 2. Bio */}
+                            <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2 italic">
+                              {profile.bio ||
+                                "Profissional qualificado e experiente."}
+                            </p>
+
+                            {/* 3. Stats & Avaliações */}
+                            <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-3 mb-4">
+                              {(() => {
+                                const stats = profileStats[profile.id];
+                                const rating = stats?.rating || 0;
+                                const reviewCount = stats?.reviewCount || 0;
+
+                                return (
+                                  <div className="flex items-center">
+                                    <div className="flex items-center">
+                                      {Array.from({ length: 5 }).map((_, i) => (
+                                        <Star
+                                          key={i}
+                                          className={cn(
+                                            "h-3.5 w-3.5",
+                                            i < Math.floor(rating)
+                                              ? "text-yellow-400 fill-yellow-400"
+                                              : "text-gray-300 dark:text-gray-600",
+                                          )}
+                                        />
+                                      ))}
+                                    </div>
+                                    <span className="ml-2 text-xs font-bold text-gray-900 dark:text-gray-200">
+                                      {rating.toFixed(1)}
+                                    </span>
+                                    <span className="ml-1 text-[10px] text-gray-500">
+                                      ({reviewCount})
+                                    </span>
+                                  </div>
+                                );
+                              })()}
+
+                              <div className="flex items-center text-[10px] text-gray-400">
+                                <Eye className="h-3 w-3 mr-1" />
+                                <span>
+                                  {profileViews[profile.id] || 0} views
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* 4. Ações (Botões) */}
+                            <div className="flex items-center gap-2">
                               {profile.user_type === "professional" && (
                                 <Button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     openChat(profile.id, profile.full_name);
                                   }}
-                                  className="flex-1 rounded-xl shadow-sm font-semibold"
+                                  className="flex-1 rounded-xl shadow-sm font-bold text-xs h-9"
                                   size="sm"
                                 >
-                                  <MessageCircle className="h-4 w-4 mr-2" />
+                                  <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
                                   Contatar
                                 </Button>
                               )}
@@ -895,7 +946,7 @@ export default function BuscarPage() {
                                   handleProfileClick(profile.id);
                                 }}
                                 className={cn(
-                                  "rounded-xl font-semibold",
+                                  "rounded-xl font-bold text-xs h-9",
                                   profile.user_type === "professional"
                                     ? "w-10 p-0"
                                     : "flex-1",
@@ -908,113 +959,17 @@ export default function BuscarPage() {
                                   "Ver Perfil"
                                 )}
                               </Button>
-                              <div
-                                onClick={(e) => e.stopPropagation()}
-                                className="ml-auto"
-                              >
+                              <div onClick={(e) => e.stopPropagation()}>
                                 <FavoriteButton
                                   userId={profile.id}
                                   userName={profile.full_name}
                                   size="sm"
+                                  className="h-9 w-9 rounded-xl"
                                 />
                               </div>
                             </div>
-                          </GuestBlurOverlay>
-                        </div>
-                      </div>
-
-                      {/* Separator Line */}
-                      <div className="h-px bg-gray-100 dark:bg-gray-800 my-3" />
-
-                      {/* Bio */}
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
-                        {profile.bio ||
-                          "Profissional qualificado e experiente."}
-                      </p>
-
-                      {/* Separator Line Bottom */}
-                      <div className="h-px bg-gray-100 dark:bg-gray-800 my-3" />
-
-                      {/* Avaliações */}
-                      {(() => {
-                        const stats = profileStats[profile.id];
-                        const rating = stats?.rating || 0;
-                        const reviewCount = stats?.reviewCount || 0;
-
-                        return (
-                          <div className="flex items-center justify-center mb-4">
-                            <div className="flex items-center">
-                              {Array.from({ length: 5 }).map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`h-4 w-4 ${
-                                    i < Math.floor(rating)
-                                      ? "text-yellow-400 fill-current"
-                                      : "text-gray-300"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <span className="text-sm text-gray-600 dark:text-gray-400 ml-2">
-                              {rating > 0
-                                ? `${rating.toFixed(1)} (${reviewCount} avaliações)`
-                                : "Sem avaliações"}
-                            </span>
                           </div>
-                        );
-                      })()}
-
-                      {/* Footer do Card */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex flex-col items-center text-xs text-gray-500">
-                          <div className="flex items-center mb-0.5">
-                            <Eye className="h-3 w-3 mr-1" />
-                            <span className="font-medium">
-                              {profileViews[profile.id] || 0}
-                            </span>
-                          </div>
-                          <span className="text-xs">{t("views")}</span>
-                        </div>
-
-                        <div className="flex gap-2 items-center">
-                          <FavoriteButton
-                            userId={profile.id}
-                            userName={profile.full_name || "Usuário"}
-                            size="sm"
-                            variant="outline"
-                          />
-                          <RecommendationButton
-                            userId={profile.id}
-                            userName={profile.full_name || "Usuário"}
-                            size="sm"
-                            variant="outline"
-                            showCount={false}
-                            className="text-xs"
-                            label="Ver"
-                            vertical={true}
-                          />
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs"
-                            onClick={() => handleProfileClick(profile.id)}
-                          >
-                            {t("viewProfile")}
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() =>
-                              openChat(
-                                profile.id,
-                                profile.full_name || "Usuário",
-                              )
-                            }
-                            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
-                            title={t("contact")}
-                          >
-                            <MessageCircle className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        </GuestBlurOverlay>
                       </div>
                     </CardContent>
                   </Card>

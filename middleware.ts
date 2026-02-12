@@ -106,7 +106,6 @@ export async function middleware(request: NextRequest) {
     "/mensagens",
     "/feed",
     "/buscar",
-    "/classificados", // Apenas a página principal de classificados
     "/avaliacoes",
     "/reputacao",
     "/portfolio",
