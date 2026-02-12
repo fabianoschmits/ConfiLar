@@ -31,7 +31,13 @@ import {
   Award,
   Sparkles,
   Zap,
+  Info,
+  HelpCircle,
+  FileText,
+  LogIn,
+  UserPlus,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useHomeStats, formatStatNumber } from "@/hooks/useHomeStats";
 import { LandingPageSkeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/lib/supabase";
@@ -165,46 +171,125 @@ function HomeContent() {
               </button>
             </div>
 
-            {mobileMenuOpen && (
-              <div className="md:hidden mt-4 bg-white/10 dark:bg-black/30 backdrop-blur-xl rounded-2xl p-6 border border-white/20">
-                <nav className="flex flex-col space-y-4">
-                  <Link
-                    href="/sobre"
-                    className="text-white hover:text-[#00b0b0] transition-colors"
-                  >
-                    {tNav("about")}
-                  </Link>
-                  <Link
-                    href="/ajuda"
-                    className="text-white hover:text-[#00b0b0] transition-colors"
-                  >
-                    {tNav("help")}
-                  </Link>
-                  <div className="pt-4 border-t border-white/20">
-                    <div className="mb-4">
-                      <LanguageSelector />
-                    </div>
+            {/* Menu Mobile Dropdown */}
+            <div
+              className={cn(
+                "md:hidden absolute top-full left-0 right-0 mt-2 transition-all duration-300 transform origin-top",
+                mobileMenuOpen
+                  ? "opacity-100 scale-100 translate-y-0"
+                  : "opacity-0 scale-95 -translate-y-2 pointer-events-none",
+              )}
+            >
+              <div className="mx-4 bg-gray-900/95 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-2xl max-h-[80vh] overflow-y-auto">
+                <nav className="space-y-1">
+                  {/* Navegação Principal */}
+                  <div className="pb-2 mb-2 border-b border-white/10">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase px-3 mb-2 tracking-wider">
+                      {tNav("welcome")}
+                    </p>
+                    <Link
+                      href="/buscar"
+                      className="flex items-center gap-3 px-3 py-2.5 text-white hover:bg-white/10 rounded-xl transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-[#00b0b0]/20 flex items-center justify-center text-[#00b0b0]">
+                        <Search className="h-4 w-4" />
+                      </div>
+                      <span className="font-medium">{t("ctaSearch")}</span>
+                    </Link>
+                    <Link
+                      href="/classificados"
+                      className="flex items-center gap-3 px-3 py-2.5 text-white hover:bg-white/10 rounded-xl transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400">
+                        <Briefcase className="h-4 w-4" />
+                      </div>
+                      <span className="font-medium">{tNav("classifieds")}</span>
+                    </Link>
                   </div>
-                  <div className="flex flex-col space-y-2 pt-4 border-t border-white/20">
+
+                  {/* Institucional */}
+                  <div className="pb-2 mb-2 border-b border-white/10">
+                    <Link
+                      href="/sobre"
+                      className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Info className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm">{tNav("about")}</span>
+                    </Link>
+                    <Link
+                      href="/ajuda"
+                      className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <HelpCircle className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm">{tNav("help")}</span>
+                    </Link>
+                    <Link
+                      href="/termos"
+                      className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <FileText className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm">Termos de Uso</span>
+                    </Link>
+                  </div>
+
+                  {/* Contato & Social */}
+                  <div className="pb-2 mb-2 border-b border-white/10">
+                    <a
+                      href="mailto:contato@appconfilar.com.br"
+                      className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Mail className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm">Contato</span>
+                    </a>
+                    <a
+                      href="https://www.instagram.com/appconfilar"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Instagram className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm">Instagram</span>
+                    </a>
+                  </div>
+
+                  {/* Idioma */}
+                  <div className="px-3 py-2">
+                    <LanguageSelector />
+                  </div>
+
+                  {/* Autenticação */}
+                  <div className="pt-2 grid grid-cols-2 gap-2 mt-2 border-t border-white/10">
                     <Button
                       variant="ghost"
                       asChild
-                      className="justify-start text-white hover:bg-white/10"
+                      className="text-white hover:bg-white/10 border border-white/10"
+                      onClick={() => setMobileMenuOpen(false)}
                     >
-                      <Link href="/auth">{tNav("login")}</Link>
-                    </Button>
-                    <Button
-                      asChild
-                      className="bg-[#00b0b0] hover:bg-[#00a0a0] text-white justify-start"
-                    >
-                      <Link href="/auth?tab=register">
-                        {tNav("createAccount")}
+                      <Link href="/auth">
+                        <LogIn className="w-4 h-4 mr-2" />
+                        {tNav("login")}
                       </Link>
                     </Button>
+                    <Link href="/auth?tab=register" className="w-full">
+                      <Button
+                        className="w-full bg-[#00b0b0] hover:bg-[#00a0a0] text-white"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <UserPlus className="w-4 h-4 mr-2" />
+                        {tNav("register")}
+                      </Button>
+                    </Link>
                   </div>
                 </nav>
               </div>
-            )}
+            </div>
           </div>
         </header>
 
@@ -227,7 +312,6 @@ function HomeContent() {
             className={`relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-32 transition-all duration-1000 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
           >
             <Badge className="mb-6 bg-[#00b0b0]/20 text-[#00b0b0] border-[#00b0b0]/50 px-4 py-2 text-sm font-medium backdrop-blur-sm">
-              <Sparkles className="w-4 h-4 mr-2 inline" />
               {t("subtitle")}
             </Badge>
 

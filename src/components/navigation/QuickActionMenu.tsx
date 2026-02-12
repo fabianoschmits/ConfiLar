@@ -81,12 +81,6 @@ export function QuickActionMenu() {
       icon: Home,
     },
     {
-      id: "feed",
-      label: "Feed",
-      href: "/feed",
-      icon: Users,
-    },
-    {
       id: "search",
       label: "Buscar",
       href: "/buscar",

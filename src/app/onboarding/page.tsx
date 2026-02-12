@@ -836,7 +836,7 @@ export default function OnboardingPage() {
 
       // Aguardar um pouco para garantir que o contexto foi atualizado
       setTimeout(() => {
-        router.push("/feed?welcome=true");
+        router.push("/home?welcome=true");
       }, 300);
     } catch (error) {
       console.error("Erro no onboarding:", error);

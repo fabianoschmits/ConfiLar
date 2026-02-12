@@ -139,13 +139,6 @@ export function ModernSidebar() {
           description: "Anúncios e ofertas",
         },
         {
-          id: "feed",
-          title: "Feed Social",
-          href: "/feed",
-          icon: <Users className="h-4 w-4" />,
-          description: "Atualizações",
-        },
-        {
           id: "search",
           title: "Buscar",
           href: "/buscar",

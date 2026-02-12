@@ -76,15 +76,6 @@ export function Navigation() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => handleNavigation("/feed")}
-            >
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Feed Social
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
               onClick={() => handleNavigation("/buscar")}
             >
               <Search className="h-4 w-4 mr-2" />
