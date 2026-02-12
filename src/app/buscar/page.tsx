@@ -757,7 +757,7 @@ export default function BuscarPage() {
                                 userId={profile.id}
                                 className="border border-gray-100 dark:border-gray-800 pointer-events-auto"
                               />
-                              <h3 className="text-base font-black text-gray-900 dark:text-white uppercase italic tracking-tight transition-colors leading-tight pointer-events-auto">
+                              <h3 className="text-base font-semibold text-gray-900 dark:text-white transition-colors leading-tight pointer-events-auto">
                                 {profile.full_name}
                               </h3>
                             </div>
@@ -785,7 +785,7 @@ export default function BuscarPage() {
                                   userId={profile.id}
                                   className="border border-gray-100 dark:border-gray-800"
                                 />
-                                <h3 className="text-base font-black text-gray-900 dark:text-white uppercase italic tracking-tight leading-tight">
+                                <h3 className="text-base font-semibold text-gray-900 dark:text-white leading-tight">
                                   {profile.full_name}
                                 </h3>
                               </div>

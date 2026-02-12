@@ -121,7 +121,7 @@ export function QuickActionMenu() {
           : "translate-y-[150%] opacity-0 pointer-events-none",
       )}
     >
-      <nav className="bg-white/60 dark:bg-black/60 rounded-3xl px-3 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.12),inset_0_1px_1px_rgba(255,255,255,0.6)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-lg border border-white/60 dark:border-white/20 ring-1 ring-black/5 dark:ring-white/5 overflow-x-auto scrollbar-hide">
+      <nav className="bg-white/40 dark:bg-black/40 rounded-3xl px-3 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.12),inset_0_1px_1px_rgba(255,255,255,0.6)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md border border-white/60 dark:border-white/20 ring-1 ring-black/5 dark:ring-white/5 overflow-x-auto scrollbar-hide">
         <div className="flex items-center justify-center gap-2 sm:gap-4 nowrap min-w-max">
           {quickActions.map((action) => {
             const Icon = action.icon;

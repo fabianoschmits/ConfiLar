@@ -1084,7 +1084,7 @@ function InstagramPost({
               </Avatar>
             </Link>
             <Link href={`/perfil/${userId}`} className="pointer-events-auto">
-              <p className="font-black text-base text-gray-900 dark:text-white hover:underline transition-all tracking-tight uppercase leading-none">
+              <p className="font-semibold text-base text-gray-900 dark:text-white hover:underline transition-all leading-none">
                 {displayUserName}
               </p>
             </Link>
@@ -1103,7 +1103,7 @@ function InstagramPost({
                   {displayUserName.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <p className="font-black text-base text-gray-900 dark:text-white tracking-tight uppercase leading-none">
+              <p className="font-semibold text-base text-gray-900 dark:text-white leading-none">
                 {displayUserName}
               </p>
             </div>

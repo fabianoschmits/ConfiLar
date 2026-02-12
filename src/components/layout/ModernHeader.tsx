@@ -137,12 +137,21 @@ export function ModernHeader({
     };
   }, []);
 
-  // Carregar estatísticas de reputação
+  const isLoggedIn = !!(user && profile);
+
+  // Carregar estatísticas de reputação (apenas se logado)
   useEffect(() => {
-    if (profile?.id) {
+    if (isLoggedIn) {
       loadReputationStats();
     }
-  }, [profile?.id]);
+  }, [isLoggedIn, profile?.id]);
+
+  // No topo do componente, antes de qualquer lógica que dependa de user/profile
+  const isLandingPage =
+    pathname === "/" || pathname === "/pt" || pathname === "/en";
+  if (isLandingPage) {
+    return null;
+  }
 
   const loadReputationStats = async () => {
     if (!profile?.id) return;
@@ -178,17 +187,6 @@ export function ModernHeader({
         );
       }
 
-      console.log(
-        "📊 Header - Avaliações carregadas:",
-        reviewsData?.length || 0,
-      );
-      console.log("📊 Header - Dados das avaliações:", reviewsData);
-      console.log(
-        "📊 Header - Recomendações carregadas:",
-        recommendationsData?.length || 0,
-      );
-      console.log("📊 Header - Dados das recomendações:", recommendationsData);
-
       // Calcular estatísticas
       const totalReviews = reviewsData?.length || 0;
       const totalRecommendations = recommendationsData?.length || 0;
@@ -213,11 +211,6 @@ export function ModernHeader({
       console.error("Erro ao carregar estatísticas de reputação:", error);
     }
   };
-
-  // Só renderiza se o usuário estiver logado
-  if (!user || !profile) {
-    return null;
-  }
 
   // Função de navegação simplificada
   const handleNavigation = (path: string) => {
@@ -279,13 +272,19 @@ export function ModernHeader({
     window.location.href = "/auth";
   };
 
+  // Dados seguros para renderização
+  const userId = user?.id || "";
+  const profileId = profile?.id || "";
+  const userFullName = profile?.full_name || "Usuário";
+  const userAvatarUrl = profile?.avatar_url || "";
+  const userType = profile?.user_type || "client";
+
   // Dados do usuário
   const accountStats = {
     memberSince: profile?.created_at
       ? new Date(profile.created_at).getFullYear()
       : "2024",
-    verificationStatus:
-      profile?.user_type === "professional" ? "verified" : "basic",
+    verificationStatus: userType === "professional" ? "verified" : "basic",
     premiumStatus: false,
   };
 
@@ -364,7 +363,10 @@ export function ModernHeader({
               )}
 
               {/* Logo */}
-              <Link href="/home" className="flex items-center space-x-2">
+              <Link
+                href={isLoggedIn ? "/home" : "/"}
+                className="flex items-center space-x-2"
+              >
                 <div className="h-12 flex items-center justify-center">
                   {/* Mobile: 30% menor */}
                   <div className="block sm:hidden">
@@ -393,32 +395,45 @@ export function ModernHeader({
               </div>
 
               {/* Notificações */}
-              <div className="relative -ml-1">
-                <SimpleHeaderBell />
-              </div>
+              {isLoggedIn && (
+                <div className="relative -ml-1">
+                  <SimpleHeaderBell />
+                </div>
+              )}
 
-              {/* Avatar e Menu do Usuário */}
+              {/* Avatar e Menu do Usuário OU Botão de Login */}
               <div className="relative -ml-1">
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    soundManager.play("/sounds/New/very-fast.mp3", {
-                      volume: 0.3,
-                    });
-                    setIsMenuExpanded(!isMenuExpanded);
-                  }}
-                  className="flex items-center gap-1 px-2 py-2"
-                >
-                  <UserAvatar
-                    src={profile?.avatar_url}
-                    alt={profile?.full_name || "Usuário"}
-                    fallback={profile?.full_name?.charAt(0) || "U"}
+                {isLoggedIn ? (
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      soundManager.play("/sounds/New/very-fast.mp3", {
+                        volume: 0.3,
+                      });
+                      setIsMenuExpanded(!isMenuExpanded);
+                    }}
+                    className="flex items-center gap-1 px-2 py-2"
+                  >
+                    <UserAvatar
+                      src={userAvatarUrl}
+                      alt={userFullName}
+                      fallback={userFullName.charAt(0)}
+                      size="sm"
+                      userId={userId}
+                      showReferralBadge={false}
+                    />
+                    <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                  </Button>
+                ) : (
+                  <Button
+                    variant="default"
                     size="sm"
-                    userId={user?.id}
-                    showReferralBadge={false}
-                  />
-                  <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                </Button>
+                    className="rounded-full px-4 h-8 text-xs font-bold"
+                    onClick={() => router.push("/auth")}
+                  >
+                    Entrar
+                  </Button>
+                )}
 
                 {/* Menu Expandido */}
                 {isMenuExpanded && (
@@ -428,25 +443,25 @@ export function ModernHeader({
                       <div className="flex items-center space-x-2 sm:space-x-3 pb-3 sm:pb-4 border-b border-gray-200 dark:border-gray-700 -mx-3 sm:-mx-4 px-3 sm:px-4">
                         {/* Link para o perfil - apenas foto e nome */}
                         <Link
-                          href={`/perfil/${profile?.id}`}
+                          href={profileId ? `/perfil/${profileId}` : "/auth"}
                           onClick={() => setIsMenuExpanded(false)}
                           className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0 hover:opacity-80 transition-opacity cursor-pointer"
                         >
                           <UserAvatar
-                            src={profile?.avatar_url}
-                            alt={profile?.full_name || "Usuário"}
-                            fallback={profile?.full_name?.charAt(0) || "U"}
+                            src={userAvatarUrl}
+                            alt={userFullName}
+                            fallback={userFullName.charAt(0)}
                             size="lg"
                             className="w-11 h-11 sm:w-17 sm:h-17 flex-shrink-0"
-                            userId={user?.id}
+                            userId={userId}
                             showReferralBadge={true}
                           />
                           <div className="flex-1 min-w-0">
                             <h3 className="font-medium text-gray-900 dark:text-white truncate text-sm sm:text-base">
-                              {profile?.full_name || "Usuário"}
+                              {userFullName}
                             </h3>
                             <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                              {profile?.user_type === "professional"
+                              {userType === "professional"
                                 ? t("professional")
                                 : t("client")}
                             </p>

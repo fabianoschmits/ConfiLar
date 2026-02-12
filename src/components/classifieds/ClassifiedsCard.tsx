@@ -179,7 +179,7 @@ export function ClassifiedsCard({
             </Link>
             <Link
               href={`/perfil/${ad.user_id}`}
-              className="text-base font-black text-gray-900 dark:text-white hover:underline transition-all tracking-tight uppercase italic pointer-events-auto"
+              className="text-base font-semibold text-gray-900 dark:text-white hover:underline transition-all pointer-events-auto"
             >
               {ad.user_name}
             </Link>
@@ -201,7 +201,7 @@ export function ClassifiedsCard({
                   {(ad.user_name || "U").charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <p className="text-base font-black text-gray-900 dark:text-white tracking-tight uppercase italic">
+              <p className="text-base font-semibold text-gray-900 dark:text-white">
                 {ad.user_name}
               </p>
             </div>
