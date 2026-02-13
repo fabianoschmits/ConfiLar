@@ -595,7 +595,7 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
       fullContent={true}
       className="max-w-2xl p-0 overflow-hidden rounded-3xl"
     >
-      <div className="flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 min-h-dvh h-dvh sm:min-h-0 sm:h-auto">
+      <div className="flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 max-h-dvh h-auto sm:min-h-0 sm:h-auto overflow-y-auto w-full">
         <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 py-4 flex justify-center flex-shrink-0">
           <BrandLogo width={140} height={35} className="object-contain" />
         </header>
