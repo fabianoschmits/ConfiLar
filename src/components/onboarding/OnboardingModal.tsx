@@ -123,6 +123,11 @@ const onboardingSchema = z.object({
   turno_trabalho: z
     .enum(["manha", "tarde", "noite", "integral", "flexivel"])
     .optional(),
+  instagram_url: z.string().url("URL inválida").optional().or(z.literal("")),
+  facebook_url: z.string().url("URL inválida").optional().or(z.literal("")),
+  linkedin_url: z.string().url("URL inválida").optional().or(z.literal("")),
+  tiktok_url: z.string().url("URL inválida").optional().or(z.literal("")),
+  whatsapp_number: z.string().optional(),
   country: z.enum(["BR", "US"]),
   locale: z.enum(["pt-BR", "en"]),
   accept_terms: z.boolean().refine((value) => value === true, {
@@ -395,6 +400,11 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
     setValue("cpf_cnpj", formatted);
   };
 
+  const handleCEPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = ValidationUtils.formatCEP(e.target.value);
+    setValue("zip_code", formatted);
+  };
+
   const serviceCategoryNames = services.map((cat) => cat.name);
 
   const handleServiceToggle = (service: string) => {
@@ -547,6 +557,11 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
         estado_civil: data.estado_civil || null,
         referencia_profissional: data.referencia_profissional || null,
         turno_trabalho: data.turno_trabalho || null,
+        instagram_url: data.instagram_url || null,
+        facebook_url: data.facebook_url || null,
+        linkedin_url: data.linkedin_url || null,
+        tiktok_url: data.tiktok_url || null,
+        whatsapp_number: data.whatsapp_number || null,
       };
 
       const { success } = await updateProfile(profileData);
@@ -578,7 +593,7 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
       fullContent={true}
       className="max-w-2xl p-0 overflow-hidden rounded-3xl"
     >
-      <div className="flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 min-h-[85vh] sm:min-h-0">
+      <div className="flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 h-full sm:min-h-0">
         <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 py-4 flex justify-center flex-shrink-0">
           <BrandLogo width={140} height={35} className="object-contain" />
         </header>
@@ -761,14 +776,32 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
                                 <SelectValue placeholder="Selecione" />
                               </SelectTrigger>
                               <SelectContent>
+                                <SelectItem value="ensino_fundamental_incompleto">
+                                  Fundamental Incompleto
+                                </SelectItem>
+                                <SelectItem value="ensino_fundamental_completo">
+                                  Fundamental Completo
+                                </SelectItem>
+                                <SelectItem value="ensino_medio_incompleto">
+                                  Médio Incompleto
+                                </SelectItem>
                                 <SelectItem value="ensino_medio_completo">
-                                  Ensino Médio
+                                  Médio Completo
+                                </SelectItem>
+                                <SelectItem value="ensino_superior_incompleto">
+                                  Superior Incompleto
                                 </SelectItem>
                                 <SelectItem value="ensino_superior_completo">
-                                  Ensino Superior
+                                  Superior Completo
                                 </SelectItem>
                                 <SelectItem value="pos_graduacao">
                                   Pós-Graduação
+                                </SelectItem>
+                                <SelectItem value="mestrado">
+                                  Mestrado
+                                </SelectItem>
+                                <SelectItem value="doutorado">
+                                  Doutorado
                                 </SelectItem>
                               </SelectContent>
                             </Select>
@@ -788,9 +821,30 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
                                   Solteiro
                                 </SelectItem>
                                 <SelectItem value="casado">Casado</SelectItem>
+                                <SelectItem value="uniao_estavel">
+                                  União Estável
+                                </SelectItem>
+                                <SelectItem value="divorciado">
+                                  Divorciado
+                                </SelectItem>
+                                <SelectItem value="viuvo">Viúvo</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
+                          {(watchedValues.estado_civil === "casado" ||
+                            watchedValues.estado_civil === "uniao_estavel") && (
+                            <div className="space-y-1">
+                              <Label className="text-xs">
+                                Número de Filhos
+                              </Label>
+                              <Input
+                                type="number"
+                                min={0}
+                                {...register("filhos", { valueAsNumber: true })}
+                                placeholder="0"
+                              />
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -851,7 +905,9 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
                             />
                             <Input
                               {...register("zip_code")}
-                              placeholder="CEP"
+                              onChange={handleCEPChange}
+                              maxLength={9}
+                              placeholder="00000-000"
                             />
                           </div>
                           <div className="grid grid-cols-3 gap-2">
@@ -924,23 +980,78 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
                           <div className="space-y-4">
                             <Textarea
                               {...register("bio")}
-                              placeholder="Sobre você..."
+                              placeholder="Sobre você (opcional)..."
                               rows={2}
                             />
-                            <Select
-                              onValueChange={(v) =>
-                                setValue("experience_years", v as any)
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Experiência" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="1-3">1-3 anos</SelectItem>
-                                <SelectItem value="3-5">3-5 anos</SelectItem>
-                                <SelectItem value="5+">5+ anos</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <div className="grid grid-cols-2 gap-4">
+                              <Select
+                                onValueChange={(v) =>
+                                  setValue("experience_years", v as any)
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Experiência" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="1-3">1-3 anos</SelectItem>
+                                  <SelectItem value="3-5">3-5 anos</SelectItem>
+                                  <SelectItem value="5+">5+ anos</SelectItem>
+                                </SelectContent>
+                              </Select>
+
+                              <Select
+                                onValueChange={(v) =>
+                                  setValue("turno_trabalho", v as any)
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Turno" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="manha">Manhã</SelectItem>
+                                  <SelectItem value="tarde">Tarde</SelectItem>
+                                  <SelectItem value="noite">Noite</SelectItem>
+                                  <SelectItem value="integral">
+                                    Integral
+                                  </SelectItem>
+                                  <SelectItem value="flexivel">
+                                    Flexível
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="space-y-3 pt-2">
+                              <Label className="text-xs font-bold text-gray-700">
+                                Redes Sociais & Contato
+                              </Label>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                  <Input
+                                    {...register("whatsapp_number")}
+                                    placeholder="WhatsApp"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <Input
+                                    {...register("instagram_url")}
+                                    placeholder="Instagram URL"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <Input
+                                    {...register("facebook_url")}
+                                    placeholder="Facebook URL"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <Input
+                                    {...register("tiktok_url")}
+                                    placeholder="TikTok URL"
+                                  />
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         ) : (
                           <div className="text-center py-6">
