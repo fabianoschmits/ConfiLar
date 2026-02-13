@@ -124,10 +124,10 @@ const onboardingSchema = z.object({
   turno_trabalho: z
     .enum(["manha", "tarde", "noite", "integral", "flexivel"])
     .optional(),
-  instagram_url: z.string().url("URL inválida").optional().or(z.literal("")),
-  facebook_url: z.string().url("URL inválida").optional().or(z.literal("")),
-  linkedin_url: z.string().url("URL inválida").optional().or(z.literal("")),
-  tiktok_url: z.string().url("URL inválida").optional().or(z.literal("")),
+  instagram_url: z.string().optional().or(z.literal("")),
+  facebook_url: z.string().optional().or(z.literal("")),
+  linkedin_url: z.string().optional().or(z.literal("")),
+  tiktok_url: z.string().optional().or(z.literal("")),
   whatsapp_number: z.string().optional(),
   country: z.enum(["BR", "US"]),
   locale: z.enum(["pt-BR", "en"]),
@@ -305,27 +305,25 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
       ? values.zip_code.replace(/\D/g, "")
       : "";
 
-    return !!(
-      values.full_name &&
-      values.full_name.length >= 2 &&
-      values.cpf_cnpj &&
-      ValidationUtils.isValidCPF(values.cpf_cnpj) &&
-      phoneNumbers &&
-      phoneNumbers.length >= 10 &&
-      values.birth_date &&
-      values.gender &&
-      values.accept_terms &&
-      values.country &&
-      values.location_state &&
-      values.location_city &&
-      values.neighborhood &&
-      values.address &&
-      values.address_number &&
-      zipCodeNumbers &&
-      zipCodeNumbers.length >= 8 &&
-      values.user_type &&
-      values.locale
-    );
+    const requiredFields = [
+      values.full_name && values.full_name.length >= 2,
+      values.cpf_cnpj && ValidationUtils.isValidCPF(values.cpf_cnpj),
+      phoneNumbers && phoneNumbers.length >= 10,
+      values.birth_date,
+      values.gender,
+      values.accept_terms,
+      values.country,
+      values.location_state,
+      values.location_city,
+      values.neighborhood,
+      values.address,
+      values.address_number,
+      zipCodeNumbers && zipCodeNumbers.length >= 8,
+      values.user_type,
+      values.locale,
+    ];
+
+    return requiredFields.every(Boolean);
   };
 
   const validateCurrentStep = (): boolean => {
@@ -530,6 +528,14 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
         full_name: data.full_name,
       });
 
+      const formatHandle = (val: string | undefined | null, prefix: string) => {
+        if (!val) return null;
+        const clean = val.trim();
+        if (clean.includes("http")) return clean;
+        const handle = clean.startsWith("@") ? clean.substring(1) : clean;
+        return `${prefix}${handle}`;
+      };
+
       const profileData = {
         id: user.id,
         email: user.email,
@@ -559,10 +565,19 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
         estado_civil: data.estado_civil || null,
         referencia_profissional: data.referencia_profissional || null,
         turno_trabalho: data.turno_trabalho || null,
-        instagram_url: data.instagram_url || null,
-        facebook_url: data.facebook_url || null,
-        linkedin_url: data.linkedin_url || null,
-        tiktok_url: data.tiktok_url || null,
+        instagram_url: formatHandle(
+          data.instagram_url,
+          "https://www.instagram.com/",
+        ),
+        facebook_url: formatHandle(
+          data.facebook_url,
+          "https://www.facebook.com/",
+        ),
+        linkedin_url: formatHandle(
+          data.linkedin_url,
+          "https://www.linkedin.com/in/",
+        ),
+        tiktok_url: formatHandle(data.tiktok_url, "https://www.tiktok.com/@"),
         whatsapp_number: data.whatsapp_number || null,
       };
 
@@ -1037,19 +1052,19 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
                                 <div className="space-y-1">
                                   <Input
                                     {...register("instagram_url")}
-                                    placeholder="Instagram URL"
+                                    placeholder="@seu_instagram"
                                   />
                                 </div>
                                 <div className="space-y-1">
                                   <Input
                                     {...register("facebook_url")}
-                                    placeholder="Facebook URL"
+                                    placeholder="@seu_facebook"
                                   />
                                 </div>
                                 <div className="space-y-1">
                                   <Input
                                     {...register("tiktok_url")}
-                                    placeholder="TikTok URL"
+                                    placeholder="@seu_tiktok"
                                   />
                                 </div>
                               </div>
