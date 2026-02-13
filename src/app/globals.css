@@ -391,6 +391,14 @@
   --transition-slow: 300ms;
   --transition-slower: 500ms;
   --transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Font Size Scaling */
+  --font-size-scale: 1;
+}
+
+/* Apply font size scaling globally */
+html {
+  font-size: calc(16px * var(--font-size-scale));
 }
 
 /* Modern Design System Components */

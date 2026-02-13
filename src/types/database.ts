@@ -62,6 +62,7 @@ export interface Database {
           hide_ai_announcement?: boolean;
           is_approved: boolean;
           is_active: boolean;
+          font_size_preference: number;
           escolaridade?:
             | "ensino_fundamental_incompleto"
             | "ensino_fundamental_completo"
@@ -136,6 +137,7 @@ export interface Database {
           idade?: number | null;
           is_approved?: boolean;
           is_active?: boolean;
+          font_size_preference?: number;
           escolaridade?:
             | "ensino_fundamental_incompleto"
             | "ensino_fundamental_completo"
@@ -208,6 +210,7 @@ export interface Database {
           idade?: number | null;
           is_approved?: boolean;
           is_active?: boolean;
+          font_size_preference?: number;
           escolaridade?:
             | "ensino_fundamental_incompleto"
             | "ensino_fundamental_completo"
@@ -919,6 +922,8 @@ export interface Profile {
   hide_ai_announcement?: boolean;
   is_approved: boolean;
   is_active: boolean;
+  // Font size preference (75-150, default 100 = 100%)
+  font_size_preference?: number;
 }
 
 export type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];

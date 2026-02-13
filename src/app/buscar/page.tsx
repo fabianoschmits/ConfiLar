@@ -61,6 +61,7 @@ import { useIBGE } from "@/hooks/useIBGE";
 import { services } from "@/data/services";
 import { useProfileViews } from "@/hooks/useProfileViews";
 import { useSupabaseReviews } from "@/hooks/useSupabaseReviews";
+import { ProfessionalCard } from "@/components/professional/ProfessionalCard";
 import { getRecommendedCategories } from "@/lib/searchUtils";
 import { supabase } from "@/lib/supabase";
 import { RecommendationButton } from "@/components/ui/RecommendationButton";
@@ -474,10 +475,11 @@ export default function BuscarPage() {
             <div className="flex items-center gap-1 sm:gap-2 p-1 bg-gray-100 dark:bg-gray-900 rounded-lg overflow-x-auto">
               <button
                 onClick={() => setActiveTab("all")}
-                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${activeTab === "all"
+                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
+                  activeTab === "all"
                     ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                  }`}
+                }`}
               >
                 <Users className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="text-xs sm:text-sm">{t("all")}</span>
@@ -491,10 +493,11 @@ export default function BuscarPage() {
 
               <button
                 onClick={() => setActiveTab("clients")}
-                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${activeTab === "clients"
+                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
+                  activeTab === "clients"
                     ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                  }`}
+                }`}
               >
                 <User className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="text-xs sm:text-sm">{t("clients")}</span>
@@ -508,10 +511,11 @@ export default function BuscarPage() {
 
               <button
                 onClick={() => setActiveTab("professionals")}
-                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${activeTab === "professionals"
+                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
+                  activeTab === "professionals"
                     ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                  }`}
+                }`}
               >
                 <UserCheck className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="text-xs sm:text-sm">{t("professionals")}</span>
@@ -550,21 +554,21 @@ export default function BuscarPage() {
                   title={t("noResults")}
                   description={
                     filters.searchTerm ||
-                      filters.state ||
-                      filters.city ||
-                      filters.service !== "all"
+                    filters.state ||
+                    filters.city ||
+                    filters.service !== "all"
                       ? t("noResultsDescription")
                       : t("noUsersDescription")
                   }
                   action={
                     filters.searchTerm ||
-                      filters.state ||
-                      filters.city ||
-                      filters.service !== "all"
+                    filters.state ||
+                    filters.city ||
+                    filters.service !== "all"
                       ? {
-                        label: t("clearFilters"),
-                        onClick: clearFilters,
-                      }
+                          label: t("clearFilters"),
+                          onClick: clearFilters,
+                        }
                       : undefined
                   }
                 />
@@ -680,293 +684,21 @@ export default function BuscarPage() {
               </div>
             ) : (
               <div
-                className={`grid gap-6 ${viewMode === "grid"
+                className={`grid gap-6 ${
+                  viewMode === "grid"
                     ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
                     : "grid-cols-1"
-                  }`}
+                }`}
               >
                 {displayProfiles.map((profile) => (
-                  <Card
-                    key={profile.id}
-                    className="shadow-lg hover:shadow-xl transition-all duration-300 relative border-gray-200 dark:border-gray-800"
-                  >
-                    <CardContent className="p-6">
-                      {/* Badge de Serviços - Canto Superior Direito */}
-                      {profile.user_type === "professional" &&
-                        profile.professional_services &&
-                        profile.professional_services.length > 0 && (
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="absolute top-2 right-2 h-auto py-1 px-2 text-xs text-primary-600 hover:text-primary-700 hover:bg-primary-50 transition-colors z-30"
-                              >
-                                <Wrench className="h-3 w-3 mr-1" />
-                                Serviços
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-80 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 z-50"
-                              align="end"
-                            >
-                              <div className="space-y-3">
-                                <div className="flex items-center space-x-2 border-b border-gray-200 dark:border-gray-700 pb-2">
-                                  <Briefcase className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                  <h4 className="font-semibold text-gray-900 dark:text-white">
-                                    Serviços Oferecidos
-                                  </h4>
-                                </div>
-                                <div className="max-h-64 overflow-y-auto space-y-2">
-                                  {(profile.professional_services || []).map(
-                                    (service, index) => (
-                                      <div
-                                        key={index}
-                                        className="flex items-start space-x-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                      >
-                                        <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                                        <span className="text-sm text-gray-900 dark:text-gray-100">
-                                          {service}
-                                        </span>
-                                      </div>
-                                    ),
-                                  )}
-                                </div>
-                              </div>
-                            </PopoverContent>
-                          </Popover>
-                        )}
-
-                      <div className="relative">
-                        {/* Guest Header Overlay */}
-                        {isGuest && (
-                          <div className="absolute top-0 left-0 right-0 z-30 px-6 pt-6 pb-3 border-b border-transparent pointer-events-none">
-                            <div className="flex items-center gap-3">
-                              <UserAvatar
-                                src={profile.avatar_url}
-                                alt={profile.full_name}
-                                fallback={
-                                  profile.full_name?.charAt(0).toUpperCase() ||
-                                  "P"
-                                }
-                                size="md"
-                                userId={profile.id}
-                                className="border-2 border-gray-100 dark:border-gray-800 pointer-events-auto"
-                              />
-                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white pointer-events-auto">
-                                {profile.full_name}
-                              </h3>
-                            </div>
-                          </div>
-                        )}
-
-                        <GuestBlurOverlay
-                          isGuest={isGuest}
-                          overlayClassName="inset-0 rounded-none bg-black/10"
-                          className="flex-1 flex flex-col h-full"
-                        >
-                          {/* Header: User Info */}
-                          <div className="flex items-center justify-between px-6 pt-6 pb-3 border-b border-gray-100 dark:border-gray-800">
-                            <div className="flex items-center gap-3">
-                              <UserAvatar
-                                src={profile.avatar_url}
-                                alt={profile.full_name}
-                                fallback={
-                                  profile.full_name
-                                    ?.charAt(0)
-                                    .toUpperCase() || "P"
-                                }
-                                size="md"
-                                userId={profile.id}
-                                className="border-2 border-gray-100 dark:border-gray-800"
-                              />
-                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                {profile.full_name}
-                              </h3>
-                            </div>
-                          </div>
-
-                          <div className="p-5">
-                            {/* 1. Header: Badges */}
-                            <div className="flex items-start space-x-3 mb-4">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                  {/* Tag de Tipo de Usuário */}
-                                  <Badge
-                                    variant={
-                                      profile.user_type === "professional"
-                                        ? "default"
-                                        : "secondary"
-                                    }
-                                    className={cn(
-                                      "text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 transition-all duration-300",
-                                      profile.user_type === "professional"
-                                        ? "bg-primary-100 text-primary-800 border border-primary-200 shadow-sm"
-                                        : "bg-purple-100 text-purple-800 border border-purple-200 shadow-sm",
-                                    )}
-                                  >
-                                    {profile.user_type === "professional" ? (
-                                      <>
-                                        <Briefcase className="h-3 w-3" />
-                                        Profissional
-                                      </>
-                                    ) : (
-                                      <>
-                                        <User className="h-3 w-3" />
-                                        Cliente
-                                      </>
-                                    )}
-                                  </Badge>
-
-                                  {/* Disponibilidade */}
-                                  {(() => {
-                                    const isAvailable =
-                                      userAvailability[profile.id] !== undefined
-                                        ? userAvailability[profile.id]
-                                        : profile.is_available;
-
-                                    return (
-                                      <Badge
-                                        variant={
-                                          isAvailable ? "default" : "secondary"
-                                        }
-                                        className={cn(
-                                          "text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 transition-all duration-300",
-                                          isAvailable
-                                            ? "bg-success-100 text-success-800 border border-success-200 shadow-sm"
-                                            : "bg-error-100 text-error-800 border border-error-200 shadow-sm",
-                                        )}
-                                      >
-                                        <div
-                                          className={cn(
-                                            "w-2 h-2 rounded-full animate-pulse",
-                                            isAvailable
-                                              ? "bg-success-500"
-                                              : "bg-error-500",
-                                          )}
-                                        ></div>
-                                        {isAvailable
-                                          ? t("available")
-                                          : t("unavailable")}
-                                      </Badge>
-                                    );
-                                  })()}
-                                </div>
-
-                                {/* Localização e Distância */}
-                                <div className="mt-3 space-y-1">
-                                  {(profile.location_city ||
-                                    profile.location_state) && (
-                                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                                        <MapPin className="h-4 w-4 mr-2 text-primary-500 shrink-0" />
-                                        <span className="truncate">
-                                          {profile.location_city}
-                                          {profile.location_city &&
-                                            profile.location_state &&
-                                            ", "}
-                                          {profile.location_state}
-                                        </span>
-                                      </div>
-                                    )}
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* 2. Bio */}
-                            <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2 italic">
-                              {profile.bio ||
-                                "Profissional qualificado e experiente."}
-                            </p>
-
-                            {/* 3. Stats & Avaliações */}
-                            <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-3 mb-4">
-                              {(() => {
-                                const stats = profileStats[profile.id];
-                                const rating = stats?.rating || 0;
-                                const reviewCount = stats?.reviewCount || 0;
-
-                                return (
-                                  <div className="flex items-center">
-                                    <div className="flex items-center">
-                                      {Array.from({ length: 5 }).map((_, i) => (
-                                        <Star
-                                          key={i}
-                                          className={cn(
-                                            "h-3.5 w-3.5",
-                                            i < Math.floor(rating)
-                                              ? "text-yellow-400 fill-yellow-400"
-                                              : "text-gray-300 dark:text-gray-600",
-                                          )}
-                                        />
-                                      ))}
-                                    </div>
-                                    <span className="ml-2 text-xs font-bold text-gray-900 dark:text-gray-200">
-                                      {rating.toFixed(1)}
-                                    </span>
-                                    <span className="ml-1 text-[10px] text-gray-500">
-                                      ({reviewCount})
-                                    </span>
-                                  </div>
-                                );
-                              })()}
-
-                              <div className="flex items-center text-[10px] text-gray-400">
-                                <Eye className="h-3 w-3 mr-1" />
-                                <span>
-                                  {profileViews[profile.id] || 0} views
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* 4. Ações (Botões) */}
-                            <div className="flex items-center gap-2">
-                              {profile.user_type === "professional" && (
-                                <Button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    openChat(profile.id, profile.full_name);
-                                  }}
-                                  className="flex-1 rounded-xl shadow-sm font-bold text-xs h-9"
-                                  size="sm"
-                                >
-                                  <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
-                                  Contatar
-                                </Button>
-                              )}
-                              <Button
-                                variant="secondary"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleProfileClick(profile.id);
-                                }}
-                                className={cn(
-                                  "rounded-xl font-bold text-xs h-9",
-                                  profile.user_type === "professional"
-                                    ? "w-10 p-0"
-                                    : "flex-1",
-                                )}
-                                size="sm"
-                              >
-                                {profile.user_type === "professional" ? (
-                                  <UserCheck className="h-4 w-4" />
-                                ) : (
-                                  "Ver Perfil"
-                                )}
-                              </Button>
-                              <div onClick={(e) => e.stopPropagation()}>
-                                <FavoriteButton
-                                  userId={profile.id}
-                                  userName={profile.full_name}
-                                  size="sm"
-                                  className="h-9 w-9 rounded-xl"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </GuestBlurOverlay>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div key={profile.id} className="h-full">
+                    <ProfessionalCard
+                      profile={profile}
+                      stats={profileStats[profile.id]}
+                      views={profileViews[profile.id]}
+                      isGuest={isGuest}
+                    />
+                  </div>
                 ))}
               </div>
             )}
@@ -1020,10 +752,11 @@ export default function BuscarPage() {
                         }
                         size="sm"
                         onClick={() => setCurrentPage(pageNumber)}
-                        className={`px-3 ${currentPage === pageNumber
+                        className={`px-3 ${
+                          currentPage === pageNumber
                             ? "bg-primary-600 text-white hover:bg-primary-700"
                             : ""
-                          }`}
+                        }`}
                       >
                         {pageNumber}
                       </Button>
