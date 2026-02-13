@@ -197,14 +197,6 @@
     "invalidZipCode": "CEP inválido",
     "invalidZipCodeUS": "ZIP Code inválido"
   },
-  "profile": {
-    "editProfile": "Editar Perfil",
-    "viewProfile": "Ver Perfil",
-    "reputation": "Reputação",
-    "recommendations": "Recomendações",
-    "reviews": "Avaliações",
-    "services": "Serviços"
-  },
   "notifications": {
     "title": "Notificações",
     "noNotifications": "Nenhuma notificação",
@@ -265,8 +257,6 @@
     "premium": "Premium",
     "professionalActive": "Profissional Ativo",
     "clientActive": "Cliente Ativo",
-    "memberSince": "Membro desde",
-    "professional": "Profissional",
     "client": "Cliente",
     "accessibility": "Acessibilidade"
   },

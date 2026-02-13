@@ -197,14 +197,6 @@
     "invalidZipCode": "Invalid ZIP Code",
     "invalidZipCodeUS": "Invalid ZIP Code"
   },
-  "profile": {
-    "editProfile": "Edit Profile",
-    "viewProfile": "View Profile",
-    "reputation": "Reputation",
-    "recommendations": "Recommendations",
-    "reviews": "Reviews",
-    "services": "Services"
-  },
   "notifications": {
     "title": "Notifications",
     "noNotifications": "No notifications",
@@ -265,9 +257,8 @@
     "premium": "Premium",
     "professionalActive": "Professional Active",
     "clientActive": "Client Active",
-    "memberSince": "Member since",
-    "professional": "Professional",
-    "client": "Client"
+    "client": "Client",
+    "accessibility": "Accessibility"
   },
   "home": {
     "welcome": "Welcome to ConfiLar",

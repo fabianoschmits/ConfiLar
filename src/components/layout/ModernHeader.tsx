@@ -115,7 +115,7 @@ export function ModernHeader({
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener("scroll", handleScroll);
 
@@ -316,12 +316,12 @@ export function ModernHeader({
       {/* Header Moderno - Flutuante no Mobile (dinâmico) e Desktop (fixo) */}
       <div
         className={cn(
-          "fixed z-50 transition-all duration-300 border border-gray-200 dark:border-gray-900",
+          "fixed z-50 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] border border-gray-200 dark:border-gray-900",
           // Desktop styles (always pill-like)
           "lg:top-6 lg:left-80 lg:right-6 lg:translate-x-0 lg:w-auto lg:max-w-[calc(100vw-18rem)] lg:rounded-2xl lg:shadow-[0_8px_30px_rgb(0,0,0,0.12)] lg:dark:shadow-2xl lg:backdrop-blur-lg lg:bg-white lg:dark:bg-black/95",
           // Mobile styles (dynamic)
           isScrolled
-            ? "top-5 left-1/2 -translate-x-1/2 w-[95%] rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-2xl backdrop-blur-md bg-white/90 dark:bg-black/90"
+            ? "top-4 left-1/2 -translate-x-1/2 w-[92%] rounded-[2rem] shadow-[0_12px_40px_rgba(0,0,0,0.15),inset_0_1px_1px_rgba(255,255,255,0.6)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-xl bg-white/70 dark:bg-black/70 border border-white/40 dark:border-white/10 ring-1 ring-black/5 dark:ring-white/5"
             : "top-0 left-0 translate-x-0 w-full rounded-none shadow-none border-x-0 border-t-0 bg-white dark:bg-black",
         )}
       >
