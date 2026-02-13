@@ -608,7 +608,7 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
       onOpenChange={() => {}} // Não permite fechar
       showCloseButton={false}
       fullContent={true}
-      className="max-w-2xl p-0 overflow-hidden rounded-3xl"
+      className="max-sm:max-h-[96vh] max-w-2xl p-0 overflow-hidden rounded-3xl"
     >
       <div className="flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 h-full overflow-y-auto w-full">
         <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 py-4 flex justify-center flex-shrink-0">
@@ -1151,6 +1151,8 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
                 </div>
               </form>
             </Card>
+            {/* Espaçador extra para evitar que o teclado cubra os campos finais no mobile (padrão NewPostForm) */}
+            <div className="h-40 sm:h-0" />
           </div>
         </div>
       </div>
