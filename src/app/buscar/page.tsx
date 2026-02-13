@@ -474,11 +474,10 @@ export default function BuscarPage() {
             <div className="flex items-center gap-1 sm:gap-2 p-1 bg-gray-100 dark:bg-gray-900 rounded-lg overflow-x-auto">
               <button
                 onClick={() => setActiveTab("all")}
-                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
-                  activeTab === "all"
+                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${activeTab === "all"
                     ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                }`}
+                  }`}
               >
                 <Users className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="text-xs sm:text-sm">{t("all")}</span>
@@ -492,11 +491,10 @@ export default function BuscarPage() {
 
               <button
                 onClick={() => setActiveTab("clients")}
-                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
-                  activeTab === "clients"
+                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${activeTab === "clients"
                     ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                }`}
+                  }`}
               >
                 <User className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="text-xs sm:text-sm">{t("clients")}</span>
@@ -510,11 +508,10 @@ export default function BuscarPage() {
 
               <button
                 onClick={() => setActiveTab("professionals")}
-                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
-                  activeTab === "professionals"
+                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${activeTab === "professionals"
                     ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                }`}
+                  }`}
               >
                 <UserCheck className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="text-xs sm:text-sm">{t("professionals")}</span>
@@ -553,21 +550,21 @@ export default function BuscarPage() {
                   title={t("noResults")}
                   description={
                     filters.searchTerm ||
-                    filters.state ||
-                    filters.city ||
-                    filters.service !== "all"
+                      filters.state ||
+                      filters.city ||
+                      filters.service !== "all"
                       ? t("noResultsDescription")
                       : t("noUsersDescription")
                   }
                   action={
                     filters.searchTerm ||
-                    filters.state ||
-                    filters.city ||
-                    filters.service !== "all"
+                      filters.state ||
+                      filters.city ||
+                      filters.service !== "all"
                       ? {
-                          label: t("clearFilters"),
-                          onClick: clearFilters,
-                        }
+                        label: t("clearFilters"),
+                        onClick: clearFilters,
+                      }
                       : undefined
                   }
                 />
@@ -683,11 +680,10 @@ export default function BuscarPage() {
               </div>
             ) : (
               <div
-                className={`grid gap-6 ${
-                  viewMode === "grid"
+                className={`grid gap-6 ${viewMode === "grid"
                     ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
                     : "grid-cols-1"
-                }`}
+                  }`}
               >
                 {displayProfiles.map((profile) => (
                   <Card
@@ -742,9 +738,9 @@ export default function BuscarPage() {
                         )}
 
                       <div className="relative">
-                        {/* Identidade Nítida Sobreposta (Apenas para visitantes) */}
+                        {/* Guest Header Overlay */}
                         {isGuest && (
-                          <div className="absolute top-0 left-0 right-0 z-30 px-5 pt-3 pb-3 border-b border-transparent pointer-events-none">
+                          <div className="absolute top-0 left-0 right-0 z-30 px-6 pt-6 pb-3 border-b border-transparent pointer-events-none">
                             <div className="flex items-center gap-3">
                               <UserAvatar
                                 src={profile.avatar_url}
@@ -755,9 +751,9 @@ export default function BuscarPage() {
                                 }
                                 size="md"
                                 userId={profile.id}
-                                className="border border-gray-100 dark:border-gray-800 pointer-events-auto"
+                                className="border-2 border-gray-100 dark:border-gray-800 pointer-events-auto"
                               />
-                              <h3 className="text-base font-semibold text-gray-900 dark:text-white transition-colors leading-tight pointer-events-auto">
+                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white pointer-events-auto">
                                 {profile.full_name}
                               </h3>
                             </div>
@@ -769,28 +765,26 @@ export default function BuscarPage() {
                           overlayClassName="inset-0 rounded-none bg-black/10"
                           className="flex-1 flex flex-col h-full"
                         >
-                          {/* Identidade Original (Oculta para visitantes para evitar sobreposição) */}
-                          {!isGuest && (
-                            <div className="px-5 pt-3 pb-3 border-b border-gray-100 dark:border-gray-800">
-                              <div className="flex items-center gap-3">
-                                <UserAvatar
-                                  src={profile.avatar_url}
-                                  alt={profile.full_name}
-                                  fallback={
-                                    profile.full_name
-                                      ?.charAt(0)
-                                      .toUpperCase() || "P"
-                                  }
-                                  size="md"
-                                  userId={profile.id}
-                                  className="border border-gray-100 dark:border-gray-800"
-                                />
-                                <h3 className="text-base font-semibold text-gray-900 dark:text-white leading-tight">
-                                  {profile.full_name}
-                                </h3>
-                              </div>
+                          {/* Header: User Info */}
+                          <div className="flex items-center justify-between px-6 pt-6 pb-3 border-b border-gray-100 dark:border-gray-800">
+                            <div className="flex items-center gap-3">
+                              <UserAvatar
+                                src={profile.avatar_url}
+                                alt={profile.full_name}
+                                fallback={
+                                  profile.full_name
+                                    ?.charAt(0)
+                                    .toUpperCase() || "P"
+                                }
+                                size="md"
+                                userId={profile.id}
+                                className="border-2 border-gray-100 dark:border-gray-800"
+                              />
+                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                {profile.full_name}
+                              </h3>
                             </div>
-                          )}
+                          </div>
 
                           <div className="p-5">
                             {/* 1. Header: Badges */}
@@ -863,17 +857,17 @@ export default function BuscarPage() {
                                 <div className="mt-3 space-y-1">
                                   {(profile.location_city ||
                                     profile.location_state) && (
-                                    <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                                      <MapPin className="h-4 w-4 mr-2 text-primary-500 shrink-0" />
-                                      <span className="truncate">
-                                        {profile.location_city}
-                                        {profile.location_city &&
-                                          profile.location_state &&
-                                          ", "}
-                                        {profile.location_state}
-                                      </span>
-                                    </div>
-                                  )}
+                                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                        <MapPin className="h-4 w-4 mr-2 text-primary-500 shrink-0" />
+                                        <span className="truncate">
+                                          {profile.location_city}
+                                          {profile.location_city &&
+                                            profile.location_state &&
+                                            ", "}
+                                          {profile.location_state}
+                                        </span>
+                                      </div>
+                                    )}
                                 </div>
                               </div>
                             </div>
@@ -1026,11 +1020,10 @@ export default function BuscarPage() {
                         }
                         size="sm"
                         onClick={() => setCurrentPage(pageNumber)}
-                        className={`px-3 ${
-                          currentPage === pageNumber
+                        className={`px-3 ${currentPage === pageNumber
                             ? "bg-primary-600 text-white hover:bg-primary-700"
                             : ""
-                        }`}
+                          }`}
                       >
                         {pageNumber}
                       </Button>

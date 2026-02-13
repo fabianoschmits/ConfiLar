@@ -188,37 +188,25 @@ export function ClassifiedsCard({
       )}
 
       <GuestBlurOverlay isGuest={!user} className="flex-1 flex flex-col">
-        {/* Identidade Original (Oculta para visitantes para evitar sobreposição) */}
-        {user && (
-          <div className="px-5 pt-5 pb-2 border-b border-gray-50 dark:border-gray-900/50">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10 border border-gray-100 dark:border-gray-800">
-                <AvatarImage
-                  src={ad.user_avatar || ad.user_avatar_url || ""}
-                  alt={ad.user_name || "Usuário"}
-                />
-                <AvatarFallback className="bg-primary-50 text-primary-700 font-bold uppercase">
-                  {(ad.user_name || "U").charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <p className="text-base font-semibold text-gray-900 dark:text-white">
-                {ad.user_name}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Identidade Secundária (Rótulo) */}
-        <div className="px-5 pt-3 pb-2">
+        {/* Header: User Info */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-100 dark:border-gray-800">
           <div className="flex items-center gap-3">
-            <div className="flex flex-col">
-              <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">
-                Anunciante
-              </span>
-            </div>
+            <Avatar className="h-10 w-10 border border-gray-100 dark:border-gray-800">
+              <AvatarImage
+                src={ad.user_avatar || ad.user_avatar_url || ""}
+                alt={ad.user_name || "Usuário"}
+              />
+              <AvatarFallback className="bg-primary-50 text-primary-700 font-bold uppercase">
+                {(ad.user_name || "U").charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+            <p className="text-base font-semibold text-gray-900 dark:text-white">
+              {ad.user_name}
+            </p>
           </div>
         </div>
-        {/* 1. Header: Tags + Location */}
+
+        {/* Badges and Location */}
         <div className="flex items-center justify-between px-5 pt-3 pb-2">
           <div className="flex items-center gap-2 flex-wrap">
             {/* Ad Type Badge */}
