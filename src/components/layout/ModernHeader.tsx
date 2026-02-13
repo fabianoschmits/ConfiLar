@@ -20,6 +20,7 @@ import { AvailabilityToggleCompact } from "@/components/ui/AvailabilityToggle";
 import { useAvailability } from "@/hooks/useAvailability";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { LanguageSelector } from "@/components/ui/LanguageSelector";
+import { FontSizeControl } from "@/components/ui/FontSizeControl";
 import { soundManager } from "@/lib/soundManager";
 import { useTranslations } from "next-intl";
 import {
@@ -857,6 +858,33 @@ export function ModernHeader({
                                 <span>Painel Admin</span>
                               </Button>
                             )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Acessibilidade - Moving above Support for better visibility */}
+                      <div className="border-b border-gray-200 dark:border-gray-700">
+                        <button
+                          onClick={() => toggleSection("acessibilidade")}
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Settings className="h-3 w-3" />
+                            {t("accessibility") || "Acessibilidade"}
+                          </div>
+                          <ChevronDown
+                            className={`h-3 w-3 transition-transform ${expandedSections.has("acessibilidade") ? "rotate-180" : ""}`}
+                          />
+                        </button>
+                        {expandedSections.has("acessibilidade") && (
+                          <div className="px-1 pb-1">
+                            {/* Controle de Tamanho da Fonte */}
+                            <div className="px-2 py-1">
+                              <span className="text-[10px] uppercase text-gray-500 dark:text-gray-400 font-semibold tracking-wider block mb-1">
+                                Tamanho da Fonte
+                              </span>
+                              <FontSizeControl />
+                            </div>
                           </div>
                         )}
                       </div>
