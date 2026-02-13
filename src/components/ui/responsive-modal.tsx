@@ -84,8 +84,8 @@ export function ResponsiveModal({
     >
       <DrawerContent
         className={cn(
-          "max-h-[96vh] flex flex-col bottom-0",
-          fullContent && "max-h-dvh h-auto overflow-y-auto",
+          "fixed bottom-0 left-0 right-0 flex flex-col rounded-t-3xl border-none shadow-2xl",
+          fullContent ? "max-h-[92dvh] h-auto" : "max-h-[96vh] h-auto",
           className,
         )}
       >
