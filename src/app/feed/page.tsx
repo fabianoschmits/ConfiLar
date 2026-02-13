@@ -70,6 +70,8 @@ import { getCategoryById } from "@/data/serviceCategories";
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import { useNavigationShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { GuestBlurOverlay } from "@/components/auth/GuestBlurOverlay";
+import { useProfileCheck } from "@/hooks/useProfileCheck";
+import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 
 export default function FeedPage() {
   const t = useTranslations("feed");
@@ -79,6 +81,9 @@ export default function FeedPage() {
   const { openChat } = useFloatingChat();
   const searchParams = useSearchParams();
   const highlightPostId = searchParams.get("post");
+
+  // Hook de verificação de perfil para controle do modal de onboarding
+  const { needsOnboarding, checkProfile } = useProfileCheck();
 
   const [activeTab, setActiveTab] = useState<"all" | "posts" | "notifications">(
     "posts",
@@ -282,6 +287,15 @@ export default function FeedPage() {
 
   return (
     <MainLayout requireAuth={false}>
+      {/* Modal de Onboarding integrado */}
+      <OnboardingModal
+        isOpen={needsOnboarding}
+        onComplete={() => {
+          checkProfile();
+          refetch();
+        }}
+      />
+
       {/* Story Viewer */}
       {showStoryViewer && (
         <StoryViewer

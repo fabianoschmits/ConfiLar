@@ -11,9 +11,8 @@ import { supabase } from "@/lib/supabase";
  */
 export function useProfileCheck() {
   const { user, profile } = useAuthContext();
-  const router = useRouter();
-  const pathname = usePathname();
   const [isChecking, setIsChecking] = useState(true);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
   const checkProfile = useCallback(async () => {
     if (!user) {
@@ -21,16 +20,10 @@ export function useProfileCheck() {
       return;
     }
 
-    // Evitar loop de redirecionamento em páginas de edição/onboarding
-    const excludedPaths = ["/onboarding", "/editarperfil", "/editar-perfil"];
-    if (excludedPaths.some((path) => pathname?.startsWith(path))) {
-      setIsChecking(false);
-      return;
-    }
-
     // Se já temos o perfil no contexto, verificar se o perfil_completed está marcado
     if (profile && profile.profile_completed) {
       setIsChecking(false);
+      setNeedsOnboarding(false);
       return;
     }
 
@@ -50,8 +43,8 @@ export function useProfileCheck() {
       }
 
       if (!profileData) {
-        console.log("🔍 Perfil não encontrado, enviando para onboarding");
-        router.push("/onboarding");
+        console.log("🔍 Perfil não encontrado, sinalizando onboarding");
+        setNeedsOnboarding(true);
         return;
       }
 
@@ -67,14 +60,16 @@ export function useProfileCheck() {
 
       if (!isProfileCompleted || !hasEssentialData) {
         console.log("🔍 Perfil incompleto ou não marcado como completo");
-        router.push("/onboarding");
+        setNeedsOnboarding(true);
+      } else {
+        setNeedsOnboarding(false);
       }
     } catch (error) {
       console.error("Erro crítico na verificação de perfil:", error);
     } finally {
       setIsChecking(false);
     }
-  }, [user, profile, router, pathname]);
+  }, [user, profile]);
 
   useEffect(() => {
     // Delay estratégico para permitir que o AuthContext carregue
@@ -85,5 +80,5 @@ export function useProfileCheck() {
     return () => clearTimeout(timeoutId);
   }, [checkProfile]);
 
-  return { isChecking };
+  return { isChecking, needsOnboarding, checkProfile };
 }

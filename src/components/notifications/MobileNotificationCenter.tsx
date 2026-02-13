@@ -314,10 +314,9 @@ export function MobileNotificationCenter({
                                   onClick={() => {
                                     // Verificar se é redirecionamento para onboarding e se o usuário já completou
                                     if (
-                                      notification.action_url ===
-                                        "/onboarding" ||
-                                      notification.action_url.startsWith(
-                                        "/onboarding",
+                                      notification.action_url === "/feed" ||
+                                      notification.action_url?.startsWith(
+                                        "/feed",
                                       )
                                     ) {
                                       // Verificar se o usuário já completou o onboarding (usar localStorage ou verificar no profile como any)
