@@ -66,8 +66,7 @@ import { useLocale } from "@/contexts/LocaleContext";
 import { LocationComboboxesMultiCountry } from "@/components/ui/LocationComboboxesMultiCountry";
 import { useTranslations } from "next-intl";
 import { useProfileUpdate } from "@/hooks/useProfileUpdate";
-import { ResponsiveModal } from "@/components/ui/responsive-modal";
-import { useMobile } from "@/hooks/useMobile";
+import * as Dialog from "@radix-ui/react-dialog";
 
 const onboardingSchema = z.object({
   full_name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -173,7 +172,6 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
   const [showDataSummary, setShowDataSummary] = useState(false);
   const [userCpf, setUserCpf] = useState<string | null>(null);
   const { createWelcomePost } = useAutoNotifications();
-  const { isMobile } = useMobile();
 
   const {
     register,
@@ -598,564 +596,600 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
       setIsLoading(false);
     }
   };
-
   const currentStepData = steps.find((s) => s.id === currentStep) || steps[0];
   const isStepValid = validateCurrentStep();
 
   return (
-    <ResponsiveModal
-      isOpen={isOpen}
-      onOpenChange={() => {}} // Não permite fechar
-      showCloseButton={false}
-      fullContent={true}
-      className="max-sm:max-h-[96vh] max-w-2xl p-0 overflow-hidden rounded-3xl"
-    >
-      <div className="flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 h-full overflow-y-auto w-full">
-        <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 py-4 flex justify-center flex-shrink-0">
-          <BrandLogo width={140} height={35} className="object-contain" />
-        </header>
+    <Dialog.Root open={isOpen} onOpenChange={() => {}}>
+      <Dialog.Overlay className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50" />
 
-        <div className="flex-1 overflow-y-auto p-4 sm:p-8">
-          <div className="max-w-md mx-auto">
-            <div className="mb-8 flex items-center justify-between px-2">
-              {steps.map((step, idx) => {
-                const isCompleted = step.id < currentStep;
-                const isActive = step.id === currentStep;
-                return (
-                  <div
-                    key={step.id}
-                    className="flex items-center flex-1 last:flex-none"
-                  >
+      <Dialog.Content
+        className="
+          fixed z-50
+          bottom-0 left-0 right-0
+          md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2
+          md:bottom-auto md:left-auto md:right-auto
+          bg-gradient-to-br from-gray-50 to-gray-100
+          rounded-t-3xl md:rounded-3xl
+          max-h-[90dvh] md:max-h-[85vh]
+          w-full md:max-w-2xl
+          overflow-hidden
+          shadow-2xl
+          flex flex-col
+        "
+      >
+        <div className="flex flex-col h-full overflow-y-auto w-full">
+          <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 py-4 flex justify-center flex-shrink-0">
+            <BrandLogo width={140} height={35} className="object-contain" />
+          </header>
+
+          <div className="flex-1 overflow-y-auto p-4 sm:p-8">
+            <div className="max-w-md mx-auto">
+              <div className="mb-8 flex items-center justify-between px-2">
+                {steps.map((step, idx) => {
+                  const isCompleted = step.id < currentStep;
+                  const isActive = step.id === currentStep;
+                  return (
                     <div
-                      className={cn(
-                        "relative flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-300",
-                        isActive
-                          ? "border-brand bg-brand text-white shadow-lg scale-110"
-                          : isCompleted
-                            ? "border-green-500 bg-green-500 text-white"
-                            : "border-gray-200 bg-white text-gray-400",
-                      )}
+                      key={step.id}
+                      className="flex items-center flex-1 last:flex-none"
                     >
-                      {isCompleted ? (
-                        <Check className="h-4 w-4" />
-                      ) : (
-                        <span className="text-xs font-bold">{step.id}</span>
-                      )}
-                    </div>
-                    {idx < steps.length - 1 && (
                       <div
                         className={cn(
-                          "h-[2px] flex-1 mx-1",
-                          isCompleted ? "bg-green-500" : "bg-gray-200",
+                          "relative flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-300",
+                          isActive
+                            ? "border-brand bg-brand text-white shadow-lg scale-110"
+                            : isCompleted
+                              ? "border-green-500 bg-green-500 text-white"
+                              : "border-gray-200 bg-white text-gray-400",
                         )}
-                      />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            <Card className="overflow-hidden border-0 bg-white shadow-xl rounded-2xl ring-1 ring-black/5">
-              <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
-                <div className="p-6 pb-2 text-center border-b border-gray-50 bg-gray-50/30">
-                  <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary-50 text-brand mb-2">
-                    <currentStepData.icon className="h-5 w-5" />
-                  </div>
-                  <h2 className="text-lg font-bold text-gray-900">
-                    {currentStepData.title}
-                  </h2>
-                  <p className="text-gray-500 text-[10px]">
-                    {currentStepData.description}
-                  </p>
-                </div>
-
-                <div className="p-6 relative">
-                  <AnimatePresence mode="wait" custom={direction}>
-                    <motion.div
-                      key={currentStep}
-                      custom={direction}
-                      variants={{
-                        initial: (dir: number) => ({
-                          x: dir > 0 ? 30 : -30,
-                          opacity: 0,
-                        }),
-                        animate: { x: 0, opacity: 1 },
-                        exit: (dir: number) => ({
-                          x: dir > 0 ? -30 : 30,
-                          opacity: 0,
-                        }),
-                      }}
-                      initial="initial"
-                      animate="animate"
-                      exit="exit"
-                      transition={{ duration: 0.2 }}
-                      className="w-full"
-                    >
-                      {/* Render based on currentStep - simplified for brevety in writing tool, but containing essential JSX */}
-                      {currentStep === 1 && (
-                        <div className="space-y-6 py-2 text-center">
-                          <Sparkles className="w-12 h-12 text-brand mx-auto animate-pulse" />
-                          <h3 className="text-xl font-bold">Bem-vindo(a)!</h3>
-                          <p className="text-sm text-gray-600">
-                            Vamos deixar seu perfil pronto para a comunidade
-                            ConfiLar.
-                          </p>
-                          <div className="grid grid-cols-2 gap-3 pt-2">
-                            <div className="p-3 bg-blue-50 rounded-xl text-left border-l-4 border-blue-500">
-                              <Shield className="w-4 h-4 text-blue-600 mb-1" />
-                              <p className="text-xs font-bold">Seguro</p>
-                            </div>
-                            <div className="p-3 bg-green-50 rounded-xl text-left border-l-4 border-green-500">
-                              <Check className="w-4 h-4 text-green-600 mb-1" />
-                              <p className="text-xs font-bold">Verificado</p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {currentStep === 2 && (
-                        <div className="space-y-4">
-                          <div className="space-y-1">
-                            <Label className="text-xs">Nome Completo</Label>
-                            <Input
-                              {...register("full_name")}
-                              placeholder="Seu nome"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs">CPF</Label>
-                            <Input
-                              {...register("cpf_cnpj")}
-                              onChange={handleCPFChange}
-                              maxLength={14}
-                              placeholder="000.000.000-00"
-                            />
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                              <Label className="text-xs">Telefone</Label>
-                              <Input
-                                {...register("phone")}
-                                onChange={handlePhoneChange}
-                                placeholder="(11) 99999-9999"
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs">Nascimento</Label>
-                              <Input type="date" {...register("birth_date")} />
-                            </div>
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs">Sexo</Label>
-                            <Select
-                              onValueChange={(v) =>
-                                setValue("gender", v as any)
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="male">Masculino</SelectItem>
-                                <SelectItem value="female">Feminino</SelectItem>
-                                <SelectItem value="other">Outros</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="flex items-start gap-2 pt-2">
-                            <Checkbox
-                              id="terms"
-                              checked={watchedValues.accept_terms}
-                              onCheckedChange={(c) =>
-                                setValue("accept_terms", !!c)
-                              }
-                            />
-                            <Label
-                              htmlFor="terms"
-                              className="text-[10px] leading-tight text-gray-500"
-                            >
-                              Aceito os Termos de Uso e Política de Privacidade
-                            </Label>
-                          </div>
-                        </div>
-                      )}
-
-                      {currentStep === 3 && (
-                        <div className="space-y-4">
-                          <div className="space-y-1">
-                            <Label className="text-xs">Escolaridade</Label>
-                            <Select
-                              onValueChange={(v) =>
-                                setValue("escolaridade", v as any)
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="ensino_fundamental_incompleto">
-                                  Fundamental Incompleto
-                                </SelectItem>
-                                <SelectItem value="ensino_fundamental_completo">
-                                  Fundamental Completo
-                                </SelectItem>
-                                <SelectItem value="ensino_medio_incompleto">
-                                  Médio Incompleto
-                                </SelectItem>
-                                <SelectItem value="ensino_medio_completo">
-                                  Médio Completo
-                                </SelectItem>
-                                <SelectItem value="ensino_superior_incompleto">
-                                  Superior Incompleto
-                                </SelectItem>
-                                <SelectItem value="ensino_superior_completo">
-                                  Superior Completo
-                                </SelectItem>
-                                <SelectItem value="pos_graduacao">
-                                  Pós-Graduação
-                                </SelectItem>
-                                <SelectItem value="mestrado">
-                                  Mestrado
-                                </SelectItem>
-                                <SelectItem value="doutorado">
-                                  Doutorado
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs">Estado Civil</Label>
-                            <Select
-                              onValueChange={(v) =>
-                                setValue("estado_civil", v as any)
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="solteiro">
-                                  Solteiro
-                                </SelectItem>
-                                <SelectItem value="casado">Casado</SelectItem>
-                                <SelectItem value="uniao_estavel">
-                                  União Estável
-                                </SelectItem>
-                                <SelectItem value="divorciado">
-                                  Divorciado
-                                </SelectItem>
-                                <SelectItem value="viuvo">Viúvo</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          {(watchedValues.estado_civil === "casado" ||
-                            watchedValues.estado_civil === "uniao_estavel") && (
-                            <div className="space-y-1">
-                              <Label className="text-xs">
-                                Número de Filhos
-                              </Label>
-                              <Input
-                                type="number"
-                                min={0}
-                                {...register("filhos", { valueAsNumber: true })}
-                                placeholder="0"
-                              />
-                            </div>
+                      >
+                        {isCompleted ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <span className="text-xs font-bold">{step.id}</span>
+                        )}
+                      </div>
+                      {idx < steps.length - 1 && (
+                        <div
+                          className={cn(
+                            "h-[2px] flex-1 mx-1",
+                            isCompleted ? "bg-green-500" : "bg-gray-200",
                           )}
-                        </div>
+                        />
                       )}
+                    </div>
+                  );
+                })}
+              </div>
 
-                      {currentStep === 4 && (
-                        <div className="space-y-4 text-center">
-                          {selectedAvatar && (
-                            <div className="w-20 h-20 rounded-full border-2 border-brand mx-auto overflow-hidden">
-                              <img
-                                src={selectedAvatar.preview}
-                                alt="Preview"
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
-                          <div className="grid grid-cols-2 gap-4">
-                            <Button
-                              variant="outline"
-                              type="button"
-                              onClick={() =>
-                                document.getElementById("file-up")?.click()
-                              }
-                            >
-                              <Upload className="w-4 h-4 mr-2" /> Foto
-                            </Button>
-                            <input
-                              type="file"
-                              id="file-up"
-                              className="hidden"
-                              onChange={handleFileUpload}
-                            />
-                            <Button
-                              variant="outline"
-                              type="button"
-                              onClick={generateRandomAvatar}
-                            >
-                              <RefreshCw className="w-4 h-4 mr-2" /> Avatar
-                            </Button>
-                          </div>
-                        </div>
-                      )}
+              <Card className="overflow-hidden border-0 bg-white shadow-xl rounded-2xl ring-1 ring-black/5">
+                <form
+                  onSubmit={handleSubmit(onSubmit)}
+                  className="flex flex-col"
+                >
+                  <div className="p-6 pb-2 text-center border-b border-gray-50 bg-gray-50/30">
+                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary-50 text-brand mb-2">
+                      <currentStepData.icon className="h-5 w-5" />
+                    </div>
+                    <h2 className="text-lg font-bold text-gray-900">
+                      {currentStepData.title}
+                    </h2>
+                    <p className="text-gray-500 text-[10px]">
+                      {currentStepData.description}
+                    </p>
+                  </div>
 
-                      {currentStep === 5 && (
-                        <div className="space-y-4">
-                          <LocationComboboxesMultiCountry
-                            country={watchedValues.country}
-                            stateCode={watchedValues.location_state}
-                            city={watchedValues.location_city}
-                            onCountryChange={(c) =>
-                              setValue("country", c as any)
-                            }
-                            onStateChange={(s) => setValue("location_state", s)}
-                            onCityChange={(ci) => setValue("location_city", ci)}
-                          />
-                          <div className="grid grid-cols-2 gap-4">
-                            <Input
-                              {...register("neighborhood")}
-                              placeholder="Bairro"
-                            />
-                            <Input
-                              {...register("zip_code")}
-                              onChange={handleCEPChange}
-                              maxLength={9}
-                              placeholder="00000-000"
-                            />
-                          </div>
-                          <div className="grid grid-cols-3 gap-2">
-                            <div className="col-span-2">
-                              <Input
-                                {...register("address")}
-                                placeholder="Endereço"
-                              />
-                            </div>
-                            <Input
-                              {...register("address_number")}
-                              placeholder="Nº"
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {currentStep === 6 && (
-                        <div className="space-y-4">
-                          <Label className="text-xs">
-                            Como quer usar o ConfiLar?
-                          </Label>
-                          <div className="grid gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setValue("user_type", "client")}
-                              className={cn(
-                                "p-4 border rounded-xl flex items-center gap-4 transition-all",
-                                watchedValues.user_type === "client"
-                                  ? "border-brand bg-brand/5"
-                                  : "border-gray-100",
-                              )}
-                            >
-                              <User className="w-6 h-6 text-brand" />
-                              <div className="text-left">
-                                <p className="font-bold text-sm">Cliente</p>
-                                <p className="text-[10px] text-gray-500">
-                                  Busco profissionais
-                                </p>
+                  <div className="p-6 relative">
+                    <AnimatePresence mode="wait" custom={direction}>
+                      <motion.div
+                        key={currentStep}
+                        custom={direction}
+                        variants={{
+                          initial: (dir: number) => ({
+                            x: dir > 0 ? 30 : -30,
+                            opacity: 0,
+                          }),
+                          animate: { x: 0, opacity: 1 },
+                          exit: (dir: number) => ({
+                            x: dir > 0 ? -30 : 30,
+                            opacity: 0,
+                          }),
+                        }}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                        transition={{ duration: 0.2 }}
+                        className="w-full"
+                      >
+                        {/* Render based on currentStep - simplified for brevety in writing tool, but containing essential JSX */}
+                        {currentStep === 1 && (
+                          <div className="space-y-6 py-2 text-center">
+                            <Sparkles className="w-12 h-12 text-brand mx-auto animate-pulse" />
+                            <h3 className="text-xl font-bold">Bem-vindo(a)!</h3>
+                            <p className="text-sm text-gray-600">
+                              Vamos deixar seu perfil pronto para a comunidade
+                              ConfiLar.
+                            </p>
+                            <div className="grid grid-cols-2 gap-3 pt-2">
+                              <div className="p-3 bg-blue-50 rounded-xl text-left border-l-4 border-blue-500">
+                                <Shield className="w-4 h-4 text-blue-600 mb-1" />
+                                <p className="text-xs font-bold">Seguro</p>
                               </div>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setValue("user_type", "professional")
-                              }
-                              className={cn(
-                                "p-4 border rounded-xl flex items-center gap-4 transition-all",
-                                watchedValues.user_type === "professional"
-                                  ? "border-brand bg-brand/5"
-                                  : "border-gray-100",
-                              )}
-                            >
-                              <Briefcase className="w-6 h-6 text-brand" />
-                              <div className="text-left">
-                                <p className="font-bold text-sm">
-                                  Profissional
-                                </p>
-                                <p className="text-[10px] text-gray-500">
-                                  Ofereço serviços
-                                </p>
+                              <div className="p-3 bg-green-50 rounded-xl text-left border-l-4 border-green-500">
+                                <Check className="w-4 h-4 text-green-600 mb-1" />
+                                <p className="text-xs font-bold">Verificado</p>
                               </div>
-                            </button>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
 
-                      {currentStep === 7 &&
-                        (isProfessional ? (
+                        {currentStep === 2 && (
                           <div className="space-y-4">
-                            <Textarea
-                              {...register("bio")}
-                              placeholder="Sobre você (opcional)..."
-                              rows={2}
+                            <div className="space-y-1">
+                              <Label className="text-xs">Nome Completo</Label>
+                              <Input
+                                {...register("full_name")}
+                                placeholder="Seu nome"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">CPF</Label>
+                              <Input
+                                {...register("cpf_cnpj")}
+                                onChange={handleCPFChange}
+                                maxLength={14}
+                                placeholder="000.000.000-00"
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                <Label className="text-xs">Telefone</Label>
+                                <Input
+                                  {...register("phone")}
+                                  onChange={handlePhoneChange}
+                                  placeholder="(11) 99999-9999"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">Nascimento</Label>
+                                <Input
+                                  type="date"
+                                  {...register("birth_date")}
+                                />
+                              </div>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Sexo</Label>
+                              <Select
+                                onValueChange={(v) =>
+                                  setValue("gender", v as any)
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="male">
+                                    Masculino
+                                  </SelectItem>
+                                  <SelectItem value="female">
+                                    Feminino
+                                  </SelectItem>
+                                  <SelectItem value="other">Outros</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="flex items-start gap-2 pt-2">
+                              <Checkbox
+                                id="terms"
+                                checked={watchedValues.accept_terms}
+                                onCheckedChange={(c) =>
+                                  setValue("accept_terms", !!c)
+                                }
+                              />
+                              <Label
+                                htmlFor="terms"
+                                className="text-[10px] leading-tight text-gray-500"
+                              >
+                                Aceito os Termos de Uso e Política de
+                                Privacidade
+                              </Label>
+                            </div>
+                          </div>
+                        )}
+
+                        {currentStep === 3 && (
+                          <div className="space-y-4">
+                            <div className="space-y-1">
+                              <Label className="text-xs">Escolaridade</Label>
+                              <Select
+                                onValueChange={(v) =>
+                                  setValue("escolaridade", v as any)
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="ensino_fundamental_incompleto">
+                                    Fundamental Incompleto
+                                  </SelectItem>
+                                  <SelectItem value="ensino_fundamental_completo">
+                                    Fundamental Completo
+                                  </SelectItem>
+                                  <SelectItem value="ensino_medio_incompleto">
+                                    Médio Incompleto
+                                  </SelectItem>
+                                  <SelectItem value="ensino_medio_completo">
+                                    Médio Completo
+                                  </SelectItem>
+                                  <SelectItem value="ensino_superior_incompleto">
+                                    Superior Incompleto
+                                  </SelectItem>
+                                  <SelectItem value="ensino_superior_completo">
+                                    Superior Completo
+                                  </SelectItem>
+                                  <SelectItem value="pos_graduacao">
+                                    Pós-Graduação
+                                  </SelectItem>
+                                  <SelectItem value="mestrado">
+                                    Mestrado
+                                  </SelectItem>
+                                  <SelectItem value="doutorado">
+                                    Doutorado
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Estado Civil</Label>
+                              <Select
+                                onValueChange={(v) =>
+                                  setValue("estado_civil", v as any)
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="solteiro">
+                                    Solteiro
+                                  </SelectItem>
+                                  <SelectItem value="casado">Casado</SelectItem>
+                                  <SelectItem value="uniao_estavel">
+                                    União Estável
+                                  </SelectItem>
+                                  <SelectItem value="divorciado">
+                                    Divorciado
+                                  </SelectItem>
+                                  <SelectItem value="viuvo">Viúvo</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            {(watchedValues.estado_civil === "casado" ||
+                              watchedValues.estado_civil ===
+                                "uniao_estavel") && (
+                              <div className="space-y-1">
+                                <Label className="text-xs">
+                                  Número de Filhos
+                                </Label>
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  {...register("filhos", {
+                                    valueAsNumber: true,
+                                  })}
+                                  placeholder="0"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {currentStep === 4 && (
+                          <div className="space-y-4 text-center">
+                            {selectedAvatar && (
+                              <div className="w-20 h-20 rounded-full border-2 border-brand mx-auto overflow-hidden">
+                                <img
+                                  src={selectedAvatar.preview}
+                                  alt="Preview"
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            )}
+                            <div className="grid grid-cols-2 gap-4">
+                              <Button
+                                variant="outline"
+                                type="button"
+                                onClick={() =>
+                                  document.getElementById("file-up")?.click()
+                                }
+                              >
+                                <Upload className="w-4 h-4 mr-2" /> Foto
+                              </Button>
+                              <input
+                                type="file"
+                                id="file-up"
+                                className="hidden"
+                                onChange={handleFileUpload}
+                              />
+                              <Button
+                                variant="outline"
+                                type="button"
+                                onClick={generateRandomAvatar}
+                              >
+                                <RefreshCw className="w-4 h-4 mr-2" /> Avatar
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+
+                        {currentStep === 5 && (
+                          <div className="space-y-4">
+                            <LocationComboboxesMultiCountry
+                              country={watchedValues.country}
+                              stateCode={watchedValues.location_state}
+                              city={watchedValues.location_city}
+                              onCountryChange={(c) =>
+                                setValue("country", c as any)
+                              }
+                              onStateChange={(s) =>
+                                setValue("location_state", s)
+                              }
+                              onCityChange={(ci) =>
+                                setValue("location_city", ci)
+                              }
                             />
                             <div className="grid grid-cols-2 gap-4">
-                              <Select
-                                onValueChange={(v) =>
-                                  setValue("experience_years", v as any)
-                                }
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Experiência" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="1-3">1-3 anos</SelectItem>
-                                  <SelectItem value="3-5">3-5 anos</SelectItem>
-                                  <SelectItem value="5+">5+ anos</SelectItem>
-                                </SelectContent>
-                              </Select>
-
-                              <Select
-                                onValueChange={(v) =>
-                                  setValue("turno_trabalho", v as any)
-                                }
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Turno" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="manha">Manhã</SelectItem>
-                                  <SelectItem value="tarde">Tarde</SelectItem>
-                                  <SelectItem value="noite">Noite</SelectItem>
-                                  <SelectItem value="integral">
-                                    Integral
-                                  </SelectItem>
-                                  <SelectItem value="flexivel">
-                                    Flexível
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
+                              <Input
+                                {...register("neighborhood")}
+                                placeholder="Bairro"
+                              />
+                              <Input
+                                {...register("zip_code")}
+                                onChange={handleCEPChange}
+                                maxLength={9}
+                                placeholder="00000-000"
+                              />
                             </div>
+                            <div className="grid grid-cols-3 gap-2">
+                              <div className="col-span-2">
+                                <Input
+                                  {...register("address")}
+                                  placeholder="Endereço"
+                                />
+                              </div>
+                              <Input
+                                {...register("address_number")}
+                                placeholder="Nº"
+                              />
+                            </div>
+                          </div>
+                        )}
 
-                            <div className="space-y-3 pt-2">
-                              <Label className="text-xs font-bold text-gray-700">
-                                Redes Sociais & Contato
-                              </Label>
-                              <div className="grid grid-cols-2 gap-3">
-                                <div className="space-y-1">
-                                  <Input
-                                    {...register("whatsapp_number")}
-                                    placeholder="WhatsApp"
-                                  />
+                        {currentStep === 6 && (
+                          <div className="space-y-4">
+                            <Label className="text-xs">
+                              Como quer usar o ConfiLar?
+                            </Label>
+                            <div className="grid gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setValue("user_type", "client")}
+                                className={cn(
+                                  "p-4 border rounded-xl flex items-center gap-4 transition-all",
+                                  watchedValues.user_type === "client"
+                                    ? "border-brand bg-brand/5"
+                                    : "border-gray-100",
+                                )}
+                              >
+                                <User className="w-6 h-6 text-brand" />
+                                <div className="text-left">
+                                  <p className="font-bold text-sm">Cliente</p>
+                                  <p className="text-[10px] text-gray-500">
+                                    Busco profissionais
+                                  </p>
                                 </div>
-                                <div className="space-y-1">
-                                  <Input
-                                    {...register("instagram_url")}
-                                    placeholder="@seu_instagram"
-                                  />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setValue("user_type", "professional")
+                                }
+                                className={cn(
+                                  "p-4 border rounded-xl flex items-center gap-4 transition-all",
+                                  watchedValues.user_type === "professional"
+                                    ? "border-brand bg-brand/5"
+                                    : "border-gray-100",
+                                )}
+                              >
+                                <Briefcase className="w-6 h-6 text-brand" />
+                                <div className="text-left">
+                                  <p className="font-bold text-sm">
+                                    Profissional
+                                  </p>
+                                  <p className="text-[10px] text-gray-500">
+                                    Ofereço serviços
+                                  </p>
                                 </div>
-                                <div className="space-y-1">
-                                  <Input
-                                    {...register("facebook_url")}
-                                    placeholder="@seu_facebook"
-                                  />
-                                </div>
-                                <div className="space-y-1">
-                                  <Input
-                                    {...register("tiktok_url")}
-                                    placeholder="@seu_tiktok"
-                                  />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {currentStep === 7 &&
+                          (isProfessional ? (
+                            <div className="space-y-4">
+                              <Textarea
+                                {...register("bio")}
+                                placeholder="Sobre você (opcional)..."
+                                rows={2}
+                              />
+                              <div className="grid grid-cols-2 gap-4">
+                                <Select
+                                  onValueChange={(v) =>
+                                    setValue("experience_years", v as any)
+                                  }
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Experiência" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="1-3">
+                                      1-3 anos
+                                    </SelectItem>
+                                    <SelectItem value="3-5">
+                                      3-5 anos
+                                    </SelectItem>
+                                    <SelectItem value="5+">5+ anos</SelectItem>
+                                  </SelectContent>
+                                </Select>
+
+                                <Select
+                                  onValueChange={(v) =>
+                                    setValue("turno_trabalho", v as any)
+                                  }
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Turno" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="manha">Manhã</SelectItem>
+                                    <SelectItem value="tarde">Tarde</SelectItem>
+                                    <SelectItem value="noite">Noite</SelectItem>
+                                    <SelectItem value="integral">
+                                      Integral
+                                    </SelectItem>
+                                    <SelectItem value="flexivel">
+                                      Flexível
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <div className="space-y-3 pt-2">
+                                <Label className="text-xs font-bold text-gray-700">
+                                  Redes Sociais & Contato
+                                </Label>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div className="space-y-1">
+                                    <Input
+                                      {...register("whatsapp_number")}
+                                      placeholder="WhatsApp"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Input
+                                      {...register("instagram_url")}
+                                      placeholder="@seu_instagram"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Input
+                                      {...register("facebook_url")}
+                                      placeholder="@seu_facebook"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Input
+                                      {...register("tiktok_url")}
+                                      placeholder="@seu_tiktok"
+                                    />
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        ) : (
-                          <div className="text-center py-6">
-                            <Check className="w-12 h-12 text-green-500 mx-auto" />
-                            <p className="font-bold mt-2">Tudo certo!</p>
-                            <p className="text-xs text-gray-500">
-                              Como cliente, pule para o resumo.
-                            </p>
-                          </div>
-                        ))}
+                          ) : (
+                            <div className="text-center py-6">
+                              <Check className="w-12 h-12 text-green-500 mx-auto" />
+                              <p className="font-bold mt-2">Tudo certo!</p>
+                              <p className="text-xs text-gray-500">
+                                Como cliente, pule para o resumo.
+                              </p>
+                            </div>
+                          ))}
 
-                      {currentStep === 8 && (
-                        <div className="space-y-4">
-                          <div className="p-4 bg-gray-50 rounded-xl space-y-2 text-xs">
-                            <p>
-                              <strong>Nome:</strong> {watchedValues.full_name}
-                            </p>
-                            <p>
-                              <strong>Telefone:</strong> {watchedValues.phone}
-                            </p>
-                            <p>
-                              <strong>Local:</strong>{" "}
-                              {watchedValues.location_city},{" "}
-                              {watchedValues.location_state}
-                            </p>
-                            <p>
-                              <strong>Tipo:</strong>{" "}
-                              {watchedValues.user_type === "professional"
-                                ? "Profissional"
-                                : "Cliente"}
-                            </p>
+                        {currentStep === 8 && (
+                          <div className="space-y-4">
+                            <div className="p-4 bg-gray-50 rounded-xl space-y-2 text-xs">
+                              <p>
+                                <strong>Nome:</strong> {watchedValues.full_name}
+                              </p>
+                              <p>
+                                <strong>Telefone:</strong> {watchedValues.phone}
+                              </p>
+                              <p>
+                                <strong>Local:</strong>{" "}
+                                {watchedValues.location_city},{" "}
+                                {watchedValues.location_state}
+                              </p>
+                              <p>
+                                <strong>Tipo:</strong>{" "}
+                                {watchedValues.user_type === "professional"
+                                  ? "Profissional"
+                                  : "Cliente"}
+                              </p>
+                            </div>
+                            <div className="p-3 bg-green-50 rounded-xl border border-green-100 flex items-center gap-3">
+                              <Shield className="w-4 h-4 text-green-600" />
+                              <p className="text-[10px] text-green-700 font-medium">
+                                Seus dados estão protegidos e prontos para o
+                                envio.
+                              </p>
+                            </div>
                           </div>
-                          <div className="p-3 bg-green-50 rounded-xl border border-green-100 flex items-center gap-3">
-                            <Shield className="w-4 h-4 text-green-600" />
-                            <p className="text-[10px] text-green-700 font-medium">
-                              Seus dados estão protegidos e prontos para o
-                              envio.
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
+                        )}
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
 
-                <div className="p-6 border-t border-gray-100 flex items-center justify-between flex-shrink-0">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={prevStep}
-                    className={cn("text-xs", currentStep === 1 && "invisible")}
-                  >
-                    <ArrowLeft className="w-3 h-3 mr-1" /> Voltar
-                  </Button>
-
-                  {currentStep < totalSteps ? (
+                  <div className="p-6 border-t border-gray-100 flex items-center justify-between flex-shrink-0">
                     <Button
                       type="button"
+                      variant="ghost"
                       size="sm"
-                      onClick={nextStep}
-                      className="bg-brand hover:bg-brand/90 text-white rounded-lg px-6 font-bold text-xs h-9"
-                    >
-                      Continuar <ArrowRight className="ml-1 w-3 h-3" />
-                    </Button>
-                  ) : (
-                    <Button
-                      type="submit"
-                      size="sm"
-                      disabled={isLoading || !isFormValid()}
-                      className="bg-green-700 hover:bg-green-800 text-white rounded-lg px-8 font-bold text-xs h-9"
-                    >
-                      {isLoading ? (
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                      ) : (
-                        "Finalizar cadastro"
+                      onClick={prevStep}
+                      className={cn(
+                        "text-xs",
+                        currentStep === 1 && "invisible",
                       )}
+                    >
+                      <ArrowLeft className="w-3 h-3 mr-1" /> Voltar
                     </Button>
-                  )}
-                </div>
-              </form>
-            </Card>
-            {/* Espaçador extra para evitar que o teclado cubra os campos finais no mobile (padrão NewPostForm) */}
-            <div className="h-40 sm:h-0" />
+
+                    {currentStep < totalSteps ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={nextStep}
+                        className="bg-brand hover:bg-brand/90 text-white rounded-lg px-6 font-bold text-xs h-9"
+                      >
+                        Continuar <ArrowRight className="ml-1 w-3 h-3" />
+                      </Button>
+                    ) : (
+                      <Button
+                        type="submit"
+                        size="sm"
+                        disabled={isLoading || !isFormValid()}
+                        className="bg-green-700 hover:bg-green-800 text-white rounded-lg px-8 font-bold text-xs h-9"
+                      >
+                        {isLoading ? (
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                        ) : (
+                          "Finalizar cadastro"
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                </form>
+              </Card>
+              {/* Espaçador extra para evitar que o teclado cubra os campos finais no mobile (padrão NewPostForm) */}
+              <div className="h-40 sm:h-0" />
+            </div>
           </div>
         </div>
-      </div>
-    </ResponsiveModal>
+      </Dialog.Content>
+    </Dialog.Root>
   );
 }
