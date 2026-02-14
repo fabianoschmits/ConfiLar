@@ -44,8 +44,8 @@ export function ResponsiveModal({
             "md:bottom-auto md:left-1/2 md:top-1/2 md:right-auto md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:max-w-2xl md:max-h-[85vh]",
             // Background & Effects (Onboarding Style)
             "bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 overflow-hidden",
-            fullContent && "max-h-dvh h-dvh rounded-t-none md:max-h-[95vh] md:rounded-3xl",
-            className
+            fullContent && "h-[92dvh] md:max-h-[95vh] md:rounded-3xl",
+            className,
           )}
         >
           {/* Acessibilidade: Sempre ter um título */}
@@ -58,7 +58,9 @@ export function ResponsiveModal({
           {description && (
             <VisuallyHidden>
               <DialogPrimitive.Description>
-                {typeof description === "string" ? description : "Descrição do modal"}
+                {typeof description === "string"
+                  ? description
+                  : "Descrição do modal"}
               </DialogPrimitive.Description>
             </VisuallyHidden>
           )}
@@ -82,7 +84,7 @@ export function ResponsiveModal({
             className={cn(
               "flex-1 overflow-y-auto p-6 scroll-smooth",
               (title || description) && "pt-4",
-              fullContent && "p-0"
+              fullContent && "p-0",
             )}
           >
             {children}
@@ -109,6 +111,6 @@ export function ResponsiveModal({
           )}
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
-    </DialogPrimitive.Root >
+    </DialogPrimitive.Root>
   );
 }

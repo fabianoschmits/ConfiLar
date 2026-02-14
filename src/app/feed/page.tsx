@@ -3,7 +3,7 @@
 export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { MainLayout } from "@/components/layout/MainLayout";
 import {
@@ -80,6 +80,7 @@ export default function FeedPage() {
   const { profile } = useAuthContext();
   const { openChat } = useFloatingChat();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const highlightPostId = searchParams.get("post");
 
   // Hook de verificação de perfil para controle do modal de onboarding
@@ -293,6 +294,7 @@ export default function FeedPage() {
         onComplete={() => {
           checkProfile();
           refetch();
+          router.push("/home"); // Redirecionar para Home após completar onboarding
         }}
       />
 
@@ -619,7 +621,6 @@ export default function FeedPage() {
           onOpenChange={setShowNewPost}
           fullContent={true}
           showCloseButton={false}
-          className="max-sm:max-h-[96vh]"
         >
           <NewPostForm
             onSubmit={async (data) => {

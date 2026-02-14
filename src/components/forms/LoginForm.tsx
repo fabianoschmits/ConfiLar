@@ -52,7 +52,7 @@ export function LoginForm() {
   const accountCreated = searchParams.get("message") === "account_created";
 
   // Obter o parâmetro de redirecionamento - redireciona para home por padrão
-  const redirectPath = searchParams.get("redirect") || "/home";
+  const redirectPath = searchParams.get("redirect") || "/feed";
 
   const {
     register,
