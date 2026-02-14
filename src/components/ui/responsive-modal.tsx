@@ -37,7 +37,7 @@ export function ResponsiveModal({
 
         <DialogPrimitive.Content
           className={cn(
-            "fixed z-50 flex flex-col bg-background shadow-2xl transition-all duration-300",
+            "fixed z-[201] flex flex-col bg-background shadow-2xl transition-all duration-300",
             // Mobile (Bottom Sheet)
             "bottom-0 left-0 right-0 rounded-t-3xl max-h-[90dvh] w-full",
             // Desktop (Centered)
