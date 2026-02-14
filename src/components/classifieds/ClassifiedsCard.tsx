@@ -150,7 +150,7 @@ export function ClassifiedsCard({
         isHighlighted
           ? "border-blue-400 dark:border-blue-700 z-10 shadow-sm"
           : isActivePremium
-            ? "border-warning-200 dark:border-warning-800 ring-1 ring-warning-100 dark:ring-warning-900 shadow-sm"
+            ? "ring-2 ring-warning-400 dark:ring-warning-500 border-warning-200 dark:border-warning-800 bg-gradient-to-r from-warning-50/30 to-transparent dark:from-warning-900/10 dark:to-transparent shadow-[0_15px_30px_-15px_rgba(251,191,36,0.6)] dark:shadow-[0_15px_30px_-15px_rgba(251,191,36,0.3)] premium-border-shine"
             : "border-gray-200 dark:border-gray-800",
         "hover:shadow-lg",
       )}
