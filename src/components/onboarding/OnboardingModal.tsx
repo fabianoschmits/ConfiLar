@@ -398,6 +398,11 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
     setValue("cpf_cnpj", formatted);
   };
 
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = ValidationUtils.formatFullName(e.target.value);
+    setValue("full_name", formatted);
+  };
+
   const handleCEPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = ValidationUtils.formatCEP(e.target.value);
     setValue("zip_code", formatted);
@@ -600,7 +605,7 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
   const isStepValid = validateCurrentStep();
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={() => {}}>
+    <Dialog.Root open={isOpen} onOpenChange={() => { }}>
       <Dialog.Overlay className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50" />
 
       <Dialog.Content
@@ -647,7 +652,7 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
                         {isCompleted ? (
                           <Check className="h-4 w-4" />
                         ) : (
-                          <span className="text-xs font-bold">{step.id}</span>
+                          <step.icon className="h-4 w-4" />
                         )}
                       </div>
                       {idx < steps.length - 1 && (
@@ -705,8 +710,6 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
                         {/* Render based on currentStep - simplified for brevety in writing tool, but containing essential JSX */}
                         {currentStep === 1 && (
                           <div className="space-y-6 py-2 text-center">
-                            <Sparkles className="w-12 h-12 text-brand mx-auto animate-pulse" />
-                            <h3 className="text-xl font-bold">Bem-vindo(a)!</h3>
                             <p className="text-sm text-gray-600">
                               Vamos deixar seu perfil pronto para a comunidade
                               ConfiLar.
@@ -730,6 +733,7 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
                               <Label className="text-xs">Nome Completo</Label>
                               <Input
                                 {...register("full_name")}
+                                onChange={handleNameChange}
                                 placeholder="Seu nome"
                               />
                             </div>
@@ -867,9 +871,7 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
                                 </SelectContent>
                               </Select>
                             </div>
-                            {(watchedValues.estado_civil === "casado" ||
-                              watchedValues.estado_civil ===
-                                "uniao_estavel") && (
+                            {watchedValues.estado_civil && (
                               <div className="space-y-1">
                                 <Label className="text-xs">
                                   Número de Filhos
@@ -877,9 +879,7 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
                                 <Input
                                   type="number"
                                   min={0}
-                                  {...register("filhos", {
-                                    valueAsNumber: true,
-                                  })}
+                                  {...register("filhos", { valueAsNumber: true })}
                                   placeholder="0"
                                 />
                               </div>

@@ -26,25 +26,25 @@ export interface CompleteProfileData {
   idade: number | null;
   gender: "male" | "female" | "other" | null;
   escolaridade:
-    | "ensino_fundamental_incompleto"
-    | "ensino_fundamental_completo"
-    | "ensino_medio_incompleto"
-    | "ensino_medio_completo"
-    | "ensino_superior_incompleto"
-    | "ensino_superior_completo"
-    | "pos_graduacao"
-    | "mestrado"
-    | "doutorado"
-    | null;
+  | "ensino_fundamental_incompleto"
+  | "ensino_fundamental_completo"
+  | "ensino_medio_incompleto"
+  | "ensino_medio_completo"
+  | "ensino_superior_incompleto"
+  | "ensino_superior_completo"
+  | "pos_graduacao"
+  | "mestrado"
+  | "doutorado"
+  | null;
   filhos: number | null;
   estado_civil:
-    | "solteiro"
-    | "casado"
-    | "divorciado"
-    | "viuvo"
-    | "uniao_estavel"
-    | "outro"
-    | null;
+  | "solteiro"
+  | "casado"
+  | "divorciado"
+  | "viuvo"
+  | "uniao_estavel"
+  | "outro"
+  | null;
 
   // Dados profissionais
   user_type: "client" | "professional";
@@ -93,6 +93,7 @@ export interface CompleteProfileData {
   address_number: string | null;
   zip_code: string | null;
   allow_ai_indexing: boolean | null;
+  hide_ai_announcement: boolean | null;
 }
 
 export function useProfileData(userId: string) {
@@ -167,7 +168,8 @@ export function useProfileData(userId: string) {
             whatsapp_number,
             address_number,
             zip_code,
-            allow_ai_indexing
+            allow_ai_indexing,
+            hide_ai_announcement
           `,
           )
           .eq("id", userId)

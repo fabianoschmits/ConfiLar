@@ -1,25 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { useMobile } from "@/hooks/useMobile";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
+import { VisuallyHidden } from "./visually-hidden";
 
 interface ResponsiveModalProps {
   children: React.ReactNode;
@@ -44,79 +30,85 @@ export function ResponsiveModal({
   showCloseButton = true,
   fullContent = false,
 }: ResponsiveModalProps) {
-  const { isMobile } = useMobile();
+  return (
+    <DialogPrimitive.Root open={isOpen} onOpenChange={onOpenChange}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
 
-  if (!isMobile) {
-    return (
-      <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent
-          className={cn("max-h-[85vh] flex flex-col p-0", className)}
-        >
-          {(title || description) && (
-            <DialogHeader className="p-6 pb-2">
-              {title && <DialogTitle>{title}</DialogTitle>}
-              {description && (
-                <DialogDescription>{description}</DialogDescription>
-              )}
-            </DialogHeader>
+        <DialogPrimitive.Content
+          className={cn(
+            "fixed z-50 flex flex-col bg-background shadow-2xl transition-all duration-300",
+            // Mobile (Bottom Sheet)
+            "bottom-0 left-0 right-0 rounded-t-3xl max-h-[90dvh] w-full",
+            // Desktop (Centered)
+            "md:bottom-auto md:left-1/2 md:top-1/2 md:right-auto md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:max-w-2xl md:max-h-[85vh]",
+            // Background & Effects (Onboarding Style)
+            "bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 overflow-hidden",
+            fullContent && "max-h-dvh h-dvh rounded-t-none md:max-h-[95vh] md:rounded-3xl",
+            className
           )}
-          <div className="flex-1 overflow-y-auto p-6 pt-0 scroll-smooth">
+        >
+          {/* Acessibilidade: Sempre ter um título */}
+          <VisuallyHidden>
+            <DialogPrimitive.Title>
+              {typeof title === "string" ? title : "Modal"}
+            </DialogPrimitive.Title>
+          </VisuallyHidden>
+
+          {description && (
+            <VisuallyHidden>
+              <DialogPrimitive.Description>
+                {typeof description === "string" ? description : "Descrição do modal"}
+              </DialogPrimitive.Description>
+            </VisuallyHidden>
+          )}
+
+          {(title || description) && (
+            <div className="p-6 pb-2 border-b md:border-none flex-shrink-0">
+              {title && (
+                <div className="text-lg font-bold leading-none tracking-tight">
+                  {title}
+                </div>
+              )}
+              {description && (
+                <div className="text-sm text-muted-foreground mt-2">
+                  {description}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div
+            className={cn(
+              "flex-1 overflow-y-auto p-6 scroll-smooth",
+              (title || description) && "pt-4",
+              fullContent && "p-0"
+            )}
+          >
             {children}
           </div>
-          {footer && (
-            <div className="p-6 pt-2 border-t flex justify-end gap-2">
+
+          {(footer || (showCloseButton && !fullContent)) && (
+            <div className="p-6 pt-2 border-t md:border-none flex-shrink-0 flex items-center justify-end gap-2">
               {footer}
+              {showCloseButton && !footer && (
+                <DialogPrimitive.Close asChild>
+                  <Button variant="outline" className="w-full md:w-auto">
+                    Fechar
+                  </Button>
+                </DialogPrimitive.Close>
+              )}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
-    );
-  }
 
-  const DrawerAny = Drawer as any;
-
-  return (
-    <DrawerAny
-      open={isOpen}
-      onOpenChange={onOpenChange}
-      threshold={0.7}
-      handleOnly={true}
-    >
-      <DrawerContent
-        className={cn(
-          "fixed bottom-0 left-0 right-0 flex flex-col rounded-t-3xl border-none shadow-2xl",
-          fullContent ? "max-h-dvh h-dvh" : "max-h-[96vh] h-auto",
-          className,
-        )}
-      >
-        {fullContent ? (
-          <div className="flex-1 overflow-hidden flex flex-col">{children}</div>
-        ) : (
-          <>
-            {(title || description) && (
-              <DrawerHeader className="text-left border-b pb-4 flex-shrink-0">
-                {title && <DrawerTitle>{title}</DrawerTitle>}
-                {description && (
-                  <DrawerDescription>{description}</DrawerDescription>
-                )}
-              </DrawerHeader>
-            )}
-            <div className="flex-1 overflow-y-auto px-4 py-4 scroll-smooth overscroll-contain">
-              {children}
-            </div>
-            {(footer || showCloseButton) && (
-              <DrawerFooter className="pt-2 border-t flex-shrink-0">
-                {footer}
-                {showCloseButton && (
-                  <DrawerClose asChild>
-                    <Button variant="outline">Fechar</Button>
-                  </DrawerClose>
-                )}
-              </DrawerFooter>
-            )}
-          </>
-        )}
-      </DrawerContent>
-    </DrawerAny>
+          {showCloseButton && (
+            <DialogPrimitive.Close className="absolute right-4 top-4 rounded-full p-2 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none bg-accent text-accent-foreground md:bg-transparent">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Fechar</span>
+            </DialogPrimitive.Close>
+          )}
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root >
   );
 }

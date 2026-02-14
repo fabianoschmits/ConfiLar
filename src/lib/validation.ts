@@ -102,10 +102,13 @@ export function formatCPF(value: string): string {
 export function formatFullName(name: string): string {
   if (!name) return "";
 
+  // Captura espaços no final para preservar enquanto o usuário digita
+  const trailingSpaces = name.match(/\s+$/)?.[0] || "";
   const particles = ["da", "de", "do", "das", "dos"];
   const words = name.toLowerCase().trim().split(/\s+/);
 
   const formattedWords = words.map((word, index) => {
+    if (!word) return "";
     // Se for a primeira palavra ou não estiver na lista de partículas, capitaliza
     if (index === 0 || !particles.includes(word)) {
       return word.charAt(0).toUpperCase() + word.slice(1);
@@ -114,7 +117,7 @@ export function formatFullName(name: string): string {
     return word;
   });
 
-  return formattedWords.join(" ");
+  return (formattedWords.length > 0 ? formattedWords.join(" ") : "") + trailingSpaces;
 }
 
 /**
