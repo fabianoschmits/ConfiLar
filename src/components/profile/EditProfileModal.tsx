@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { ResponsiveModal } from "@/components/ui/responsive-modal";
+import * as Dialog from "@radix-ui/react-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   User,
@@ -128,12 +129,20 @@ export function EditProfileModal({
     <ResponsiveModal
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      title={currentTab.label}
-      description="Gerencie suas informações"
-      className="sm:max-w-[1300px] w-[95vw] p-0 overflow-hidden"
+      fullContent={true}
+      showCloseButton={false}
+      className="md:max-w-[1300px]"
+      overlayClassName="bg-black/30"
     >
-      <div className="flex flex-col bg-white dark:bg-black overflow-hidden h-[90vh] sm:h-auto">
-        <div className="flex flex-col flex-1 sm:flex-row overflow-hidden">
+      <div className="flex flex-col h-full overflow-hidden relative">
+        <button
+          onClick={() => onOpenChange(false)}
+          className="absolute top-4 right-4 p-2 bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors z-10"
+        >
+          <X className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+        </button>
+
+        <div className="flex flex-col flex-1 sm:flex-row overflow-hidden h-full">
           {/* Sidebar - Desktop */}
           <div className="hidden sm:flex w-72 flex-col bg-gray-50/50 dark:bg-gray-900/50 border-r border-gray-100 dark:border-gray-800 flex-shrink-0">
             <div className="p-6 border-b border-gray-100 dark:border-gray-800">
@@ -145,7 +154,7 @@ export function EditProfileModal({
               </p>
             </div>
 
-            <nav className="flex-1 p-3 space-y-1">
+            <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -182,7 +191,17 @@ export function EditProfileModal({
           {/* Main Content Area */}
           <div className="flex-1 flex flex-col min-h-0 min-w-0 bg-white dark:bg-black overflow-x-hidden">
             {/* Mobile Navigation */}
-            <div className="sm:hidden border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black p-2 flex-shrink-0">
+            <div className="sm:hidden border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black p-4 pt-12 flex-shrink-0">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                    Meu Perfil
+                  </h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Gerencie suas informações
+                  </p>
+                </div>
+              </div>
               <div className="flex overflow-x-auto gap-2 pb-2 no-scrollbar px-1">
                 {tabs.map((tab) => {
                   const Icon = tab.icon;

@@ -687,423 +687,410 @@ export function CheckoutModal({
       showCloseButton={false}
       className="max-w-2xl"
     >
-      <div className="flex flex-col h-full bg-white dark:bg-black overflow-hidden">
-        {/* HEADER FIXO */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0 z-20">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
-            >
-              <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-            </button>
-            <h2 className="text-sm font-bold text-gray-900 dark:text-white truncate">
-              {existingPurchase
-                ? existingPurchase.status === "approved"
-                  ? "Compra Aprovada"
-                  : "Pagamento PIX"
-                : "Finalizar Compra"}
-            </h2>
-          </div>
-          <div className="flex items-center gap-2">
-            {step === "form" && (
-              <LoadingButton
-                onClick={handleGenerateQRCode}
-                isLoading={isLoading}
-                size="sm"
-                className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:hover:bg-gray-200 dark:text-black min-w-[80px] transition-colors"
-              >
-                Gerar PIX
-              </LoadingButton>
-            )}
-            {step === "qrcode" && (
-              <LoadingButton
-                onClick={checkPaymentStatus}
-                isLoading={isCheckingPayment}
-                size="sm"
-                className="bg-green-600 hover:bg-green-700 text-white min-w-[80px] transition-colors"
-              >
-                Verificar
-              </LoadingButton>
-            )}
-          </div>
+      {/* HEADER FIXO */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0 z-20">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+          >
+            <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+          </button>
+          <h2 className="text-sm font-bold text-gray-900 dark:text-white truncate">
+            {existingPurchase
+              ? existingPurchase.status === "approved"
+                ? "Compra Aprovada"
+                : "Pagamento PIX"
+              : "Finalizar Compra"}
+          </h2>
         </div>
-
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 pb-20">
-          {error && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertCircle className="w-4 h-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
+        <div className="flex items-center gap-2">
           {step === "form" && (
-            <div className="space-y-6">
-              {/* Resumo da Compra */}
-              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-                <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
-                  Resumo da Compra
-                </h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-blue-700 dark:text-blue-300">
-                      Pacote:
-                    </span>
-                    <span className="font-semibold text-blue-900 dark:text-blue-100">
-                      {packageData.name}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-blue-700 dark:text-blue-300">
-                      Pontos:
-                    </span>
-                    <span className="font-semibold text-blue-900 dark:text-blue-100">
-                      {packageData.points.toLocaleString("pt-BR")} ConfiPoints
-                    </span>
-                  </div>
-                  {packageData.bonus > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-green-700 dark:text-green-300">
-                        Bônus:
-                      </span>
-                      <span className="font-semibold text-green-900 dark:text-green-100">
-                        +{packageData.bonus.toLocaleString("pt-BR")} pontos
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex justify-between pt-2 border-t border-blue-200 dark:border-blue-800">
-                    <span className="text-lg font-semibold text-blue-900 dark:text-blue-100">
-                      Total:
-                    </span>
-                    <span className="text-xl font-bold text-blue-900 dark:text-blue-100">
-                      {packageData.price}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Dados Pessoais */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-gray-900 dark:text-white">
-                  Dados Pessoais
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Nome Completo *</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) =>
-                        handleInputChange("name", e.target.value)
-                      }
-                      placeholder="Seu nome completo"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) =>
-                        handleInputChange("email", e.target.value)
-                      }
-                      placeholder="seu@email.com"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Telefone *</Label>
-                    <Input
-                      id="phone"
-                      value={formData.phone}
-                      onChange={(e) =>
-                        handleInputChange("phone", formatPhone(e.target.value))
-                      }
-                      placeholder="(00) 00000-0000"
-                      maxLength={15}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="cpf">CPF *</Label>
-                    <Input
-                      id="cpf"
-                      value={formData.cpf}
-                      onChange={(e) =>
-                        handleInputChange("cpf", formatCPF(e.target.value))
-                      }
-                      placeholder="000.000.000-00"
-                      maxLength={14}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Endereço */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-gray-900 dark:text-white">
-                  Endereço
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="md:col-span-2 space-y-2">
-                    <Label htmlFor="street">Rua *</Label>
-                    <Input
-                      id="street"
-                      value={formData.address.street}
-                      onChange={(e) =>
-                        handleInputChange("address.street", e.target.value)
-                      }
-                      placeholder="Nome da rua"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="number">Número *</Label>
-                    <Input
-                      id="number"
-                      value={formData.address.number}
-                      onChange={(e) =>
-                        handleInputChange("address.number", e.target.value)
-                      }
-                      placeholder="123"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="complement">Complemento</Label>
-                    <Input
-                      id="complement"
-                      value={formData.address.complement}
-                      onChange={(e) =>
-                        handleInputChange("address.complement", e.target.value)
-                      }
-                      placeholder="Apto, Bloco, etc"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="neighborhood">Bairro *</Label>
-                    <Input
-                      id="neighborhood"
-                      value={formData.address.neighborhood}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "address.neighborhood",
-                          e.target.value,
-                        )
-                      }
-                      placeholder="Nome do bairro"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="city">Cidade *</Label>
-                    <Input
-                      id="city"
-                      value={formData.address.city}
-                      onChange={(e) =>
-                        handleInputChange("address.city", e.target.value)
-                      }
-                      placeholder="Nome da cidade"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="state">Estado (UF) *</Label>
-                    <Input
-                      id="state"
-                      value={formData.address.state}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "address.state",
-                          e.target.value.toUpperCase(),
-                        )
-                      }
-                      placeholder="SP"
-                      maxLength={2}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="zipCode">CEP *</Label>
-                    <Input
-                      id="zipCode"
-                      value={formData.address.zipCode}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "address.zipCode",
-                          formatCEP(e.target.value),
-                        )
-                      }
-                      placeholder="00000-000"
-                      maxLength={9}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+            <LoadingButton
+              onClick={handleGenerateQRCode}
+              isLoading={isLoading}
+              size="sm"
+              className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:hover:bg-gray-200 dark:text-black min-w-[80px] transition-colors"
+            >
+              Gerar PIX
+            </LoadingButton>
           )}
-
-          {step === "qrcode" && paymentData && (
-            <div className="space-y-6">
-              <Alert>
-                <AlertCircle className="w-4 h-4" />
-                <AlertDescription>
-                  Escaneie o QR Code com o app do seu banco ou copie o código
-                  PIX para pagar. O pagamento expira em{" "}
-                  {paymentData.expiresAt
-                    ? new Date(paymentData.expiresAt).toLocaleString("pt-BR")
-                    : "alguns minutos"}
-                  .
-                  <br />
-                  <span className="text-xs text-gray-600 dark:text-gray-400 mt-2 block">
-                    🔄 Verificando pagamento automaticamente...
-                  </span>
-                </AlertDescription>
-              </Alert>
-
-              <div className="flex flex-col items-center space-y-4">
-                {paymentData.qrCodeImage && (
-                  <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
-                    <img
-                      src={paymentData.qrCodeImage}
-                      alt="QR Code PIX"
-                      className="w-64 h-64"
-                      onError={(e) => {
-                        // Se a imagem falhar, tentar gerar QR Code do código PIX
-                        console.warn("Erro ao carregar imagem do QR Code");
-                      }}
-                    />
-                  </div>
-                )}
-
-                {paymentData.qrCode && (
-                  <div className="w-full space-y-2">
-                    <Label>Código PIX (Copiar e Colar)</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={paymentData.qrCode}
-                        readOnly
-                        className="font-mono text-xs"
-                      />
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={copyQRCode}
-                      >
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {paymentData.paymentUrl && (
-                  <div className="w-full space-y-2">
-                    <Label>Link de Pagamento</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={paymentData.paymentUrl}
-                        readOnly
-                        className="text-xs"
-                      />
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={copyPaymentUrl}
-                      >
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() =>
-                          window.open(paymentData.paymentUrl, "_blank")
-                        }
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {step === "success" && (packageData || existingPurchase) && (
-            <div className="text-center space-y-6 py-8">
-              <div className="w-20 h-20 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
-              </div>
-
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                  Pagamento Confirmado! 🎉
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Seus ConfiPoints foram creditados com sucesso.
-                </p>
-              </div>
-
-              {/* Resumo da Compra */}
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg p-6 border border-green-200 dark:border-green-800">
-                <h4 className="font-semibold text-green-900 dark:text-green-100 mb-4">
-                  Resumo da Compra
-                </h4>
-                <div className="space-y-3 text-left">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Pacote:
-                    </span>
-                    <span className="font-semibold text-gray-900 dark:text-white">
-                      {packageData.name}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Valor Pago:
-                    </span>
-                    <span className="font-semibold text-gray-900 dark:text-white">
-                      {packageData.price}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Pontos Base:
-                    </span>
-                    <span className="font-semibold text-gray-900 dark:text-white">
-                      {packageData.points.toLocaleString("pt-BR")} ConfiPoints
-                    </span>
-                  </div>
-                  {packageData.bonus > 0 && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-green-700 dark:text-green-300">
-                        Bônus:
-                      </span>
-                      <span className="font-semibold text-green-900 dark:text-green-100">
-                        +{packageData.bonus.toLocaleString("pt-BR")} pontos
-                      </span>
-                    </div>
-                  )}
-                  <div className="pt-3 border-t border-green-200 dark:border-green-800 flex justify-between items-center">
-                    <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Total Creditado:
-                    </span>
-                    <span className="text-xl font-bold text-green-900 dark:text-green-100">
-                      {(packageData.points + packageData.bonus).toLocaleString(
-                        "pt-BR",
-                      )}{" "}
-                      ConfiPoints
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {step === "qrcode" && (
+            <LoadingButton
+              onClick={checkPaymentStatus}
+              isLoading={isCheckingPayment}
+              size="sm"
+              className="bg-green-600 hover:bg-green-700 text-white min-w-[80px] transition-colors"
+            >
+              Verificar
+            </LoadingButton>
           )}
         </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 pb-20">
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="w-4 h-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {step === "form" && (
+          <div className="space-y-6">
+            {/* Resumo da Compra */}
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+              <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
+                Resumo da Compra
+              </h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-blue-700 dark:text-blue-300">
+                    Pacote:
+                  </span>
+                  <span className="font-semibold text-blue-900 dark:text-blue-100">
+                    {packageData.name}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-blue-700 dark:text-blue-300">
+                    Pontos:
+                  </span>
+                  <span className="font-semibold text-blue-900 dark:text-blue-100">
+                    {packageData.points.toLocaleString("pt-BR")} ConfiPoints
+                  </span>
+                </div>
+                {packageData.bonus > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-green-700 dark:text-green-300">
+                      Bônus:
+                    </span>
+                    <span className="font-semibold text-green-900 dark:text-green-100">
+                      +{packageData.bonus.toLocaleString("pt-BR")} pontos
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between pt-2 border-t border-blue-200 dark:border-blue-800">
+                  <span className="text-lg font-semibold text-blue-900 dark:text-blue-100">
+                    Total:
+                  </span>
+                  <span className="text-xl font-bold text-blue-900 dark:text-blue-100">
+                    {packageData.price}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Dados Pessoais */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-900 dark:text-white">
+                Dados Pessoais
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nome Completo *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange("name", e.target.value)}
+                    placeholder="Seu nome completo"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    placeholder="seu@email.com"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Telefone *</Label>
+                  <Input
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) =>
+                      handleInputChange("phone", formatPhone(e.target.value))
+                    }
+                    placeholder="(00) 00000-0000"
+                    maxLength={15}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="cpf">CPF *</Label>
+                  <Input
+                    id="cpf"
+                    value={formData.cpf}
+                    onChange={(e) =>
+                      handleInputChange("cpf", formatCPF(e.target.value))
+                    }
+                    placeholder="000.000.000-00"
+                    maxLength={14}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Endereço */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-900 dark:text-white">
+                Endereço
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-2 space-y-2">
+                  <Label htmlFor="street">Rua *</Label>
+                  <Input
+                    id="street"
+                    value={formData.address.street}
+                    onChange={(e) =>
+                      handleInputChange("address.street", e.target.value)
+                    }
+                    placeholder="Nome da rua"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="number">Número *</Label>
+                  <Input
+                    id="number"
+                    value={formData.address.number}
+                    onChange={(e) =>
+                      handleInputChange("address.number", e.target.value)
+                    }
+                    placeholder="123"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="complement">Complemento</Label>
+                  <Input
+                    id="complement"
+                    value={formData.address.complement}
+                    onChange={(e) =>
+                      handleInputChange("address.complement", e.target.value)
+                    }
+                    placeholder="Apto, Bloco, etc"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="neighborhood">Bairro *</Label>
+                  <Input
+                    id="neighborhood"
+                    value={formData.address.neighborhood}
+                    onChange={(e) =>
+                      handleInputChange("address.neighborhood", e.target.value)
+                    }
+                    placeholder="Nome do bairro"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="city">Cidade *</Label>
+                  <Input
+                    id="city"
+                    value={formData.address.city}
+                    onChange={(e) =>
+                      handleInputChange("address.city", e.target.value)
+                    }
+                    placeholder="Nome da cidade"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="state">Estado (UF) *</Label>
+                  <Input
+                    id="state"
+                    value={formData.address.state}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "address.state",
+                        e.target.value.toUpperCase(),
+                      )
+                    }
+                    placeholder="SP"
+                    maxLength={2}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="zipCode">CEP *</Label>
+                  <Input
+                    id="zipCode"
+                    value={formData.address.zipCode}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "address.zipCode",
+                        formatCEP(e.target.value),
+                      )
+                    }
+                    placeholder="00000-000"
+                    maxLength={9}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {step === "qrcode" && paymentData && (
+          <div className="space-y-6">
+            <Alert>
+              <AlertCircle className="w-4 h-4" />
+              <AlertDescription>
+                Escaneie o QR Code com o app do seu banco ou copie o código PIX
+                para pagar. O pagamento expira em{" "}
+                {paymentData.expiresAt
+                  ? new Date(paymentData.expiresAt).toLocaleString("pt-BR")
+                  : "alguns minutos"}
+                .
+                <br />
+                <span className="text-xs text-gray-600 dark:text-gray-400 mt-2 block">
+                  🔄 Verificando pagamento automaticamente...
+                </span>
+              </AlertDescription>
+            </Alert>
+
+            <div className="flex flex-col items-center space-y-4">
+              {paymentData.qrCodeImage && (
+                <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
+                  <img
+                    src={paymentData.qrCodeImage}
+                    alt="QR Code PIX"
+                    className="w-64 h-64"
+                    onError={(e) => {
+                      // Se a imagem falhar, tentar gerar QR Code do código PIX
+                      console.warn("Erro ao carregar imagem do QR Code");
+                    }}
+                  />
+                </div>
+              )}
+
+              {paymentData.qrCode && (
+                <div className="w-full space-y-2">
+                  <Label>Código PIX (Copiar e Colar)</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={paymentData.qrCode}
+                      readOnly
+                      className="font-mono text-xs"
+                    />
+                    <Button variant="outline" size="icon" onClick={copyQRCode}>
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {paymentData.paymentUrl && (
+                <div className="w-full space-y-2">
+                  <Label>Link de Pagamento</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={paymentData.paymentUrl}
+                      readOnly
+                      className="text-xs"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={copyPaymentUrl}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() =>
+                        window.open(paymentData.paymentUrl, "_blank")
+                      }
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {step === "success" && (packageData || existingPurchase) && (
+          <div className="text-center space-y-6 py-8">
+            <div className="w-20 h-20 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
+            </div>
+
+            <div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                Pagamento Confirmado! 🎉
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Seus ConfiPoints foram creditados com sucesso.
+              </p>
+            </div>
+
+            {/* Resumo da Compra */}
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg p-6 border border-green-200 dark:border-green-800">
+              <h4 className="font-semibold text-green-900 dark:text-green-100 mb-4">
+                Resumo da Compra
+              </h4>
+              <div className="space-y-3 text-left">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700 dark:text-gray-300">
+                    Pacote:
+                  </span>
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {packageData.name}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700 dark:text-gray-300">
+                    Valor Pago:
+                  </span>
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {packageData.price}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700 dark:text-gray-300">
+                    Pontos Base:
+                  </span>
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {packageData.points.toLocaleString("pt-BR")} ConfiPoints
+                  </span>
+                </div>
+                {packageData.bonus > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-green-700 dark:text-green-300">
+                      Bônus:
+                    </span>
+                    <span className="font-semibold text-green-900 dark:text-green-100">
+                      +{packageData.bonus.toLocaleString("pt-BR")} pontos
+                    </span>
+                  </div>
+                )}
+                <div className="pt-3 border-t border-green-200 dark:border-green-800 flex justify-between items-center">
+                  <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Total Creditado:
+                  </span>
+                  <span className="text-xl font-bold text-green-900 dark:text-green-100">
+                    {(packageData.points + packageData.bonus).toLocaleString(
+                      "pt-BR",
+                    )}{" "}
+                    ConfiPoints
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </ResponsiveModal>
   );

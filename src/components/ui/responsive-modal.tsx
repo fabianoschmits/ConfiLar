@@ -15,8 +15,11 @@ interface ResponsiveModalProps {
   description?: React.ReactNode;
   footer?: React.ReactNode;
   className?: string;
+  overlayClassName?: string;
   showCloseButton?: boolean;
   fullContent?: boolean;
+  showFooterBorder?: boolean;
+  showHeaderBorder?: boolean;
 }
 
 export function ResponsiveModal({
@@ -27,19 +30,27 @@ export function ResponsiveModal({
   description,
   footer,
   className,
+  overlayClassName,
   showCloseButton = true,
   fullContent = false,
+  showFooterBorder = true,
+  showHeaderBorder = true,
 }: ResponsiveModalProps) {
   return (
     <DialogPrimitive.Root open={isOpen} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Overlay
+          className={cn(
+            "fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+            overlayClassName,
+          )}
+        />
 
         <DialogPrimitive.Content
           className={cn(
             "fixed z-[201] flex flex-col bg-background shadow-2xl transition-all duration-300",
             // Mobile (Bottom Sheet)
-            "bottom-0 left-0 right-0 rounded-t-3xl max-h-[90dvh] w-full",
+            "bottom-0 left-0 right-0 rounded-t-3xl h-[92dvh] w-full",
             // Desktop (Centered)
             "md:bottom-auto md:left-1/2 md:top-1/2 md:right-auto md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:max-w-2xl md:max-h-[85vh]",
             // Background & Effects (Onboarding Style)
@@ -66,7 +77,12 @@ export function ResponsiveModal({
           )}
 
           {(title || description) && (
-            <div className="p-6 pb-2 border-b md:border-none flex-shrink-0">
+            <div
+              className={cn(
+                "p-6 pb-2 flex-shrink-0",
+                showHeaderBorder && "border-b md:border-none",
+              )}
+            >
               {title && (
                 <div className="text-lg font-bold leading-none tracking-tight">
                   {title}
@@ -91,7 +107,12 @@ export function ResponsiveModal({
           </div>
 
           {(footer || (showCloseButton && !fullContent)) && (
-            <div className="p-6 pt-2 border-t md:border-none flex-shrink-0 flex items-center justify-end gap-2">
+            <div
+              className={cn(
+                "p-6 pt-2 flex-shrink-0 flex items-center justify-end gap-2",
+                showFooterBorder && "border-t md:border-none",
+              )}
+            >
               {footer}
               {showCloseButton && !footer && (
                 <DialogPrimitive.Close asChild>

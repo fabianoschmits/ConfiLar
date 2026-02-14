@@ -74,7 +74,6 @@ export function FeedFilterModal({
       isOpen={isOpen}
       onOpenChange={(open) => !open && onClose()}
       title="Filtrar Feed"
-      className="max-sm:max-h-[85vh]"
       footer={
         <>
           <Button

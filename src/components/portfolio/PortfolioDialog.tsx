@@ -205,7 +205,7 @@ export function PortfolioDialog({
           ? "Faça alterações no seu projeto do portfólio."
           : "Adicione um novo trabalho ao seu portfólio."
       }
-      className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto"
+      className="md:max-w-[600px]"
       footer={
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 w-full gap-2">
           <Button

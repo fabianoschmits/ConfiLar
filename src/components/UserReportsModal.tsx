@@ -175,7 +175,7 @@ export function UserReportsModal({ children }: UserReportsModalProps) {
       <ResponsiveModal
         isOpen={isOpen}
         onOpenChange={setIsOpen}
-        className="w-[95vw] max-w-4xl max-h-[90vh] p-0 overflow-hidden"
+        className="md:max-w-4xl"
         title={
           <div className="flex items-center justify-between text-gray-900 dark:text-white w-full">
             <div className="flex items-center gap-2">
@@ -224,7 +224,7 @@ export function UserReportsModal({ children }: UserReportsModalProps) {
           ) : null
         }
       >
-        <div className="overflow-y-auto max-h-[calc(90vh-120px)] p-6">
+        <div className="grid gap-4">
           {reports.length === 0 ? (
             <div className="text-center py-12">
               <Flag className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />

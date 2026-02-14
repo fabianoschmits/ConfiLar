@@ -32,6 +32,11 @@ export function QuickActionMenu() {
   const { isVisible } = useScrollDirection();
   const { user, profile } = useAuthContext();
 
+  // Ocultar menu se o usuário estiver logado mas não tiver completado o onboarding
+  if (user && profile && !profile.profile_completed) {
+    return null;
+  }
+
   // Menu para usuários não logados (página inicial e outras públicas)
   const publicQuickActions: QuickActionItem[] = [
     {
