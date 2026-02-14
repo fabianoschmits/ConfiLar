@@ -33,6 +33,7 @@ import { TutorialOverlay } from "@/components/tutorial/TutorialOverlay";
 import { HelpChatProvider } from "@/contexts/HelpChatContext";
 import HelpChatWindow from "@/components/help/HelpChatWindow";
 import HelpChatButton from "@/components/help/HelpChatButton";
+import { FontSizeApplier } from "@/components/ui/FontSizeApplier";
 import "@/utils/errorInterceptor"; // Interceptor de erros
 // import { AuthContextDebug } from "@/components/debug/AuthContextDebug"
 
@@ -140,6 +141,7 @@ export default async function RootLayout({
                   <OfflineProvider>
                     <LoadingProvider>
                       <AuthProvider initialSession={session}>
+                        <FontSizeApplier />
                         {/* <AutoReauthentication> */}
                         <AvailabilityProvider>
                           <FloatingChatProviderSimple>

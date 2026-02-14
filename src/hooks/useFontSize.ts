@@ -2,7 +2,6 @@
 
 import { useEffect, useCallback } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 /**
@@ -10,7 +9,7 @@ import { toast } from "sonner";
  * Applies font size to document root and persists to database
  */
 export function useFontSize() {
-  const { user, profile } = useAuthContext();
+  const { user, profile, updateProfile } = useAuthContext();
 
   // Get current font size from profile or default to 100
   const fontSize = profile?.font_size_preference ?? 100;
@@ -43,12 +42,12 @@ export function useFontSize() {
       }
 
       try {
-        const { error } = await supabase
-          .from("profiles")
-          .update({ font_size_preference: newSize })
-          .eq("id", user.id);
+        // Use updateProfile from AuthContext to ensure global state stays in sync
+        const { error } = await updateProfile({
+          font_size_preference: newSize,
+        });
 
-        if (error) throw error;
+        if (error) throw new Error(error.message);
 
         // Apply immediately
         applyFontSize(newSize);
@@ -57,7 +56,7 @@ export function useFontSize() {
         toast.error("Erro ao salvar preferência de tamanho de fonte");
       }
     },
-    [user?.id, applyFontSize],
+    [user?.id, updateProfile, applyFontSize],
   );
 
   /**

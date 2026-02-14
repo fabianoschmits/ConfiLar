@@ -74,22 +74,33 @@ export function FontSizeControl() {
             className={cn(
               "w-full h-1.5 rounded-lg appearance-none cursor-pointer",
               "bg-gray-200 dark:bg-gray-700",
+              // Webkit (Chrome, Safari, Edge)
               "[&::-webkit-slider-thumb]:appearance-none",
-              "[&::-webkit-slider-thumb]:w-3.5",
-              "[&::-webkit-slider-thumb]:h-3.5",
+              "[&::-webkit-slider-thumb]:w-5",
+              "[&::-webkit-slider-thumb]:h-5",
               "[&::-webkit-slider-thumb]:rounded-full",
-              "[&::-webkit-slider-thumb]:bg-primary-600",
+              "[&::-webkit-slider-thumb]:bg-[#00b0b0]", // Brand color for visibility
+              "[&::-webkit-slider-thumb]:border-2",
+              "[&::-webkit-slider-thumb]:border-white",
+              "[&::-webkit-slider-thumb]:dark:border-gray-900",
+              "[&::-webkit-slider-thumb]:shadow-[0_2px_10px_rgba(0,0,0,0.2)]",
               "[&::-webkit-slider-thumb]:cursor-pointer",
               "[&::-webkit-slider-thumb]:transition-all",
-              "[&::-webkit-slider-thumb]:hover:bg-primary-700",
-              "[&::-moz-range-thumb]:w-3.5",
-              "[&::-moz-range-thumb]:h-3.5",
+              "[&::-webkit-slider-thumb]:hover:scale-110",
+              "[&::-webkit-slider-thumb]:active:scale-95",
+              // Firefox
+              "[&::-moz-range-thumb]:w-5",
+              "[&::-moz-range-thumb]:h-5",
               "[&::-moz-range-thumb]:rounded-full",
-              "[&::-moz-range-thumb]:bg-primary-600",
-              "[&::-moz-range-thumb]:border-0",
+              "[&::-moz-range-thumb]:bg-[#00b0b0]",
+              "[&::-moz-range-thumb]:border-2",
+              "[&::-moz-range-thumb]:border-white",
+              "[&::-moz-range-thumb]:dark:border-gray-900",
+              "[&::-moz-range-thumb]:shadow-[0_2px_10px_rgba(0,0,0,0.2)]",
               "[&::-moz-range-thumb]:cursor-pointer",
               "[&::-moz-range-thumb]:transition-all",
-              "[&::-moz-range-thumb]:hover:bg-primary-700",
+              "[&::-moz-range-thumb]:hover:scale-110",
+              "[&::-moz-range-thumb]:active:scale-95",
             )}
             aria-label="Ajustar tamanho da fonte"
           />
