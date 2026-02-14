@@ -567,7 +567,7 @@ export default function FeedPage() {
               )}
             </div>
           ) : (
-            <div className="space-y-4 px-0 sm:px-0">
+            <div className="space-y-4 px-4 sm:px-0">
               {filteredItems.map(
                 (item, index) =>
                   item.type === "post" && (
@@ -1076,11 +1076,11 @@ function InstagramPost({
   return (
     <article
       id={`post-${post.id}`}
-      className={`relative bg-white dark:bg-black border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-500 scroll-mt-24 ${
+      className={`relative bg-white dark:bg-black border rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 scroll-mt-24 ${
         isHighlighted
-          ? "border-blue-400 dark:border-blue-700 z-10"
+          ? "border-blue-400 dark:border-blue-700 z-10 shadow-lg shadow-blue-500/20"
           : isActivePremium
-            ? "ring-2 ring-warning-400 dark:ring-warning-500 border-warning-200 dark:border-warning-800 bg-gradient-to-r from-warning-50/30 to-transparent dark:from-warning-900/10 dark:to-transparent"
+            ? "ring-2 ring-warning-400 dark:ring-warning-500 border-warning-200 dark:border-warning-800 bg-gradient-to-r from-warning-50/30 to-transparent dark:from-warning-900/10 dark:to-transparent shadow-[0_15px_30px_-15px_rgba(251,191,36,0.6)] dark:shadow-[0_15px_30px_-15px_rgba(251,191,36,0.3)] premium-border-shine"
             : "border-gray-200 dark:border-gray-800"
       }`}
     >
