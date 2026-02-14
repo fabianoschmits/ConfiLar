@@ -50,12 +50,13 @@ export function ResponsiveModal({
           className={cn(
             "fixed z-[201] flex flex-col bg-background shadow-2xl transition-all duration-300",
             // Mobile (Bottom Sheet)
-            "bottom-0 left-0 right-0 rounded-t-3xl h-[92dvh] w-full",
+            "bottom-0 left-0 right-0 rounded-t-3xl w-full",
             // Desktop (Centered)
             "md:bottom-auto md:left-1/2 md:top-1/2 md:right-auto md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:max-w-2xl md:max-h-[85vh]",
             // Background & Effects (Onboarding Style)
             "bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 overflow-hidden",
-            fullContent && "h-[92dvh] md:max-h-[95vh] md:rounded-3xl",
+            // Height logic
+            fullContent ? "h-[92dvh] md:max-h-[95vh]" : "max-h-[92dvh]",
             className,
           )}
         >
