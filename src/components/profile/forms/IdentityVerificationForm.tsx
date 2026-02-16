@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
@@ -16,9 +14,22 @@ import {
   CheckCircle2,
   Clock,
   RefreshCw,
+  History,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
+interface VerificationHistoryItem {
+  id: string;
+  status: string;
+  rejection_reason: string | null;
+  created_at: string;
+  admin_notes?: string | null;
+}
 
 export function IdentityVerificationForm() {
   const { user } = useAuthContext();
@@ -28,6 +39,10 @@ export function IdentityVerificationForm() {
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [verificationHistory, setVerificationHistory] = useState<
+    VerificationHistoryItem[]
+  >([]);
+  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -38,6 +53,8 @@ export function IdentityVerificationForm() {
   const fetchVerificationStatus = async () => {
     try {
       setFetchingStatus(true);
+
+      // 1. Fetch Profile Status
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("verification_status")
@@ -50,17 +67,25 @@ export function IdentityVerificationForm() {
         setStatus(profile.verification_status || "not_started");
       }
 
-      if (profile.verification_status === "rejected") {
-        const { data: verification } = await supabase
-          .from("professional_verifications")
-          .select("rejection_reason")
-          .eq("user_id", user?.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
+      // 2. Fetch History (All past verifications)
+      const { data: verifications, error: historyError } = await supabase
+        .from("professional_verifications")
+        .select("id, status, rejection_reason, created_at, admin_notes")
+        .eq("user_id", user?.id)
+        .order("created_at", { ascending: false });
 
-        if (verification) {
-          setRejectionReason(verification.rejection_reason);
+      if (historyError) throw historyError;
+
+      if (verifications && verifications.length > 0) {
+        setVerificationHistory(verifications);
+
+        // If current status is rejected, grab the latest reason
+        if (profile.verification_status === "rejected") {
+          // The first one in the list should be the latest due to order desc
+          const latest = verifications[0];
+          if (latest && latest.status === "rejected") {
+            setRejectionReason(latest.rejection_reason);
+          }
         }
       }
     } catch (error) {
@@ -106,26 +131,24 @@ export function IdentityVerificationForm() {
         if (uploadError) throw uploadError;
 
         if (data) {
-          // Salvar apenas o path para gerar signed URLs dinâmicas posteriormente
           uploadedUrls.push(filePath);
         }
 
         setUploadProgress(Math.round(((i + 1) / selectedFiles.length) * 100));
       }
 
-      // Salvar na tabela de verificação
+      // Insert new verification record (Insert, not Upsert to keep history)
       const { error: dbError } = await supabase
         .from("professional_verifications")
-        .upsert({
+        .insert({
           user_id: user?.id,
           document_urls: uploadedUrls,
           status: "pending",
-          updated_at: new Date().toISOString(),
         });
 
       if (dbError) throw dbError;
 
-      // Atualizar status no perfil
+      // Update Profile Status
       const { error: profileError } = await supabase
         .from("profiles")
         .update({ verification_status: "pending" })
@@ -135,6 +158,8 @@ export function IdentityVerificationForm() {
 
       setStatus("pending");
       setSelectedFiles([]);
+      setRejectionReason(null); // Clear rejection reason
+      fetchVerificationStatus(); // Refresh history
       toast.success(
         "Documentos enviados com sucesso! A análise pode demorar até 48 horas.",
       );
@@ -151,7 +176,7 @@ export function IdentityVerificationForm() {
 
     setLoading(true);
     try {
-      // 1. Remover a solicitação pendente
+      // 1. Remove pending request
       const { error: deleteError } = await supabase
         .from("professional_verifications")
         .delete()
@@ -160,7 +185,7 @@ export function IdentityVerificationForm() {
 
       if (deleteError) throw deleteError;
 
-      // 2. Resetar o status no perfil
+      // 2. Reset profile status
       const { error: profileError } = await supabase
         .from("profiles")
         .update({ verification_status: "not_started" })
@@ -169,6 +194,7 @@ export function IdentityVerificationForm() {
       if (profileError) throw profileError;
 
       setStatus("not_started");
+      fetchVerificationStatus();
       toast.success("Solicitação de verificação cancelada com sucesso.");
     } catch (error: any) {
       console.error("Erro ao cancelar verificação:", error);
@@ -202,7 +228,7 @@ export function IdentityVerificationForm() {
             </h4>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               Aumente sua credibilidade na plataforma e tenha o selo de perfil
-              verificado. Essa etapa é opcional mas recomendada para todos.
+              verificado.
             </p>
           </div>
         </div>
@@ -255,7 +281,7 @@ export function IdentityVerificationForm() {
             >
               Cancelar Solicitação
             </LoadingButton>
-            <p className="text-[10px] text-gray-500 mt-2">
+            <p className="text-xs text-gray-500 mt-2">
               Você poderá enviar novos documentos após cancelar.
             </p>
           </div>
@@ -270,11 +296,11 @@ export function IdentityVerificationForm() {
               className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 rounded-2xl"
             >
               <AlertCircle className="h-5 w-5" />
-              <div className="ml-2">
+              <div className="ml-2 w-full">
                 <p className="font-bold">Verificação Reprovada</p>
                 <p className="text-sm mt-1">
                   {rejectionReason ||
-                    "Os documentos enviados não foram aceitos. Por favor, reenvie seus documentos atualizados."}
+                    "Os documentos enviados não foram aceitos. Por favor, verifique o histórico abaixo e reenvie."}
                 </p>
               </div>
             </Alert>
@@ -356,6 +382,71 @@ export function IdentityVerificationForm() {
               </p>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Histórico de Verificações */}
+      {verificationHistory.length > 0 && (
+        <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className="flex items-center justify-between w-full text-left mb-4 group"
+          >
+            <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+              <History className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
+              <h4 className="font-semibold text-sm group-hover:text-blue-500 transition-colors">
+                Histórico de Verificações
+              </h4>
+            </div>
+            {showHistory ? (
+              <ChevronUp className="w-4 h-4 text-gray-400" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-gray-400" />
+            )}
+          </button>
+
+          {showHistory && (
+            <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+              {verificationHistory.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-800"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex items-center gap-2">
+                      {item.status === "approved" && (
+                        <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-0">
+                          Aprovado
+                        </Badge>
+                      )}
+                      {item.status === "rejected" && (
+                        <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-0">
+                          Reprovado
+                        </Badge>
+                      )}
+                      {item.status === "pending" && (
+                        <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border-0">
+                          Pendente
+                        </Badge>
+                      )}
+                    </div>
+                    <span className="text-xs text-gray-400">
+                      {format(new Date(item.created_at), "dd 'de' MMMM, yyyy", {
+                        locale: ptBR,
+                      })}
+                    </span>
+                  </div>
+
+                  {item.status === "rejected" && item.rejection_reason && (
+                    <div className="mt-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/10 p-2 rounded-lg border border-red-100 dark:border-red-900/20">
+                      <span className="font-semibold">Motivo:</span>{" "}
+                      {item.rejection_reason}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
