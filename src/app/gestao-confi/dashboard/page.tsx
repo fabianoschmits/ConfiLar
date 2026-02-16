@@ -14,6 +14,9 @@ import {
   MessageSquare,
   Star,
   Clock,
+  LayoutDashboard,
+  Megaphone,
+  CreditCard,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -108,6 +111,44 @@ function StatCard({
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function QuickLink({
+  href,
+  icon: Icon,
+  label,
+  color,
+  highlight,
+}: {
+  href: string;
+  icon: any;
+  label: string;
+  color: string;
+  highlight?: boolean;
+}) {
+  return (
+    <Link href={href} className="block group">
+      <Button
+        variant="outline"
+        className={cn(
+          "w-full h-24 sm:h-20 flex flex-col gap-2 hover:bg-muted/50 transition-all border-border shadow-sm",
+          highlight && "border-blue-200 dark:border-blue-900 bg-blue-50/10",
+        )}
+      >
+        <div
+          className={cn(
+            "p-1.5 rounded-lg bg-card border border-border group-hover:scale-110 transition-transform",
+            color,
+          )}
+        >
+          <Icon className="h-5 w-5" />
+        </div>
+        <span className="text-[10px] sm:text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">
+          {label}
+        </span>
+      </Button>
+    </Link>
   );
 }
 
@@ -333,56 +374,68 @@ export default function AdminDashboardPage() {
         {/* Recent Activity / Quick Links (Desktop: 3 cols) */}
         <div className="col-span-1 lg:col-span-3 space-y-6">
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-3">
               <CardTitle>Acesso Rápido</CardTitle>
-              <CardDescription>Atalhos para funções comuns</CardDescription>
+              <CardDescription>
+                Atalhos para funções administrativas
+              </CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4">
-              <Link href="/gestao-confi/dashboard/users" className="block">
-                <Button
-                  variant="outline"
-                  className="w-full h-20 flex flex-col gap-2 hover:bg-muted/50"
-                >
-                  <Users className="h-5 w-5" />
-                  Usuários
-                </Button>
-              </Link>
-              <Link href="/gestao-confi/dashboard/moderation" className="block">
-                <Button
-                  variant="outline"
-                  className="w-full h-20 flex flex-col gap-2 hover:bg-muted/50"
-                >
-                  <Shield className="h-5 w-5" />
-                  Moderação
-                </Button>
-              </Link>
-              <Link href="/gestao-confi/dashboard/posts" className="block">
-                <Button
-                  variant="outline"
-                  className="w-full h-20 flex flex-col gap-2 hover:bg-muted/50"
-                >
-                  <FileText className="h-5 w-5" />
-                  Posts
-                </Button>
-              </Link>
-              <Link href="/gestao-confi/dashboard/logs" className="block">
-                <Button
-                  variant="outline"
-                  className="w-full h-20 flex flex-col gap-2 hover:bg-muted/50"
-                >
-                  <Clock className="h-5 w-5" />
-                  Logs
-                </Button>
-              </Link>
-              <Link href="/gestao-confi/dashboard/verifications" className="block">
-                <Button
-                  variant="outline"
-                  className="w-full h-20 flex flex-col gap-2 hover:bg-muted/50 border-blue-200 dark:border-blue-900"
-                >
-                  <ShieldCheck className="h-5 w-5 text-blue-500" />
-                  Verificações
-                </Button>
-              </Link>
+            <CardContent className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
+              <QuickLink
+                href="/gestao-confi/dashboard"
+                icon={LayoutDashboard}
+                label="Admin"
+                color="text-slate-500"
+              />
+              <QuickLink
+                href="/gestao-confi/dashboard/users"
+                icon={Users}
+                label="Usuários"
+                color="text-indigo-500"
+              />
+              <QuickLink
+                href="/gestao-confi/dashboard/moderation"
+                icon={Shield}
+                label="Moderação"
+                color="text-red-500"
+              />
+              <QuickLink
+                href="/gestao-confi/dashboard/verifications"
+                icon={ShieldCheck}
+                label="Verificações"
+                color="text-blue-500"
+                highlight
+              />
+              <QuickLink
+                href="/gestao-confi/dashboard/posts"
+                icon={FileText}
+                label="Posts"
+                color="text-emerald-500"
+              />
+              <QuickLink
+                href="/gestao-confi/dashboard/classifieds"
+                icon={Megaphone}
+                label="Anúncios"
+                color="text-amber-500"
+              />
+              <QuickLink
+                href="/gestao-confi/dashboard/logs"
+                icon={Clock}
+                label="Logs"
+                color="text-slate-400"
+              />
+              <QuickLink
+                href="/gestao-confi/dashboard/revenue"
+                icon={CreditCard}
+                label="Financeiro"
+                color="text-purple-500"
+              />
+              <QuickLink
+                href="/gestao-confi/dashboard/active-log"
+                icon={Activity}
+                label="Logs Ativos"
+                color="text-cyan-500"
+              />
             </CardContent>
           </Card>
 
@@ -394,36 +447,36 @@ export default function AdminDashboardPage() {
               <div className="space-y-4">
                 {loading
                   ? Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="flex items-center gap-4">
-                      <Skeleton className="h-9 w-9 rounded-full" />
-                      <div className="space-y-1">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-3 w-16" />
+                      <div key={i} className="flex items-center gap-4">
+                        <Skeleton className="h-9 w-9 rounded-full" />
+                        <div className="space-y-1">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-16" />
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    ))
                   : recentLogs.map((log) => (
-                    <div
-                      key={log.id}
-                      className="flex items-start gap-3 text-sm border-b last:border-0 pb-3 last:pb-0 border-border"
-                    >
-                      <div className="bg-muted p-2 rounded-full mt-0.5">
-                        <Activity className="h-4 w-4 text-muted-foreground" />
+                      <div
+                        key={log.id}
+                        className="flex items-start gap-3 text-sm border-b last:border-0 pb-3 last:pb-0 border-border"
+                      >
+                        <div className="bg-muted p-2 rounded-full mt-0.5">
+                          <Activity className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div className="grid gap-1">
+                          <p className="font-medium">{log.details}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(log.created_at).toLocaleTimeString(
+                              "pt-BR",
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}
+                          </p>
+                        </div>
                       </div>
-                      <div className="grid gap-1">
-                        <p className="font-medium">{log.details}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(log.created_at).toLocaleTimeString(
-                            "pt-BR",
-                            {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            },
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 {!loading && recentLogs.length === 0 && (
                   <p className="text-sm text-muted-foreground text-center py-4">
                     Nenhuma atividade recente.

@@ -100,22 +100,22 @@ export function EditProfileModal({
     },
     ...(isProfessional
       ? [
-        {
-          id: "professional",
-          label: "Dados Profissionais",
-          icon: Briefcase,
-          color: "text-indigo-500",
-          bgColor: "bg-indigo-50",
-        },
-        {
-          id: "verification",
-          label: "Verificação",
-          icon: Shield,
-          color: "text-blue-600",
-          bgColor: "bg-blue-50",
-        },
-      ]
+          {
+            id: "professional",
+            label: "Dados Profissionais",
+            icon: Briefcase,
+            color: "text-indigo-500",
+            bgColor: "bg-indigo-50",
+          },
+        ]
       : []),
+    {
+      id: "verification",
+      label: "Confirmar Identidade",
+      icon: Shield,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
+    },
     {
       id: "security",
       label: "Segurança",
@@ -274,9 +274,7 @@ export function EditProfileModal({
                 {activeTab === "social" && profile && (
                   <SocialLinksEditor profile={profile} />
                 )}
-                {activeTab === "verification" && (
-                  <IdentityVerificationForm />
-                )}
+                {activeTab === "verification" && <IdentityVerificationForm />}
                 {activeTab === "privacy" && (
                   <PrivacyAIForm onSuccess={() => onOpenChange(false)} />
                 )}

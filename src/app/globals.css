@@ -1195,6 +1195,28 @@ textarea {
   box-shadow: none !important;
 }
 
+/* Animação de Moeda para Selos de Verificação */
+@keyframes coin-flip {
+  0%,
+  100% {
+    transform: translateY(0) rotateY(0deg) scale(1);
+  }
+
+  30% {
+    transform: translateY(-8px) rotateY(180deg) scale(1.1);
+  }
+
+  60% {
+    transform: translateY(0) rotateY(360deg) scale(1);
+  }
+}
+
+.animate-coin-flip {
+  animation: coin-flip 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
 /* Garantir que inputs dentro de PopoverContent não tenham borda preta */
 [data-radix-popover-content] input,
 [data-radix-popover-content] input:focus,

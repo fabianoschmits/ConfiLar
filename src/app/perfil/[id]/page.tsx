@@ -232,7 +232,7 @@ export default function ProfilePage() {
                       className="w-32 h-32 sm:w-40 sm:h-40 shadow-inner"
                     />
                     {profile.is_verified && (
-                      <div className="absolute bottom-2 right-2 bg-blue-500 text-white p-1.5 rounded-full ring-4 ring-background shadow-lg">
+                      <div className="absolute bottom-2 right-2 bg-blue-500 text-white p-1.5 rounded-full ring-4 ring-background shadow-lg animate-coin-flip">
                         <CheckCircle className="w-5 h-5" />
                       </div>
                     )}
@@ -248,13 +248,20 @@ export default function ProfilePage() {
                       {profile.is_verified && (
                         <Badge className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-1 rounded-full px-3 py-1 border-0 shadow-sm">
                           <CheckCircle className="w-3.5 h-3.5" />
-                          <span className="text-[10px] uppercase tracking-wider font-bold">Verificado</span>
+                          <span className="text-[10px] uppercase tracking-wider font-bold">
+                            Verificado
+                          </span>
                         </Badge>
                       )}
                       {profile.verification_status === "pending" && (
-                        <Badge variant="outline" className="text-yellow-600 border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 flex items-center gap-1 rounded-full px-3 py-1 shadow-sm">
+                        <Badge
+                          variant="outline"
+                          className="text-yellow-600 border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 flex items-center gap-1 rounded-full px-3 py-1 shadow-sm"
+                        >
                           <Clock className="w-3.5 h-3.5" />
-                          <span className="text-[10px] uppercase tracking-wider font-bold">Em Análise</span>
+                          <span className="text-[10px] uppercase tracking-wider font-bold">
+                            Em Análise
+                          </span>
                         </Badge>
                       )}
                     </div>
@@ -677,7 +684,7 @@ export default function ProfilePage() {
                   </div>
 
                   {profile.professional_services &&
-                    profile.professional_services.length > 0 ? (
+                  profile.professional_services.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {profile.professional_services.map((service, index) => (
                         <div
