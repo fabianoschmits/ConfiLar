@@ -41,6 +41,10 @@ export function RecommendationModal({
   >([]);
   const [loading, setLoading] = useState(false);
   const [recommending, setRecommending] = useState(false);
+  const [hasRecommended, setHasRecommended] = useState(false);
+  const [userRecommendationId, setUserRecommendationId] = useState<
+    string | null
+  >(null);
 
   // Hook para notificações automáticas
   const { createRecommendationPost } = useAutoNotifications();
@@ -92,6 +96,15 @@ export function RecommendationModal({
       }));
 
       setRecommendations(transformedData as RecommendationWithProfile[]);
+
+      // Check if current user has recommended
+      if (user) {
+        const userRec = transformedData.find(
+          (rec: RecommendationWithProfile) => rec.recommender_id === user.id,
+        ) as RecommendationWithProfile | undefined;
+        setHasRecommended(!!userRec);
+        setUserRecommendationId(userRec?.id || null);
+      }
     } catch (error) {
       console.error("Erro ao carregar recomendações:", error);
     } finally {
@@ -178,6 +191,31 @@ export function RecommendationModal({
     }
   };
 
+  const handleCancelRecommendation = async () => {
+    if (!user || !userRecommendationId) {
+      return;
+    }
+
+    try {
+      setRecommending(true);
+
+      const { error } = await supabase
+        .from("user_recommendations")
+        .delete()
+        .eq("id", userRecommendationId);
+
+      if (error) throw error;
+
+      toast.success("Recomendação cancelada!");
+      loadRecommendations();
+    } catch (error) {
+      console.error("Erro ao cancelar recomendação:", error);
+      toast.error("Erro ao cancelar recomendação");
+    } finally {
+      setRecommending(false);
+    }
+  };
+
   return (
     <ResponsiveModal
       isOpen={isOpen}
@@ -189,14 +227,22 @@ export function RecommendationModal({
         {/* Recommend Button Section */}
         <div className="space-y-3">
           <Button
-            onClick={handleRecommendUser}
+            onClick={
+              hasRecommended ? handleCancelRecommendation : handleRecommendUser
+            }
             disabled={recommending || user?.id === userId}
-            className="w-full"
+            variant={hasRecommended ? "outline" : "default"}
+            className={`w-full ${!hasRecommended && "bg-[#00b0b0] hover:bg-[#009999] text-white"}`}
           >
             {recommending ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Recomendando...
+                {hasRecommended ? "Cancelando..." : "Recomendando..."}
+              </>
+            ) : hasRecommended ? (
+              <>
+                <ThumbsUp className="h-4 w-4 mr-2 fill-[#00b0b0] text-[#00b0b0]" />
+                Cancelar Recomendação
               </>
             ) : (
               <>
@@ -234,17 +280,17 @@ export function RecommendationModal({
               {recommendations.map((rec) => (
                 <div
                   key={rec.id}
-                  className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
+                  className="flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
                 >
                   <Link href={`/perfil/${rec.recommender.id}`}>
-                    <Avatar className="h-12 w-12 cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all">
+                    <Avatar className="h-8 w-8 md:h-12 md:w-12 cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all">
                       <AvatarImage
                         src={rec.recommender.avatar_url || ""}
                         alt={rec.recommender.full_name || "Usuário"}
                       />
-                      <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                      <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs md:text-base">
                         {rec.recommender.full_name?.charAt(0) || (
-                          <User className="h-5 w-5" />
+                          <User className="h-3 w-3 md:h-5 md:w-5" />
                         )}
                       </AvatarFallback>
                     </Avatar>
@@ -255,14 +301,14 @@ export function RecommendationModal({
                       href={`/perfil/${rec.recommender.id}`}
                       className="block hover:underline"
                     >
-                      <p className="font-medium text-gray-900 dark:text-white truncate">
+                      <p className="text-sm md:text-base font-medium text-gray-900 dark:text-white truncate">
                         {rec.recommender.full_name || "Usuário"}
                       </p>
                     </Link>
                     {rec.recommender.location_city &&
                       rec.recommender.location_state && (
-                        <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
-                          <MapPin className="h-3 w-3" />
+                        <div className="flex items-center gap-0.5 md:gap-1 text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                          <MapPin className="h-2.5 w-2.5 md:h-3 md:w-3 shrink-0" />
                           <span className="truncate">
                             {rec.recommender.location_city},{" "}
                             {rec.recommender.location_state}
@@ -273,7 +319,7 @@ export function RecommendationModal({
 
                   <Badge
                     variant="outline"
-                    className="text-xs shrink-0 bg-gray-50 dark:bg-gray-800"
+                    className="text-[10px] md:text-xs shrink-0 bg-gray-50 dark:bg-gray-800 px-1.5 md:px-2 py-0.5"
                   >
                     {rec.recommendation_type === "professional_to_client"
                       ? "Profissional"
