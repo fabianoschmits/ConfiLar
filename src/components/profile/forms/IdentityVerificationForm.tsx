@@ -106,12 +106,8 @@ export function IdentityVerificationForm() {
         if (uploadError) throw uploadError;
 
         if (data) {
-          const {
-            data: { publicUrl },
-          } = supabase.storage
-            .from("verification-documents")
-            .getPublicUrl(filePath);
-          uploadedUrls.push(publicUrl);
+          // Salvar apenas o path para gerar signed URLs dinâmicas posteriormente
+          uploadedUrls.push(filePath);
         }
 
         setUploadProgress(Math.round(((i + 1) / selectedFiles.length) * 100));

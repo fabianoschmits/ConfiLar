@@ -15,6 +15,7 @@ import {
   LogOut,
   Menu,
   ShoppingCart,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -42,6 +43,12 @@ export const adminNavItems = [
     label: "Compras",
     icon: ShoppingCart,
     description: "Gerenciar compras de pontos",
+  },
+  {
+    href: "/gestao-confi/dashboard/verifications",
+    label: "Verificações",
+    icon: ShieldCheck,
+    description: "Analisar documentos de identidade",
   },
   {
     href: "/gestao-confi/dashboard/posts",

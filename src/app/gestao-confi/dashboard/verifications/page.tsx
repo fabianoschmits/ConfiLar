@@ -22,6 +22,7 @@ import {
   Maximize2,
   RotateCw,
   Download,
+  X,
 } from "lucide-react";
 import {
   Table,
@@ -64,6 +65,7 @@ interface VerificationRequest {
   status: "pending" | "approved" | "rejected";
   rejection_reason?: string;
   created_at: string;
+  signed_document_urls?: string[]; // Para visualização segura
   profiles: {
     full_name: string;
     email: string;
@@ -125,9 +127,34 @@ export default function VerificationsPage() {
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
-      setRequests(data || []);
+
+      // Gerar signed URLs para as solicitações pendentes de visualização
+      const requestsWithSignedUrls = await Promise.all(
+        (data || []).map(async (req) => {
+          if (!req.document_urls || req.document_urls.length === 0) return req;
+
+          const signedUrls = await Promise.all(
+            req.document_urls.map(async (url: string) => {
+              // Extrair o path se for uma URL completa ou usar o path direto
+              const path = url.includes("public/verification-documents/")
+                ? url.split("public/verification-documents/")[1]
+                : url;
+
+              const { data: signedData, error: signedError } =
+                await supabase.storage
+                  .from("verification-documents")
+                  .createSignedUrl(path, 3600); // 1 hora de acesso
+
+              return signedError ? url : signedData.signedUrl;
+            }),
+          );
+
+          return { ...req, signed_document_urls: signedUrls };
+        }),
+      );
+
+      setRequests(requestsWithSignedUrls);
     } catch (error) {
       console.error("Erro ao buscar solicitações:", error);
       toast.error("Erro ao carregar solicitações de verificação.");
@@ -140,10 +167,13 @@ export default function VerificationsPage() {
     if (!selectedRequest) return;
     setIsProcessing(true);
     try {
-      // 1. Atualizar tabela de verificação
+      // 1. Atualizar tabela de verificação específica
       const { error: verError } = await supabase
         .from("professional_verifications")
-        .update({ status: "approved", updated_at: new Date().toISOString() })
+        .update({
+          status: "approved",
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", selectedRequest.id);
 
       if (verError) throw verError;
@@ -170,7 +200,10 @@ export default function VerificationsPage() {
       });
 
       toast.success("Profissional aprovado com sucesso!");
+
+      // Limpar estados e recarregar
       setIsDetailOpen(false);
+      setSelectedRequest(null);
       fetchRequests();
     } catch (error) {
       console.error("Erro ao aprovar:", error);
@@ -384,8 +417,8 @@ export default function VerificationsPage() {
 
       {/* Modal de Detalhes */}
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-4xl w-[95vw] sm:w-full max-h-[95vh] overflow-y-auto p-4 sm:p-6">
+          <DialogHeader className="sm:text-left">
             <DialogTitle className="flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-blue-500" />
               Análise de Documentação
@@ -437,7 +470,10 @@ export default function VerificationsPage() {
                     <FileText className="w-4 h-4" /> Documentos Enviados
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {selectedRequest.document_urls.map((url, idx) => {
+                    {(
+                      selectedRequest.signed_document_urls ||
+                      selectedRequest.document_urls
+                    ).map((url, idx) => {
                       const isPdf = url.toLowerCase().includes(".pdf");
                       return (
                         <div
@@ -484,7 +520,7 @@ export default function VerificationsPage() {
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                 />
                               </div>
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                 <Button
                                   variant="secondary"
                                   size="sm"
@@ -496,6 +532,21 @@ export default function VerificationsPage() {
                                   }}
                                 >
                                   <Maximize2 className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  className="rounded-full h-8 w-8 p-0"
+                                  asChild
+                                >
+                                  <a
+                                    href={url}
+                                    download
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <Download className="w-4 h-4" />
+                                  </a>
                                 </Button>
                               </div>
                             </>
@@ -639,26 +690,26 @@ export default function VerificationsPage() {
       <Dialog open={!!viewerUrl} onOpenChange={() => setViewerUrl(null)}>
         <DialogContent className="max-w-[95vw] w-full h-[90vh] md:h-[95vh] p-0 overflow-hidden bg-black/95 border-none">
           <DialogHeader className="absolute top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-md p-4 flex-row items-center justify-between space-y-0 text-white border-b border-white/10">
-            <DialogTitle className="text-sm font-medium flex items-center gap-2">
-              <Eye className="w-4 h-4" /> Visualizador de Documento
+            <DialogTitle className="text-xs sm:text-sm font-medium flex items-center gap-2">
+              <Eye className="w-3.5 h-3.5 sm:w-4 h-4" /> Visualizador
             </DialogTitle>
-            <div className="flex items-center gap-2 pr-8">
+            <div className="flex items-center gap-1 sm:gap-2 pr-2 sm:pr-8">
               <Button
                 variant="ghost"
                 size="sm"
                 className="text-white hover:bg-white/20 h-8 w-8 p-0"
-                onClick={() => setZoom((prev) => Math.max(0.5, prev - 0.25))}
+                onClick={() => setZoom((prev) => Math.max(0.25, prev - 0.25))}
               >
                 <ZoomOut className="w-4 h-4" />
               </Button>
-              <span className="text-xs font-mono w-12 text-center">
+              <span className="text-xs font-mono w-10 sm:w-12 text-center">
                 {Math.round(zoom * 100)}%
               </span>
               <Button
                 variant="ghost"
                 size="sm"
                 className="text-white hover:bg-white/20 h-8 w-8 p-0"
-                onClick={() => setZoom((prev) => Math.min(3, prev + 0.25))}
+                onClick={() => setZoom((prev) => Math.min(5, prev + 0.25))}
               >
                 <ZoomIn className="w-4 h-4" />
               </Button>
@@ -684,6 +735,14 @@ export default function VerificationsPage() {
                 >
                   <Download className="w-4 h-4" />
                 </a>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/20 h-8 w-8 p-0 ml-2 border border-white/20"
+                onClick={() => setViewerUrl(null)}
+              >
+                <X className="w-4 h-4" />
               </Button>
             </div>
           </DialogHeader>

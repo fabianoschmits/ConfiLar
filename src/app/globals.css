@@ -1195,24 +1195,27 @@ textarea {
   box-shadow: none !important;
 }
 
-/* Animação de Moeda para Selos de Verificação */
+/* Animação de Moeda para Selos de Verificação (Flip a cada 5s) */
 @keyframes coin-flip {
-  0%,
-  100% {
+  0% {
     transform: translateY(0) rotateY(0deg) scale(1);
   }
 
-  30% {
-    transform: translateY(-8px) rotateY(180deg) scale(1.1);
+  10% {
+    transform: translateY(-10px) rotateY(180deg) scale(1.15);
   }
 
-  60% {
+  20% {
+    transform: translateY(0) rotateY(360deg) scale(1);
+  }
+
+  100% {
     transform: translateY(0) rotateY(360deg) scale(1);
   }
 }
 
 .animate-coin-flip {
-  animation: coin-flip 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: coin-flip 5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   perspective: 1000px;
   transform-style: preserve-3d;
 }
@@ -1224,4 +1227,16 @@ textarea {
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
+}
+
+/* Utilitário para esconder scrollbar mantendo funcionalidade */
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }

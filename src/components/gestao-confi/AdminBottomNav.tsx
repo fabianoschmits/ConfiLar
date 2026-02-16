@@ -3,26 +3,49 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, Shield, Activity, Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  LayoutDashboard,
+  Users,
+  Shield,
+  Activity,
+  BarChart3,
+  FileText,
+  Clock,
+  Settings,
+  ShoppingCart,
+  ShieldCheck,
+} from "lucide-react";
 
-// Itens principais para a barra inferior (limite de 4-5 para não lotar)
-const mainNavItems = [
+const allNavItems = [
   {
     href: "/gestao-confi/dashboard",
     label: "Início",
     icon: LayoutDashboard,
   },
   {
+    href: "/gestao-confi/dashboard/analytics",
+    label: "Analytics",
+    icon: BarChart3,
+  },
+  {
     href: "/gestao-confi/dashboard/users",
     label: "Usuários",
     icon: Users,
+  },
+  {
+    href: "/gestao-confi/dashboard/purchases",
+    label: "Compras",
+    icon: ShoppingCart,
+  },
+  {
+    href: "/gestao-confi/dashboard/verifications",
+    label: "Verificações",
+    icon: ShieldCheck,
+  },
+  {
+    href: "/gestao-confi/dashboard/posts",
+    label: "Conteúdo",
+    icon: FileText,
   },
   {
     href: "/gestao-confi/dashboard/moderation",
@@ -34,14 +57,16 @@ const mainNavItems = [
     label: "Logs",
     icon: Activity,
   },
-];
-
-// Itens extras que ficam no menu "Mais"
-const moreNavItems = [
-  { href: "/gestao-confi/dashboard/analytics", label: "Analytics" },
-  { href: "/gestao-confi/dashboard/posts", label: "Posts" },
-  { href: "/gestao-confi/dashboard/cron", label: "Cron Jobs" },
-  { href: "/gestao-confi/dashboard/system", label: "Sistema" },
+  {
+    href: "/gestao-confi/dashboard/cron",
+    label: "Cron",
+    icon: Clock,
+  },
+  {
+    href: "/gestao-confi/dashboard/system",
+    label: "Sistema",
+    icon: Settings,
+  },
 ];
 
 export function AdminBottomNav() {
@@ -56,50 +81,36 @@ export function AdminBottomNav() {
 
   return (
     <div className="md:hidden fixed bottom-4 left-4 right-4 z-50">
-      <nav className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg px-4 py-2 flex items-center justify-between">
-        {mainNavItems.map((item) => {
-          const Icon = item.icon;
-          const active = isActive(item.href);
+      <nav className="bg-white/95 dark:bg-gray-950/95 backdrop-blur-md border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl overflow-hidden">
+        <div className="flex items-center overflow-x-auto no-scrollbar py-3 px-2 gap-1 scroll-smooth">
+          {allNavItems.map((item) => {
+            const Icon = item.icon;
+            const active = isActive(item.href);
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex flex-col items-center justify-center w-14 h-14 rounded-xl transition-all duration-200",
-                active
-                  ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20"
-                  : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800",
-              )}
-            >
-              <Icon className={cn("h-6 w-6", active && "fill-current")} />
-              {/* Optional label for larger mobile screens, hidden on very small */}
-              {/* <span className="text-[10px] mt-1 font-medium">{item.label}</span> */}
-            </Link>
-          );
-        })}
-
-        {/* Menu "Mais" para itens secundários */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              className={cn(
-                "flex flex-col items-center justify-center w-14 h-14 rounded-xl transition-all duration-200 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800",
-              )}
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="mb-2 w-48">
-            {moreNavItems.map((item) => (
-              <DropdownMenuItem key={item.href} asChild>
-                <Link href={item.href} className="w-full cursor-pointer">
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex flex-col items-center justify-center min-w-[72px] h-16 rounded-xl transition-all duration-200 shrink-0",
+                  active
+                    ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20"
+                    : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800",
+                )}
+              >
+                <Icon className={cn("h-5 w-5", active && "fill-current")} />
+                <span
+                  className={cn(
+                    "text-[10px] mt-1.5 font-medium whitespace-nowrap",
+                    active ? "opacity-100" : "opacity-70",
+                  )}
+                >
                   {item.label}
-                </Link>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+                </span>
+              </Link>
+            );
+          })}
+        </div>
       </nav>
     </div>
   );
