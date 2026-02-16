@@ -126,9 +126,9 @@ type AuthAction =
   | { type: "SET_USER"; payload: { id: string; email: string } | null }
   | { type: "SET_PROFILE"; payload: Profile | null }
   | {
-      type: "SET_SESSION";
-      payload: { user: { id: string; email: string } } | null;
-    }
+    type: "SET_SESSION";
+    payload: { user: { id: string; email: string } } | null;
+  }
   | { type: "SET_READY"; payload: boolean }
   | { type: "RESET_AUTH" };
 
@@ -231,6 +231,7 @@ export function useAuth(
         professional_services: [],
         professional_experience_years: 0,
         is_verified: false,
+        verification_status: "not_started",
         badge: "bronze",
         rating: 0,
         total_reviews: 0,
@@ -716,6 +717,7 @@ export function useAuth(
           professional_certifications: [],
           avatar_url: avatarUrl,
           is_verified: false,
+          verification_status: "not_started",
           badge: "bronze" as const,
           rating: 0,
           total_reviews: 0,

@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   FileText,
   Shield,
+  ShieldCheck,
   Activity,
   ArrowUpRight,
   TrendingUp,
@@ -373,6 +374,15 @@ export default function AdminDashboardPage() {
                   Logs
                 </Button>
               </Link>
+              <Link href="/gestao-confi/dashboard/verifications" className="block">
+                <Button
+                  variant="outline"
+                  className="w-full h-20 flex flex-col gap-2 hover:bg-muted/50 border-blue-200 dark:border-blue-900"
+                >
+                  <ShieldCheck className="h-5 w-5 text-blue-500" />
+                  Verificações
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
@@ -384,36 +394,36 @@ export default function AdminDashboardPage() {
               <div className="space-y-4">
                 {loading
                   ? Array.from({ length: 3 }).map((_, i) => (
-                      <div key={i} className="flex items-center gap-4">
-                        <Skeleton className="h-9 w-9 rounded-full" />
-                        <div className="space-y-1">
-                          <Skeleton className="h-4 w-32" />
-                          <Skeleton className="h-3 w-16" />
-                        </div>
+                    <div key={i} className="flex items-center gap-4">
+                      <Skeleton className="h-9 w-9 rounded-full" />
+                      <div className="space-y-1">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-16" />
                       </div>
-                    ))
+                    </div>
+                  ))
                   : recentLogs.map((log) => (
-                      <div
-                        key={log.id}
-                        className="flex items-start gap-3 text-sm border-b last:border-0 pb-3 last:pb-0 border-border"
-                      >
-                        <div className="bg-muted p-2 rounded-full mt-0.5">
-                          <Activity className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                        <div className="grid gap-1">
-                          <p className="font-medium">{log.details}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(log.created_at).toLocaleTimeString(
-                              "pt-BR",
-                              {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              },
-                            )}
-                          </p>
-                        </div>
+                    <div
+                      key={log.id}
+                      className="flex items-start gap-3 text-sm border-b last:border-0 pb-3 last:pb-0 border-border"
+                    >
+                      <div className="bg-muted p-2 rounded-full mt-0.5">
+                        <Activity className="h-4 w-4 text-muted-foreground" />
                       </div>
-                    ))}
+                      <div className="grid gap-1">
+                        <p className="font-medium">{log.details}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(log.created_at).toLocaleTimeString(
+                            "pt-BR",
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            },
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 {!loading && recentLogs.length === 0 && (
                   <p className="text-sm text-muted-foreground text-center py-4">
                     Nenhuma atividade recente.

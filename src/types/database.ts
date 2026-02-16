@@ -43,6 +43,7 @@ export interface Database {
           zip_code: string | null;
           cpf_cnpj: string | null;
           is_verified: boolean;
+          verification_status: "not_started" | "pending" | "approved" | "rejected";
           badge: "bronze" | "silver" | "gold";
           rating: number;
           total_reviews: number;
@@ -64,33 +65,33 @@ export interface Database {
           is_active: boolean;
           font_size_preference: number;
           escolaridade?:
-            | "ensino_fundamental_incompleto"
-            | "ensino_fundamental_completo"
-            | "ensino_medio_incompleto"
-            | "ensino_medio_completo"
-            | "ensino_superior_incompleto"
-            | "ensino_superior_completo"
-            | "pos_graduacao"
-            | "mestrado"
-            | "doutorado"
-            | null;
+          | "ensino_fundamental_incompleto"
+          | "ensino_fundamental_completo"
+          | "ensino_medio_incompleto"
+          | "ensino_medio_completo"
+          | "ensino_superior_incompleto"
+          | "ensino_superior_completo"
+          | "pos_graduacao"
+          | "mestrado"
+          | "doutorado"
+          | null;
           filhos?: number | null;
           estado_civil?:
-            | "solteiro"
-            | "casado"
-            | "divorciado"
-            | "viuvo"
-            | "uniao_estavel"
-            | "outro"
-            | null;
+          | "solteiro"
+          | "casado"
+          | "divorciado"
+          | "viuvo"
+          | "uniao_estavel"
+          | "outro"
+          | null;
           referencia_profissional?: string | null;
           turno_trabalho?:
-            | "manha"
-            | "tarde"
-            | "noite"
-            | "integral"
-            | "flexivel"
-            | null;
+          | "manha"
+          | "tarde"
+          | "noite"
+          | "integral"
+          | "flexivel"
+          | null;
           country?: string | null;
           locale?: string | null;
           credits_ad_premium_1d?: number;
@@ -139,33 +140,33 @@ export interface Database {
           is_active?: boolean;
           font_size_preference?: number;
           escolaridade?:
-            | "ensino_fundamental_incompleto"
-            | "ensino_fundamental_completo"
-            | "ensino_medio_incompleto"
-            | "ensino_medio_completo"
-            | "ensino_superior_incompleto"
-            | "ensino_superior_completo"
-            | "pos_graduacao"
-            | "mestrado"
-            | "doutorado"
-            | null;
+          | "ensino_fundamental_incompleto"
+          | "ensino_fundamental_completo"
+          | "ensino_medio_incompleto"
+          | "ensino_medio_completo"
+          | "ensino_superior_incompleto"
+          | "ensino_superior_completo"
+          | "pos_graduacao"
+          | "mestrado"
+          | "doutorado"
+          | null;
           filhos?: number | null;
           estado_civil?:
-            | "solteiro"
-            | "casado"
-            | "divorciado"
-            | "viuvo"
-            | "uniao_estavel"
-            | "outro"
-            | null;
+          | "solteiro"
+          | "casado"
+          | "divorciado"
+          | "viuvo"
+          | "uniao_estavel"
+          | "outro"
+          | null;
           referencia_profissional?: string | null;
           turno_trabalho?:
-            | "manha"
-            | "tarde"
-            | "noite"
-            | "integral"
-            | "flexivel"
-            | null;
+          | "manha"
+          | "tarde"
+          | "noite"
+          | "integral"
+          | "flexivel"
+          | null;
           country?: string | null;
           locale?: string | null;
           instagram_url?: string | null;
@@ -212,33 +213,33 @@ export interface Database {
           is_active?: boolean;
           font_size_preference?: number;
           escolaridade?:
-            | "ensino_fundamental_incompleto"
-            | "ensino_fundamental_completo"
-            | "ensino_medio_incompleto"
-            | "ensino_medio_completo"
-            | "ensino_superior_incompleto"
-            | "ensino_superior_completo"
-            | "pos_graduacao"
-            | "mestrado"
-            | "doutorado"
-            | null;
+          | "ensino_fundamental_incompleto"
+          | "ensino_fundamental_completo"
+          | "ensino_medio_incompleto"
+          | "ensino_medio_completo"
+          | "ensino_superior_incompleto"
+          | "ensino_superior_completo"
+          | "pos_graduacao"
+          | "mestrado"
+          | "doutorado"
+          | null;
           filhos?: number | null;
           estado_civil?:
-            | "solteiro"
-            | "casado"
-            | "divorciado"
-            | "viuvo"
-            | "uniao_estavel"
-            | "outro"
-            | null;
+          | "solteiro"
+          | "casado"
+          | "divorciado"
+          | "viuvo"
+          | "uniao_estavel"
+          | "outro"
+          | null;
           referencia_profissional?: string | null;
           turno_trabalho?:
-            | "manha"
-            | "tarde"
-            | "noite"
-            | "integral"
-            | "flexivel"
-            | null;
+          | "manha"
+          | "tarde"
+          | "noite"
+          | "integral"
+          | "flexivel"
+          | null;
           country?: string | null;
           locale?: string | null;
           instagram_url?: string | null;
@@ -866,7 +867,7 @@ export interface Database {
     Enums: {
       user_type: "client" | "professional";
       badge_type: "bronze" | "silver" | "gold";
-      verification_status: "pending" | "approved" | "rejected";
+      verification_status: "not_started" | "pending" | "approved" | "rejected";
     };
   };
 }
@@ -887,6 +888,7 @@ export interface Profile {
   zip_code: string | null;
   cpf_cnpj: string;
   is_verified: boolean;
+  verification_status: "not_started" | "pending" | "approved" | "rejected";
   badge: BadgeType;
   rating: number;
   total_reviews: number;

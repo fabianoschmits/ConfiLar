@@ -28,6 +28,7 @@ import { ProfessionalDataForm } from "./forms/ProfessionalDataForm";
 import { SocialLinksEditor } from "./SocialLinksEditor";
 import { Link2 } from "lucide-react";
 import { PrivacyAIForm } from "./forms/PrivacyAIForm";
+import { IdentityVerificationForm } from "./forms/IdentityVerificationForm";
 
 export type ProfileTab =
   | "account"
@@ -36,6 +37,7 @@ export type ProfileTab =
   | "type"
   | "professional"
   | "social"
+  | "verification"
   | "security"
   | "privacy";
 
@@ -98,14 +100,21 @@ export function EditProfileModal({
     },
     ...(isProfessional
       ? [
-          {
-            id: "professional",
-            label: "Dados Profissionais",
-            icon: Briefcase,
-            color: "text-indigo-500",
-            bgColor: "bg-indigo-50",
-          },
-        ]
+        {
+          id: "professional",
+          label: "Dados Profissionais",
+          icon: Briefcase,
+          color: "text-indigo-500",
+          bgColor: "bg-indigo-50",
+        },
+        {
+          id: "verification",
+          label: "Verificação",
+          icon: Shield,
+          color: "text-blue-600",
+          bgColor: "bg-blue-50",
+        },
+      ]
       : []),
     {
       id: "security",
@@ -264,6 +273,9 @@ export function EditProfileModal({
                 )}
                 {activeTab === "social" && profile && (
                   <SocialLinksEditor profile={profile} />
+                )}
+                {activeTab === "verification" && (
+                  <IdentityVerificationForm />
                 )}
                 {activeTab === "privacy" && (
                   <PrivacyAIForm onSuccess={() => onOpenChange(false)} />

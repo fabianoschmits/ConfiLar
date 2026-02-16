@@ -245,6 +245,18 @@ export default function ProfilePage() {
                       <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70">
                         {profile.full_name || "Usuário"}
                       </h1>
+                      {profile.is_verified && (
+                        <Badge className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-1 rounded-full px-3 py-1 border-0 shadow-sm">
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          <span className="text-[10px] uppercase tracking-wider font-bold">Verificado</span>
+                        </Badge>
+                      )}
+                      {profile.verification_status === "pending" && (
+                        <Badge variant="outline" className="text-yellow-600 border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 flex items-center gap-1 rounded-full px-3 py-1 shadow-sm">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span className="text-[10px] uppercase tracking-wider font-bold">Em Análise</span>
+                        </Badge>
+                      )}
                     </div>
 
                     <div className="flex flex-wrap justify-center gap-2">
@@ -665,7 +677,7 @@ export default function ProfilePage() {
                   </div>
 
                   {profile.professional_services &&
-                  profile.professional_services.length > 0 ? (
+                    profile.professional_services.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {profile.professional_services.map((service, index) => (
                         <div

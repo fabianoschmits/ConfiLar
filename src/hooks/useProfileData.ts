@@ -59,6 +59,7 @@ export interface CompleteProfileData {
   rating: number;
   total_reviews: number;
   is_verified: boolean;
+  verification_status: "not_started" | "pending" | "approved" | "rejected" | null;
   is_available: boolean;
   badge: string;
   points_balance: number | null;
@@ -145,6 +146,7 @@ export function useProfileData(userId: string) {
             rating,
             total_reviews,
             is_verified,
+            verification_status,
             is_available,
             badge,
             points_balance,
