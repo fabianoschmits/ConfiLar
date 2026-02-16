@@ -1123,9 +1123,30 @@ function InstagramPost({
             </Link>
             <div>
               <Link href={`/perfil/${userId}`}>
-                <p className="font-semibold text-sm text-gray-900 dark:text-white">
-                  {displayUserName}
-                </p>
+                <div className="flex items-center gap-1">
+                  <p className="font-semibold text-sm text-gray-900 dark:text-white">
+                    {displayUserName}
+                  </p>
+                  {(postUser as any)?.is_verified && (
+                    <div className="relative group/verified">
+                      <div className="absolute inset-0 bg-blue-500 blur-[6px] opacity-20 rounded-full"></div>
+                      <div className="relative bg-gradient-to-tr from-blue-500 to-blue-600 text-white rounded-full p-[2px] shadow-sm">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="w-3 h-3"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </Link>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 {post.location_city &&

@@ -85,14 +85,16 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           full_name,
           avatar_url,
           user_type,
-          is_available
+          is_available,
+          is_verified
         ),
         user:profiles!feed_posts_user_id_fkey(
           id,
           full_name,
           avatar_url,
           user_type,
-          is_available
+          is_available,
+          is_verified
         )
       `;
 
@@ -403,6 +405,10 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           premium_expires_at: post.premium_expires_at,
           premium_highlight_color: post.premium_highlight_color,
           metadata: post.metadata,
+          user: {
+            ...finalUserData,
+            is_verified: finalUserData?.is_verified,
+          },
         };
 
         return timelinePost;

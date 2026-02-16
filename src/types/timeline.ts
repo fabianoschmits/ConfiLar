@@ -12,6 +12,7 @@ export interface TimelineItem {
     avatar_url?: string;
     user_type: "client" | "professional";
     is_available?: boolean;
+    is_verified?: boolean;
   };
 }
 
