@@ -207,7 +207,7 @@ export function ClassifiedsCard({
               {ad.user_profile?.is_verified && (
                 <div className="relative group/verified">
                   <div className="absolute inset-0 bg-blue-500 blur-[6px] opacity-20 rounded-full"></div>
-                  <div className="relative bg-gradient-to-tr from-blue-500 to-blue-600 text-white rounded-full p-[2px] shadow-sm">
+                  <div className="relative bg-gradient-to-tr from-blue-500 to-blue-600 text-white rounded-full p-[2px] shadow-sm verified-badge-spin">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -216,7 +216,7 @@ export function ClassifiedsCard({
                       strokeWidth="3"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="w-3 h-3"
+                      className="w-2.5 h-2.5"
                     >
                       <polyline points="20 6 9 17 4 12" />
                     </svg>

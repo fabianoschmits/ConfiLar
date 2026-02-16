@@ -99,6 +99,34 @@
   animation: glow-emerald 2s ease-in-out infinite;
 }
 
+/* Verified Badge Animation - Rotate every 5s with subtle shine */
+@keyframes verified-badge-spin {
+  0%,
+  90% {
+    transform: rotate(0deg);
+    filter: brightness(1);
+  }
+
+  95% {
+    transform: rotate(360deg);
+    filter: brightness(1);
+  }
+
+  97% {
+    transform: rotate(360deg);
+    filter: brightness(1.3);
+  }
+
+  100% {
+    transform: rotate(360deg);
+    filter: brightness(1);
+  }
+}
+
+.verified-badge-spin {
+  animation: verified-badge-spin 5s ease-in-out infinite;
+}
+
 /* Animação de slide-in de cima para baixo para menu dropdown */
 @keyframes slideDown {
   from {
