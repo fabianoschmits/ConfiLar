@@ -317,7 +317,8 @@ export default function VerificationsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Profissional</TableHead>
+              <TableHead>Usuário</TableHead>
+              <TableHead>Tipo</TableHead>
               <TableHead>Data</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Ações</TableHead>
@@ -356,12 +357,22 @@ export default function VerificationsPage() {
                   <TableCell>
                     <div className="flex flex-col">
                       <span className="font-medium">
-                        {req.profiles?.full_name}
+                        {req.profiles?.full_name || "Usuário sem nome"}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {req.profiles?.email}
+                        {req.profiles?.email || "E-mail não disponível"}
                       </span>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className="capitalize text-[10px] sm:text-xs"
+                    >
+                      {req.profiles?.user_type === "professional"
+                        ? "Profissional"
+                        : "Cliente"}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <span className="text-sm">
@@ -615,7 +626,7 @@ export default function VerificationsPage() {
                   isLoading={isProcessing}
                 >
                   <CheckCircle2 className="w-4 h-4 mr-2" />
-                  Aprovar Profissional
+                  Aprovar Usuário
                 </LoadingButton>
               </>
             )}
