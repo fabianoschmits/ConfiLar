@@ -3,12 +3,15 @@
 import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { X, ThumbsUp, User, MapPin, Star, Heart, Eye } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ThumbsUp, User, MapPin, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Profile } from "@/types/database";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useAutoNotifications } from "@/hooks/useAutoNotifications";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
+import Link from "next/link";
 
 interface RecommendationModalProps {
   userId: string;
@@ -67,7 +70,6 @@ export function RecommendationModal({
             user_type,
             location_city,
             location_state,
-            rating,
             is_verified
           )
         `,
@@ -144,7 +146,6 @@ export function RecommendationModal({
 
       if (error) {
         if (error.code === "23505") {
-          // Violação de constraint única
           toast.info("Você já recomendou este usuário!");
         } else {
           throw error;
@@ -157,21 +158,18 @@ export function RecommendationModal({
       // Criar post automático no feed social
       try {
         if (profile?.full_name) {
-          console.log("💡 Criando post automático de recomendação...");
           await createRecommendationPost(
             user.id,
             profile.full_name,
             userId,
             userName,
           );
-          console.log("✅ Post de recomendação criado com sucesso!");
         }
       } catch (postError) {
-        console.error("⚠️ Erro ao criar post de recomendação:", postError);
-        // Não falhar a operação se o post não for criado
+        console.error("Erro ao criar post de recomendação:", postError);
       }
 
-      loadRecommendations(); // Recarregar a lista
+      loadRecommendations();
     } catch (error) {
       console.error("Erro ao recomendar usuário:", error);
       toast.error("Erro ao recomendar usuário");
@@ -180,203 +178,113 @@ export function RecommendationModal({
     }
   };
 
-  const getRecommendationTypeText = (type: string) => {
-    switch (type) {
-      case "professional_to_client":
-        return "Profissional recomendou";
-      case "client_to_professional":
-        return "Cliente recomendou";
-      default:
-        return "Recomendou";
-    }
-  };
-
-  const getRecommendationTypeColor = (type: string) => {
-    switch (type) {
-      case "professional_to_client":
-        return "bg-blue-500 text-white";
-      case "client_to_professional":
-        return "bg-green-500 text-white";
-      default:
-        return "bg-gray-500 text-white";
-    }
-  };
-
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-2xl max-h-[90vh] overflow-hidden bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-900/20">
-              <ThumbsUp className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Recomendações
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Recomendar e ver quem recomendou {userName}
-              </p>
-            </div>
-          </div>
+    <ResponsiveModal
+      isOpen={isOpen}
+      onOpenChange={(open) => !open && onClose()}
+      title="Recomendações"
+      description={`Ver quem recomendou ${userName}`}
+    >
+      <div className="space-y-6">
+        {/* Recommend Button Section */}
+        <div className="space-y-3">
           <Button
-            onClick={onClose}
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            onClick={handleRecommendUser}
+            disabled={recommending || user?.id === userId}
+            className="w-full"
           >
-            <X className="h-4 w-4" />
+            {recommending ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Recomendando...
+              </>
+            ) : (
+              <>
+                <ThumbsUp className="h-4 w-4 mr-2" />
+                Recomendar {userName}
+              </>
+            )}
           </Button>
+          {user?.id === userId && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+              Você não pode se recomendar
+            </p>
+          )}
         </div>
 
-        {/* Conteúdo em uma única página */}
-        <div className="p-6 space-y-6 overflow-y-auto max-h-[70vh]">
-          {/* Seção: Recomendar Usuário */}
-          <div className="bg-gradient-to-r from-success-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-6 border border-success-200 dark:border-green-800/50">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center shadow-lg shadow-green-900/20">
-                <Heart className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                  Recomendar {userName}
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Mostre seu apoio recomendando este usuário
-                </p>
-              </div>
+        {/* Recommendations List */}
+        <div className="space-y-3">
+          <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+            Quem recomendou ({recommendations.length})
+          </h4>
+
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
             </div>
-
-            <Button
-              onClick={handleRecommendUser}
-              disabled={recommending || user?.id === userId}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg transition-colors"
-            >
-              {recommending ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Recomendando...
-                </>
-              ) : (
-                <>
-                  <ThumbsUp className="h-4 w-4 mr-2" />
-                  Recomendar Usuário
-                </>
-              )}
-            </Button>
-
-            {user?.id === userId && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-3 text-center">
-                Você não pode se recomendar
+          ) : recommendations.length === 0 ? (
+            <div className="text-center py-12 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
+              <ThumbsUp className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-3" />
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Nenhuma recomendação ainda
               </p>
-            )}
-          </div>
-
-          {/* Seção: Quem Recomendou */}
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-md shadow-blue-900/20">
-                <Eye className="h-4 w-4 text-white" />
-              </div>
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Quem recomendou {userName} ({recommendations.length})
-              </h4>
             </div>
+          ) : (
+            <div className="space-y-3">
+              {recommendations.map((rec) => (
+                <div
+                  key={rec.id}
+                  className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
+                >
+                  <Link href={`/perfil/${rec.recommender.id}`}>
+                    <Avatar className="h-12 w-12 cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all">
+                      <AvatarImage
+                        src={rec.recommender.avatar_url || ""}
+                        alt={rec.recommender.full_name || "Usuário"}
+                      />
+                      <AvatarFallback className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                        {rec.recommender.full_name?.charAt(0) || (
+                          <User className="h-5 w-5" />
+                        )}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Link>
 
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-              </div>
-            ) : recommendations.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 dark:bg-gray-800/50 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
-                <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <ThumbsUp className="h-8 w-8 text-gray-400 dark:text-gray-500" />
-                </div>
-                <h5 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                  Nenhuma recomendação ainda
-                </h5>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Seja o primeiro a recomendar este usuário!
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {recommendations.map((rec) => (
-                  <div
-                    key={rec.id}
-                    className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
-                  >
-                    <div className="flex items-start gap-3">
-                      <Avatar className="h-12 w-12 border-2 border-gray-200 dark:border-gray-700">
-                        <AvatarImage
-                          src={rec.recommender.avatar_url || ""}
-                          alt={`Avatar de ${rec.recommender.full_name}`}
-                        />
-                        <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
-                          {rec.recommender.full_name?.charAt(0) || (
-                            <User className="h-5 w-5" />
-                          )}
-                        </AvatarFallback>
-                      </Avatar>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h5 className="font-medium text-gray-900 dark:text-white truncate">
-                            {rec.recommender.full_name || "Usuário"}
-                          </h5>
-                          {rec.recommender.is_verified && (
-                            <div className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                              <Star className="h-3 w-3" />
-                              Verificado
-                            </div>
-                          )}
-                          <span
-                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                              rec.recommendation_type ===
-                              "professional_to_client"
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-green-100 text-green-700"
-                            }`}
-                          >
-                            {getRecommendationTypeText(rec.recommendation_type)}
+                  <div className="flex-1 min-w-0">
+                    <Link
+                      href={`/perfil/${rec.recommender.id}`}
+                      className="block hover:underline"
+                    >
+                      <p className="font-medium text-gray-900 dark:text-white truncate">
+                        {rec.recommender.full_name || "Usuário"}
+                      </p>
+                    </Link>
+                    {rec.recommender.location_city &&
+                      rec.recommender.location_state && (
+                        <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
+                          <MapPin className="h-3 w-3" />
+                          <span className="truncate">
+                            {rec.recommender.location_city},{" "}
+                            {rec.recommender.location_state}
                           </span>
                         </div>
-
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                          {rec.recommender.location_city &&
-                            rec.recommender.location_state && (
-                              <div className="flex items-center gap-1">
-                                <MapPin className="h-3 w-3" />
-                                <span>
-                                  {rec.recommender.location_city},{" "}
-                                  {rec.recommender.location_state}
-                                </span>
-                              </div>
-                            )}
-                          {rec.recommender.rating && (
-                            <div className="flex items-center gap-1">
-                              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                              <span>{rec.recommender.rating.toFixed(1)}</span>
-                            </div>
-                          )}
-                          <span>
-                            {new Date(rec.created_at).toLocaleDateString(
-                              "pt-BR",
-                            )}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                      )}
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+
+                  <Badge
+                    variant="outline"
+                    className="text-xs shrink-0 bg-gray-50 dark:bg-gray-800"
+                  >
+                    {rec.recommendation_type === "professional_to_client"
+                      ? "Profissional"
+                      : "Cliente"}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-    </div>
+    </ResponsiveModal>
   );
 }
