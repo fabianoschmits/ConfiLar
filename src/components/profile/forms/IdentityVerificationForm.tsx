@@ -146,6 +146,38 @@ export function IdentityVerificationForm() {
     }
   };
 
+  const handleCancel = async () => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      // 1. Remover a solicitação pendente
+      const { error: deleteError } = await supabase
+        .from("professional_verifications")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("status", "pending");
+
+      if (deleteError) throw deleteError;
+
+      // 2. Resetar o status no perfil
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ verification_status: "not_started" })
+        .eq("id", user.id);
+
+      if (profileError) throw profileError;
+
+      setStatus("not_started");
+      toast.success("Solicitação de verificação cancelada com sucesso.");
+    } catch (error: any) {
+      console.error("Erro ao cancelar verificação:", error);
+      toast.error(`Erro ao cancelar: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (fetchingStatus) {
     return (
       <div className="flex flex-col items-center justify-center p-12 space-y-4">
@@ -213,6 +245,20 @@ export function IdentityVerificationForm() {
           <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1 text-sm rounded-full">
             Pendente de Análise
           </Badge>
+
+          <div className="pt-4 w-full max-w-xs mx-auto">
+            <LoadingButton
+              variant="outline"
+              onClick={handleCancel}
+              isLoading={loading}
+              className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl"
+            >
+              Cancelar Solicitação
+            </LoadingButton>
+            <p className="text-[10px] text-gray-500 mt-2">
+              Você poderá enviar novos documentos após cancelar.
+            </p>
+          </div>
         </div>
       )}
 

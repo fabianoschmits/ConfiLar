@@ -112,7 +112,7 @@ export default function VerificationsPage() {
         .select(
           `
           *,
-          profiles:user_id (
+          profiles:user_id!inner (
             full_name,
             email,
             avatar_url,
