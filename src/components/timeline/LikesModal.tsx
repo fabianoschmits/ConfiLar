@@ -32,27 +32,27 @@ export function LikesModal({ isOpen, onClose, postId }: LikesModalProps) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <div className="sticky top-0 z-10 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 px-4 py-2 flex items-center justify-between">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">
             Curtidas
           </h3>
           <button
             onClick={onClose}
-            className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+            className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto max-h-[calc(80vh-60px)]">
+        <div className="overflow-y-auto max-h-[calc(80vh-110px)]">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
             </div>
           ) : reactionUsers.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 px-4">
-              <p className="text-gray-500 dark:text-gray-400 text-center">
+              <p className="text-gray-500 dark:text-gray-400 text-center text-sm">
                 Ninguém curtiu este post ainda
               </p>
             </div>
@@ -63,19 +63,19 @@ export function LikesModal({ isOpen, onClose, postId }: LikesModalProps) {
                   key={user.id}
                   href={`/perfil/${user.user_id}`}
                   onClick={onClose}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors text-inherit no-underline"
+                  className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors text-inherit no-underline"
                 >
-                  <Avatar className="w-10 h-10 border-2 border-gray-200 dark:border-gray-800">
+                  <Avatar className="w-8 h-8 border border-gray-200 dark:border-gray-800">
                     <AvatarImage
                       src={user.avatar_url || undefined}
                       alt={user.name}
                     />
-                    <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-white font-semibold">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-white font-semibold text-xs">
                       {user.name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate hover:opacity-80 transition-opacity">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                       {user.full_name || user.name}
                     </p>
                   </div>
@@ -83,6 +83,16 @@ export function LikesModal({ isOpen, onClose, postId }: LikesModalProps) {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Footer */}
+        <div className="sticky bottom-0 bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800 p-3">
+          <button
+            onClick={onClose}
+            className="w-full py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-semibold rounded-xl text-sm transition-colors"
+          >
+            Fechar
+          </button>
         </div>
       </div>
     </div>
