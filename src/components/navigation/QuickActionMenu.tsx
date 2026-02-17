@@ -126,8 +126,8 @@ export function QuickActionMenu() {
           : "translate-y-[150%] opacity-0 pointer-events-none",
       )}
     >
-      <nav className="bg-white/40 dark:bg-black/40 rounded-3xl px-3 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.12),inset_0_1px_1px_rgba(255,255,255,0.6)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md border border-white/60 dark:border-white/20 ring-1 ring-black/5 dark:ring-white/5 overflow-x-auto scrollbar-hide">
-        <div className="flex items-center justify-center gap-2 sm:gap-4 nowrap min-w-max">
+      <nav className="bg-white/40 dark:bg-black/40 rounded-2xl px-2 py-1 shadow-[0_4px_16px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md border border-white/60 dark:border-white/20 ring-1 ring-black/5 dark:ring-white/5 overflow-x-auto scrollbar-hide">
+        <div className="flex items-center justify-center gap-1 sm:gap-2 nowrap min-w-max">
           {quickActions.map((action) => {
             const Icon = action.icon;
             // Para contato (mailto), usar <a> em vez de <Link>
@@ -138,7 +138,7 @@ export function QuickActionMenu() {
               : pathname === action.href || pathname.startsWith(action.href);
 
             const content = (
-              <div className="flex flex-col items-center gap-1">
+              <div className="flex flex-col items-center gap-0.5">
                 {/* Ícone e Badge Container */}
                 <div className="relative">
                   {/* Badge de notificação */}
@@ -151,10 +151,10 @@ export function QuickActionMenu() {
                   {/* Ícone */}
                   <div
                     className={cn(
-                      "transition-all duration-300 p-2 rounded-xl relative",
+                      "transition-all duration-300 p-1.5 rounded-lg relative",
                       isActive
-                        ? "text-white bg-[#00b0b0] shadow-lg shadow-[#00b0b0]/25"
-                        : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5",
+                        ? "text-white bg-[#00b0b0]"
+                        : "text-gray-500 dark:text-gray-400 hover:bg-gray-100/50 dark:hover:bg-white/5",
                     )}
                   >
                     <Icon

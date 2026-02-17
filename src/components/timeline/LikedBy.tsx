@@ -61,14 +61,13 @@ export function LikedBy({ postId, likesCount }: LikedByProps) {
   const remainingSlots = 5 - avatarsToShow.length;
   avatarsToShow.push(...shuffledOtherUsers.slice(0, remainingSlots));
 
-  // Lista de usuários para mostrar nos nomes (máximo 2): usuário atual primeiro, depois os outros (para mobile)
-  const usersToShow: typeof reactionUsers = [];
+  // Lista de usuários para mostrar nos nomes na versão mobile (máximo 1): usuário atual primeiro, depois os outros
+  const usersToShowMobile: typeof reactionUsers = [];
   if (currentUserLike) {
-    usersToShow.push(currentUserLike);
+    usersToShowMobile.push(currentUserLike);
+  } else {
+    usersToShowMobile.push(...otherUsers.slice(0, 1));
   }
-  // Adicionar outros usuários até completar 2 no total
-  const remainingNameSlots = 2 - usersToShow.length;
-  usersToShow.push(...otherUsers.slice(0, remainingNameSlots));
 
   // Lista de usuários para mostrar nos nomes na versão desktop (máximo 4): usuário atual primeiro, depois os outros
   const usersToShowDesktop: typeof reactionUsers = [];
@@ -79,8 +78,8 @@ export function LikedBy({ postId, likesCount }: LikedByProps) {
   const remainingNameSlotsDesktop = 4 - usersToShowDesktop.length;
   usersToShowDesktop.push(...otherUsers.slice(0, remainingNameSlotsDesktop));
 
-  // Contar quantas pessoas restam (para mobile - 2 nomes)
-  const remainingCount = reactionUsers.length - usersToShow.length;
+  // Contar quantas pessoas restam (para mobile - 1 nome)
+  const remainingCountMobile = reactionUsers.length - usersToShowMobile.length;
 
   // Contar quantas pessoas restam (para desktop - 4 nomes)
   const remainingCountDesktop =
@@ -118,36 +117,30 @@ export function LikedBy({ postId, likesCount }: LikedByProps) {
           })}
         </div>
         <p
-          className="text-xs text-gray-900 dark:text-white flex-1 min-w-0 overflow-hidden"
+          className="text-xs text-gray-900 dark:text-white flex-1 min-w-0"
           style={{ fontSize: "clamp(0.6rem, 1.5vw, 0.7rem)" }}
         >
-          <span className="font-semibold whitespace-nowrap">
-            Curtido por{" "}
-            {reactionUsers.map((u, index) => (
-              <span key={u.id} className="inline">
-                {index > 0 && index < reactionUsers.length - 1 && ", "}
-                {index === reactionUsers.length - 1 && index > 0 && " e "}
-                <Link
-                  href={`/perfil/${u.user_id}`}
-                  className="text-inherit no-underline hover:opacity-80 transition-opacity"
-                >
-                  {u.full_name || u.name}
-                </Link>
-              </span>
-            ))}
+          <span className="font-semibold flex items-center w-full overflow-hidden">
+            <span className="flex-shrink-0 mr-1">Curtido por</span>
+            <span className="truncate inline-block flex-1">
+              {reactionUsers.map((u, index) => (
+                <span key={u.id} className="inline">
+                  {index > 0 && index < reactionUsers.length - 1 && ", "}
+                  {index === reactionUsers.length - 1 && index > 0 && " e "}
+                  <Link
+                    href={`/perfil/${u.user_id}`}
+                    className="text-inherit no-underline hover:opacity-80 transition-opacity"
+                  >
+                    {u.full_name || u.name}
+                  </Link>
+                </span>
+              ))}
+            </span>
           </span>
         </p>
       </div>
     );
   }
-
-  // Se há mais de 2 usuários, mostrar os 2 primeiros e "outras X pessoas"
-  const firstTwoNames = usersToShow.map((u) => u.full_name || u.name);
-  // Formatar nomes: "João e Maria"
-  const namesText =
-    firstTwoNames.length === 2
-      ? `${firstTwoNames[0]} e ${firstTwoNames[1]}`
-      : firstTwoNames[0];
 
   return (
     <>
@@ -176,33 +169,35 @@ export function LikedBy({ postId, likesCount }: LikedByProps) {
           })}
         </div>
         <p
-          className="text-xs text-gray-900 dark:text-white flex-1 min-w-0 overflow-hidden"
+          className="text-xs text-gray-900 dark:text-white flex-1 min-w-0 flex items-center"
           style={{ fontSize: "clamp(0.6rem, 1.5vw, 0.7rem)" }}
         >
-          <span className="font-semibold whitespace-nowrap">
-            Curtido por{" "}
-            {usersToShow.map((u, index) => (
-              <span key={u.id} className="inline">
-                {index > 0 && ", "}
-                <Link
-                  href={`/perfil/${u.user_id}`}
-                  className="text-inherit no-underline hover:opacity-80 transition-opacity"
-                >
-                  {u.full_name || u.name}
-                </Link>
-              </span>
-            ))}
-            {remainingCount > 0 && (
-              <>
+          <span className="font-semibold flex items-center w-full overflow-hidden">
+            <span className="flex-shrink-0 mr-1">Curtido por</span>
+            <span className="truncate inline-block max-w-[40%] sm:max-w-[50%]">
+              {usersToShowMobile.map((u, index) => (
+                <span key={u.id} className="inline">
+                  {index > 0 && ", "}
+                  <Link
+                    href={`/perfil/${u.user_id}`}
+                    className="text-inherit no-underline hover:opacity-80 transition-opacity"
+                  >
+                    {u.full_name || u.name}
+                  </Link>
+                </span>
+              ))}
+            </span>
+            {remainingCountMobile > 0 && (
+              <span className="flex-shrink-0 ml-1">
                 {" e "}
                 <button
                   onClick={() => setShowLikesModal(true)}
-                  className="font-semibold hover:underline text-gray-900 dark:text-white underline"
+                  className="font-semibold hover:underline text-gray-900 dark:text-white underline inline"
                 >
-                  outras {remainingCount}{" "}
-                  {remainingCount === 1 ? "pessoa" : "pessoas"}
+                  outras {remainingCountMobile}{" "}
+                  {remainingCountMobile === 1 ? "pessoa" : "pessoas"}
                 </button>
-              </>
+              </span>
             )}
           </span>
         </p>
