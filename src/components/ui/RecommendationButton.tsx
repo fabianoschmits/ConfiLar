@@ -128,7 +128,7 @@ export function RecommendationButton({
         size={size}
         onClick={handleShowRecommendationModal}
         disabled={isLoading || user?.id === userId}
-        className={`${className} ${isRecommended ? "bg-green-500 hover:bg-green-600 text-white" : ""} ${vertical ? "flex-col h-auto py-1 px-2 gap-0 min-h-[32px]" : ""}`}
+        className={`${className} ${isRecommended ? "bg-brand hover:opacity-90 text-white" : ""} ${vertical ? "flex-col h-auto py-1 px-2 gap-0 min-h-[32px]" : ""}`}
       >
         <ThumbsUp
           className={`${vertical ? "h-3 w-3" : "h-4 w-4"} ${isRecommended ? "fill-current" : ""}`}

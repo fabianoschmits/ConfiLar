@@ -8,7 +8,12 @@ import {
   Heart,
   Sparkles,
   Share2,
+  MoreVertical,
+  Trash2,
+  Flag,
+  Loader2,
 } from "lucide-react";
+import { ProVerifiedBadge } from "@/components/ui/ProVerifiedBadge";
 import { useStories, StoryGroup } from "@/hooks/useStories";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -17,6 +22,24 @@ import { useStoryLikes } from "@/hooks/useStoryLikes";
 import { FloatingLikes } from "@/components/stories/FloatingLikes";
 import { ShareStoryModal } from "@/components/stories/ShareStoryModal";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { ReportDialog } from "@/components/ReportDialog";
+import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface StoryViewerProps {
   initialGroupIndex: number;
@@ -40,6 +63,8 @@ export function StoryViewer({
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const storyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const viewedStoryIdsRef = useRef<Set<string>>(new Set()); // Rastrear stories já visualizados nesta sessão
@@ -105,6 +130,35 @@ export function StoryViewer({
     storyGroups.length,
     onClose,
   ]);
+
+  const { deleteStory, isDeleting } = useStories();
+
+  const handleDeleteStory = async () => {
+    if (!currentStory) return;
+
+    try {
+      await deleteStory(currentStory.id);
+      toast.success("Story excluído com sucesso!");
+      setShowDeleteConfirm(false);
+
+      // Se for o último story do grupo, fechar ou mudar de grupo
+      if (currentGroup && currentGroup.stories.length === 1) {
+        onClose();
+      } else {
+        goToNextStory();
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao excluir story");
+    }
+  };
+
+  const handleReport = () => {
+    setIsPaused(true);
+    if (pausedTimeRef.current === null) {
+      pausedTimeRef.current = Date.now();
+    }
+    setShowReportDialog(true);
+  };
 
   const goToPreviousStory = useCallback(() => {
     // Limpar timers antes de mudar
@@ -331,19 +385,63 @@ export function StoryViewer({
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="text-white font-semibold text-sm">
-                  {currentGroup.userName}
-                </p>
+                <div className="flex items-center gap-1">
+                  <p className="text-white font-semibold text-sm">
+                    {currentGroup.userName}
+                  </p>
+                  <ProVerifiedBadge
+                    isVerified={currentGroup.isVerified}
+                    isPro={currentGroup.isPro}
+                    proExpiresAt={currentGroup.proExpiresAt}
+                    iconSize={1.4}
+                  />
+                </div>
                 <p className="text-white/70 text-xs">{timeAgo}</p>
               </div>
             </div>
 
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors"
-            >
-              <X className="h-6 w-6 text-white" />
-            </button>
+            <div className="flex items-center gap-1">
+              <DropdownMenu onOpenChange={(open) => setIsPaused(open)}>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="p-2 hover:bg-white/10 rounded-full transition-colors text-white"
+                    title="Opções"
+                  >
+                    <MoreVertical className="h-10 w-6" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-48 bg-gray-900/95 border-gray-800 text-white backdrop-blur-xl rounded-xl p-1 animate-in fade-in zoom-in duration-200"
+                >
+                  <DropdownMenuItem
+                    onClick={handleReport}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/10 cursor-pointer transition-colors"
+                  >
+                    <Flag className="h-4 w-4 text-red-400" />
+                    <span className="font-medium">Denunciar</span>
+                  </DropdownMenuItem>
+
+                  {user?.id === currentGroup.userId && (
+                    <DropdownMenuItem
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-red-500/20 text-red-400 cursor-pointer transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="font-medium">Excluir</span>
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                title="Fechar"
+              >
+                <X className="h-6 w-6 text-white" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -407,7 +505,7 @@ export function StoryViewer({
             onClick={givePremiumLike}
             disabled={isPremiumLiking}
             className="relative flex flex-col items-center justify-center gap-1 bg-gradient-to-r from-yellow-400 to-yellow-600 p-3 rounded-full transition-all hover:shadow-lg hover:scale-105 active:scale-95 disabled:opacity-50"
-            title="Like Premium (5 pontos)"
+            title="Like Premium (100 pontos)"
           >
             <Sparkles className="h-6 w-6 text-white transition-all" />
             {likeCounts.premium > 0 && (
@@ -444,6 +542,55 @@ export function StoryViewer({
       {shouldShowFloatingLikes && (
         <FloatingLikes likeUsers={likeUsers} isVisible={true} />
       )}
+
+      {/* Modal de Denúncia */}
+      {currentStory && (
+        <ReportDialog
+          isOpen={showReportDialog}
+          onOpenChange={(open) => {
+            setShowReportDialog(open);
+            if (!open) {
+              setIsPaused(false);
+            }
+          }}
+          type="story"
+          targetId={currentStory.id}
+          targetName={`Story de ${currentGroup.userName}`}
+          reportedUserId={currentGroup.userId}
+        />
+      )}
+
+      {/* Confirmação de Exclusão */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent className="bg-gray-900 border-gray-800 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Story?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              Esta ação não pode ser desfeita. O story será removido
+              permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-gray-700 hover:bg-white/5 text-white">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteStory}
+              className="bg-red-600 hover:bg-red-700 text-white border-none"
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Excluindo...
+                </>
+              ) : (
+                "Excluir"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

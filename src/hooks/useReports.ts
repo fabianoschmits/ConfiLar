@@ -15,6 +15,7 @@ export interface Report {
   reported_post_id?: string;
   reported_message_id?: string;
   reported_classified_id?: string;
+  reported_story_id?: string;
   admin_notes?: string;
   resolution?: string;
   created_at: string;
@@ -43,7 +44,8 @@ export function useReports() {
           *,
           reporter:reporter_id(full_name),
           reported_user:reported_user_id(full_name),
-          classified_ad:reported_classified_id(title, description, user_name)
+          classified_ad:reported_classified_id(title, description, user_name),
+          reported_story:reported_story_id(image_url, user_id)
         `,
         )
         .order("created_at", { ascending: false });
@@ -58,6 +60,7 @@ export function useReports() {
           reported_user_name: report.reported_user?.full_name || "Usuário",
           classified_title: report.classified_ad?.title || "",
           classified_description: report.classified_ad?.description || "",
+          story_image: report.reported_story?.image_url || "",
         })) || [];
 
       setReports(processedReports);

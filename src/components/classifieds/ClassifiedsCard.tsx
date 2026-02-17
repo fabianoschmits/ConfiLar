@@ -36,6 +36,7 @@ import { ReportButton } from "@/components/ReportButton";
 import { ReportDialog } from "@/components/ReportDialog";
 import { useCloseOnScroll } from "@/hooks/useCloseOnScroll";
 import { PremiumTimeRemaining } from "@/components/classifieds/PremiumTimeRemaining";
+import { ProVerifiedBadge } from "@/components/ui/ProVerifiedBadge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { getCategoryById } from "@/data/serviceCategories"; // Assuming this helper exists or similar logic
@@ -204,25 +205,12 @@ export function ClassifiedsCard({
               <p className="text-base font-semibold text-gray-900 dark:text-white">
                 {ad.user_name}
               </p>
-              {ad.user_profile?.is_verified && (
-                <div className="relative group/verified">
-                  <div className="absolute inset-0 bg-blue-500 blur-[6px] opacity-20 rounded-full"></div>
-                  <div className="relative bg-gradient-to-tr from-blue-500 to-blue-600 text-white rounded-full p-[2px] shadow-sm verified-badge-spin">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="w-2.5 h-2.5"
-                    >
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  </div>
-                </div>
-              )}
+              <ProVerifiedBadge
+                isVerified={ad.user_profile?.is_verified}
+                isPro={ad.user_profile?.is_pro}
+                proExpiresAt={ad.user_profile?.pro_expires_at}
+                iconSize={2.5}
+              />
             </div>
           </div>
         </div>

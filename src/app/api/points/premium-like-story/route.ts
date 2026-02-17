@@ -86,7 +86,8 @@ export const POST = withAuth(
         );
       }
 
-      const pointsCost = 5; // Custo de uma curtida premium
+      const pointsCost = 100; // Custo de uma curtida premium
+      const pointsReward = 75; // Recompensa para o criador
 
       if (!balance || balance.balance < pointsCost) {
         return NextResponse.json(
@@ -164,7 +165,7 @@ export const POST = withAuth(
       // 3. Adicionar pontos ao criador do story
       const { error: rewardError } = await supabase.rpc("add_points", {
         p_user_id: storyOwnerId,
-        p_points: pointsCost,
+        p_points: pointsReward,
         p_source: "receive_premium_like_story",
         p_description: "Recebeu curtida premium em story",
         p_metadata: {
@@ -197,14 +198,14 @@ export const POST = withAuth(
           user_id: storyOwnerId,
           type: "achievement",
           title: "💰 Curtida Premium no Story!",
-          message: `${likerName} deu uma curtida premium no seu story (+${pointsCost} pontos)`,
+          message: `${likerName} deu uma curtida premium no seu story (+${pointsReward} pontos)`,
           action_url: `/stories`,
           priority: "high",
           metadata: {
             story_id: storyId,
             from_user_id: authenticatedUserId, // 🔒 Sempre ID autenticado
             from_user_name: likerName,
-            points_received: pointsCost,
+            points_received: pointsReward,
             type: "premium_like_story_received",
           },
           is_read: false,
@@ -217,7 +218,7 @@ export const POST = withAuth(
           await NotificationService.sendPushNotification(
             storyOwnerId,
             "💰 Curtida Premium no Story!",
-            `${likerName} deu uma curtida premium no seu story (+${pointsCost} pontos)`,
+            `${likerName} deu uma curtida premium no seu story (+${pointsReward} pontos)`,
           );
         } catch (pushError) {
           console.warn(
@@ -245,7 +246,7 @@ export const POST = withAuth(
         success: true,
         like: premiumLike,
         pointsSpent: pointsCost,
-        pointsRewarded: pointsCost,
+        pointsRewarded: pointsReward,
       });
     } catch (error) {
       console.error("Erro ao processar premium like story:", error);

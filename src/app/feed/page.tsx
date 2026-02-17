@@ -31,6 +31,7 @@ import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { NewPostForm } from "@/components/timeline/NewPostForm";
 import { PremiumPostForm } from "@/components/timeline/PremiumPostForm";
 import { ResponsiveModal } from "@/components/ui/responsive-modal";
+import { ProVerifiedBadge } from "@/components/ui/ProVerifiedBadge";
 import { InstagramPostSkeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -266,6 +267,9 @@ export default function FeedPage() {
         userName: group.userName,
         userAvatar: group.userAvatar,
         hasNew: group.hasNew,
+        isVerified: group.isVerified,
+        isPro: group.isPro,
+        proExpiresAt: group.proExpiresAt,
         isMyStory: false,
         stories: group.stories,
       })),
@@ -279,6 +283,9 @@ export default function FeedPage() {
       userName: "Seu story",
       userAvatar: profile.avatar_url || null,
       hasNew: false,
+      isVerified: profile.is_verified,
+      isPro: profile.is_pro,
+      proExpiresAt: profile.pro_expires_at,
       isMyStory: true,
       stories: myStoryGroup?.stories || [],
     });
@@ -1127,25 +1134,12 @@ function InstagramPost({
                   <p className="font-semibold text-sm text-gray-900 dark:text-white">
                     {displayUserName}
                   </p>
-                  {(postUser as any)?.is_verified && (
-                    <div className="relative group/verified">
-                      <div className="absolute inset-0 bg-blue-500 blur-[6px] opacity-20 rounded-full"></div>
-                      <div className="relative bg-gradient-to-tr from-blue-500 to-blue-600 text-white rounded-full p-[2px] shadow-sm verified-badge-spin">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="w-2.5 h-2.5"
-                        >
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      </div>
-                    </div>
-                  )}
+                  <ProVerifiedBadge
+                    isVerified={(postUser as any)?.is_verified}
+                    isPro={(postUser as any)?.is_pro}
+                    proExpiresAt={(postUser as any)?.pro_expires_at}
+                    iconSize={2.5}
+                  />
                 </div>
               </Link>
               <p className="text-xs text-gray-500 dark:text-gray-400">

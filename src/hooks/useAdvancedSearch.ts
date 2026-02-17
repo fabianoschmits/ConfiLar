@@ -84,8 +84,10 @@ export const useAdvancedSearch = () => {
         ]);
       }
 
-      // Ordenação Padrão
-      query = query.order("rating", { ascending: false });
+      // Ordenação Padrão: Membros PRO primeiro, depois por avaliação
+      query = query
+        .order("is_pro", { ascending: false, nullsFirst: false })
+        .order("rating", { ascending: false });
 
       // Limite para performance (Paginação pode ser adicionada depois)
       query = query.limit(100);

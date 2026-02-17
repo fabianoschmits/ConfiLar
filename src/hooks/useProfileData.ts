@@ -26,25 +26,25 @@ export interface CompleteProfileData {
   idade: number | null;
   gender: "male" | "female" | "other" | null;
   escolaridade:
-  | "ensino_fundamental_incompleto"
-  | "ensino_fundamental_completo"
-  | "ensino_medio_incompleto"
-  | "ensino_medio_completo"
-  | "ensino_superior_incompleto"
-  | "ensino_superior_completo"
-  | "pos_graduacao"
-  | "mestrado"
-  | "doutorado"
-  | null;
+    | "ensino_fundamental_incompleto"
+    | "ensino_fundamental_completo"
+    | "ensino_medio_incompleto"
+    | "ensino_medio_completo"
+    | "ensino_superior_incompleto"
+    | "ensino_superior_completo"
+    | "pos_graduacao"
+    | "mestrado"
+    | "doutorado"
+    | null;
   filhos: number | null;
   estado_civil:
-  | "solteiro"
-  | "casado"
-  | "divorciado"
-  | "viuvo"
-  | "uniao_estavel"
-  | "outro"
-  | null;
+    | "solteiro"
+    | "casado"
+    | "divorciado"
+    | "viuvo"
+    | "uniao_estavel"
+    | "outro"
+    | null;
 
   // Dados profissionais
   user_type: "client" | "professional";
@@ -59,7 +59,14 @@ export interface CompleteProfileData {
   rating: number;
   total_reviews: number;
   is_verified: boolean;
-  verification_status: "not_started" | "pending" | "approved" | "rejected" | null;
+  is_pro?: boolean;
+  pro_expires_at?: string | null;
+  verification_status:
+    | "not_started"
+    | "pending"
+    | "approved"
+    | "rejected"
+    | null;
   is_available: boolean;
   badge: string;
   points_balance: number | null;
@@ -144,8 +151,11 @@ export function useProfileData(userId: string) {
             turno_trabalho,
             professional_portfolio_url,
             rating,
+            rating,
             total_reviews,
             is_verified,
+            is_pro,
+            pro_expires_at,
             verification_status,
             is_available,
             badge,

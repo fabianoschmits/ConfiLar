@@ -25,7 +25,8 @@ export type ReportType =
   | "message"
   | "review"
   | "classified"
-  | "comment";
+  | "comment"
+  | "story";
 
 export interface ReportDialogProps {
   isOpen: boolean;
@@ -50,6 +51,8 @@ const getTypeLabel = (type: ReportType) => {
       return "Anúncio";
     case "comment":
       return "Comentário";
+    case "story":
+      return "Story";
     default:
       return "Item";
   }
@@ -133,6 +136,7 @@ export function ReportDialog({
         ...(type === "message" && { reported_message_id: targetId }),
         ...(type === "review" && { reported_message_id: targetId }),
         ...(type === "classified" && { reported_classified_id: targetId }),
+        ...(type === "story" && { reported_story_id: targetId }),
       };
 
       console.log("Enviando dados da denúncia:", reportData);

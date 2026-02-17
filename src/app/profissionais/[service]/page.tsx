@@ -2,9 +2,11 @@ import { Metadata } from "next";
 import { createAdminSupabaseClient } from "@/lib/supabase";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/ui/UserAvatar";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, Star, CheckCircle } from "lucide-react";
+import { Badge as UiBadge } from "@/components/ui/badge";
+import { ProVerifiedBadge } from "@/components/ui/ProVerifiedBadge";
+import { MapPin, Star } from "lucide-react";
 import Link from "next/link";
 import { services } from "@/data/services";
 import {
@@ -103,13 +105,13 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                           {prof.professional_services
                             ?.slice(0, 2)
                             .map((s: string) => (
-                              <Badge
+                              <UiBadge
                                 key={s}
                                 variant="secondary"
                                 className="text-[10px]"
                               >
                                 {s}
-                              </Badge>
+                              </UiBadge>
                             ))}
                         </div>
                       </CardContent>
@@ -266,9 +268,14 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                                     <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">
                                       {prof.full_name}
                                     </h3>
-                                    {prof.is_verified && (
-                                      <CheckCircle className="w-4 h-4 text-blue-500 shrink-0" />
-                                    )}
+                                    <ProVerifiedBadge
+                                      isVerified={prof.is_verified}
+                                      isPro={(prof as any).is_pro}
+                                      proExpiresAt={
+                                        (prof as any).pro_expires_at
+                                      }
+                                      iconSize={3}
+                                    />
                                   </div>
                                   <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 mt-1">
                                     <MapPin className="w-3.5 h-3.5" />
@@ -296,13 +303,13 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                                 {(prof.professional_services || [])
                                   .slice(0, 3)
                                   .map((s: string) => (
-                                    <Badge
+                                    <UiBadge
                                       key={s}
                                       variant="secondary"
                                       className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-none font-medium"
                                     >
                                       {s}
-                                    </Badge>
+                                    </UiBadge>
                                   ))}
                               </div>
                             </div>
@@ -334,9 +341,12 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                               <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">
                                 {prof.full_name}
                               </h3>
-                              {prof.is_verified && (
-                                <CheckCircle className="w-4 h-4 text-blue-500 shrink-0" />
-                              )}
+                              <ProVerifiedBadge
+                                isVerified={prof.is_verified}
+                                isPro={(prof as any).is_pro}
+                                proExpiresAt={(prof as any).pro_expires_at}
+                                iconSize={2.5}
+                              />
                             </div>
                             <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 mt-1">
                               <MapPin className="w-3.5 h-3.5" />
@@ -371,13 +381,13 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                           {(prof.professional_services || [])
                             .slice(0, 3)
                             .map((s: string) => (
-                              <Badge
+                              <UiBadge
                                 key={s}
                                 variant="secondary"
                                 className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-none font-medium"
                               >
                                 {s}
-                              </Badge>
+                              </UiBadge>
                             ))}
                         </div>
                       </div>

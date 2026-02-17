@@ -86,7 +86,9 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           avatar_url,
           user_type,
           is_available,
-          is_verified
+          is_verified,
+          is_pro,
+          pro_expires_at
         ),
         user:profiles!feed_posts_user_id_fkey(
           id,
@@ -94,7 +96,9 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           avatar_url,
           user_type,
           is_available,
-          is_verified
+          is_verified,
+          is_pro,
+          pro_expires_at
         )
       `;
 

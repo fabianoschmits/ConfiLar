@@ -240,7 +240,9 @@ export function CheckoutModal({
         ) {
           clearInterval(checkInterval);
           setStep("success");
-          toast.success("Pagamento confirmado! Seus pontos foram creditados.");
+          toast.success(
+            "Pagamento confirmado! Sua compra foi processada com sucesso.",
+          );
 
           // Invalidar e refetch cache para atualizar a lista de compras
           if (user?.id) {
@@ -251,6 +253,9 @@ export function CheckoutModal({
               });
               queryClient.invalidateQueries({
                 queryKey: ["user-points-balance", user.id],
+              });
+              queryClient.invalidateQueries({
+                queryKey: ["profile", user.id],
               });
               await queryClient.refetchQueries(
                 {
@@ -508,6 +513,9 @@ export function CheckoutModal({
           });
           queryClient.invalidateQueries({
             queryKey: ["user-points-balance", user.id],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["profile", user.id],
           });
 
           // Forçar refetch imediato

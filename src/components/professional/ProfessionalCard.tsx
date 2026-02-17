@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { GuestBlurOverlay } from "@/components/auth/GuestBlurOverlay";
 import { FavoriteButton } from "@/components/ui/FavoriteButton";
 import { RecommendationButton } from "@/components/ui/RecommendationButton";
+import { ProVerifiedBadge } from "@/components/ui/ProVerifiedBadge";
 import { useAvailabilityContext } from "@/contexts/AvailabilityContext";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -156,9 +157,17 @@ export function ProfessionalCard({
               className={cn(!isGuest && "cursor-pointer group/name")}
               onClick={() => !isGuest && handleProfileClick(profile.id)}
             >
-              <h3 className="font-bold text-base sm:text-lg text-gray-900 dark:text-white truncate transition-colors group-hover/name:text-primary-600 dark:group-hover/name:text-primary-400">
-                {profile.full_name}
-              </h3>
+              <div className="flex items-center gap-1">
+                <h3 className="font-bold text-base sm:text-lg text-gray-900 dark:text-white truncate transition-colors group-hover/name:text-primary-600 dark:group-hover/name:text-primary-400">
+                  {profile.full_name}
+                </h3>
+                <ProVerifiedBadge
+                  isVerified={profile.is_verified}
+                  isPro={profile.is_pro}
+                  proExpiresAt={profile.pro_expires_at}
+                  iconSize={3}
+                />
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5 mt-1.5">

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ProVerifiedBadge } from "@/components/ui/ProVerifiedBadge"; // Added import
 import { ThumbsUp, CheckCircle, MapPin, Star, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -58,7 +59,7 @@ export function RecommendationsTab({
         {recommendations.map((rec) => (
           <Link
             key={rec.id}
-            href={`/perfil/${rec.recommender.id}`}
+            href={`/ perfil / ${rec.recommender.id} `}
             className="block"
           >
             <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-4 hover:shadow-lg transition-shadow">
@@ -74,9 +75,13 @@ export function RecommendationsTab({
                     <h4 className="font-semibold text-gray-900 dark:text-white truncate">
                       {rec.recommender.full_name}
                     </h4>
-                    {rec.recommender.is_verified && (
-                      <CheckCircle className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                    )}
+                    {/* Replaced CheckCircle with ProVerifiedBadge */}
+                    <ProVerifiedBadge
+                      isVerified={rec.recommender.is_verified}
+                      isPro={(rec.recommender as any).is_pro}
+                      proExpiresAt={(rec.recommender as any).pro_expires_at}
+                      iconSize={3}
+                    />
                   </div>
                   {rec.recommender.location_city &&
                     rec.recommender.location_state && (
@@ -141,7 +146,7 @@ export function RecommendationsTab({
           {recommendations.map((rec) => (
             <Link
               key={rec.id}
-              href={`/perfil/${rec.recommender.id}`}
+              href={`/ perfil / ${rec.recommender.id} `}
               className="block"
             >
               <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
@@ -158,9 +163,13 @@ export function RecommendationsTab({
                         <h4 className="font-semibold text-gray-900 dark:text-white truncate">
                           {rec.recommender.full_name}
                         </h4>
-                        {rec.recommender.is_verified && (
-                          <CheckCircle className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                        )}
+                        {/* Replaced CheckCircle with ProVerifiedBadge */}
+                        <ProVerifiedBadge
+                          isVerified={rec.recommender.is_verified}
+                          isPro={(rec.recommender as any).is_pro}
+                          proExpiresAt={(rec.recommender as any).pro_expires_at}
+                          iconSize={2.5}
+                        />
                       </div>
                       {rec.recommender.location_city &&
                         rec.recommender.location_state && (

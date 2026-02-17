@@ -24,6 +24,9 @@ export interface StoryGroup {
   userAvatar: string | null;
   stories: Story[];
   hasNew: boolean;
+  isVerified?: boolean;
+  isPro?: boolean;
+  proExpiresAt?: string;
 }
 
 /**
@@ -57,7 +60,10 @@ export function useStories() {
           profiles!inner(
             id,
             full_name,
-            avatar_url
+            avatar_url,
+            is_verified,
+            is_pro,
+            pro_expires_at
           )
         `,
         )
@@ -83,6 +89,9 @@ export function useStories() {
             userAvatar: profile.avatar_url,
             stories: [],
             hasNew: false,
+            isVerified: profile.is_verified,
+            isPro: profile.is_pro,
+            proExpiresAt: profile.pro_expires_at,
           });
         }
 
@@ -276,6 +285,52 @@ export function useStories() {
     },
   });
 
+  // Mutation para excluir um story
+  const deleteStoryMutation = useMutation({
+    mutationFn: async (storyId: string) => {
+      if (!user?.id) throw new Error("Usuário não autenticado");
+
+      // Buscar a URL da imagem para deletar do Storage também
+      const { data: story } = await supabase
+        .from("stories")
+        .select("image_url")
+        .eq("id", storyId)
+        .eq("user_id", user.id) // Segurança
+        .single();
+
+      if (!story)
+        throw new Error("Story não encontrado ou você não tem permissão");
+
+      // 1. Deletar do banco (views e likes devem ter ON DELETE CASCADE)
+      const { error: dbError } = await supabase
+        .from("stories")
+        .delete()
+        .eq("id", storyId);
+
+      if (dbError) throw dbError;
+
+      // 2. Deletar do Storage
+      try {
+        // A URL pública segue o padrão: .../feed-images/stories/user_id/timestamp.ext
+        const urlParts = story.image_url.split("/feed-images/");
+        if (urlParts.length > 1) {
+          const filePath = urlParts[1];
+          await supabase.storage.from("feed-images").remove([filePath]);
+        }
+      } catch (storageError) {
+        console.warn(
+          "Erro ao deletar imagem do storage (não crítico):",
+          storageError,
+        );
+      }
+
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["stories"] });
+    },
+  });
+
   const createStory = useCallback(
     (imageUrl: string) => {
       return createStoryMutation.mutateAsync(imageUrl);
@@ -290,12 +345,21 @@ export function useStories() {
     [viewStoryMutation],
   );
 
+  const deleteStory = useCallback(
+    (storyId: string) => {
+      return deleteStoryMutation.mutateAsync(storyId);
+    },
+    [deleteStoryMutation],
+  );
+
   return {
     storyGroups: storyGroups || [],
     isLoading,
     createStory,
     viewStory,
+    deleteStory,
     isCreating: createStoryMutation.isPending,
+    isDeleting: deleteStoryMutation.isPending,
     refetch,
   };
 }

@@ -57,6 +57,7 @@ import { ProfilePageSkeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { useReferralStats } from "@/hooks/useReferralStats";
 import { ReferralBadgeLarge } from "@/components/referral/ReferralBadge";
+import { ProVerifiedBadge } from "@/components/ui/ProVerifiedBadge";
 import { useTranslations } from "next-intl";
 import { PortfolioProjectCard } from "@/components/portfolio/PortfolioProjectCard";
 import { SocialLinksDisplay } from "@/components/profile/SocialLinksDisplay";
@@ -231,11 +232,13 @@ export default function ProfilePage() {
                       showReferralBadge={true}
                       className="w-32 h-32 sm:w-40 sm:h-40 shadow-inner"
                     />
-                    {profile.is_verified && (
-                      <div className="absolute bottom-2 right-2 bg-blue-500 text-white p-1.5 rounded-full ring-4 ring-background shadow-lg animate-coin-flip">
-                        <CheckCircle className="w-5 h-5" />
-                      </div>
-                    )}
+                    <ProVerifiedBadge
+                      isVerified={profile.is_verified}
+                      isPro={profile.is_pro}
+                      proExpiresAt={profile.pro_expires_at}
+                      iconSize={3}
+                      className="absolute bottom-2 right-2 w-8 h-8 md:w-10 md:h-10"
+                    />
                   </div>
                 </div>
 
@@ -517,7 +520,14 @@ export default function ProfilePage() {
                                   {rec.recommender.full_name}
                                 </h4>
                                 {rec.recommender.is_verified && (
-                                  <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                                  <ProVerifiedBadge
+                                    isVerified={rec.recommender.is_verified}
+                                    isPro={(rec.recommender as any).is_pro}
+                                    proExpiresAt={
+                                      (rec.recommender as any).pro_expires_at
+                                    }
+                                    iconSize={2.5}
+                                  />
                                 )}
                               </div>
                               {rec.recommender.location_city &&

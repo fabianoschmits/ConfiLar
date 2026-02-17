@@ -18,6 +18,7 @@ import {
   Info,
   Heart,
   ArrowRight,
+  Clock,
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { DashboardSkeleton } from "@/components/ui/skeleton";
@@ -31,6 +32,7 @@ import { CheckoutModal } from "@/components/checkout/CheckoutModal";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ResponsiveModal } from "@/components/ui/responsive-modal";
+import { ProVerifiedBadge } from "@/components/ui/ProVerifiedBadge";
 
 export default function ComprarPontosPage() {
   const t = useTranslations("confipoints");
@@ -87,6 +89,46 @@ export default function ComprarPontosPage() {
       icon: <TrendingUp className="w-6 h-6" />,
       color: "red",
     },
+    pro_monthly: {
+      icon: <Crown className="w-6 h-6" />,
+      color: "amber",
+    },
+    gold: {
+      icon: <Zap className="w-6 h-6" />,
+      color: "amber",
+    },
+  };
+
+  const calculateMaxDays = (points: number, type: "POST" | "AD") => {
+    const prices =
+      type === "POST"
+        ? [
+            PREMIUM_PRICES.POST_30_DAYS,
+            PREMIUM_PRICES.POST_14_DAYS,
+            PREMIUM_PRICES.POST_7_DAYS,
+            PREMIUM_PRICES.POST_1_DAY,
+          ]
+        : [
+            PREMIUM_PRICES.AD_30_DAYS,
+            PREMIUM_PRICES.AD_14_DAYS,
+            PREMIUM_PRICES.AD_7_DAYS,
+            PREMIUM_PRICES.AD_1_DAY,
+          ];
+
+    let remaining = points;
+    let days = 0;
+
+    // Ensure sorted descending by price/points
+    const sortedPrices = [...prices].sort((a, b) => b.POINTS - a.POINTS);
+
+    for (const price of sortedPrices) {
+      const count = Math.floor(remaining / price.POINTS);
+      if (count > 0) {
+        days += count * (price.DAYS || 1);
+        remaining -= count * price.POINTS;
+      }
+    }
+    return days;
   };
 
   const packages = dbPackages
@@ -98,16 +140,25 @@ export default function ComprarPontosPage() {
 
       // Cálculo dinâmico de funcionalidades baseadas nos pontos totais e preços atuais
       const likesCount = Math.floor(totalPoints / PREMIUM_PRICES.LIKE.POINTS);
-      const postsCount = Math.floor(totalPoints / PREMIUM_PRICES.POST.POINTS);
-      const adsCount = Math.floor(totalPoints / PREMIUM_PRICES.AD_1_DAY.POINTS);
+
+      const maxPostDays = calculateMaxDays(totalPoints, "POST");
+      const maxAdDays = calculateMaxDays(totalPoints, "AD");
 
       // Descrição de uso dinâmico (O que você pode fazer?)
-      let uses = "";
-      if (postsCount > 0) {
-        uses = `${postsCount} ${t(postsCount > 1 ? "premiumPosts" : "premiumPost")} ${t("or")} ${likesCount} ${t("premiumLikes")}`;
-      } else {
-        uses = `${likesCount} ${t("premiumLikes")}`;
+      const options = [];
+      if (maxPostDays > 0) {
+        options.push(
+          `${maxPostDays} ${maxPostDays > 1 ? "Dias" : "Dia"} de Post Premium`,
+        );
       }
+      if (maxAdDays > 0) {
+        options.push(
+          `${maxAdDays} ${maxAdDays > 1 ? "Dias" : "Dia"} de Anúncio Premium`,
+        );
+      }
+      options.push(`${likesCount} ${t("premiumLikes")}`);
+
+      const uses = options.join(` ${t("or")} `);
 
       return {
         id: pkg.id,
@@ -153,6 +204,29 @@ export default function ComprarPontosPage() {
       description: t("benefit4.description"),
     },
   ];
+
+  // Lógica para restrição de compra Pro
+  const isCurrentlyPro =
+    profile?.is_pro &&
+    profile?.pro_expires_at &&
+    new Date(profile.pro_expires_at) > new Date();
+
+  const getProRemainingTime = () => {
+    if (!profile?.pro_expires_at) return null;
+    const expiresAt = new Date(profile.pro_expires_at);
+    const now = new Date();
+    const diff = expiresAt.getTime() - now.getTime();
+
+    if (diff <= 0) return null;
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+    if (days > 0) return `${days}d ${hours}h`;
+    return `${hours}h`;
+  };
+
+  const proRemainingTime = getProRemainingTime();
 
   return (
     <MainLayout requireAuth={true}>
@@ -264,6 +338,23 @@ export default function ComprarPontosPage() {
                             pontos
                           </span>
                         </div>
+
+                        {/* Pro Badge Preview */}
+                        {activePackage.slug === "pro_monthly" && (
+                          <div className="flex items-center justify-center mt-2 mb-1 gap-2 bg-gray-50 dark:bg-gray-800/50 py-1.5 rounded-full w-fit mx-auto px-4 border border-gray-100 dark:border-gray-700">
+                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                              Receba:
+                            </span>
+                            <ProVerifiedBadge
+                              isVerified={true}
+                              isPro={true}
+                              iconSize={3}
+                            />
+                            <span className="text-xs font-bold text-amber-600 dark:text-amber-500">
+                              ConfiLar Pro
+                            </span>
+                          </div>
+                        )}
                         {activePackage.bonus > 0 && (
                           <>
                             <Badge
@@ -294,14 +385,73 @@ export default function ComprarPontosPage() {
                         </p>
                       </div>
 
+                      {/* Pro Benefits Section */}
+                      {activePackage.slug === "pro_monthly" && (
+                        <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-800 text-left mb-4">
+                          <h4 className="font-bold text-amber-800 dark:text-amber-300 mb-2 flex items-center text-sm">
+                            <Crown className="w-4 h-4 mr-2" /> Vantagens
+                            ConfiLar Pro
+                          </h4>
+                          <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1 list-disc pl-4">
+                            <li>Badge Exclusiva Pro + Verificado</li>
+                            <li>Prioridade máxima nas buscas</li>
+                            <li>3000 ConfiPoints mensais</li>
+                            <li>Destaque em recomendações</li>
+                          </ul>
+                          <div className="mt-3 flex items-start gap-2">
+                            <Info className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5" />
+                            <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
+                              Limite de 1 assinatura a cada 30 dias.{" "}
+                              {isCurrentlyPro ? (
+                                <span className="text-amber-600 font-bold">
+                                  Você já é Pro! Disponível para nova compra em:{" "}
+                                  {proRemainingTime}.
+                                </span>
+                              ) : (
+                                "Ao comprar, você recebe os pontos e 30 dias de status Pro. Após esse período, sua conta retorna ao normal até a próxima renovação."
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Purchase Button */}
                       <Button
                         className={`w-full h-12 text-base ${
                           activePackage.popular
                             ? "bg-[#00b0b0] hover:bg-[#009090] text-white"
                             : "bg-gray-800 hover:bg-gray-900 dark:bg-gray-200 dark:hover:bg-gray-300 text-white dark:text-gray-900"
+                        } ${
+                          activePackage.slug === "pro_monthly" &&
+                          (!profile?.is_verified || isCurrentlyPro)
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
                         }`}
+                        disabled={
+                          activePackage.slug === "pro_monthly" &&
+                          (isCurrentlyPro || !profile?.is_verified)
+                        }
                         onClick={() => {
+                          if (
+                            activePackage.slug === "pro_monthly" &&
+                            !profile?.is_verified
+                          ) {
+                            toast.error(
+                              "Você precisa verificar sua identidade para assinar o ConfiLar Pro.",
+                            );
+                            return;
+                          }
+
+                          if (
+                            activePackage.slug === "pro_monthly" &&
+                            isCurrentlyPro
+                          ) {
+                            toast.error(
+                              `Você já possui uma assinatura Pro ativa. Disponível para nova compra em ${proRemainingTime}.`,
+                            );
+                            return;
+                          }
+
                           setSelectedPackage({
                             id: activePackage.id,
                             name: activePackage.name,
@@ -314,8 +464,29 @@ export default function ComprarPontosPage() {
                           setIsCheckoutOpen(true);
                         }}
                       >
-                        <CreditCard className="w-5 h-5 mr-2" />
-                        Comprar Agora
+                        {activePackage.slug === "pro_monthly" ? (
+                          !profile?.is_verified ? (
+                            <>
+                              <CheckCircle className="w-5 h-5 mr-2" />
+                              Requer Verificação
+                            </>
+                          ) : isCurrentlyPro ? (
+                            <>
+                              <Clock className="w-5 h-5 mr-2" />
+                              Renovação em {proRemainingTime}
+                            </>
+                          ) : (
+                            <>
+                              <CreditCard className="w-5 h-5 mr-2" />
+                              Assinar ConfiLar Pro
+                            </>
+                          )
+                        ) : (
+                          <>
+                            <CreditCard className="w-5 h-5 mr-2" />
+                            Comprar Agora
+                          </>
+                        )}
                       </Button>
                     </div>
                   )}
@@ -362,6 +533,20 @@ export default function ComprarPontosPage() {
                           </span>
                         </div>
 
+                        {pkg.slug === "pro_monthly" && (
+                          <div className="flex items-center justify-center mt-1.5 gap-1.5">
+                            <ProVerifiedBadge
+                              isVerified={true}
+                              isPro={true}
+                              iconSize={3}
+                              className="w-3.5 h-3.5"
+                            />
+                            <span className="text-[10px] font-bold text-amber-600 dark:text-amber-500">
+                              ConfiLar Pro
+                            </span>
+                          </div>
+                        )}
+
                         {pkg.bonus > 0 && (
                           <Badge
                             variant="secondary"
@@ -369,6 +554,14 @@ export default function ComprarPontosPage() {
                           >
                             +{pkg.bonus}
                           </Badge>
+                        )}
+
+                        {pkg.slug === "pro_monthly" && isCurrentlyPro && (
+                          <div className="mt-1">
+                            <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 text-[9px] border-amber-200 dark:border-amber-800 animate-pulse">
+                              Ativo: {proRemainingTime}
+                            </Badge>
+                          </div>
                         )}
 
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">

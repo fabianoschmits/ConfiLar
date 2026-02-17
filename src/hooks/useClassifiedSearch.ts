@@ -188,7 +188,9 @@ export function useClassifiedSearch() {
           professional_experience_years,
           professional_services,
           bio,
-          is_verified
+          is_verified,
+          is_pro,
+          pro_expires_at
         `,
         )
         .in("id", userIds)
@@ -227,6 +229,8 @@ export function useClassifiedSearch() {
                 bio: profile.bio,
                 user_type: profile.user_type,
                 is_verified: profile.is_verified,
+                is_pro: profile.is_pro,
+                pro_expires_at: profile.pro_expires_at,
               }
             : null,
           user_type: ad.user_type || "client",

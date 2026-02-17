@@ -12,8 +12,9 @@ interface Profile {
   location_city?: string;
   rating?: number;
   total_reviews?: number;
-  is_verified?: boolean;
   is_available?: boolean;
+  is_pro?: boolean;
+  pro_expires_at?: string;
   created_at: string;
 }
 
@@ -50,6 +51,8 @@ export function useProfile(userId: string) {
           total_reviews,
           is_verified,
           is_available,
+          is_pro,
+          pro_expires_at,
           created_at
         `,
         )
@@ -89,6 +92,8 @@ export function useProfiles(
           total_reviews,
           is_verified,
           is_available,
+          is_pro,
+          pro_expires_at,
           created_at
         `,
         { count: "exact" },
