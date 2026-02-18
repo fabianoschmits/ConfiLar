@@ -11,6 +11,7 @@ import { LocationFilter } from "@/hooks/useLocationFilters";
 import { removeYouTubeUrls, detectYouTubeUrls } from "@/utils/youtube";
 import { isValidUUID, validateUUIDs } from "@/lib/utils";
 import { getEstadoBySigla, getEstadoByNome } from "@/lib/ibge";
+import { updateReferralMilestone } from "@/hooks/useReferralTracking";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -671,26 +672,8 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
               "🎉 [addPost] Este é o PRIMEIRO post do usuário! Marcando milestone...",
             );
 
-            // Marcar milestone de primeiro post
-            const { error: milestoneError } = await supabase
-              .from("referrals")
-              .update({
-                first_post_made: true,
-                last_activity_at: new Date().toISOString(),
-              })
-              .eq("referred_id", newPost.user_id)
-              .eq("first_post_made", false);
-
-            if (milestoneError) {
-              console.warn(
-                "⚠️ [addPost] Erro ao marcar milestone (usuário pode não ter sido indicado):",
-                milestoneError.message,
-              );
-            } else {
-              console.log(
-                "✅ [addPost] Milestone first_post_made marcado! (+100 pontos para indicador)",
-              );
-            }
+            // Marcar milestone de primeiro post (via API segura para bypass RLS)
+            await updateReferralMilestone(newPost.user_id, "first_post_made");
           } else {
             console.log(
               "📝 [addPost] Post criado. Total de posts do usuário:",

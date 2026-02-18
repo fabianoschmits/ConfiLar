@@ -264,28 +264,8 @@ export async function checkAndUpdate30DaysActive(
         "🎉 [30 dias] Usuário completou 30 dias ativo! Marcando milestone...",
       );
 
-      // Marcar como ativo por 30 dias
-      const { error: updateError } = await supabase
-        .from("referrals")
-        .update({
-          active_30_days: true,
-          last_activity_at: new Date().toISOString(),
-        })
-        .eq("id", referralData.id);
-
-      if (updateError) {
-        console.error(
-          "❌ [30 dias] Erro ao marcar 30 dias ativo:",
-          updateError,
-        );
-      } else {
-        console.log(
-          "✅ [30 dias] Milestone active_30_days marcado! (+150 pontos para indicador)",
-        );
-        console.log(
-          '✅ [30 dias] Status mudará para "completed" via trigger do banco',
-        );
-      }
+      // Marcar como ativo por 30 dias (via API segura)
+      await updateReferralMilestone(userId, "active_30_days");
     } else {
       console.log(
         `⏳ [30 dias] Faltam ${30 - daysSinceActivation} dias para completar 30 dias`,

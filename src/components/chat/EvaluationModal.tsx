@@ -9,6 +9,8 @@ import { Star, Loader2, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { ResponsiveModal } from "@/components/ui/responsive-modal";
+import { updateReferralMilestone } from "@/hooks/useReferralTracking";
+import { useAuth } from "@/hooks/useUnifiedAuth";
 
 interface EvaluationModalProps {
   isOpen: boolean;
@@ -29,6 +31,7 @@ export function EvaluationModal({
   onEvaluationComplete,
   isMutual = false,
 }: EvaluationModalProps) {
+  const { user } = useAuth();
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -163,25 +166,9 @@ export function EvaluationModal({
             "🎉 [Avaliação] Esta é a PRIMEIRA avaliação do usuário! Marcando milestone...",
           );
 
-          // Marcar milestone de primeira avaliação
-          const { error: milestoneError } = await supabase
-            .from("referrals")
-            .update({
-              first_review_made: true,
-              last_activity_at: new Date().toISOString(),
-            })
-            .eq("referred_id", user.id)
-            .eq("first_review_made", false);
-
-          if (milestoneError) {
-            console.warn(
-              "⚠️ [Avaliação] Erro ao marcar milestone (usuário pode não ter sido indicado):",
-              milestoneError.message,
-            );
-          } else {
-            console.log(
-              "✅ [Avaliação] Milestone first_review_made marcado! (+100 pontos para indicador)",
-            );
+          // Marcar milestone de primeira avaliação (via API segura para bypass RLS)
+          if (user?.id) {
+            await updateReferralMilestone(user.id, "first_review_made");
           }
         } else {
           console.log(

@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { Database } from "@/types/database";
+import { updateReferralMilestone } from "@/hooks/useReferralTracking";
 
 export type Review = Database["public"]["Tables"]["reviews"]["Row"];
 export type ReviewInsert = Database["public"]["Tables"]["reviews"]["Insert"];
@@ -215,26 +216,11 @@ export function useSupabaseReviews() {
               "🎉 [Review] Esta é a PRIMEIRA avaliação do usuário! Marcando milestone...",
             );
 
-            // Marcar milestone de primeira avaliação
-            const { error: milestoneError } = await supabase
-              .from("referrals")
-              .update({
-                first_review_made: true,
-                last_activity_at: new Date().toISOString(),
-              })
-              .eq("referred_id", data.reviewer_id)
-              .eq("first_review_made", false);
-
-            if (milestoneError) {
-              console.warn(
-                "⚠️ [Review] Erro ao marcar milestone (usuário pode não ter sido indicado):",
-                milestoneError.message,
-              );
-            } else {
-              console.log(
-                "✅ [Review] Milestone first_review_made marcado! (+100 pontos para indicador)",
-              );
-            }
+            // Marcar milestone de primeira avaliação (via API segura para bypass RLS)
+            await updateReferralMilestone(
+              data.reviewer_id,
+              "first_review_made",
+            );
           }
         } catch (milestoneError) {
           console.warn(
