@@ -29,7 +29,13 @@ export function useAutoRedirect() {
       ];
 
       // Redirecionar para home apenas se estiver em uma rota protegida e não estiver logado
-      if (authRequiredPaths.some((path) => currentPath.startsWith(path))) {
+      const isExactPerfil =
+        currentPath === "/perfil" || currentPath === "/perfil/";
+      const isOtherProtectedPath = authRequiredPaths
+        .filter((path) => path !== "/perfil")
+        .some((path) => currentPath.startsWith(path));
+
+      if (isExactPerfil || isOtherProtectedPath) {
         router.push("/");
       }
     }
