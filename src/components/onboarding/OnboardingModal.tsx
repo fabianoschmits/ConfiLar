@@ -589,7 +589,6 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
       if (!success) return;
 
       await createReferral(user.id, "onboarding_complete");
-      await updateReferralMilestone(user.id, "profile_completed");
       await createWelcomePost(user.id, data.full_name, data.user_type);
 
       toast.success("🎉 Perfil completado com sucesso!");

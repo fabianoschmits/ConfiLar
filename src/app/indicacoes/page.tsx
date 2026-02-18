@@ -186,10 +186,11 @@ export default function IndicacoesPage() {
                     </div>
                     <div>
                       <p className="font-medium text-gray-900 dark:text-white">
-                        Amigos se cadastram
+                        Indicações enviam documentos
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Cada cadastro via seu link te dá pontos
+                        Cada documento enviado confirma a indicação e te dá
+                        pontos
                       </p>
                     </div>
                   </div>
@@ -283,7 +284,7 @@ export default function IndicacoesPage() {
 
 const pointsTable = [
   { action: "Indicação se cadastra", points: 200 },
-  { action: "Indicação completa perfil", points: 150 },
+  { action: "Indicação envia documentos", points: 150 },
   { action: "Indicação faz primeiro post", points: 100 },
   { action: "Indicação faz primeira avaliação", points: 100 },
   { action: "Indicação fica ativa por 30 dias", points: 300 },

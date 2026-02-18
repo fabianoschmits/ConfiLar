@@ -688,7 +688,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
               );
             } else {
               console.log(
-                "✅ [addPost] Milestone first_post_made marcado! (+30 pontos para indicador)",
+                "✅ [addPost] Milestone first_post_made marcado! (+100 pontos para indicador)",
               );
             }
           } else {

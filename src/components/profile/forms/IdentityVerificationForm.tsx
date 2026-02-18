@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { updateReferralMilestone } from "@/hooks/useReferralTracking";
 
 interface VerificationHistoryItem {
   id: string;
@@ -160,6 +161,12 @@ export function IdentityVerificationForm() {
       setSelectedFiles([]);
       setRejectionReason(null); // Clear rejection reason
       fetchVerificationStatus(); // Refresh history
+
+      // ✅ Trigger referral milestone for completing documentation
+      if (user?.id) {
+        await updateReferralMilestone(user.id, "profile_completed");
+      }
+
       toast.success(
         "Documentos enviados com sucesso! A análise pode demorar até 48 horas.",
       );

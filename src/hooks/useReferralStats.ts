@@ -32,6 +32,8 @@ export interface ReferralDashboard {
     status: string;
     profileCompleted: boolean;
     firstPostMade: boolean;
+    firstReviewMade: boolean;
+    active30Days: boolean;
     createdAt: string;
     activatedAt: string | null;
   }>;
@@ -288,6 +290,8 @@ export function useReferralDashboard(userId?: string) {
           status: r.status,
           profileCompleted: r.profile_completed,
           firstPostMade: r.first_post_made,
+          firstReviewMade: r.first_review_made,
+          active30Days: r.active_30_days,
           createdAt: r.created_at,
           activatedAt: r.activated_at,
         };

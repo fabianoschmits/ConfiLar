@@ -62,7 +62,7 @@ export function ReferralHistory({ userId, className }: ReferralHistoryProps) {
     : recentPoints.slice(0, 10);
   const displayedReferrals = showAllReferrals
     ? referrals
-    : referrals.slice(0, 10);
+    : referrals.slice(0, 5);
 
   if (referrals.length === 0) {
     return (
@@ -172,8 +172,10 @@ export function ReferralHistory({ userId, className }: ReferralHistoryProps) {
               Pessoas que Você Indicou
             </h3>
             <Badge variant="outline" className="ml-auto">
-              {showAllReferrals ? referrals.length : "Primeiras 10"} de{" "}
-              {referrals.length}
+              {showAllReferrals
+                ? referrals.length
+                : `Primeiras ${Math.min(5, referrals.length)}`}{" "}
+              de {referrals.length}
             </Badge>
           </div>
           {displayedReferrals.map((referral) => (
@@ -210,39 +212,47 @@ export function ReferralHistory({ userId, className }: ReferralHistoryProps) {
                 </div>
               </Link>
 
-              {/* Status */}
-              <div className="flex flex-col items-end gap-1">
+              {/* Status e Milestones */}
+              <div className="flex flex-col items-end gap-2">
                 <Badge
                   variant={getStatusVariant(referral.status)}
-                  className="text-xs"
+                  className="text-[10px] px-1.5 h-5"
                 >
                   {getStatusText(referral.status)}
                 </Badge>
 
-                {/* Milestones */}
-                <div className="flex items-center gap-1">
-                  {referral.profileCompleted && (
-                    <div title="Perfil completo">
-                      <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    </div>
-                  )}
-                  {referral.firstPostMade && (
-                    <div title="Primeiro post">
-                      <CheckCircle2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                  )}
-                  {!referral.profileCompleted && !referral.firstPostMade && (
-                    <div title="Aguardando atividade">
-                      <Clock className="w-4 h-4 text-gray-400" />
-                    </div>
-                  )}
+                {/* Milestones Process Flow */}
+                <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-50 dark:bg-gray-900/50 rounded-full border border-gray-100 dark:border-gray-800">
+                  <MilestoneIcon
+                    active={referral.profileCompleted}
+                    label="Docs"
+                    icon="📄"
+                  />
+                  <div className="w-2 h-[1px] bg-gray-200 dark:bg-gray-700" />
+                  <MilestoneIcon
+                    active={referral.firstPostMade}
+                    label="Post"
+                    icon="📝"
+                  />
+                  <div className="w-2 h-[1px] bg-gray-200 dark:bg-gray-700" />
+                  <MilestoneIcon
+                    active={referral.firstReviewMade}
+                    label="Avaliação"
+                    icon="⭐"
+                  />
+                  <div className="w-2 h-[1px] bg-gray-200 dark:bg-gray-700" />
+                  <MilestoneIcon
+                    active={referral.status === "completed"}
+                    label="30 Dias"
+                    icon="🏆"
+                  />
                 </div>
               </div>
             </div>
           ))}
 
           {/* Botão Ver Mais/Menos - Referrals */}
-          {referrals.length > 10 && (
+          {referrals.length > 5 && (
             <div className="mt-4 text-center">
               <Button
                 variant="outline"
@@ -258,7 +268,7 @@ export function ReferralHistory({ userId, className }: ReferralHistoryProps) {
                 ) : (
                   <>
                     <ChevronDown className="w-4 h-4 mr-2" />
-                    Ver mais ({referrals.length - 10} restantes)
+                    Ver mais ({referrals.length - 5} restantes)
                   </>
                 )}
               </Button>
@@ -267,6 +277,36 @@ export function ReferralHistory({ userId, className }: ReferralHistoryProps) {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function MilestoneIcon({
+  active,
+  label,
+  icon,
+}: {
+  active: boolean;
+  label: string;
+  icon: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex flex-col items-center gap-0.5 transition-all duration-300",
+        active ? "opacity-100 scale-110" : "opacity-30 grayscale",
+      )}
+      title={`${label}: ${active ? "Concluído" : "Pendente"}`}
+    >
+      <span className="text-[10px] leading-none">{icon}</span>
+      <span
+        className={cn(
+          "text-[7px] font-bold uppercase tracking-wider",
+          active ? "text-blue-600 dark:text-blue-400" : "text-gray-400",
+        )}
+      >
+        {label}
+      </span>
+    </div>
   );
 }
 
@@ -303,7 +343,7 @@ function getStatusText(status: string): string {
 function getActionTypeDescription(actionType: string): string {
   const descriptions: Record<string, string> = {
     signup: "Pessoa indicada se cadastrou",
-    profile_completed: "Pessoa indicada completou perfil",
+    profile_completed: "Pessoa indicada enviou documentos",
     first_post: "Pessoa indicada fez primeiro post",
     first_review: "Pessoa indicada fez primeira avaliação",
     active_30_days: "Pessoa indicada ficou ativa por 30 dias",
