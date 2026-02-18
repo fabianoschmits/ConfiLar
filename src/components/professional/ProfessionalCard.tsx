@@ -29,6 +29,7 @@ import { FavoriteButton } from "@/components/ui/FavoriteButton";
 import { RecommendationButton } from "@/components/ui/RecommendationButton";
 import { ProVerifiedBadge } from "@/components/ui/ProVerifiedBadge";
 import { useAvailabilityContext } from "@/contexts/AvailabilityContext";
+import { RequestEvaluationButton } from "@/components/chat/RequestEvaluationButton";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 
@@ -296,7 +297,14 @@ export function ProfessionalCard({
               />
             </div>
 
-            <div className="flex-1" />
+            <div className="flex-1 flex justify-center">
+              {!isOwner && !isGuest && (
+                <RequestEvaluationButton
+                  targetUserId={profile.id}
+                  targetUserName={profile.full_name}
+                />
+              )}
+            </div>
 
             <div className="flex gap-2">
               <Button

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Star, Loader2, CheckCircle, Clock } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 import { useEvaluationRequests } from "@/hooks/useEvaluationRequests";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { EvaluationModal } from "./EvaluationModal";
@@ -28,6 +29,7 @@ export function RequestEvaluationButton({
   const [currentRequest, setCurrentRequest] = useState<any>(null);
   const { createRequest, requests, acceptRequest, loadRequests } =
     useEvaluationRequests();
+  const [hasReviewed, setHasReviewed] = useState(false);
 
   // Verificar se existe uma solicitação entre os usuários
   const existingRequest = requests.find(
@@ -35,6 +37,26 @@ export function RequestEvaluationButton({
       (req.requester_id === user?.id && req.target_id === targetUserId) ||
       (req.requester_id === targetUserId && req.target_id === user?.id),
   );
+
+  // Verificar se o usuário atual já avaliou este alvo
+  useEffect(() => {
+    async function checkExistingReview() {
+      if (!user?.id || !targetUserId) return;
+
+      const { data, error } = await supabase
+        .from("reviews")
+        .select("id")
+        .eq("reviewer_id", user.id)
+        .eq("reviewed_id", targetUserId)
+        .maybeSingle();
+
+      if (!error && data) {
+        setHasReviewed(true);
+      }
+    }
+
+    checkExistingReview();
+  }, [user?.id, targetUserId]);
 
   const handleRequestEvaluation = async () => {
     try {
@@ -114,6 +136,16 @@ export function RequestEvaluationButton({
 
     if (existingRequest.status === "accepted") {
       // Ambos os usuários podem avaliar quando aceito
+      if (hasReviewed) {
+        return {
+          text: "Avaliado",
+          icon: <CheckCircle className="h-3 w-3" />,
+          onClick: () => {},
+          variant: "ghost" as const,
+          disabled: true,
+        };
+      }
+
       return {
         text: "Avaliar",
         icon: <Star className="h-3 w-3" />,

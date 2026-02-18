@@ -120,6 +120,7 @@ export function EvaluationModal({
 
   const handleSubmit = async () => {
     try {
+      if (isSubmitting) return;
       setIsSubmitting(true);
 
       // Obter dados do usuário atual
@@ -128,6 +129,24 @@ export function EvaluationModal({
       } = await supabase.auth.getUser();
       if (!user) {
         throw new Error("Usuário não autenticado");
+      }
+
+      // Verificação de segurança: verificar se já existe uma avaliação deste usuário para este alvo
+      const { data: existingReview, error: checkError } = await supabase
+        .from("reviews")
+        .select("id")
+        .eq("reviewer_id", user.id)
+        .eq("reviewed_id", targetUserId)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error("Erro ao verificar avaliação existente:", checkError);
+      }
+
+      if (existingReview) {
+        toast.info("Você já avaliou este usuário.");
+        onClose();
+        return;
       }
 
       // Criar a avaliação
