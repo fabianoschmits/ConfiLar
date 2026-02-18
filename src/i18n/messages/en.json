@@ -1060,7 +1060,11 @@
       "usageItem1": "Browsing history",
       "usageItem2": "Platform interactions",
       "usageItem3": "Messages exchanged",
-      "usageItem4": "Reviews made"
+      "usageItem4": "Reviews made",
+      "financialTitle": "Financial Data (ConfiPoints):",
+      "financialItem1": "Purchase and top-up history",
+      "financialItem2": "Transfer history between users",
+      "financialItem3": "Pro subscription status"
     },
     "section3": {
       "title": "Processing Purposes",
@@ -1120,6 +1124,13 @@
       "usageData": "Usage data: 2 years after last activity",
       "marketingData": "Marketing data: Until consent revocation",
       "legalData": "Legal data: As required by law"
+    },
+    "section10": {
+      "title": "Refund and Return Policy",
+      "description": "Due to the nature of digital services and the immediate availability of ConfiPoints and Pro benefits after payment confirmation, please be advised that:",
+      "item1": "We do not offer refunds or returns after the payment is confirmed and points are credited.",
+      "item2": "The user is responsible for checking package details before finalizing the purchase.",
+      "item3": "In case of technical failure in point crediting, support must be contacted for manual resolution."
     },
     "section8": {
       "title": "Cookies and Similar Technologies",

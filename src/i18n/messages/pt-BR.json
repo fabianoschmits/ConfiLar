@@ -1113,7 +1113,11 @@
       "usageItem1": "Histórico de navegação",
       "usageItem2": "Interações na plataforma",
       "usageItem3": "Mensagens trocadas",
-      "usageItem4": "Avaliações realizadas"
+      "usageItem4": "Avaliações realizadas",
+      "financialTitle": "Dados Financeiros (ConfiPoints):",
+      "financialItem1": "Histórico de compras e recargas",
+      "financialItem2": "Histórico de transferências entre usuários",
+      "financialItem3": "Status de assinaturas Pro"
     },
     "section3": {
       "title": "Finalidades do Tratamento",
@@ -1174,6 +1178,13 @@
       "usageData": "Dados de uso: 2 anos após a última atividade",
       "marketingData": "Dados de marketing: Até revogação do consentimento",
       "legalData": "Dados legais: Conforme exigido por lei"
+    },
+    "section10": {
+      "title": "Política de Estorno e Reembolso",
+      "description": "Devido à natureza dos serviços digitais e à disponibilização imediata de ConfiPoints e benefícios Pro após a confirmação do pagamento, informamos que:",
+      "item1": "Não realizamos estorno ou devolução de valores após a confirmação do pagamento e crédito dos pontos.",
+      "item2": "O usuário é responsável por verificar os detalhes do pacote antes de finalizar a compra.",
+      "item3": "Em caso de falha técnica no crédito dos pontos, o suporte deve ser contatado para resolução manual."
     },
     "section8": {
       "title": "Cookies e Tecnologias Similares",

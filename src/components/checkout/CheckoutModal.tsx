@@ -61,6 +61,7 @@ export function CheckoutModal({
   const [step, setStep] = useState<"form" | "qrcode" | "success">("form");
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingPayment, setIsCheckingPayment] = useState(false);
+  const [isQRCodeImageLoading, setIsQRCodeImageLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Dados do formulário
@@ -119,6 +120,7 @@ export function CheckoutModal({
       setError(null);
       setPaymentData(null);
       setIsLoading(false);
+      setIsQRCodeImageLoading(false);
     }
   }, [isOpen]);
 
@@ -230,6 +232,9 @@ export function CheckoutModal({
             qrCodeImage: data.qrCode || prev?.qrCodeImage,
             expiresAt: data.expiresAt || prev?.expiresAt,
           }));
+          if (data.qrCode && data.qrCode !== paymentData.qrCodeImage) {
+            setIsQRCodeImageLoading(true);
+          }
         }
 
         // Se pagamento aprovado, ir automaticamente para o modal de sucesso
@@ -444,6 +449,7 @@ export function CheckoutModal({
         purchaseId: data.orderId,
       });
 
+      setIsQRCodeImageLoading(true);
       setStep("qrcode");
       toast.success("QR Code gerado com sucesso!");
     } catch (err: any) {
@@ -968,12 +974,22 @@ export function CheckoutModal({
 
             <div className="flex flex-col items-center space-y-4">
               {paymentData.qrCodeImage && (
-                <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
+                <div className="bg-white p-4 rounded-lg border-2 border-gray-200 relative min-h-[256px] flex items-center justify-center">
+                  {isQRCodeImageLoading && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-black/80 z-10 rounded-lg">
+                      <Loader2 className="w-10 h-10 text-[#00b0b0] animate-spin mb-2" />
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                        Carregando QR Code...
+                      </p>
+                    </div>
+                  )}
                   <img
                     src={paymentData.qrCodeImage}
                     alt="QR Code PIX"
-                    className="w-64 h-64"
+                    className={`w-64 h-64 transition-opacity duration-300 ${isQRCodeImageLoading ? "opacity-0" : "opacity-100"}`}
+                    onLoad={() => setIsQRCodeImageLoading(false)}
                     onError={(e) => {
+                      setIsQRCodeImageLoading(false);
                       // Se a imagem falhar, tentar gerar QR Code do código PIX
                       console.warn("Erro ao carregar imagem do QR Code");
                     }}
@@ -1097,6 +1113,10 @@ export function CheckoutModal({
                 </div>
               </div>
             </div>
+            <p className="text-[10px] text-gray-500 dark:text-gray-500 italic">
+              * A compra de ConfiPoints ou assinaturas Pro não permite estorno
+              ou devolução após a confirmação do pagamento.
+            </p>
           </div>
         )}
       </div>

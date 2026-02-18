@@ -303,9 +303,55 @@ export default function ComprarPontosPage() {
 
             {/* Pacotes - Mobile Optimized Grid */}
             <div className="mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-5">
-                {t("choosePackage")}
-              </h2>
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                  {t("choosePackage")}
+                </h2>
+                {isCurrentlyPro && (
+                  <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border-amber-200 dark:border-amber-800 flex items-center gap-1.5 py-1 px-3">
+                    <Crown className="w-3.5 h-3.5" />
+                    <span className="text-xs font-bold">
+                      Você é ConfiLar Pro!
+                    </span>
+                  </Badge>
+                )}
+              </div>
+
+              {/* Banner de Assinatura Ativa (Apenas para Pro) */}
+              {isCurrentlyPro && (
+                <div className="mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/10 dark:to-orange-950/10 border border-amber-200 dark:border-amber-800 rounded-xl relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+                    <Crown className="w-16 h-16 text-amber-600" />
+                  </div>
+                  <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
+                        <Crown className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-gray-900 dark:text-white">
+                          Assinatura ConfiLar Pro Ativa
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Aproveite todos os seus benefícios exclusivos.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 bg-white/50 dark:bg-black/20 p-2 px-4 rounded-lg border border-amber-200/50 dark:border-amber-800/50 backdrop-blur-sm">
+                      <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      <div className="text-sm">
+                        <span className="text-gray-500 dark:text-gray-400 font-medium mr-1">
+                          Próxima renovação em:
+                        </span>
+                        <span className="font-bold text-amber-700 dark:text-amber-400">
+                          {proRemainingTime}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
                 {/* Package Details Modal */}
                 <ResponsiveModal

@@ -150,7 +150,7 @@ export default function PrivacidadePage() {
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
                       {t("section2.professionalTitle")}
                     </h4>
                     <ul className="space-y-1 text-gray-700 text-sm">
@@ -162,7 +162,7 @@ export default function PrivacidadePage() {
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
                       {t("section2.usageTitle")}
                     </h4>
                     <ul className="space-y-1 text-gray-700 text-sm">
@@ -172,6 +172,18 @@ export default function PrivacidadePage() {
                       <li>• {t("section2.usageItem4")}</li>
                     </ul>
                   </div>
+                </div>
+
+                <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg">
+                  <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 flex items-center">
+                    <Database className="w-4 h-4 mr-2" />
+                    {t("section2.financialTitle")}
+                  </h4>
+                  <ul className="grid sm:grid-cols-3 gap-2 text-blue-800 dark:text-blue-200 text-sm">
+                    <li>• {t("section2.financialItem1")}</li>
+                    <li>• {t("section2.financialItem2")}</li>
+                    <li>• {t("section2.financialItem3")}</li>
+                  </ul>
                 </div>
               </CardContent>
             </Card>
@@ -451,6 +463,26 @@ export default function PrivacidadePage() {
                     className="text-gray-700 text-sm"
                   />
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* 10. Reembolso */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <span className="bg-red-100 text-red-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">
+                    10
+                  </span>
+                  {t("section10.title")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-gray-700">{t("section10.description")}</p>
+                <ul className="space-y-2 text-gray-700 text-sm">
+                  <li>• {t("section10.item1")}</li>
+                  <li>• {t("section10.item2")}</li>
+                  <li>• {t("section10.item3")}</li>
+                </ul>
               </CardContent>
             </Card>
           </div>
