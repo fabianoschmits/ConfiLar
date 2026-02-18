@@ -162,11 +162,6 @@ export function IdentityVerificationForm() {
       setRejectionReason(null); // Clear rejection reason
       fetchVerificationStatus(); // Refresh history
 
-      // ✅ Trigger referral milestone for completing documentation
-      if (user?.id) {
-        await updateReferralMilestone(user.id, "profile_completed");
-      }
-
       toast.success(
         "Documentos enviados com sucesso! A análise pode demorar até 48 horas.",
       );

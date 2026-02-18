@@ -57,6 +57,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { updateReferralMilestone } from "@/hooks/useReferralTracking";
 
 interface VerificationRequest {
   id: string;
@@ -198,6 +199,12 @@ export default function VerificationsPage() {
         type: "success",
         priority: "high",
       });
+
+      // 4. Trigger referral milestone (securely via API now)
+      await updateReferralMilestone(
+        selectedRequest.user_id,
+        "profile_completed",
+      );
 
       toast.success("Profissional aprovado com sucesso!");
 

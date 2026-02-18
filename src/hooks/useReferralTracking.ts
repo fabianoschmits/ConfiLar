@@ -167,51 +167,44 @@ export async function updateReferralMilestone(
     | "active_30_days",
 ): Promise<void> {
   try {
-    // Verificar se o usuário foi indicado
-    const { data: referralData, error: referralError } = await supabase
-      .from("referrals")
-      .select(`id, ${milestone}`)
-      .eq("referred_id", userId)
-      .maybeSingle();
+    console.log(
+      `🔍 [updateReferralMilestone] Chamando API para completar milestone ${milestone} para o usuário ${userId}`,
+    );
 
-    if (referralError) {
-      console.error("Erro ao buscar referral:", referralError);
+    const response = await fetch("/api/referrals/update-milestone", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        referredUserId: userId,
+        milestone,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error(
+        `❌ [updateReferralMilestone] Erro ao atualizar milestone via API:`,
+        result.error,
+      );
       return;
     }
 
-    if (!referralData) {
-      // Usuário não foi indicado, não há problema
-      return;
-    }
-
-    // Verificar se o milestone já foi marcado (type assertion segura)
-    const milestoneValue = (referralData as any)[milestone];
-    if (milestoneValue === true) {
-      return;
-    }
-
-    // Atualizar milestone
-    const updateData: any = {
-      [milestone]: true,
-      last_activity_at: new Date().toISOString(),
-    };
-
-    // Se completou perfil, ativar referral
-    if (milestone === "profile_completed") {
-      updateData.status = "active";
-      updateData.activated_at = new Date().toISOString();
-    }
-
-    const { error: updateError } = await supabase
-      .from("referrals")
-      .update(updateData)
-      .eq("id", referralData.id);
-
-    if (updateError) {
-      console.error("Erro ao atualizar milestone de referral:", updateError);
+    if (result.success) {
+      console.log(
+        `✅ [updateReferralMilestone] Milestone ${milestone} atualizado com sucesso via API!`,
+      );
+    } else {
+      console.log(
+        `ℹ️ [updateReferralMilestone] Resposta da API:`,
+        result.message || "Sem alterações",
+      );
     }
   } catch (err) {
-    console.error("Erro ao processar milestone de referral:", err);
+    console.error(
+      "❌ [updateReferralMilestone] Erro ao processar via API:",
+      err,
+    );
   }
 }
 
