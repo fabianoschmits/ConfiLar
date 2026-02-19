@@ -68,34 +68,34 @@ export function RecommendationsTab({
                   src={rec.recommender.avatar_url}
                   alt={rec.recommender.full_name}
                   fallback={rec.recommender.full_name?.charAt(0) || "U"}
-                  size="md"
+                  size="lg"
+                  className="border border-border/50"
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <h4 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg truncate">
                       {rec.recommender.full_name}
                     </h4>
-                    {/* Replaced CheckCircle with ProVerifiedBadge */}
                     <ProVerifiedBadge
                       isVerified={rec.recommender.is_verified}
                       isPro={(rec.recommender as any).is_pro}
                       proExpiresAt={(rec.recommender as any).pro_expires_at}
-                      iconSize={3}
+                      iconSize={4}
                     />
                   </div>
                   {rec.recommender.location_city &&
                     rec.recommender.location_state && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-2">
-                        <MapPin className="w-3 h-3" />
+                      <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-2.5">
+                        <MapPin className="w-4 h-4" />
                         {rec.recommender.location_city},{" "}
                         {rec.recommender.location_state}
                       </p>
                     )}
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-3 mb-2.5">
                     {rec.recommender.rating > 0 && (
-                      <div className="flex items-center gap-1">
-                        <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                      <div className="flex items-center gap-1.5">
+                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                        <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
                           {rec.recommender.rating.toFixed(1)}
                         </span>
                       </div>
@@ -106,15 +106,15 @@ export function RecommendationsTab({
                           ? "default"
                           : "secondary"
                       }
-                      className="text-xs"
+                      className="text-xs px-2.5 py-0.5 font-bold uppercase"
                     >
                       {rec.recommender.user_type === "professional"
                         ? "Profissional"
                         : "Cliente"}
                     </Badge>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
+                  <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 font-medium">
+                    <Clock className="w-4 h-4" />
                     {format(new Date(rec.created_at), "dd 'de' MMM 'de' yyyy", {
                       locale: ptBR,
                     })}
@@ -156,34 +156,34 @@ export function RecommendationsTab({
                       src={rec.recommender.avatar_url}
                       alt={rec.recommender.full_name}
                       fallback={rec.recommender.full_name?.charAt(0) || "U"}
-                      size="md"
+                      size="lg"
+                      className="border border-border/50"
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <h4 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg truncate">
                           {rec.recommender.full_name}
                         </h4>
-                        {/* Replaced CheckCircle with ProVerifiedBadge */}
                         <ProVerifiedBadge
                           isVerified={rec.recommender.is_verified}
                           isPro={(rec.recommender as any).is_pro}
                           proExpiresAt={(rec.recommender as any).pro_expires_at}
-                          iconSize={2.5}
+                          iconSize={3.5}
                         />
                       </div>
                       {rec.recommender.location_city &&
                         rec.recommender.location_state && (
-                          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-2">
-                            <MapPin className="w-3 h-3" />
+                          <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-2.5">
+                            <MapPin className="w-4 h-4" />
                             {rec.recommender.location_city},{" "}
                             {rec.recommender.location_state}
                           </p>
                         )}
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-3 mb-2.5">
                         {rec.recommender.rating > 0 && (
-                          <div className="flex items-center gap-1">
-                            <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                          <div className="flex items-center gap-1.5">
+                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                            <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
                               {rec.recommender.rating.toFixed(1)}
                             </span>
                           </div>
@@ -194,15 +194,15 @@ export function RecommendationsTab({
                               ? "default"
                               : "secondary"
                           }
-                          className="text-xs"
+                          className="text-xs px-2.5 py-0.5 font-bold uppercase"
                         >
                           {rec.recommender.user_type === "professional"
                             ? "Profissional"
                             : "Cliente"}
                         </Badge>
                       </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
+                      <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 font-medium">
+                        <Clock className="w-4 h-4" />
                         {format(
                           new Date(rec.created_at),
                           "dd 'de' MMM 'de' yyyy",

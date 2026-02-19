@@ -42,6 +42,7 @@ import {
   Sparkles,
   ThumbsUp,
   Quote,
+  ChevronRight,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -210,7 +211,6 @@ export default function ProfilePage() {
     <MainLayout requireAuth={false}>
       {profile && <AIProfileSchema profile={profile} />}
       <div className="min-h-screen bg-gray-50 dark:bg-black text-foreground transition-colors duration-300">
-
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           {/* Header Minimalista */}
           {/* Header Minimalista Unificado */}
@@ -220,7 +220,6 @@ export default function ProfilePage() {
               <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-[2rem] blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
 
               <div className="relative px-6 py-10 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-[1.8rem] shadow-2xl flex flex-col items-center">
-
                 {/* Unified Avatar & Info */}
                 <div className="flex flex-col items-center -mt-20 sm:-mt-24 mb-6">
                   <div className="relative p-1.5 rounded-full bg-background/50 backdrop-blur shadow-sm border border-border/50">
@@ -332,7 +331,6 @@ export default function ProfilePage() {
               <SocialLinksDisplay profile={profile} />
             </div>
 
-
             {/* Métricas Clean (Row) */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-3xl mx-auto border-y border-border py-6 mb-8">
               <div className="text-center p-2">
@@ -416,50 +414,76 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Tabs Minimalista */}
+          {/* Tabs - Classic Scrollable */}
           <Tabs
             defaultValue="recommendations"
             className="space-y-8 w-full max-w-4xl mx-auto"
           >
-            <TabsList
-              className="w-full h-auto flex flex-wrap justify-center gap-2 bg-gray-100 dark:bg-zinc-900 p-1.5 rounded-full mb-10 border-0"
-            >
-              <TabsTrigger
-                value="recommendations"
-                className="px-6 py-2.5 rounded-full text-sm font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-lg hover:text-[#00b0b0] dark:hover:text-[#00b0b0] data-[state=active]:hover:text-white"
+            <div className="relative w-full group/tabs">
+              <div
+                className="relative w-full overflow-x-auto pb-6 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0"
+                onScroll={(e) => {
+                  const target = e.currentTarget;
+                  const isAtEnd =
+                    target.scrollWidth - target.scrollLeft <=
+                    target.clientWidth + 10;
+                  const indicator = document.getElementById(
+                    "tab-scroll-indicator",
+                  );
+                  if (indicator) {
+                    indicator.style.opacity = isAtEnd ? "0" : "1";
+                    indicator.style.visibility = isAtEnd ? "hidden" : "visible";
+                  }
+                }}
               >
-                Recomend.
-              </TabsTrigger>
-              {isProfessional && (
-                <TabsTrigger
-                  value="services"
-                  className="px-6 py-2.5 rounded-full text-sm font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-lg hover:text-[#00b0b0] dark:hover:text-[#00b0b0] data-[state=active]:hover:text-white"
-                >
-                  {t("services")}
-                </TabsTrigger>
-              )}
-              <TabsTrigger
-                value="reviews"
-                className="px-6 py-2.5 rounded-full text-sm font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-lg hover:text-[#00b0b0] dark:hover:text-[#00b0b0] data-[state=active]:hover:text-white"
-              >
-                {t("reviews")}
-              </TabsTrigger>
-              {isProfessional && (
-                <TabsTrigger
-                  value="portfolio"
-                  className="px-6 py-2.5 rounded-full text-sm font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-lg hover:text-[#00b0b0] dark:hover:text-[#00b0b0] data-[state=active]:hover:text-white"
-                >
-                  {t("portfolio")}
-                </TabsTrigger>
-              )}
-              <TabsTrigger
-                value="about"
-                className="px-6 py-2.5 rounded-full text-sm font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-lg hover:text-[#00b0b0] dark:hover:text-[#00b0b0] data-[state=active]:hover:text-white"
-              >
-                Sobre
-              </TabsTrigger>
-            </TabsList>
+                <TabsList className="flex w-max min-w-full h-12 items-center justify-start gap-1.5 bg-muted/40 p-1.5 rounded-xl border border-border/50 backdrop-blur-sm">
+                  <TabsTrigger
+                    value="recommendations"
+                    className="px-4 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-md"
+                  >
+                    Recomendações
+                  </TabsTrigger>
+                  {isProfessional && (
+                    <TabsTrigger
+                      value="services"
+                      className="px-6 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-md"
+                    >
+                      {t("services")}
+                    </TabsTrigger>
+                  )}
+                  <TabsTrigger
+                    value="reviews"
+                    className="px-6 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-md"
+                  >
+                    {t("reviews")}
+                  </TabsTrigger>
+                  {isProfessional && (
+                    <TabsTrigger
+                      value="portfolio"
+                      className="px-6 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-md"
+                    >
+                      {t("portfolio")}
+                    </TabsTrigger>
+                  )}
+                  <TabsTrigger
+                    value="about"
+                    className="px-6 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-md"
+                  >
+                    Sobre
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
+              {/* Scroll Indicator - Mobile Only */}
+              <div
+                id="tab-scroll-indicator"
+                className="absolute right-0 top-1/2 -translate-y-[calc(50%+12px)] h-10 w-12 bg-gradient-to-l from-background via-background/80 to-transparent flex items-center justify-end pr-2 pointer-events-none transition-all duration-300 sm:hidden z-10"
+              >
+                <div className="bg-primary/20 p-1.5 rounded-full animate-bounce-x">
+                  <ChevronRight className="w-4 h-4 text-primary" />
+                </div>
+              </div>
+            </div>
 
             {/* Aba de Recomendações */}
             <TabsContent
@@ -504,29 +528,30 @@ export default function ProfilePage() {
                     description="Este usuário ainda não recebeu recomendações."
                   />
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                     {recommendations.map((rec) => (
                       <Link
                         key={rec.id}
                         href={`/perfil/${rec.recommender.id}`}
                         className="block group"
                       >
-                        <Card className="transition-all cursor-pointer h-full border border-border/50 bg-card/30 backdrop-blur-xl group-hover:border-primary/40 rounded-2xl">
-                          <CardContent className="p-4">
-                            <div className="flex items-start gap-3">
+                        <Card className="transition-all cursor-pointer h-full border border-border/40 bg-card/20 backdrop-blur-md group-hover:border-primary/40 rounded-xl overflow-hidden shadow-none">
+                          <CardContent className="p-2">
+                            <div className="flex flex-col items-center text-center gap-1.5">
                               <UserAvatar
                                 src={rec.recommender.avatar_url}
                                 alt={rec.recommender.full_name}
                                 fallback={
                                   rec.recommender.full_name?.charAt(0) || "U"
                                 }
-                                size="md"
+                                size="sm"
+                                className="h-8 w-8"
                               />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <h4 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-                                    {rec.recommender.full_name}
-                                  </h4>
+                              <div className="flex-1 min-w-0 w-full">
+                                <h4 className="font-bold text-[11px] text-foreground truncate group-hover:text-primary transition-colors leading-tight mb-0.5">
+                                  {rec.recommender.full_name}
+                                </h4>
+                                <div className="flex items-center justify-center gap-1 mb-1">
                                   {rec.recommender.is_verified && (
                                     <ProVerifiedBadge
                                       isVerified={rec.recommender.is_verified}
@@ -534,37 +559,31 @@ export default function ProfilePage() {
                                       proExpiresAt={
                                         (rec.recommender as any).pro_expires_at
                                       }
-                                      iconSize={2.5}
+                                      iconSize={1.5}
                                     />
                                   )}
-                                </div>
-                                {rec.recommender.location_city &&
-                                  rec.recommender.location_state && (
-                                    <p className="text-xs text-muted-foreground flex items-center gap-1 mb-2">
-                                      <MapPin className="w-3 h-3" />
-                                      {rec.recommender.location_city},{" "}
-                                      {rec.recommender.location_state}
-                                    </p>
-                                  )}
-                                <div className="flex items-center gap-2 mb-2">
                                   {rec.recommender.rating > 0 && (
-                                    <div className="flex items-center gap-1">
-                                      <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                                      <span className="text-xs font-medium text-foreground">
+                                    <div className="flex items-center gap-0.5">
+                                      <Star className="w-2 h-2 text-yellow-500 fill-yellow-500" />
+                                      <span className="text-[9px] font-bold text-foreground">
                                         {rec.recommender.rating.toFixed(1)}
                                       </span>
                                     </div>
                                   )}
-                                  <Badge
-                                    variant="outline"
-                                    className="text-[10px] px-1.5 py-0 h-5"
-                                  >
-                                    {rec.recommender.user_type ===
-                                      "professional"
-                                      ? t("professional")
-                                      : t("client")}
-                                  </Badge>
                                 </div>
+                                {rec.recommender.location_city && (
+                                  <p className="text-[9px] text-muted-foreground truncate leading-none mb-1 opacity-70">
+                                    {rec.recommender.location_city}
+                                  </p>
+                                )}
+                                <Badge
+                                  variant="outline"
+                                  className="text-[8px] px-1 h-3.5 leading-none border-muted-foreground/20 text-muted-foreground"
+                                >
+                                  {rec.recommender.user_type === "professional"
+                                    ? t("professional")
+                                    : t("client")}
+                                </Badge>
                               </div>
                             </div>
                           </CardContent>
@@ -578,112 +597,141 @@ export default function ProfilePage() {
 
             <TabsContent
               value="about"
-              className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
+              className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500"
             >
               <GuestBlurOverlay isGuest={!user}>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-2 mb-4 border-b border-border pb-2">
-                      <User className="w-5 h-5 text-primary" />
-                      <h3 className="text-lg font-semibold">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Informações Pessoais */}
+                  <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 border border-gray-100 dark:border-zinc-800 shadow-sm">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-2xl">
+                        <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <h3 className="text-lg font-bold text-foreground">
                         Informações Pessoais
                       </h3>
                     </div>
+
                     <div className="space-y-4">
                       {profile.gender && (
-                        <div className="flex justify-between items-center py-2">
-                          <span className="text-muted-foreground">Gênero</span>
-                          <span className="font-medium text-foreground">
+                        <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700 transition-colors">
+                          <span className="text-sm font-medium text-muted-foreground">
+                            Gênero
+                          </span>
+                          <span className="text-sm font-bold text-foreground">
                             {formatGender(profile.gender)}
                           </span>
                         </div>
                       )}
+
                       {profile.idade && (
-                        <div className="flex justify-between items-center py-2 border-t border-border/50">
-                          <span className="text-muted-foreground">
+                        <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700 transition-colors">
+                          <span className="text-sm font-medium text-muted-foreground">
                             {t("age")}
                           </span>
-                          <span className="font-medium text-foreground">
-                            {profile.idade} {t("years")}
-                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-bold text-foreground">
+                              {profile.idade}
+                            </span>
+                            <span className="text-xs text-muted-foreground font-medium">
+                              {t("years")}
+                            </span>
+                          </div>
                         </div>
                       )}
+
                       {profile.escolaridade && (
-                        <div className="flex justify-between items-center py-2 border-t border-border/50">
-                          <span className="text-muted-foreground">
+                        <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700 transition-colors">
+                          <span className="text-sm font-medium text-muted-foreground">
                             {t("education")}
                           </span>
-                          <span className="font-medium text-foreground text-right">
+                          <span className="text-sm font-bold text-foreground text-right max-w-[180px] leading-tight">
                             {formatEscolaridade(profile.escolaridade)}
                           </span>
                         </div>
                       )}
+
                       {profile.estado_civil && (
-                        <div className="flex justify-between items-center py-2 border-t border-border/50">
-                          <span className="text-muted-foreground">
+                        <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700 transition-colors">
+                          <span className="text-sm font-medium text-muted-foreground">
                             {t("maritalStatus")}
                           </span>
-                          <span className="font-medium text-foreground">
+                          <span className="text-sm font-bold text-foreground">
                             {formatEstadoCivil(profile.estado_civil)}
                           </span>
                         </div>
                       )}
+
                       {profile.filhos !== null &&
                         profile.filhos !== undefined && (
-                          <div className="flex justify-between items-center py-2 border-t border-border/50">
-                            <span className="text-muted-foreground">
+                          <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700 transition-colors">
+                            <span className="text-sm font-medium text-muted-foreground">
                               {t("childrenLabel")}
                             </span>
-                            <span className="font-medium text-foreground">
-                              {profile.filhos}{" "}
-                              {profile.filhos === 1
-                                ? t("child")
-                                : t("children")}
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-sm font-bold text-foreground">
+                                {profile.filhos}
+                              </span>
+                              <span className="text-xs text-muted-foreground font-medium">
+                                {profile.filhos === 1
+                                  ? t("child")
+                                  : t("children")}
+                              </span>
+                            </div>
                           </div>
                         )}
                     </div>
                   </div>
 
+                  {/* Informações Profissionais */}
                   {isProfessional && (
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-2 mb-4 border-b border-border pb-2">
-                        <Briefcase className="w-5 h-5 text-primary" />
-                        <h3 className="text-lg font-semibold">
+                    <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 border border-gray-100 dark:border-zinc-800 shadow-sm">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2.5 bg-[#00b0b0]/10 rounded-2xl">
+                          <Briefcase className="w-5 h-5 text-[#00b0b0]" />
+                        </div>
+                        <h3 className="text-lg font-bold text-foreground">
                           {t("professionalInfo")}
                         </h3>
                       </div>
+
                       <div className="space-y-4">
                         {profile.professional_experience_years && (
-                          <div className="flex justify-between items-center py-2">
-                            <span className="text-muted-foreground">
+                          <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700 transition-colors">
+                            <span className="text-sm font-medium text-muted-foreground">
                               {t("experience")}
                             </span>
-                            <span className="font-medium text-foreground">
-                              {profile.professional_experience_years}{" "}
-                              {profile.professional_experience_years === 1
-                                ? t("year")
-                                : t("years")}
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-sm font-bold text-foreground">
+                                {profile.professional_experience_years}
+                              </span>
+                              <span className="text-xs text-muted-foreground font-medium">
+                                {profile.professional_experience_years === 1
+                                  ? t("year")
+                                  : t("years")}
+                              </span>
+                            </div>
                           </div>
                         )}
+
                         {profile.turno_trabalho && (
-                          <div className="flex justify-between items-center py-2 border-t border-border/50">
-                            <span className="text-muted-foreground">
+                          <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700 transition-colors">
+                            <span className="text-sm font-medium text-muted-foreground">
                               {t("shift")}
                             </span>
-                            <span className="font-medium text-foreground">
+                            <span className="text-sm font-bold text-foreground">
                               {formatTurnoTrabalho(profile.turno_trabalho)}
                             </span>
                           </div>
                         )}
+
                         {profile.referencia_profissional && (
-                          <div className="py-2 border-t border-border/50">
-                            <span className="text-muted-foreground block mb-2 text-sm">
+                          <div className="p-4 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent">
+                            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-2">
                               {t("professionalReference")}
                             </span>
-                            <p className="text-foreground bg-muted/30 p-3 rounded-lg text-sm leading-relaxed">
-                              {profile.referencia_profissional}
+                            <p className="text-sm text-foreground leading-relaxed italic">
+                              "{profile.referencia_profissional}"
                             </p>
                           </div>
                         )}
@@ -709,17 +757,17 @@ export default function ProfilePage() {
                     </div>
 
                     {profile.professional_services &&
-                      profile.professional_services.length > 0 ? (
+                    profile.professional_services.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {profile.professional_services.map((service, index) => (
                           <div
                             key={index}
-                            className="flex items-center gap-4 p-5 bg-card/30 backdrop-blur-sm rounded-2xl border border-border/50 hover:border-primary/40 transition-all group"
+                            className="flex items-center gap-4 p-4 bg-card rounded-xl border border-border shadow-sm hover:shadow-md transition-shadow group"
                           >
-                            <div className="p-2 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
+                            <div className="shrink-0 p-2 bg-primary/5 rounded-lg group-hover:bg-primary/10 transition-colors">
                               <CheckCircle className="w-5 h-5 text-primary" />
                             </div>
-                            <span className="text-foreground font-semibold tracking-tight">
+                            <span className="text-foreground text-sm sm:text-base font-semibold">
                               {service}
                             </span>
                           </div>

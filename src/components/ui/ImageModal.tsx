@@ -115,98 +115,100 @@ export function ImageModal({
       className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={onClose}
     >
-      <div
-        className="relative w-full h-full flex items-center justify-center"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Controles */}
-        <div className="absolute top-4 right-4 z-10 flex gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleZoomOut}
-            className="bg-black/50 hover:bg-black/70 text-white"
-          >
-            <ZoomOut className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleZoomIn}
-            className="bg-black/50 hover:bg-black/70 text-white"
-          >
-            <ZoomIn className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleRotate}
-            className="bg-black/50 hover:bg-black/70 text-white"
-          >
-            <RotateCw className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleDownload}
-            className="bg-black/50 hover:bg-black/70 text-white"
-          >
-            <Download className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={onClose}
-            className="bg-black/50 hover:bg-black/70 text-white"
-          >
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
-
-        {/* Botão de reset */}
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={handleReset}
-          className="absolute top-4 left-4 z-10 bg-black/50 hover:bg-black/70 text-white"
-        >
-          Reset
-        </Button>
-
-        {/* Imagem */}
+      <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
         <div
-          className="relative max-w-full max-h-full overflow-hidden cursor-grab active:cursor-grabbing"
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          onWheel={handleWheel}
+          className="relative flex items-center justify-center pointer-events-auto"
+          onClick={(e) => e.stopPropagation()}
         >
-          <img
-            src={imageUrl}
-            alt={alt}
-            className={cn(
-              "max-w-none select-none transition-transform duration-200",
-              isDragging && "cursor-grabbing",
-            )}
-            style={{
-              transform: `scale(${scale}) rotate(${rotation}deg) translate(${position.x}px, ${position.y}px)`,
-              maxWidth: "90vw",
-              maxHeight: "90vh",
-              objectFit: "contain",
-            }}
-            draggable={false}
-          />
-        </div>
-
-        {/* Informações da imagem */}
-        {title && (
-          <div className="absolute bottom-4 left-4 right-4 z-10">
-            <div className="bg-black/50 text-white px-4 py-2 rounded-lg text-center">
-              {title}
-            </div>
+          {/* Controles */}
+          <div className="absolute top-4 right-4 z-[110] flex gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleZoomOut}
+              className="bg-black/50 hover:bg-black/70 text-white"
+            >
+              <ZoomOut className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleZoomIn}
+              className="bg-black/50 hover:bg-black/70 text-white"
+            >
+              <ZoomIn className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleRotate}
+              className="bg-black/50 hover:bg-black/70 text-white"
+            >
+              <RotateCw className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleDownload}
+              className="bg-black/50 hover:bg-black/70 text-white"
+            >
+              <Download className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onClose}
+              className="bg-black/50 hover:bg-black/70 text-white"
+            >
+              <X className="w-4 h-4" />
+            </Button>
           </div>
-        )}
+
+          {/* Botão de reset */}
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleReset}
+            className="absolute top-4 left-4 z-[110] bg-black/50 hover:bg-black/70 text-white"
+          >
+            Reset
+          </Button>
+
+          {/* Imagem */}
+          <div
+            className="relative max-w-full max-h-full overflow-hidden cursor-grab active:cursor-grabbing z-[100]"
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            onWheel={handleWheel}
+          >
+            <img
+              src={imageUrl}
+              alt={alt}
+              className={cn(
+                "max-w-none select-none transition-transform duration-200",
+                isDragging && "cursor-grabbing",
+              )}
+              style={{
+                transform: `scale(${scale}) rotate(${rotation}deg) translate(${position.x}px, ${position.y}px)`,
+                maxWidth: "90vw",
+                maxHeight: "90vh",
+                objectFit: "contain",
+              }}
+              draggable={false}
+            />
+          </div>
+
+          {/* Informações da imagem */}
+          {title && (
+            <div className="absolute bottom-4 left-4 right-4 z-[110]">
+              <div className="bg-black/50 text-white px-4 py-2 rounded-lg text-center">
+                {title}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

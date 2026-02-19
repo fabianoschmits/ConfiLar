@@ -18,6 +18,7 @@ import {
   Check,
   X,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -150,411 +151,302 @@ export function ReviewCard({
   };
 
   return (
-    <div className="bg-card/30 backdrop-blur-xl rounded-2xl border border-border/50 p-4 sm:p-6 transition-all hover:border-primary/30 group">
-      <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-        {/* Avatar - Mobile: topo, Desktop: lado */}
-        <div className="flex items-center gap-3 sm:flex-col sm:items-center sm:gap-2">
-          <div className="flex-shrink-0">
+    <div className="bg-card rounded-xl border border-border shadow-sm p-5 sm:p-6 transition-shadow hover:shadow-md group">
+      <div className="flex flex-col gap-4">
+        {/* Header: User Info & Rating */}
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
             <UserAvatar
               src={review.reviewer.avatar_url}
               alt={review.reviewer.full_name}
               fallback={review.reviewer.full_name.charAt(0)}
-              size="lg"
+              size="md"
+              className="border border-border/50"
             />
-          </div>
-
-          {/* Info do usuário - Mobile: ao lado do avatar */}
-          <div className="flex-1 sm:hidden">
-            <h3 className="font-semibold text-gray-900 dark:text-white text-sm truncate">
-              {review.reviewer.full_name}
-            </h3>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 px-2 py-1 rounded-full">
-                {review.reviewer.user_type === "professional"
-                  ? "Profissional"
-                  : "Cliente"}
-              </span>
-              {(review as any).is_recommended && (
-                <span className="text-xs bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 px-2 py-1 rounded-full flex items-center gap-1">
-                  <CheckCircle className="h-3 w-3" />
-                  Recomendado
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Conteúdo */}
-        <div className="flex-1 min-w-0">
-          {/* Cabeçalho - Desktop */}
-          <div className="hidden sm:flex items-start justify-between mb-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-bold text-foreground text-sm sm:text-base truncate">
                   {review.reviewer.full_name}
                 </h3>
-                <span className="text-xs bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 px-2 py-1 rounded-full">
+                <Badge
+                  variant="outline"
+                  className="text-[10px] h-4 px-1.5 uppercase font-semibold text-muted-foreground border-border/50"
+                >
                   {review.reviewer.user_type === "professional"
                     ? "Profissional"
                     : "Cliente"}
-                </span>
+                </Badge>
                 {(review as any).is_recommended && (
-                  <span className="text-xs bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 px-2 py-1 rounded-full flex items-center gap-1">
+                  <div className="flex items-center gap-1 text-[10px] font-bold text-primary uppercase">
                     <CheckCircle className="h-3 w-3" />
                     Recomendado
-                  </span>
+                  </div>
                 )}
               </div>
-
-              <div className="flex items-center gap-2">
-                {/* Estrelas */}
-                <div className="flex items-center">
+              <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-0.5">
                   {renderStars(review.rating_person)}
                 </div>
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${getRatingColor(review.rating_person)}`}
-                >
-                  {getRatingText(review.rating_person)}
-                </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {formatDate(review.created_at)}
+                <span className="text-xs text-muted-foreground">
+                  • {formatDate(review.created_at)}
                 </span>
               </div>
             </div>
-
-            {showActions && (
-              <>
-                <DropdownMenu
-                  open={isOpen}
-                  onOpenChange={setIsOpen}
-                  modal={false}
-                >
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                    >
-                      <MoreVertical className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="end"
-                    className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg min-w-[200px]"
-                  >
-                    {/* Se o usuário é o autor da avaliação */}
-                    {isOwner && onEdit && (
-                      <DropdownMenuItem
-                        onClick={() => onEdit(review)}
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
-                        <Edit className="h-4 w-4" />
-                        Editar Avaliação
-                      </DropdownMenuItem>
-                    )}
-                    {isOwner && onDelete && (
-                      <DropdownMenuItem
-                        onClick={async () => {
-                          if (
-                            confirm(
-                              "Tem certeza que deseja excluir esta avaliação?",
-                            )
-                          ) {
-                            await onDelete(review.id);
-                          }
-                        }}
-                        className="text-red-600 dark:text-red-400 flex items-center gap-2 cursor-pointer"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Excluir Avaliação
-                      </DropdownMenuItem>
-                    )}
-
-                    {/* Se o usuário é o dono do perfil (foi avaliado) */}
-                    {isProfileOwner && !review.response_text && onRespond && (
-                      <DropdownMenuItem
-                        onClick={() => {
-                          setShowResponseForm(true);
-                          setResponseText("");
-                          setIsEditingResponse(false);
-                        }}
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
-                        <Reply className="h-4 w-4" />
-                        Responder
-                      </DropdownMenuItem>
-                    )}
-                    {isProfileOwner && review.response_text && (
-                      <DropdownMenuItem
-                        onClick={handleEditResponse}
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
-                        <Edit className="h-4 w-4" />
-                        Editar Resposta
-                      </DropdownMenuItem>
-                    )}
-                    {isProfileOwner && review.response_text && (
-                      <DropdownMenuItem
-                        onClick={async () => {
-                          if (
-                            confirm(
-                              "Tem certeza que deseja remover sua resposta?",
-                            )
-                          ) {
-                            if (onRespond) {
-                              await onRespond(review.id, "");
-                              setShowResponseForm(false);
-                              setResponseText("");
-                            }
-                          }
-                        }}
-                        className="text-orange-600 dark:text-orange-400 flex items-center gap-2 cursor-pointer"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Remover Resposta
-                      </DropdownMenuItem>
-                    )}
-
-                    {/* Se não é nem o autor nem o dono do perfil */}
-                    {!isOwner && !isProfileOwner && (
-                      <DropdownMenuItem
-                        onClick={() => setShowReportDialog(true)}
-                        asChild
-                      >
-                        <div className="flex items-center gap-2 w-full justify-start p-2 h-auto font-normal cursor-pointer border-0 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400">
-                          <Flag className="h-4 w-4" />
-                          <span>Denunciar</span>
-                        </div>
-                      </DropdownMenuItem>
-                    )}
-
-                    {/* Mensagem se não houver ações disponíveis */}
-                    {!isOwner && !isProfileOwner && !onEdit && !onDelete && (
-                      <DropdownMenuItem
-                        disabled
-                        className="text-gray-400 text-sm"
-                      >
-                        Nenhuma ação disponível
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <ReportDialog
-                  isOpen={showReportDialog}
-                  onOpenChange={setShowReportDialog}
-                  type="review"
-                  targetId={review.id}
-                  targetName="Avaliação"
-                  reportedUserId={review.reviewer_id}
-                />
-              </>
-            )}
           </div>
 
-          {/* Mobile: Rating e Data */}
-          <div className="sm:hidden mb-3">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="flex items-center">
-                {renderStars(review.rating_person)}
-              </div>
-              <span
-                className={`px-2 py-1 rounded-full text-xs font-medium ${getRatingColor(review.rating_person)}`}
-              >
-                {getRatingText(review.rating_person)}
-              </span>
-            </div>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              {formatDate(review.created_at)}
-            </span>
-          </div>
-
-          {/* Título da Avaliação */}
-          {(review as any).title && (
-            <div className="mb-3">
-              <h4 className="font-semibold text-gray-900 dark:text-white text-lg">
-                {(review as any).title}
-              </h4>
-            </div>
-          )}
-
-          {/* Comentário */}
-          {review.comment && (
-            <div className="bg-muted/30 rounded-xl p-4 mb-4 border border-border/40">
-              <p className="modern-body text-foreground/80 dark:text-gray-300 whitespace-pre-wrap leading-relaxed text-sm sm:text-base">
-                {review.comment}
-              </p>
-            </div>
-          )}
-
-          {/* Resposta do Avaliado */}
-          {review.response_text && review.response_text.trim() && (
-            <div className="bg-primary/5 dark:bg-primary/10 rounded-xl p-4 mb-4 border border-primary/10 ml-4 sm:ml-8 relative">
-              <div className="absolute left-[-1rem] top-4 w-4 h-[1px] bg-primary/20 hidden sm:block"></div>
-              <div className="flex items-center gap-2 mb-2">
-                <Reply className="h-4 w-4 text-primary/60" />
-                <span className="font-semibold text-primary/80 text-sm">
-                  Resposta de {review.reviewed?.full_name || "Usuário"}
-                </span>
-                {review.response_date && (
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                    {formatDistanceToNow(new Date(review.response_date), {
-                      addSuffix: true,
-                      locale: ptBR,
-                    })}
-                  </span>
-                )}
-              </div>
-              <p className="text-foreground/80 dark:text-gray-200 whitespace-pre-wrap leading-relaxed text-sm italic">
-                {review.response_text}
-              </p>
-            </div>
-          )}
-
-          {/* Pontos Positivos e Negativos */}
-          {((review as any).pros?.length > 0 ||
-            (review as any).positive_points?.length > 0 ||
-            (review as any).cons?.length > 0 ||
-            (review as any).negative_points?.length > 0) && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
-              {/* Pontos Positivos */}
-              {((review as any).pros?.length > 0 ||
-                (review as any).positive_points?.length > 0) && (
-                <div className="bg-background/40 rounded-xl p-3 sm:p-4 border border-border/50">
-                  <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                    <ThumbsUp className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                    <span className="font-semibold text-foreground/80 text-xs sm:text-sm uppercase tracking-wider">
-                      Pontos Positivos
-                    </span>
-                  </div>
-                  <ul className="space-y-1.5">
-                    {(
-                      (review as any).pros ||
-                      (review as any).positive_points ||
-                      []
-                    ).map((point: string, index: number) => (
-                      <li
-                        key={index}
-                        className="text-xs sm:text-sm text-muted-foreground flex items-start gap-2"
-                      >
-                        <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                        <span className="break-words">{point}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Pontos Negativos */}
-              {((review as any).cons?.length > 0 ||
-                (review as any).negative_points?.length > 0) && (
-                <div className="bg-background/40 rounded-xl p-3 sm:p-4 border border-border/50">
-                  <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                    <ThumbsDown className="h-4 w-4 text-rose-500 flex-shrink-0" />
-                    <span className="font-semibold text-foreground/80 text-xs sm:text-sm uppercase tracking-wider">
-                      Pontos a Melhorar
-                    </span>
-                  </div>
-                  <ul className="space-y-1.5">
-                    {(
-                      (review as any).cons ||
-                      (review as any).negative_points ||
-                      []
-                    ).map((point: string, index: number) => (
-                      <li
-                        key={index}
-                        className="text-xs sm:text-sm text-muted-foreground flex items-start gap-2"
-                      >
-                        <X className="h-3 w-3 text-rose-500 mt-0.5 flex-shrink-0" />
-                        <span className="break-words">{point}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Data do Serviço */}
-          {(review as any).service_date && (
-            <div className="mb-4">
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                <Calendar className="h-4 w-4" />
-                <span>
-                  Serviço realizado em:{" "}
-                  {new Date((review as any).service_date).toLocaleDateString(
-                    "pt-BR",
-                  )}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Formulário de Resposta */}
-          {showResponseForm && (
-            <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800 p-3 sm:p-4 mb-4">
-              <h5 className="font-medium text-blue-900 dark:text-blue-300 mb-3 text-sm sm:text-base">
-                {isEditingResponse ? "Editar resposta" : "Responder avaliação"}
-              </h5>
-              <Textarea
-                placeholder="Digite sua resposta..."
-                value={responseText}
-                onChange={(e) => setResponseText(e.target.value)}
-                rows={3}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
-              />
-              <div className="flex flex-col sm:flex-row justify-end gap-2">
-                <button
-                  onClick={() => {
-                    setShowResponseForm(false);
-                    setResponseText("");
-                    setIsEditingResponse(false);
-                  }}
-                  className="w-full sm:w-auto bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleSubmitResponse}
-                  disabled={isSubmittingResponse || !responseText.trim()}
-                  className="w-full sm:w-auto bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50 transition-colors"
-                >
-                  {isSubmittingResponse
-                    ? "Enviando..."
-                    : isEditingResponse
-                      ? "Salvar"
-                      : "Responder"}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Ações */}
           {showActions && (
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-              {isReviewed && !showResponseForm && !review.response_text && (
-                <button
-                  onClick={() => setShowResponseForm(true)}
-                  className="w-full sm:w-auto bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg flex items-center justify-center gap-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+            <div className="shrink-0">
+              <DropdownMenu
+                open={isOpen}
+                onOpenChange={setIsOpen}
+                modal={false}
+              >
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-full hover:bg-muted"
+                  >
+                    <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="bg-popover border border-border shadow-lg rounded-lg min-w-[160px]"
                 >
-                  <Reply className="h-4 w-4" />
-                  Responder
-                </button>
-              )}
-
-              {!isOwner && onMarkHelpful && (
-                <button
-                  onClick={handleMarkHelpful}
-                  className="w-full sm:w-auto bg-white dark:bg-gray-700 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 px-3 py-2 rounded-lg flex items-center justify-center gap-2 text-sm hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors"
-                >
-                  <ThumbsUp className="h-4 w-4" />
-                  Útil
-                </button>
-              )}
+                  {isOwner && onEdit && (
+                    <DropdownMenuItem
+                      onClick={() => onEdit(review)}
+                      className="gap-2 focus:bg-accent cursor-pointer"
+                    >
+                      <Edit className="h-4 w-4" />
+                      <span>Editar Avaliação</span>
+                    </DropdownMenuItem>
+                  )}
+                  {isOwner && onDelete && (
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        if (
+                          confirm(
+                            "Tem certeza que deseja excluir esta avaliação?",
+                          )
+                        ) {
+                          await onDelete(review.id);
+                        }
+                      }}
+                      className="text-destructive gap-2 focus:bg-destructive/10 cursor-pointer"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span>Excluir Avaliação</span>
+                    </DropdownMenuItem>
+                  )}
+                  {isProfileOwner && !review.response_text && onRespond && (
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setShowResponseForm(true);
+                        setResponseText("");
+                        setIsEditingResponse(false);
+                      }}
+                      className="gap-2 focus:bg-accent cursor-pointer"
+                    >
+                      <Reply className="h-4 w-4" />
+                      <span>Responder</span>
+                    </DropdownMenuItem>
+                  )}
+                  {isProfileOwner && review.response_text && (
+                    <DropdownMenuItem
+                      onClick={handleEditResponse}
+                      className="gap-2 focus:bg-accent cursor-pointer"
+                    >
+                      <Edit className="h-4 w-4" />
+                      <span>Editar Resposta</span>
+                    </DropdownMenuItem>
+                  )}
+                  {isProfileOwner && review.response_text && (
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        if (
+                          confirm(
+                            "Tem certeza que deseja remover sua resposta?",
+                          )
+                        ) {
+                          if (onRespond) {
+                            await onRespond(review.id, "");
+                            setShowResponseForm(false);
+                            setResponseText("");
+                          }
+                        }
+                      }}
+                      className="text-orange-600 gap-2 focus:bg-orange-500/10 cursor-pointer"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span>Remover Resposta</span>
+                    </DropdownMenuItem>
+                  )}
+                  {!isOwner && !isProfileOwner && (
+                    <DropdownMenuItem
+                      onClick={() => setShowReportDialog(true)}
+                      asChild
+                    >
+                      <div className="flex items-center gap-2 w-full p-2 cursor-pointer text-muted-foreground hover:text-destructive focus:bg-destructive/10">
+                        <Flag className="h-4 w-4" />
+                        <span>Denunciar</span>
+                      </div>
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <ReportDialog
+                isOpen={showReportDialog}
+                onOpenChange={setShowReportDialog}
+                type="review"
+                targetId={review.id}
+                targetName="Avaliação"
+                reportedUserId={review.reviewer_id}
+              />
             </div>
           )}
         </div>
+
+        {/* Review Title & Body */}
+        <div className="space-y-2">
+          {(review as any).title && (
+            <h4 className="font-bold text-foreground text-base sm:text-lg">
+              {(review as any).title}
+            </h4>
+          )}
+          <p className="text-foreground/80 text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
+            {review.comment}
+          </p>
+        </div>
+
+        {/* Pros & Cons - Simple Tag Style */}
+        {((review as any).pros?.length > 0 ||
+          (review as any).positive_points?.length > 0 ||
+          (review as any).cons?.length > 0 ||
+          (review as any).negative_points?.length > 0) && (
+          <div className="flex flex-col gap-3 pt-2">
+            {((review as any).pros?.length > 0 ||
+              (review as any).positive_points?.length > 0) && (
+              <div className="flex flex-wrap gap-2">
+                {(
+                  (review as any).pros ||
+                  (review as any).positive_points ||
+                  []
+                ).map((point: string, idx: number) => (
+                  <div
+                    key={idx}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-[11px] font-medium text-emerald-700 dark:text-emerald-400"
+                  >
+                    <Check className="h-3 w-3" />
+                    {point}
+                  </div>
+                ))}
+              </div>
+            )}
+            {((review as any).cons?.length > 0 ||
+              (review as any).negative_points?.length > 0) && (
+              <div className="flex flex-wrap gap-2">
+                {(
+                  (review as any).cons ||
+                  (review as any).negative_points ||
+                  []
+                ).map((point: string, idx: number) => (
+                  <div
+                    key={idx}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-50 dark:bg-orange-500/10 border border-orange-100 dark:border-orange-500/20 text-[11px] font-medium text-orange-700 dark:text-orange-400"
+                  >
+                    <X className="h-3 w-3" />
+                    {point}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Response Section */}
+        {review.response_text && review.response_text.trim() && (
+          <div className="mt-2 bg-muted/40 rounded-lg p-4 border border-border/50 relative">
+            <div className="flex items-center gap-2 mb-2">
+              <MessageSquare className="h-3.5 w-3.5 text-primary" />
+              <span className="font-bold text-xs text-foreground">
+                Resposta do Profissional
+              </span>
+              {review.response_date && (
+                <span className="text-[10px] text-muted-foreground">
+                  • {formatDate(review.response_date)}
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed italic">
+              "{review.response_text}"
+            </p>
+          </div>
+        )}
+
+        {/* Response Form */}
+        {showResponseForm && (
+          <div className="mt-2 bg-muted/50 rounded-lg p-4 border border-border">
+            <h5 className="font-bold text-sm mb-3">
+              {isEditingResponse ? "Editar resposta" : "Responder avaliação"}
+            </h5>
+            <Textarea
+              placeholder="Sua resposta..."
+              value={responseText}
+              onChange={(e) => setResponseText(e.target.value)}
+              className="mb-3 text-sm focus:ring-1 focus:ring-primary h-24"
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setShowResponseForm(false);
+                  setResponseText("");
+                  setIsEditingResponse(false);
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSubmitResponse}
+                disabled={isSubmittingResponse || !responseText.trim()}
+              >
+                {isSubmittingResponse ? "Salvando..." : "Confirmar"}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Quick Actions Footer */}
+        {showActions && !showResponseForm && (
+          <div className="flex items-center gap-4 pt-3 border-t border-border/50">
+            {isReviewed && !review.response_text && (
+              <Button
+                onClick={() => setShowResponseForm(true)}
+                variant="ghost"
+                size="sm"
+                className="h-8 px-3 gap-2 text-xs text-muted-foreground hover:text-primary"
+              >
+                <Reply className="h-3.5 w-3.5" />
+                Responder
+              </Button>
+            )}
+            {!isOwner && onMarkHelpful && (
+              <Button
+                onClick={handleMarkHelpful}
+                variant="ghost"
+                size="sm"
+                className="h-8 px-3 gap-2 text-xs text-muted-foreground hover:text-emerald-600"
+              >
+                <ThumbsUp className="h-3.5 w-3.5" />
+                Útil
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
