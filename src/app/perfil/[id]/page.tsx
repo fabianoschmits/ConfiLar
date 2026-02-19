@@ -209,7 +209,8 @@ export default function ProfilePage() {
   return (
     <MainLayout requireAuth={false}>
       {profile && <AIProfileSchema profile={profile} />}
-      <div className="min-h-screen bg-gray-50 text-foreground transition-colors duration-300">
+      <div className="min-h-screen bg-gray-50 dark:bg-black text-foreground transition-colors duration-300">
+
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           {/* Header Minimalista */}
           {/* Header Minimalista Unificado */}
@@ -218,7 +219,8 @@ export default function ProfilePage() {
             <div className="relative group w-full max-w-2xl mx-auto mb-12">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-[2rem] blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
 
-              <div className="relative px-6 py-10 bg-card/50 backdrop-blur-xl border border-white/10 dark:border-white/5 rounded-[1.8rem] shadow-2xl flex flex-col items-center">
+              <div className="relative px-6 py-10 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-[1.8rem] shadow-2xl flex flex-col items-center">
+
                 {/* Unified Avatar & Info */}
                 <div className="flex flex-col items-center -mt-20 sm:-mt-24 mb-6">
                   <div className="relative p-1.5 rounded-full bg-background/50 backdrop-blur shadow-sm border border-border/50">
@@ -324,8 +326,12 @@ export default function ProfilePage() {
 
             {/* Redes Sociais */}
             <div className="w-full max-w-lg mx-auto mb-10">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">
+                Redes Sociais
+              </h3>
               <SocialLinksDisplay profile={profile} />
             </div>
+
 
             {/* Métricas Clean (Row) */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-3xl mx-auto border-y border-border py-6 mb-8">
@@ -416,43 +422,44 @@ export default function ProfilePage() {
             className="space-y-8 w-full max-w-4xl mx-auto"
           >
             <TabsList
-              className={`w-full h-auto flex flex-wrap justify-center gap-2 bg-transparent p-0 border-b border-border mb-8 rounded-none`}
+              className="w-full h-auto flex flex-wrap justify-center gap-2 bg-gray-100 dark:bg-zinc-900 p-1.5 rounded-full mb-10 border-0"
             >
               <TabsTrigger
                 value="recommendations"
-                className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:font-semibold transition-all hover:text-primary/80"
+                className="px-6 py-2.5 rounded-full text-sm font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-lg hover:text-[#00b0b0] dark:hover:text-[#00b0b0] data-[state=active]:hover:text-white"
               >
                 Recomend.
               </TabsTrigger>
               {isProfessional && (
                 <TabsTrigger
                   value="services"
-                  className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:font-semibold transition-all hover:text-primary/80"
+                  className="px-6 py-2.5 rounded-full text-sm font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-lg hover:text-[#00b0b0] dark:hover:text-[#00b0b0] data-[state=active]:hover:text-white"
                 >
                   {t("services")}
                 </TabsTrigger>
               )}
               <TabsTrigger
                 value="reviews"
-                className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:font-semibold transition-all hover:text-primary/80"
+                className="px-6 py-2.5 rounded-full text-sm font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-lg hover:text-[#00b0b0] dark:hover:text-[#00b0b0] data-[state=active]:hover:text-white"
               >
                 {t("reviews")}
               </TabsTrigger>
               {isProfessional && (
                 <TabsTrigger
                   value="portfolio"
-                  className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:font-semibold transition-all hover:text-primary/80"
+                  className="px-6 py-2.5 rounded-full text-sm font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-lg hover:text-[#00b0b0] dark:hover:text-[#00b0b0] data-[state=active]:hover:text-white"
                 >
                   {t("portfolio")}
                 </TabsTrigger>
               )}
               <TabsTrigger
                 value="about"
-                className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:font-semibold transition-all hover:text-primary/80"
+                className="px-6 py-2.5 rounded-full text-sm font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-lg hover:text-[#00b0b0] dark:hover:text-[#00b0b0] data-[state=active]:hover:text-white"
               >
                 Sobre
               </TabsTrigger>
             </TabsList>
+
 
             {/* Aba de Recomendações */}
             <TabsContent
