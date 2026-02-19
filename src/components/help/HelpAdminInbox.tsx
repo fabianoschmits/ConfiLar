@@ -20,7 +20,12 @@ export default function HelpAdminInbox() {
   }, [fetchAdminTickets]);
 
   const openTickets = adminTickets.filter((t) => t.status === "open");
-  const closedTickets = adminTickets.filter((t) => t.status !== "open");
+  const inProgressTickets = adminTickets.filter(
+    (t) => t.status === "in_progress",
+  );
+  const resolvedTickets = adminTickets.filter(
+    (t) => t.status === "resolved" || t.status === "closed",
+  );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -79,8 +84,27 @@ export default function HelpAdminInbox() {
             </div>
           )}
 
-          {/* Closed tickets */}
-          {closedTickets.length > 0 && (
+          {/* In Progress tickets */}
+          {inProgressTickets.length > 0 && (
+            <div>
+              <div className="px-4 py-1.5 bg-primary/5">
+                <p className="text-[10px] font-semibold text-primary uppercase tracking-wider flex items-center gap-1">
+                  <Clock className="w-2.5 h-2.5" />
+                  Em Atendimento
+                </p>
+              </div>
+              {inProgressTickets.map((ticket) => (
+                <TicketRow
+                  key={ticket.id}
+                  ticket={ticket}
+                  onSelect={() => selectTicket(ticket.conversation_id)}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Resolved tickets */}
+          {resolvedTickets.length > 0 && (
             <div>
               <div className="px-4 py-1.5 bg-muted/10">
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
@@ -88,7 +112,7 @@ export default function HelpAdminInbox() {
                   Resolvidos
                 </p>
               </div>
-              {closedTickets.map((ticket) => (
+              {resolvedTickets.map((ticket) => (
                 <TicketRow
                   key={ticket.id}
                   ticket={ticket}
@@ -136,7 +160,11 @@ function TicketRow({
         {/* Status dot */}
         <span
           className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-background ${
-            ticket.status === "open" ? "bg-primary" : "bg-muted-foreground/40"
+            ticket.status === "open"
+              ? "bg-amber-500"
+              : ticket.status === "in_progress"
+                ? "bg-primary"
+                : "bg-emerald-500"
           }`}
         />
       </div>

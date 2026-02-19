@@ -30,6 +30,9 @@ interface HelpChatContextType extends HelpChatState {
   adminTickets: any[];
   selectTicket: (conversationId: string) => void;
   fetchAdminTickets: () => Promise<void>;
+  activeTicketStatus: string | null;
+  updateTicketStatus: (status: string) => Promise<void>;
+  activeTicketUserId: string | null;
 }
 
 const HelpChatContext = createContext<HelpChatContextType | undefined>(
@@ -49,6 +52,12 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
   const [adminTickets, setAdminTickets] = useState<any[]>([]);
   const [activeTicketId, setActiveTicketId] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [activeTicketStatus, setActiveTicketStatus] = useState<string | null>(
+    null,
+  );
+  const [activeTicketUserId, setActiveTicketUserId] = useState<string | null>(
+    null,
+  );
 
   // Verificar se o usuário é admin
   useEffect(() => {
@@ -372,6 +381,8 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     setIsSupportMode(false);
     setConversationId(null);
     setActiveTicketId(null);
+    setActiveTicketStatus(null);
+    setActiveTicketUserId(null);
   }, []);
 
   const setLoading = useCallback((loading: boolean) => {
@@ -385,6 +396,19 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
       setState((prev) => ({ ...prev, isLoading: true }));
 
       try {
+        // Buscar ticket associado a esta conversa
+        const { data: ticket } = await supabase
+          .from("support_tickets")
+          .select("id, status, user_id")
+          .eq("conversation_id", convId)
+          .maybeSingle();
+
+        if (ticket) {
+          setActiveTicketId(ticket.id);
+          setActiveTicketStatus(ticket.status);
+          setActiveTicketUserId(ticket.user_id);
+        }
+
         const { data: oldMessages } = await supabase
           .from("messages")
           .select("*")
@@ -410,6 +434,60 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
       }
     },
     [user?.id],
+  );
+
+  const updateTicketStatus = useCallback(
+    async (status: string) => {
+      if (!activeTicketId) return;
+
+      try {
+        await supabase
+          .from("support_tickets")
+          .update({ status, updated_at: new Date().toISOString() })
+          .eq("id", activeTicketId);
+
+        setActiveTicketStatus(status);
+
+        // Atualizar o ticket na lista do inbox também
+        setAdminTickets((prev) =>
+          prev.map((t) => (t.id === activeTicketId ? { ...t, status } : t)),
+        );
+
+        // Notificar o usuário sobre a mudança de status
+        if (activeTicketUserId) {
+          const statusMessages: Record<string, string> = {
+            in_progress: "Seu chamado está sendo analisado pelo suporte. 🔍",
+            resolved:
+              "Seu chamado foi marcado como resolvido. Se precisar de mais ajuda, você pode abrir um novo chamado! ✅",
+            closed: "Seu chamado foi encerrado pelo suporte.",
+          };
+          const msg = statusMessages[status];
+          if (msg) {
+            // Registrar mensagem de sistema na conversa
+            if (conversationId) {
+              await supabase.from("messages").insert({
+                conversation_id: conversationId,
+                sender_id: user?.id,
+                receiver_id: activeTicketUserId,
+                content: msg,
+              });
+            }
+            // Notificação push
+            await supabase.from("notifications").insert({
+              user_id: activeTicketUserId,
+              title: "Atualização do seu chamado",
+              message: msg,
+              type: "message",
+              action_url: `/?open=help`,
+              category: "support",
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error updating ticket status:", error);
+      }
+    },
+    [activeTicketId, activeTicketUserId, conversationId, user?.id],
   );
 
   useEffect(() => {
@@ -463,6 +541,9 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     adminTickets,
     selectTicket,
     fetchAdminTickets,
+    activeTicketStatus,
+    updateTicketStatus,
+    activeTicketUserId,
   };
 
   return (
