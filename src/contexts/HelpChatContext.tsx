@@ -214,6 +214,16 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
           .single();
 
         setActiveTicketId(ticketData.id);
+
+        // 4. Notificar admin sobre novo chamado
+        await supabase.from("notifications").insert({
+          user_id: ADMIN_ID,
+          title: "Novo chamado de suporte",
+          message: `${user.email || "Um usuário"} abriu um novo chamado.`,
+          type: "support",
+          action_url: `/?open=help&conversation_id=${currentConversationId}`,
+          category: "admin",
+        });
       } else {
         setActiveTicketId(existingTicket.id);
       }

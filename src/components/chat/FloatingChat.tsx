@@ -58,20 +58,22 @@ export function FloatingChat() {
   const { favorites, isFavorite } = useFavorites();
   const { notifications } = useNotifications();
 
-  // Verificar se há notificações de mensagem não lidas
+  // Verificar se há notificações de mensagem não lidas (excluindo suporte)
   const hasUnreadMessageNotifications = notifications.some(
-    (notification) =>
+    (notification: any) =>
       !notification.is_read &&
-      (notification.type === "message" ||
-        notification.title?.toLowerCase().includes("mensagem")),
+      notification.type === "message" &&
+      !notification.title?.toLowerCase().includes("suporte") &&
+      !notification.title?.toLowerCase().includes("central de ajuda"),
   );
 
-  // Contar notificações de mensagem não lidas
+  // Contar notificações de mensagem não lidas (excluindo suporte)
   const unreadMessageNotifications = notifications.filter(
-    (notification) =>
+    (notification: any) =>
       !notification.is_read &&
-      (notification.type === "message" ||
-        notification.title?.toLowerCase().includes("mensagem")),
+      notification.type === "message" &&
+      !notification.title?.toLowerCase().includes("suporte") &&
+      !notification.title?.toLowerCase().includes("central de ajuda"),
   );
   const unreadMessageCount = unreadMessageNotifications.length;
 
@@ -107,6 +109,13 @@ export function FloatingChat() {
 
   // Abrir chat automaticamente quando houver nova notificação de mensagem
   useEffect(() => {
+    // Segurança: Não abrir o chat normal se estivermos tentando abrir a central de ajuda via URL
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const openParam = params.get("open");
+      if (openParam === "help") return;
+    }
+
     if (unreadMessageCount > lastUnreadMessageCount) {
       // Nova notificação de mensagem detectada
       setLastUnreadMessageCount(unreadMessageCount);

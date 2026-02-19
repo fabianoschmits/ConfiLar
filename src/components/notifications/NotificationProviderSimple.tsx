@@ -23,6 +23,7 @@ export interface Notification {
     | "booking"
     | "verification"
     | "achievement"
+    | "support"
     | "system";
   is_read: boolean;
   action_url?: string;
@@ -373,8 +374,10 @@ export const NotificationProviderSimple: React.FC<
               ? {
                   label: "Ver",
                   onClick: () => {
-                    if (newNotification.action_url?.startsWith("#")) {
-                      // Se for um fragmento (como #chat), não abrir em nova aba
+                    if (newNotification.action_url?.startsWith("/")) {
+                      // Se for um link interno, navegar na mesma aba
+                      window.location.href = newNotification.action_url;
+                    } else if (newNotification.action_url?.startsWith("#")) {
                       window.location.hash = newNotification.action_url;
                     } else {
                       window.open(newNotification.action_url, "_blank");
@@ -387,7 +390,10 @@ export const NotificationProviderSimple: React.FC<
           // Se for notificação de mensagem, abrir chat flutuante automaticamente
           const titleLower = newNotification.title?.toLowerCase() || "";
           const isSupport =
+            newNotification.type === "support" ||
             titleLower.includes("suporte") ||
+            titleLower.includes("chamado") ||
+            newNotification.action_url?.includes("open=help") ||
             newNotification.action_url?.includes("/help");
 
           if (
