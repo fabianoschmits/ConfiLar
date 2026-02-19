@@ -9,10 +9,21 @@ import Image from "next/image";
 import { useHelpChat } from "@/contexts/HelpChatContext";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { MessageSquare, RefreshCw, Clock, CheckCircle2 } from "lucide-react";
+import {
+  MessageSquare,
+  RefreshCw,
+  Clock,
+  CheckCircle2,
+  Trash2,
+} from "lucide-react";
 
 export default function HelpAdminInbox() {
-  const { adminTickets, selectTicket, fetchAdminTickets } = useHelpChat();
+  const {
+    adminTickets,
+    selectTicket,
+    fetchAdminTickets,
+    deleteTicketForAdmin,
+  } = useHelpChat();
 
   // Refresh tickets on mount
   useEffect(() => {
@@ -79,6 +90,7 @@ export default function HelpAdminInbox() {
                   key={ticket.id}
                   ticket={ticket}
                   onSelect={() => selectTicket(ticket.conversation_id)}
+                  onDelete={() => deleteTicketForAdmin(ticket.id)}
                 />
               ))}
             </div>
@@ -98,6 +110,7 @@ export default function HelpAdminInbox() {
                   key={ticket.id}
                   ticket={ticket}
                   onSelect={() => selectTicket(ticket.conversation_id)}
+                  onDelete={() => deleteTicketForAdmin(ticket.id)}
                 />
               ))}
             </div>
@@ -117,6 +130,7 @@ export default function HelpAdminInbox() {
                   key={ticket.id}
                   ticket={ticket}
                   onSelect={() => selectTicket(ticket.conversation_id)}
+                  onDelete={() => deleteTicketForAdmin(ticket.id)}
                 />
               ))}
             </div>
@@ -130,62 +144,80 @@ export default function HelpAdminInbox() {
 function TicketRow({
   ticket,
   onSelect,
+  onDelete,
 }: {
   ticket: any;
   onSelect: () => void;
+  onDelete: () => void;
 }) {
   const lastMessage = Array.isArray(ticket.last_message)
     ? ticket.last_message[0]
     : ticket.last_message;
 
   return (
-    <button
-      onClick={onSelect}
-      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors text-left group"
-    >
-      {/* Avatar */}
-      <div className="relative w-10 h-10 rounded-full overflow-hidden border border-border/50 bg-muted flex-shrink-0">
-        {ticket.user?.avatar_url ? (
-          <Image
-            src={ticket.user.avatar_url}
-            alt={ticket.user.full_name || "Usuário"}
-            fill
-            className="object-cover"
+    <div className="relative group">
+      <button
+        onClick={onSelect}
+        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors text-left"
+      >
+        {/* Avatar */}
+        <div className="relative w-10 h-10 rounded-full overflow-hidden border border-border/50 bg-muted flex-shrink-0">
+          {ticket.user?.avatar_url ? (
+            <Image
+              src={ticket.user.avatar_url}
+              alt={ticket.user.full_name || "Usuário"}
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-sm font-bold text-muted-foreground">
+              {ticket.user?.full_name?.charAt(0)?.toUpperCase() || "U"}
+            </div>
+          )}
+          {/* Status dot */}
+          <span
+            className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-background ${
+              ticket.status === "open"
+                ? "bg-amber-500"
+                : ticket.status === "in_progress"
+                  ? "bg-primary"
+                  : "bg-emerald-500"
+            }`}
           />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-sm font-bold text-muted-foreground">
-            {ticket.user?.full_name?.charAt(0)?.toUpperCase() || "U"}
-          </div>
-        )}
-        {/* Status dot */}
-        <span
-          className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-background ${
-            ticket.status === "open"
-              ? "bg-amber-500"
-              : ticket.status === "in_progress"
-                ? "bg-primary"
-                : "bg-emerald-500"
-          }`}
-        />
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-0.5">
-          <span className="font-semibold text-sm truncate">
-            {ticket.user?.full_name || "Usuário"}
-          </span>
-          <span className="text-[10px] text-muted-foreground whitespace-nowrap ml-2 flex-shrink-0">
-            {formatDistanceToNow(
-              new Date(ticket.updated_at || ticket.created_at),
-              { addSuffix: true, locale: ptBR },
-            )}
-          </span>
         </div>
-        <p className="text-xs text-muted-foreground truncate">
-          {lastMessage?.content || "Iniciou um chamado de suporte..."}
-        </p>
-      </div>
-    </button>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-0.5">
+            <span className="font-semibold text-sm truncate">
+              {ticket.user?.full_name || "Usuário"}
+            </span>
+            <span className="text-[10px] text-muted-foreground whitespace-nowrap ml-2 flex-shrink-0">
+              {formatDistanceToNow(
+                new Date(ticket.updated_at || ticket.created_at),
+                { addSuffix: true, locale: ptBR },
+              )}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground truncate">
+            {lastMessage?.content || "Iniciou um chamado de suporte..."}
+          </p>
+        </div>
+      </button>
+
+      {/* Delete button - shows on hover */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          if (confirm("Deseja ocultar este chamado da sua lista?")) {
+            onDelete();
+          }
+        }}
+        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-background border border-border/50 text-destructive opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-white"
+        title="Ocultar chamado"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
   );
 }

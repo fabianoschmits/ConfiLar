@@ -425,9 +425,13 @@ export const NotificationList: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() =>
-                          window.open(notification.action_url, "_blank")
-                        }
+                        onClick={() => {
+                          if (notification.action_url?.startsWith("/")) {
+                            window.location.href = notification.action_url;
+                          } else {
+                            window.open(notification.action_url, "_blank");
+                          }
+                        }}
                         className="h-7 px-3 text-xs border-gray-300 hover:bg-gray-50 shadow-sm hover:shadow-md transition-all duration-200"
                       >
                         {(notification as any).action_label || "Ver detalhes"}

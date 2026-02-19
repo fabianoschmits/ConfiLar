@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useNotificationSound } from "@/hooks/useNotificationSound";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
+import { useHelpChat } from "@/contexts/HelpChatContext";
 import { NotificationSoundType } from "@/types/sound";
 
 export interface Notification {
@@ -77,6 +78,7 @@ export const NotificationProviderSimple: React.FC<
   const { user } = useAuthContext();
   const { playSound, isEnabled: soundEnabled } = useNotificationSound();
   const { openChat } = useFloatingChat();
+  const { openChat: openHelpChat, selectTicket } = useHelpChat();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [hasPermission, setHasPermission] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -443,6 +445,22 @@ export const NotificationProviderSimple: React.FC<
                 error,
               );
             }
+          } else if (isSupport) {
+            console.log("🔔 [NotificationFlow] Abrindo Central de Ajuda!");
+            openHelpChat();
+
+            // Se tiver conversation_id na URL da ação, carregar ela
+            if (newNotification.action_url) {
+              const url = new URL(
+                newNotification.action_url,
+                window.location.origin,
+              );
+              const convId = url.searchParams.get("conversation_id");
+              if (convId) {
+                console.log("🎫 Selecionando ticket:", convId);
+                selectTicket(convId);
+              }
+            }
           }
         },
       )
@@ -518,7 +536,7 @@ export const NotificationProviderSimple: React.FC<
       console.log("🛑 Desconectando realtime de notificações");
       channel.unsubscribe();
     };
-  }, [user, openChat]);
+  }, [user, openChat, openHelpChat, selectTicket]);
 
   // Verificar permissão na inicialização
   useEffect(() => {

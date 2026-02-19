@@ -33,6 +33,7 @@ interface HelpChatContextType extends HelpChatState {
   activeTicketStatus: string | null;
   updateTicketStatus: (status: string) => Promise<void>;
   activeTicketUserId: string | null;
+  deleteTicketForAdmin: (ticketId: string) => Promise<void>;
 }
 
 const HelpChatContext = createContext<HelpChatContextType | undefined>(
@@ -77,6 +78,50 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     checkAdmin();
   }, [user?.id]);
 
+  // Verificar se o usuário já tem um ticket aberto para persistência
+  useEffect(() => {
+    const checkActiveTicket = async () => {
+      if (!user?.id || isAdmin) return;
+
+      const { data: activeTicket } = await supabase
+        .from("support_tickets")
+        .select("id, conversation_id, status")
+        .eq("user_id", user.id)
+        .eq("status", "open")
+        .maybeSingle();
+
+      if (activeTicket) {
+        console.log(
+          "🎫 Restaurando ticket ativo para o usuário:",
+          activeTicket.id,
+        );
+        setConversationId(activeTicket.conversation_id);
+        setActiveTicketId(activeTicket.id);
+        setActiveTicketStatus(activeTicket.status);
+        setIsSupportMode(true);
+
+        // Carregar mensagens
+        const { data: messages } = await supabase
+          .from("messages")
+          .select("*")
+          .eq("conversation_id", activeTicket.conversation_id)
+          .order("created_at", { ascending: true });
+
+        if (messages) {
+          const formattedMessages: HelpMessage[] = messages.map((m) => ({
+            id: m.id,
+            type: m.sender_id === user.id ? "user" : "bot",
+            content: m.content,
+            timestamp: new Date(m.created_at),
+          }));
+          setState((prev) => ({ ...prev, messages: formattedMessages }));
+        }
+      }
+    };
+
+    checkActiveTicket();
+  }, [user?.id, isAdmin]);
+
   // Buscar tickets se for admin
   const fetchAdminTickets = useCallback(async () => {
     if (!isAdmin) {
@@ -89,6 +134,7 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
       const { data: tickets, error: ticketError } = await supabase
         .from("support_tickets")
         .select("*")
+        .eq("deleted_by_admin", false)
         .order("updated_at", { ascending: false });
 
       if (ticketError) throw ticketError;
@@ -354,7 +400,7 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
                   ? content.substring(0, 80) + "..."
                   : content,
               type: "support",
-              action_url: `/?open=chat`,
+              action_url: `/?open=help`,
               category: "support",
             });
           } else {
@@ -547,6 +593,30 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     [activeTicketId, activeTicketUserId, conversationId, user?.id],
   );
 
+  const deleteTicketForAdmin = useCallback(
+    async (ticketId: string) => {
+      try {
+        const { error } = await supabase
+          .from("support_tickets")
+          .update({ deleted_by_admin: true })
+          .eq("id", ticketId);
+
+        if (error) throw error;
+
+        // Remover da lista local
+        setAdminTickets((prev) => prev.filter((t) => t.id !== ticketId));
+
+        // Se o ticket deletado for o ativo, limpar a seleção
+        if (activeTicketId === ticketId) {
+          clearHistory();
+        }
+      } catch (error) {
+        console.error("Error deleting ticket for admin:", error);
+      }
+    },
+    [activeTicketId, clearHistory],
+  );
+
   useEffect(() => {
     // Verificar se deve abrir o chat automaticamente (parametro de URL para deep-linking de notificações)
     const checkDeepLink = async () => {
@@ -555,14 +625,14 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
         const urlConvId = params.get("conversation_id");
 
         const openParam = params.get("open");
-        if (openParam === "chat" || openParam === "help") {
+        if (openParam === "help") {
           openChat();
 
           if (user?.id) {
             if (urlConvId) {
               // Se houver conversation_id direto, carregar ela
               selectTicket(urlConvId);
-            } else if (openParam === "chat") {
+            } else {
               // Comportamento para o usuário final: procurar ticket aberto
               const { data: checkSupport } = await supabase
                 .from("support_tickets")
@@ -602,6 +672,7 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     activeTicketStatus,
     updateTicketStatus,
     activeTicketUserId,
+    deleteTicketForAdmin,
   };
 
   return (
