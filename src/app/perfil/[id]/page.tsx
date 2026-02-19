@@ -57,7 +57,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ProfilePageSkeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { useReferralStats } from "@/hooks/useReferralStats";
-import { ReferralBadgeLarge } from "@/components/referral/ReferralBadge";
+import { ReferralBadge } from "@/components/referral/ReferralBadge";
 import { ProVerifiedBadge } from "@/components/ui/ProVerifiedBadge";
 import { useTranslations } from "next-intl";
 import { PortfolioProjectCard } from "@/components/portfolio/PortfolioProjectCard";
@@ -211,15 +211,13 @@ export default function ProfilePage() {
     <MainLayout requireAuth={false}>
       {profile && <AIProfileSchema profile={profile} />}
       <div className="min-h-screen bg-gray-50 dark:bg-black text-foreground transition-colors duration-300">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           {/* Header Minimalista */}
           {/* Header Minimalista Unificado */}
-          <div className="flex flex-col items-center text-center mb-12">
+          <div className="flex flex-col items-center text-center mb-6">
             {/* Identity Card Container */}
-            <div className="relative group w-full max-w-2xl mx-auto mb-12">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-[2rem] blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
-
-              <div className="relative px-6 py-10 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-[1.8rem] shadow-2xl flex flex-col items-center">
+            <div className="relative w-full max-w-2xl mx-auto mb-6">
+              <div className="relative px-6 py-10 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl shadow-sm flex flex-col items-center">
                 {/* Unified Avatar & Info */}
                 <div className="flex flex-col items-center -mt-20 sm:-mt-24 mb-6">
                   <div className="relative p-1.5 rounded-full bg-background/50 backdrop-blur shadow-sm border border-border/50">
@@ -278,14 +276,6 @@ export default function ProfilePage() {
                       >
                         {isProfessional ? t("professional") : t("client")}
                       </Badge>
-                      {profile.location_city && profile.location_state && (
-                        <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted/50 text-muted-foreground">
-                          <MapPin className="w-3 h-3" />
-                          <span>
-                            {profile.location_city}, {profile.location_state}
-                          </span>
-                        </div>
-                      )}
                     </div>
                   </div>
 
@@ -303,7 +293,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Botões de Ação Minimalistas */}
-            <div className="flex flex-wrap justify-center gap-3 mb-10 w-full sm:w-auto">
+            <div className="flex flex-wrap justify-center gap-3 mb-6 w-full sm:w-auto">
               {!isOwnProfile && (
                 <Button
                   onClick={handleContact}
@@ -324,7 +314,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Redes Sociais */}
-            <div className="w-full max-w-lg mx-auto mb-10">
+            <div className="w-full max-w-lg mx-auto mb-6">
               <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">
                 Redes Sociais
               </h3>
@@ -332,92 +322,71 @@ export default function ProfilePage() {
             </div>
 
             {/* Métricas Clean (Row) */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-3xl mx-auto border-y border-border py-6 mb-8">
-              <div className="text-center p-2">
-                <div className="flex flex-col items-center">
-                  <span className="text-2xl font-bold text-foreground">
+            <div className="w-full max-w-3xl mx-auto mb-6">
+              <div className="grid grid-cols-4 gap-2 sm:gap-4">
+                <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-3 sm:p-4 shadow-sm transition-all flex flex-col items-center justify-center">
+                  <div className="p-1.5 sm:p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl mb-1 sm:mb-2">
+                    <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 fill-yellow-500" />
+                  </div>
+                  <span className="text-base sm:text-lg font-bold text-foreground">
                     {profile.rating.toFixed(1)}
                   </span>
-                  <span className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                    <Star className="w-3 h-3" /> {t("rating")}
+                  <span className="text-[8px] sm:text-[10px] uppercase tracking-wider font-bold text-muted-foreground mt-0.5 sm:mt-1 text-center">
+                    {t("rating")}
                   </span>
                 </div>
-              </div>
-              <div className="text-center p-2 border-l border-border/50">
-                <div className="flex flex-col items-center">
-                  <span className="text-2xl font-bold text-foreground">
+
+                <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-3 sm:p-4 shadow-sm transition-all flex flex-col items-center justify-center">
+                  <div className="p-1.5 sm:p-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl mb-1 sm:mb-2">
+                    <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+                  </div>
+                  <span className="text-base sm:text-lg font-bold text-foreground">
                     {profile.total_reviews}
                   </span>
-                  <span className="text-sm text-muted-foreground mt-1">
+                  <span className="text-[8px] sm:text-[10px] uppercase tracking-wider font-bold text-muted-foreground mt-0.5 sm:mt-1 text-center">
                     {t("reviews")}
                   </span>
                 </div>
-              </div>
-              <div className="text-center p-2 border-l border-border/50">
-                <div className="flex flex-col items-center">
-                  <span className="text-2xl font-bold text-foreground">
+
+                <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-3 sm:p-4 shadow-sm transition-all flex flex-col items-center justify-center">
+                  <div className="p-1.5 sm:p-2 bg-purple-50 dark:bg-purple-900/20 rounded-xl mb-1 sm:mb-2">
+                    <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500" />
+                  </div>
+                  <span className="text-base sm:text-lg font-bold text-foreground">
                     {viewStats?.total_views?.toLocaleString("pt-BR") || "0"}
                   </span>
-                  <span className="text-sm text-muted-foreground mt-1">
+                  <span className="text-[8px] sm:text-[10px] uppercase tracking-wider font-bold text-muted-foreground mt-0.5 sm:mt-1 text-center">
                     {t("views")}
                   </span>
                 </div>
-              </div>
-              <div className="text-center p-2 border-l border-border/50">
-                <div className="flex flex-col items-center justify-center h-full">
-                  <div className="transform scale-90 origin-center">
+
+                <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-3 sm:p-4 shadow-sm transition-all flex flex-col items-center justify-center">
+                  <div className="p-1.5 sm:p-2 bg-primary/5 rounded-xl mb-1 sm:mb-2">
                     {referralLoading ? (
-                      <span className="text-muted-foreground">...</span>
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
                     ) : (
-                      <ReferralBadgeLarge
+                      <ReferralBadge
                         tier={referralStats?.tier || "none"}
                         totalReferrals={referralStats?.totalReferrals || 0}
+                        size="md"
                       />
                     )}
                   </div>
+                  <span className="text-base sm:text-lg font-bold text-foreground">
+                    {referralStats?.totalReferrals || 0}
+                  </span>
+                  <span className="text-[8px] sm:text-[10px] uppercase tracking-wider font-bold text-muted-foreground mt-0.5 sm:mt-1 text-center">
+                    Convites
+                  </span>
                 </div>
               </div>
-            </div>
-
-            {/* Informações Rápidas (Icon Grid) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-muted-foreground w-full max-w-3xl mx-auto">
-              {profile.location_city && profile.location_state && (
-                <div className="flex items-center justify-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                  <MapPin className="w-4 h-4 text-primary" />
-                  <span>
-                    {profile.location_city}, {profile.location_state}
-                  </span>
-                </div>
-              )}
-              {profile.escolaridade && (
-                <div className="flex items-center justify-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                  <GraduationCap className="w-4 h-4 text-primary" />
-                  <span className="truncate max-w-[200px]">
-                    {formatEscolaridade(profile.escolaridade)}
-                  </span>
-                </div>
-              )}
-              {isProfessional &&
-                profile.professional_experience_years &&
-                profile.professional_experience_years > 0 && (
-                  <div className="flex items-center justify-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                    <Briefcase className="w-4 h-4 text-primary" />
-                    <span>
-                      {profile.professional_experience_years}{" "}
-                      {profile.professional_experience_years === 1
-                        ? t("year")
-                        : t("years")}{" "}
-                      exp.
-                    </span>
-                  </div>
-                )}
             </div>
           </div>
 
           {/* Tabs - Classic Scrollable */}
           <Tabs
             defaultValue="recommendations"
-            className="space-y-8 w-full max-w-4xl mx-auto"
+            className="space-y-6 w-full max-w-4xl mx-auto"
           >
             <div className="relative w-full group/tabs">
               <div
@@ -488,7 +457,7 @@ export default function ProfilePage() {
             {/* Aba de Recomendações */}
             <TabsContent
               value="recommendations"
-              className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
+              className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500"
             >
               <div className="flex items-center gap-2 mb-4">
                 <ThumbsUp className="w-5 h-5 text-primary" />
@@ -597,147 +566,164 @@ export default function ProfilePage() {
 
             <TabsContent
               value="about"
-              className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500"
+              className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
             >
               <GuestBlurOverlay isGuest={!user}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Informações Pessoais */}
-                  <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 border border-gray-100 dark:border-zinc-800 shadow-sm">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-2xl">
-                        <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <h3 className="text-lg font-bold text-foreground">
-                        Informações Pessoais
-                      </h3>
-                    </div>
-
-                    <div className="space-y-4">
-                      {profile.gender && (
-                        <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700 transition-colors">
-                          <span className="text-sm font-medium text-muted-foreground">
-                            Gênero
-                          </span>
-                          <span className="text-sm font-bold text-foreground">
-                            {formatGender(profile.gender)}
-                          </span>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Informações Pessoais */}
+                    <div className="bg-white dark:bg-zinc-900 rounded-3xl p-5 border border-gray-100 dark:border-zinc-800 shadow-sm">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-2xl">
+                          <User className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
                         </div>
-                      )}
-
-                      {profile.idade && (
-                        <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700 transition-colors">
-                          <span className="text-sm font-medium text-muted-foreground">
-                            {t("age")}
-                          </span>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-sm font-bold text-foreground">
-                              {profile.idade}
-                            </span>
-                            <span className="text-xs text-muted-foreground font-medium">
-                              {t("years")}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-
-                      {profile.escolaridade && (
-                        <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700 transition-colors">
-                          <span className="text-sm font-medium text-muted-foreground">
-                            {t("education")}
-                          </span>
-                          <span className="text-sm font-bold text-foreground text-right max-w-[180px] leading-tight">
-                            {formatEscolaridade(profile.escolaridade)}
-                          </span>
-                        </div>
-                      )}
-
-                      {profile.estado_civil && (
-                        <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700 transition-colors">
-                          <span className="text-sm font-medium text-muted-foreground">
-                            {t("maritalStatus")}
-                          </span>
-                          <span className="text-sm font-bold text-foreground">
-                            {formatEstadoCivil(profile.estado_civil)}
-                          </span>
-                        </div>
-                      )}
-
-                      {profile.filhos !== null &&
-                        profile.filhos !== undefined && (
-                          <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700 transition-colors">
-                            <span className="text-sm font-medium text-muted-foreground">
-                              {t("childrenLabel")}
-                            </span>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-sm font-bold text-foreground">
-                                {profile.filhos}
-                              </span>
-                              <span className="text-xs text-muted-foreground font-medium">
-                                {profile.filhos === 1
-                                  ? t("child")
-                                  : t("children")}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                    </div>
-                  </div>
-
-                  {/* Informações Profissionais */}
-                  {isProfessional && (
-                    <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 border border-gray-100 dark:border-zinc-800 shadow-sm">
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="p-2.5 bg-[#00b0b0]/10 rounded-2xl">
-                          <Briefcase className="w-5 h-5 text-[#00b0b0]" />
-                        </div>
-                        <h3 className="text-lg font-bold text-foreground">
-                          {t("professionalInfo")}
+                        <h3 className="text-base font-bold text-foreground">
+                          Informações Pessoais
                         </h3>
                       </div>
 
-                      <div className="space-y-4">
-                        {profile.professional_experience_years && (
-                          <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700 transition-colors">
+                      <div className="space-y-3">
+                        {profile.location_city && profile.location_state && (
+                          <div className="flex items-center justify-between p-2.5 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
+                            <span className="text-xs font-medium text-muted-foreground inline-flex items-center gap-2">
+                              <MapPin className="w-3 h-3" />
+                              Localização
+                            </span>
+                            <span className="text-xs font-bold text-foreground">
+                              {profile.location_city}, {profile.location_state}
+                            </span>
+                          </div>
+                        )}
+
+                        {profile.gender && (
+                          <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
                             <span className="text-sm font-medium text-muted-foreground">
-                              {t("experience")}
+                              Gênero
+                            </span>
+                            <span className="text-sm font-bold text-foreground">
+                              {formatGender(profile.gender)}
+                            </span>
+                          </div>
+                        )}
+
+                        {profile.idade && (
+                          <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
+                            <span className="text-sm font-medium text-muted-foreground">
+                              {t("age")}
                             </span>
                             <div className="flex items-center gap-1.5">
                               <span className="text-sm font-bold text-foreground">
-                                {profile.professional_experience_years}
+                                {profile.idade}
                               </span>
                               <span className="text-xs text-muted-foreground font-medium">
-                                {profile.professional_experience_years === 1
-                                  ? t("year")
-                                  : t("years")}
+                                {t("years")}
                               </span>
                             </div>
                           </div>
                         )}
 
-                        {profile.turno_trabalho && (
-                          <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700 transition-colors">
-                            <span className="text-sm font-medium text-muted-foreground">
-                              {t("shift")}
+                        {profile.escolaridade && (
+                          <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
+                            <span className="text-sm font-medium text-muted-foreground inline-flex items-center gap-2">
+                              <GraduationCap className="w-3.5 h-3.5" />
+                              {t("education")}
                             </span>
-                            <span className="text-sm font-bold text-foreground">
-                              {formatTurnoTrabalho(profile.turno_trabalho)}
+                            <span className="text-sm font-bold text-foreground text-right max-w-[180px] leading-tight">
+                              {formatEscolaridade(profile.escolaridade)}
                             </span>
                           </div>
                         )}
 
-                        {profile.referencia_profissional && (
-                          <div className="p-4 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent">
-                            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-2">
-                              {t("professionalReference")}
+                        {profile.estado_civil && (
+                          <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
+                            <span className="text-sm font-medium text-muted-foreground">
+                              {t("maritalStatus")}
                             </span>
-                            <p className="text-sm text-foreground leading-relaxed italic">
-                              "{profile.referencia_profissional}"
-                            </p>
+                            <span className="text-sm font-bold text-foreground">
+                              {formatEstadoCivil(profile.estado_civil)}
+                            </span>
                           </div>
                         )}
+
+                        {profile.filhos !== null &&
+                          profile.filhos !== undefined && (
+                            <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
+                              <span className="text-sm font-medium text-muted-foreground">
+                                {t("childrenLabel")}
+                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-sm font-bold text-foreground">
+                                  {profile.filhos}
+                                </span>
+                                <span className="text-xs text-muted-foreground font-medium">
+                                  {profile.filhos === 1
+                                    ? t("child")
+                                    : t("children")}
+                                </span>
+                              </div>
+                            </div>
+                          )}
                       </div>
                     </div>
-                  )}
+
+                    {/* Informações Profissionais */}
+                    {isProfessional && (
+                      <div className="bg-white dark:bg-zinc-900 rounded-3xl p-5 border border-gray-100 dark:border-zinc-800 shadow-sm">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-2xl">
+                            <Briefcase className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
+                          </div>
+                          <h3 className="text-base font-bold text-foreground">
+                            {t("professionalInfo")}
+                          </h3>
+                        </div>
+
+                        <div className="space-y-3">
+                          {profile.professional_experience_years && (
+                            <div className="flex items-center justify-between p-2.5 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
+                              <span className="text-xs font-medium text-muted-foreground inline-flex items-center gap-2">
+                                <Award className="w-3 h-3" />
+                                {t("experience")}
+                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-bold text-foreground">
+                                  {profile.professional_experience_years}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground font-medium">
+                                  {profile.professional_experience_years === 1
+                                    ? t("year")
+                                    : t("years")}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {profile.turno_trabalho && (
+                            <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
+                              <span className="text-sm font-medium text-muted-foreground inline-flex items-center gap-2">
+                                <Clock className="w-3.5 h-3.5" />
+                                {t("shift")}
+                              </span>
+                              <span className="text-sm font-bold text-foreground">
+                                {formatTurnoTrabalho(profile.turno_trabalho)}
+                              </span>
+                            </div>
+                          )}
+
+                          {profile.referencia_profissional && (
+                            <div className="p-4 rounded-2xl bg-gray-50/30 dark:bg-zinc-800/10 border border-transparent">
+                              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-2">
+                                {t("professionalReference")}
+                              </span>
+                              <p className="text-sm text-foreground leading-relaxed italic opacity-80">
+                                "{profile.referencia_profissional}"
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </GuestBlurOverlay>
             </TabsContent>
@@ -762,12 +748,12 @@ export default function ProfilePage() {
                         {profile.professional_services.map((service, index) => (
                           <div
                             key={index}
-                            className="flex items-center gap-4 p-4 bg-card rounded-xl border border-border shadow-sm hover:shadow-md transition-shadow group"
+                            className="flex items-center gap-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm transition-all"
                           >
-                            <div className="shrink-0 p-2 bg-primary/5 rounded-lg group-hover:bg-primary/10 transition-colors">
+                            <div className="shrink-0 p-2 bg-primary/5 rounded-xl">
                               <CheckCircle className="w-5 h-5 text-primary" />
                             </div>
-                            <span className="text-foreground text-sm sm:text-base font-semibold">
+                            <span className="text-foreground text-sm font-bold">
                               {service}
                             </span>
                           </div>

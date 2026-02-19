@@ -34,7 +34,7 @@ export function PortfolioProjectCard({
   return (
     <>
       <Card
-        className={`group overflow-hidden border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-md rounded-xl ${onClick ? "cursor-pointer" : ""}`}
+        className={`group overflow-hidden border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-none transition-all duration-300 rounded-2xl ${onClick ? "cursor-pointer" : ""}`}
         onClick={() => onClick && onClick(project)}
       >
         <div className="relative aspect-video w-full overflow-hidden bg-muted">

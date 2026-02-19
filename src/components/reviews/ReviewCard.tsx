@@ -151,7 +151,7 @@ export function ReviewCard({
   };
 
   return (
-    <div className="bg-card rounded-xl border border-border shadow-sm p-5 sm:p-6 transition-shadow hover:shadow-md group">
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-5 sm:p-6 transition-all group">
       <div className="flex flex-col gap-4">
         {/* Header: User Info & Rating */}
         <div className="flex items-start justify-between gap-4">
