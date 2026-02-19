@@ -107,11 +107,12 @@ export function useMessages() {
 
       if (error) throw error;
 
-      // EXCLUSÃO: Buscar IDs de conversas que são tickets de suporte
+      // EXCLUSÃO: Buscar IDs de conversas que são tickets de suporte entre as conversas carregadas
+      const convIds = (data || []).map((c) => c.id);
       const { data: supportTickets } = await supabase
         .from("support_tickets")
         .select("conversation_id")
-        .eq("user_id", user.id);
+        .in("conversation_id", convIds);
 
       const supportConvIds = new Set(
         (supportTickets || []).map((t) => t.conversation_id),

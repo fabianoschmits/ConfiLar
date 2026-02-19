@@ -181,7 +181,7 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
       // 1. Verificar ticket aberto
       const { data: existingTicket } = await supabase
         .from("support_tickets")
-        .select("id, conversation_id")
+        .select("id, conversation_id, status")
         .eq("user_id", user.id)
         .eq("status", "open")
         .maybeSingle();
@@ -220,6 +220,11 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
 
       setConversationId(currentConversationId);
       setIsSupportMode(true);
+      if (existingTicket) {
+        setActiveTicketStatus(existingTicket.status);
+      } else {
+        setActiveTicketStatus("open");
+      }
 
       // Carregar mensagens anteriores se houver
       const { data: oldMessages } = await supabase
@@ -296,7 +301,7 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
                 content.length > 80
                   ? content.substring(0, 80) + "..."
                   : content,
-              type: "message",
+              type: "support",
               action_url: `/?open=chat`,
               category: "support",
             });
@@ -327,7 +332,7 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
               user_id: ADMIN_ID,
               title: "Nova mensagem de suporte",
               message: `${user.email || "Um usuário"} enviou uma mensagem no ticket.`,
-              type: "message",
+              type: "support",
               action_url: `/?open=help&conversation_id=${conversationId}`,
               category: "admin",
             });
@@ -477,7 +482,7 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
               user_id: activeTicketUserId,
               title: "Atualização do seu chamado",
               message: msg,
-              type: "message",
+              type: "support",
               action_url: `/?open=help`,
               category: "support",
             });
@@ -497,14 +502,15 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
         const params = new URLSearchParams(window.location.search);
         const urlConvId = params.get("conversation_id");
 
-        if (params.get("open") === "chat") {
+        const openParam = params.get("open");
+        if (openParam === "chat" || openParam === "help") {
           openChat();
 
           if (user?.id) {
             if (urlConvId) {
               // Se houver conversation_id direto, carregar ela
               selectTicket(urlConvId);
-            } else {
+            } else if (openParam === "chat") {
               // Comportamento para o usuário final: procurar ticket aberto
               const { data: checkSupport } = await supabase
                 .from("support_tickets")
