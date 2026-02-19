@@ -124,9 +124,9 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
-  // Monitorar mensagens em tempo real se estiver em modo suporte
+  // Monitorar mensagens em tempo real se houver uma conversa de suporte ativa
   useEffect(() => {
-    if (!conversationId || !isSupportMode) return;
+    if (!conversationId) return;
 
     const channel = supabase
       .channel(`support_messages_${conversationId}`)
@@ -143,7 +143,8 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
           if (newMessage.sender_id !== user?.id) {
             const helpMessage: HelpMessage = {
               id: newMessage.id,
-              type: "bot", // Admin sempre aparece como bot para anonimato
+              // Admin sempre aparece como bot; quando o admin visualiza, o user aparece como "user"
+              type: "bot",
               content: newMessage.content,
               timestamp: new Date(newMessage.created_at),
             };
@@ -159,7 +160,7 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [conversationId, isSupportMode, user?.id]);
+  }, [conversationId, user?.id]);
 
   const startSupportTicket = useCallback(async () => {
     if (!user) return;
@@ -259,37 +260,69 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
         try {
           const ADMIN_ID = "f7444305-a3bd-4d71-874a-bb95fd27f96a";
 
-          // Verificar se esta é a primeira mensagem do usuário nesta sessão de suporte
-          // para enviar a mensagem automática sobre o prazo
-          const userMessageCount = state.messages.filter(
-            (m) => m.type === "user",
-          ).length;
+          if (isAdmin) {
+            // === ADMIN RESPONDENDO ===
+            // Buscar o user_id do ticket para saber para quem enviar
+            const { data: ticketData } = await supabase
+              .from("support_tickets")
+              .select("user_id")
+              .eq("conversation_id", conversationId)
+              .maybeSingle();
 
-          await supabase.from("messages").insert({
-            conversation_id: conversationId,
-            sender_id: user.id,
-            receiver_id: ADMIN_ID,
-            content,
-          });
+            const targetUserId = ticketData?.user_id;
+            if (!targetUserId) return;
 
-          // Se for a primeira mensagem, enviar a resposta automática do sistema
-          if (userMessageCount === 0) {
-            setTimeout(() => {
-              addBotMessage(
-                "Entendido. Um moderador foi notificado e analisará sua solicitação o quanto antes. 😊\n\n*Nota: O moderador pode levar algumas horas para responder, com um prazo máximo de 48 horas.*",
-              );
-            }, 1000);
+            await supabase.from("messages").insert({
+              conversation_id: conversationId,
+              sender_id: user.id,
+              receiver_id: targetUserId,
+              content,
+            });
+
+            // Notificar o usuário que recebeu resposta do suporte
+            await supabase.from("notifications").insert({
+              user_id: targetUserId,
+              title: "Suporte ConfiLar respondeu",
+              message:
+                content.length > 80
+                  ? content.substring(0, 80) + "..."
+                  : content,
+              type: "message",
+              action_url: `/?open=chat`,
+              category: "support",
+            });
+          } else {
+            // === USUÁRIO ENVIANDO PARA SUPORTE ===
+            const userMessageCount = state.messages.filter(
+              (m) => m.type === "user",
+            ).length;
+
+            await supabase.from("messages").insert({
+              conversation_id: conversationId,
+              sender_id: user.id,
+              receiver_id: ADMIN_ID,
+              content,
+            });
+
+            // Se for a primeira mensagem, enviar a resposta automática do sistema
+            if (userMessageCount === 0) {
+              setTimeout(() => {
+                addBotMessage(
+                  "Entendido. Um moderador foi notificado e analisará sua solicitação o quanto antes. 😊\n\n*Nota: O moderador pode levar algumas horas para responder, com um prazo máximo de 48 horas.*",
+                );
+              }, 1000);
+            }
+
+            // Notificar admin via notificação do sistema
+            await supabase.from("notifications").insert({
+              user_id: ADMIN_ID,
+              title: "Nova mensagem de suporte",
+              message: `${user.email || "Um usuário"} enviou uma mensagem no ticket.`,
+              type: "message",
+              action_url: `/?open=help&conversation_id=${conversationId}`,
+              category: "admin",
+            });
           }
-
-          // Notificar admin via notificação do sistema
-          await supabase.from("notifications").insert({
-            user_id: ADMIN_ID,
-            title: "Nova mensagem de suporte",
-            message: `${user.email || "Um usuário"} enviou uma mensagem no ticket.`,
-            type: "chat",
-            action_url: `/chat?id=${conversationId}`,
-            category: "admin",
-          });
         } catch (error) {
           console.error("Error sending support message:", error);
         }

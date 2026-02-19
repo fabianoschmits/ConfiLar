@@ -1142,25 +1142,11 @@ export function FloatingChat() {
                                           hour: "2-digit",
                                           minute: "2-digit",
                                         })}
-                                        {message.updated_at &&
-                                          message.created_at &&
-                                          (() => {
-                                            const createdTime = new Date(
-                                              message.created_at,
-                                            ).getTime();
-                                            const updatedTime = new Date(
-                                              message.updated_at,
-                                            ).getTime();
-                                            const timeDiff =
-                                              updatedTime - createdTime;
-                                            // Mostrar "(editado)" apenas se a diferença for maior que 60 segundos (1 minuto)
-                                            // Isso evita falsos positivos de atualizações automáticas do banco
-                                            return timeDiff > 60000;
-                                          })() && (
-                                            <span className="ml-1 text-xs opacity-50">
-                                              (editado)
-                                            </span>
-                                          )}
+                                        {message.is_edited && (
+                                          <span className="ml-1 text-xs opacity-50">
+                                            (editado)
+                                          </span>
+                                        )}
                                       </span>
                                     </div>
                                     {!isOwn && (

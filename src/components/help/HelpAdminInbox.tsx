@@ -1,77 +1,163 @@
 /**
- * Help Admin Inbox - List of support tickets for moderators
+ * Help Admin Inbox - Full ticket list for moderators inside Help Center
  */
 
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
 import { useHelpChat } from "@/contexts/HelpChatContext";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { MessageSquare, RefreshCw, Clock, CheckCircle2 } from "lucide-react";
 
 export default function HelpAdminInbox() {
-  const { adminTickets, selectTicket } = useHelpChat();
+  const { adminTickets, selectTicket, fetchAdminTickets } = useHelpChat();
 
-  if (adminTickets.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full p-8 text-center text-muted-foreground">
-        <p>Nenhum chamado de suporte aberto no momento. 👍</p>
-      </div>
-    );
-  }
+  // Refresh tickets on mount
+  useEffect(() => {
+    fetchAdminTickets();
+  }, [fetchAdminTickets]);
+
+  const openTickets = adminTickets.filter((t) => t.status === "open");
+  const closedTickets = adminTickets.filter((t) => t.status !== "open");
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="p-4 border-b border-border/50 bg-muted/20">
-        <h4 className="text-sm font-semibold text-foreground/80">
-          Tickets de Suporte
-        </h4>
+    <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Section header */}
+      <div className="px-4 py-3 border-b border-border/50 bg-muted/20 flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="w-4 h-4 text-primary" />
+          <h4 className="text-sm font-semibold text-foreground">
+            Tickets de Usuários
+          </h4>
+          {openTickets.length > 0 && (
+            <span className="bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+              {openTickets.length}
+            </span>
+          )}
+        </div>
+        <button
+          onClick={() => fetchAdminTickets()}
+          className="w-7 h-7 rounded-lg hover:bg-muted/50 flex items-center justify-center transition-colors"
+          title="Atualizar tickets"
+        >
+          <RefreshCw className="w-3.5 h-3.5 text-muted-foreground" />
+        </button>
       </div>
-      <div className="divide-y divide-border/30">
-        {adminTickets.map((ticket) => (
-          <button
-            key={ticket.id}
-            onClick={() => selectTicket(ticket.conversation_id)}
-            className="w-full flex items-center gap-4 p-4 hover:bg-muted/30 transition-colors text-left group"
-          >
-            <div className="relative w-12 h-12 rounded-full overflow-hidden border border-border/50 bg-muted">
-              {ticket.user?.avatar_url ? (
-                <Image
-                  src={ticket.user.avatar_url}
-                  alt={ticket.user.full_name || "Usuário"}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-lg font-bold text-muted-foreground">
-                  {ticket.user?.full_name?.charAt(0) || "U"}
-                </div>
-              )}
-              {ticket.status === "open" && (
-                <span className="absolute bottom-0 right-0 w-3 h-3 bg-primary rounded-full border-2 border-background" />
-              )}
-            </div>
 
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-semibold text-sm truncate">
-                  {ticket.user?.full_name || "Usuário"}
-                </span>
-                <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                  {formatDistanceToNow(new Date(ticket.updated_at), {
-                    addSuffix: true,
-                    locale: ptBR,
-                  })}
-                </span>
+      {adminTickets.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+          <div className="w-14 h-14 rounded-full bg-muted/50 flex items-center justify-center mb-3">
+            <MessageSquare className="w-7 h-7 text-muted-foreground/50" />
+          </div>
+          <p className="text-sm font-medium text-foreground/70">
+            Nenhum chamado aberto
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Todos os usuários estão sendo atendidos 👍
+          </p>
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto divide-y divide-border/30">
+          {/* Open tickets */}
+          {openTickets.length > 0 && (
+            <div>
+              <div className="px-4 py-1.5 bg-muted/10">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                  <Clock className="w-2.5 h-2.5" />
+                  Abertos
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground truncate">
-                {ticket.last_message?.[0]?.content || "Iniciou um chamado..."}
-              </p>
+              {openTickets.map((ticket) => (
+                <TicketRow
+                  key={ticket.id}
+                  ticket={ticket}
+                  onSelect={() => selectTicket(ticket.conversation_id)}
+                />
+              ))}
             </div>
-          </button>
-        ))}
-      </div>
+          )}
+
+          {/* Closed tickets */}
+          {closedTickets.length > 0 && (
+            <div>
+              <div className="px-4 py-1.5 bg-muted/10">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                  <CheckCircle2 className="w-2.5 h-2.5" />
+                  Resolvidos
+                </p>
+              </div>
+              {closedTickets.map((ticket) => (
+                <TicketRow
+                  key={ticket.id}
+                  ticket={ticket}
+                  onSelect={() => selectTicket(ticket.conversation_id)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
+  );
+}
+
+function TicketRow({
+  ticket,
+  onSelect,
+}: {
+  ticket: any;
+  onSelect: () => void;
+}) {
+  const lastMessage = Array.isArray(ticket.last_message)
+    ? ticket.last_message[0]
+    : ticket.last_message;
+
+  return (
+    <button
+      onClick={onSelect}
+      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors text-left group"
+    >
+      {/* Avatar */}
+      <div className="relative w-10 h-10 rounded-full overflow-hidden border border-border/50 bg-muted flex-shrink-0">
+        {ticket.user?.avatar_url ? (
+          <Image
+            src={ticket.user.avatar_url}
+            alt={ticket.user.full_name || "Usuário"}
+            fill
+            className="object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-sm font-bold text-muted-foreground">
+            {ticket.user?.full_name?.charAt(0)?.toUpperCase() || "U"}
+          </div>
+        )}
+        {/* Status dot */}
+        <span
+          className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-background ${
+            ticket.status === "open" ? "bg-primary" : "bg-muted-foreground/40"
+          }`}
+        />
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-0.5">
+          <span className="font-semibold text-sm truncate">
+            {ticket.user?.full_name || "Usuário"}
+          </span>
+          <span className="text-[10px] text-muted-foreground whitespace-nowrap ml-2 flex-shrink-0">
+            {formatDistanceToNow(
+              new Date(ticket.updated_at || ticket.created_at),
+              { addSuffix: true, locale: ptBR },
+            )}
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground truncate">
+          {lastMessage?.content || "Iniciou um chamado de suporte..."}
+        </p>
+      </div>
+    </button>
   );
 }

@@ -17,6 +17,7 @@ export interface Message {
   created_at: string;
   updated_at: string;
   is_read: boolean;
+  is_edited?: boolean;
   sender?: {
     id: string;
     full_name: string;
@@ -192,7 +193,12 @@ export function useMessages() {
         }),
       );
 
-      setConversations(conversationsWithMessages);
+      // Filtrar conversas vazias (sem nenhuma mensagem) para não poluir o chat
+      const nonEmptyConversations = conversationsWithMessages.filter(
+        (c) => c.last_message !== null,
+      );
+
+      setConversations(nonEmptyConversations);
     } catch (err) {
       console.error("❌ Erro ao buscar conversas:", err);
       setError(err instanceof Error ? err.message : "Erro desconhecido");
@@ -790,6 +796,7 @@ export function useMessages() {
           .update({
             content: newContent.trim(),
             updated_at: new Date().toISOString(),
+            is_edited: true,
           })
           .eq("id", messageId);
 
