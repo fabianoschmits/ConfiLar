@@ -15,7 +15,6 @@ import { LoadingOverlayProvider } from "@/components/ui/LoadingOverlayProvider";
 import { QueryProvider } from "@/lib/queryClient";
 import { ToasterWithSounds } from "@/components/ui/ToasterWithSounds";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { ServiceWorkerCleaner } from "@/components/ServiceWorkerCleaner";
 import { Suspense } from "react";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import FloatingChatWrapper from "@/components/chat/FloatingChatWrapper";
@@ -148,7 +147,6 @@ export default async function RootLayout({
           enableColorScheme={true}
           nonce={undefined}
         >
-          <ServiceWorkerCleaner />
           <ErrorBoundary>
             <QueryProvider>
               <NextIntlClientProvider messages={messages}>

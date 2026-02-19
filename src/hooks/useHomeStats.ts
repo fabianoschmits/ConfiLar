@@ -25,56 +25,46 @@ export function useHomeStats(): HomeStats {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Buscar contagem de profissionais verificados (sem autenticação)
+        // Buscar contagem de profissionais verificados
         const { count: professionalsCount, error: professionalsError } =
           await supabase
             .from("profiles")
             .select("id", { count: "exact", head: true })
-            .eq("user_type", "professional");
+            .eq("user_type", "professional")
+            .eq("is_verified", true);
 
-        // Se houver erro de autenticação, usar dados de fallback
+        // Se houver erro ou count for null, usar fallback baixo
         const finalProfessionalsCount = professionalsError
-          ? 127
+          ? 2
           : professionalsCount || 0;
 
-        // Buscar contagem de avaliações (sem autenticação)
+        // Buscar contagem de avaliações
         const { count: reviewsCount, error: reviewsError } = await supabase
           .from("reviews")
           .select("id", { count: "exact", head: true });
 
-        const finalReviewsCount = reviewsError ? 342 : reviewsCount || 0;
+        const finalReviewsCount = reviewsError ? 5 : reviewsCount || 0;
 
-        // Buscar contagem de cidades únicas (sem autenticação)
+        // Buscar contagem de cidades únicas
         const { data: citiesData, error: citiesError } = await supabase
           .from("profiles")
           .select("location_city")
           .not("location_city", "is", null);
 
-        let citiesCount = 45; // Fallback
+        let citiesCount = 1; // Fallback
         if (!citiesError && citiesData) {
           const uniqueCities = new Set(
-            citiesData.map((profile) => profile.location_city).filter(Boolean),
+            citiesData
+              .map((profile: any) => profile.location_city)
+              .filter(Boolean),
           );
-          citiesCount = uniqueCities.size || 45;
+          citiesCount = uniqueCities.size || 1;
         }
 
-        // Buscar contagem de serviços oferecidos pelos profissionais
-        // Contar profissionais que têm serviços cadastrados
-        const { data: professionalsWithServices, error: servicesError } =
-          await supabase
-            .from("profiles")
-            .select("professional_services")
-            .eq("user_type", "professional")
-            .not("professional_services", "is", null);
-
-        let finalServicesCount = 89; // Fallback
-        if (!servicesError && professionalsWithServices) {
-          // Contar total de serviços únicos oferecidos
-          const allServices = professionalsWithServices
-            .flatMap((p) => p.professional_services || [])
-            .filter(Boolean);
-          finalServicesCount = allServices.length || 89;
-        }
+        // Buscar contagem de tipos de serviços disponíveis na plataforma
+        // O usuário quer saber quantos tipos de serviços temos para os profissionais prestarem
+        const { services } = await import("@/data/services");
+        const finalServicesCount = services.length || 38;
 
         setStats({
           professionalsCount: finalProfessionalsCount,
@@ -88,10 +78,10 @@ export function useHomeStats(): HomeStats {
         console.error("Erro ao buscar estatísticas:", error);
         // Usar dados de fallback em caso de erro
         setStats({
-          professionalsCount: 127,
-          reviewsCount: 342,
-          citiesCount: 45,
-          servicesCount: 89,
+          professionalsCount: 2,
+          reviewsCount: 5,
+          citiesCount: 1,
+          servicesCount: 38,
           loading: false,
           error: null,
         });
