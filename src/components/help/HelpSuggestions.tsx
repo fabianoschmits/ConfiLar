@@ -15,12 +15,6 @@ interface HelpSuggestionsProps {
 
 const SUGGESTIONS: QuickSuggestion[] = [
   {
-    id: "support",
-    label: "Falar com moderador",
-    query: "MODERATOR_SUPPORT",
-    icon: "message-square",
-  },
-  {
     id: "1",
     label: "Esqueci minha senha",
     query: "esqueci minha senha",
@@ -43,6 +37,12 @@ const SUGGESTIONS: QuickSuggestion[] = [
     label: "Como funciona o sistema",
     query: "como funciona o sistema",
     icon: "info",
+  },
+  {
+    id: "support",
+    label: "Falar com moderador",
+    query: "MODERATOR_SUPPORT",
+    icon: "message-square",
   },
 ];
 
@@ -83,16 +83,13 @@ export default function HelpSuggestions({
                   : onSuggestionClick(suggestion.query)
               }
               disabled={isSupport && isSupportMode}
-              className={`flex items-center gap-3 p-3 rounded-lg
+              className="flex items-center gap-3 p-3 rounded-lg
                        backdrop-blur-sm border
                        transition-all duration-300
                        text-left group
-                       ${
-                         isSupport
-                           ? "bg-primary/10 border-primary/20 hover:border-primary/50 hover:bg-primary/20"
-                           : "bg-gradient-to-br from-background/80 to-background/40 border-border/50 hover:border-primary/50 hover:from-primary/5 hover:to-primary/10"
-                       }
-                       disabled:opacity-50 disabled:cursor-not-allowed`}
+                       bg-gradient-to-br from-background/80 to-background/40 border-border/50 
+                       hover:border-primary/50 hover:from-primary/5 hover:to-primary/10
+                       disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div
                 className="flex-shrink-0 w-8 h-8 rounded-full

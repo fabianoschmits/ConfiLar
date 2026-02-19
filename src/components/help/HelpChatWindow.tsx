@@ -6,10 +6,11 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { X, Minus, Send, Loader2 } from "lucide-react";
+import { X, Minus, Send, Loader2, ArrowLeft } from "lucide-react";
 import { useHelpChat } from "@/contexts/HelpChatContext";
 import HelpMessageBubble from "./HelpMessageBubble";
 import HelpSuggestions from "./HelpSuggestions";
+import HelpAdminInbox from "./HelpAdminInbox";
 
 export default function HelpChatWindow() {
   const {
@@ -22,6 +23,10 @@ export default function HelpChatWindow() {
     maximizeChat,
     sendMessage,
     isSupportMode,
+    isAdmin,
+    adminTickets,
+    selectTicket,
+    clearHistory,
   } = useHelpChat();
 
   const [inputValue, setInputValue] = useState("");
@@ -61,7 +66,17 @@ export default function HelpChatWindow() {
     await sendMessage(query);
   };
 
+  const handleBackToInbox = () => {
+    clearHistory(); // Reseta o estado do chat (isSupportMode, conversationId) mas mantém isAdmin
+  };
+
   if (!isOpen) return null;
+
+  // Determinar o que mostrar no corpo do chat
+  const showAdminInbox = isAdmin && !isSupportMode;
+  const showMessages =
+    !showAdminInbox && (messages.length > 0 || isSupportMode);
+  const showSuggestions = !isAdmin && messages.length === 0 && !isSupportMode;
 
   return (
     <>
@@ -95,6 +110,16 @@ export default function HelpChatWindow() {
                         bg-gradient-to-r from-primary/10 to-primary/5"
           >
             <div className="flex items-center gap-3">
+              {isAdmin && isSupportMode && (
+                <button
+                  onClick={handleBackToInbox}
+                  className="w-8 h-8 rounded-lg hover:bg-muted/50 flex items-center justify-center
+                           transition-colors duration-200 mr-1"
+                  title="Voltar para Inbox"
+                >
+                  <ArrowLeft className="w-4 h-4 text-muted-foreground" />
+                </button>
+              )}
               <div className="w-10 h-10 flex items-center justify-center">
                 <Image
                   src="/imagens/logo/Logo azul - sem fundo - Vertical.png"
@@ -106,14 +131,22 @@ export default function HelpChatWindow() {
               </div>
               <div>
                 <h3 className="font-semibold text-foreground">
-                  {isSupportMode ? "Chat com Moderador" : "Central de Ajuda"}
+                  {isAdmin
+                    ? isSupportMode
+                      ? "Suporte Real"
+                      : "Painel Moderador"
+                    : isSupportMode
+                      ? "Chat com Moderador"
+                      : "Central de Ajuda"}
                 </h3>
                 <p className="text-xs text-muted-foreground">
                   {isSupportMode ? (
                     <span className="flex items-center gap-1 text-primary">
                       <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                      Moderador Online
+                      {isAdmin ? "Conversando com Usuário" : "Moderador Online"}
                     </span>
+                  ) : isAdmin ? (
+                    "Gerencie chamados de suporte"
                   ) : (
                     "Estamos aqui para ajudar!"
                   )}
@@ -143,12 +176,20 @@ export default function HelpChatWindow() {
 
           {!isMinimized && (
             <>
-              {/* Messages area */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
-                {messages.length === 0 ? (
-                  <HelpSuggestions onSuggestionClick={handleSuggestionClick} />
-                ) : (
-                  <>
+              {/* Main Content Area */}
+              <div className="flex-1 flex flex-col overflow-hidden relative">
+                {showAdminInbox && <HelpAdminInbox />}
+
+                {showSuggestions && (
+                  <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-muted">
+                    <HelpSuggestions
+                      onSuggestionClick={handleSuggestionClick}
+                    />
+                  </div>
+                )}
+
+                {showMessages && (
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-muted">
                     {messages.map((message) => (
                       <HelpMessageBubble key={message.id} message={message} />
                     ))}
@@ -165,50 +206,52 @@ export default function HelpChatWindow() {
                       </div>
                     )}
                     <div ref={messagesEndRef} />
-                  </>
+                  </div>
                 )}
               </div>
 
-              {/* Input area */}
-              <div
-                className="p-4 border-t border-border/50 bg-gradient-to-r from-background/50 to-background/30
-                            backdrop-blur-sm"
-              >
-                <div className="flex items-end gap-2">
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Digite sua dúvida..."
-                    disabled={isLoading}
-                    className="flex-1 px-4 py-3 rounded-xl
-                             bg-background/80 backdrop-blur-sm
-                             border border-border/50 focus:border-primary/50
-                             focus:ring-2 focus:ring-primary/20
-                             outline-none transition-all duration-200
-                             text-sm placeholder:text-muted-foreground
-                             disabled:opacity-50 disabled:cursor-not-allowed"
-                  />
-                  <button
-                    onClick={handleSendMessage}
-                    disabled={!inputValue.trim() || isLoading}
-                    className="w-12 h-12 rounded-xl
-                             bg-gradient-to-br from-primary to-primary/90
-                             hover:from-primary/90 hover:to-primary/80
-                             disabled:from-muted disabled:to-muted
-                             flex items-center justify-center
-                             transition-all duration-200
-                             shadow-lg shadow-primary/20 hover:shadow-primary/30
-                             disabled:shadow-none disabled:cursor-not-allowed
-                             group"
-                    aria-label="Enviar mensagem"
-                  >
-                    <Send className="w-5 h-5 text-primary-foreground group-disabled:text-muted-foreground" />
-                  </button>
+              {/* Input area (only shown when in a conversation) */}
+              {(isSupportMode || (!isAdmin && messages.length > 0)) && (
+                <div
+                  className="p-4 border-t border-border/50 bg-gradient-to-r from-background/50 to-background/30
+                              backdrop-blur-sm"
+                >
+                  <div className="flex items-end gap-2">
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Digite sua resposta..."
+                      disabled={isLoading}
+                      className="flex-1 px-4 py-3 rounded-xl
+                               bg-background/80 backdrop-blur-sm
+                               border border-border/50 focus:border-primary/50
+                               focus:ring-2 focus:ring-primary/20
+                               outline-none transition-all duration-200
+                               text-sm placeholder:text-muted-foreground
+                               disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                    <button
+                      onClick={handleSendMessage}
+                      disabled={!inputValue.trim() || isLoading}
+                      className="w-12 h-12 rounded-xl
+                               bg-gradient-to-br from-primary to-primary/90
+                               hover:from-primary/90 hover:to-primary/80
+                               disabled:from-muted disabled:to-muted
+                               flex items-center justify-center
+                               transition-all duration-200
+                               shadow-lg shadow-primary/20 hover:shadow-primary/30
+                               disabled:shadow-none disabled:cursor-not-allowed
+                               group"
+                      aria-label="Enviar mensagem"
+                    >
+                      <Send className="w-5 h-5 text-primary-foreground group-disabled:text-muted-foreground" />
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </>
           )}
         </div>

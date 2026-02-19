@@ -26,6 +26,10 @@ interface HelpChatContextType extends HelpChatState {
   setLoading: (loading: boolean) => void;
   startSupportTicket: () => Promise<void>;
   isSupportMode: boolean;
+  isAdmin: boolean;
+  adminTickets: any[];
+  selectTicket: (conversationId: string) => void;
+  fetchAdminTickets: () => Promise<void>;
 }
 
 const HelpChatContext = createContext<HelpChatContextType | undefined>(
@@ -41,8 +45,54 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     isLoading: false,
   });
   const [isSupportMode, setIsSupportMode] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminTickets, setAdminTickets] = useState<any[]>([]);
   const [activeTicketId, setActiveTicketId] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
+
+  // Verificar se o usuário é admin
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (!user?.id) {
+        setIsAdmin(false);
+        return;
+      }
+      const { data } = await supabase
+        .from("admins")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .maybeSingle();
+      setIsAdmin(!!data);
+    };
+    checkAdmin();
+  }, [user?.id]);
+
+  // Buscar tickets se for admin
+  const fetchAdminTickets = useCallback(async () => {
+    if (!isAdmin) return;
+    const { data } = await supabase
+      .from("support_tickets")
+      .select(
+        `
+        *,
+        user:profiles!user_id(full_name, avatar_url),
+        last_message:messages!conversation_id(content, created_at)
+      `,
+      )
+      .order("updated_at", { ascending: false });
+
+    // Sort logic to get newest message correctly if multiple exist (Postgrest limitation)
+    if (data) {
+      setAdminTickets(data);
+    }
+  }, [isAdmin]);
+
+  useEffect(() => {
+    if (isAdmin && state.isOpen) {
+      fetchAdminTickets();
+    }
+  }, [isAdmin, state.isOpen, fetchAdminTickets]);
 
   const openChat = useCallback(() => {
     setState((prev) => ({ ...prev, isOpen: true, isMinimized: false }));
@@ -295,24 +345,66 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({ ...prev, isLoading: loading }));
   }, []);
 
+  const selectTicket = useCallback(
+    async (convId: string) => {
+      setConversationId(convId);
+      setIsSupportMode(true);
+      setState((prev) => ({ ...prev, isLoading: true }));
+
+      try {
+        const { data: oldMessages } = await supabase
+          .from("messages")
+          .select("*")
+          .eq("conversation_id", convId)
+          .order("created_at", { ascending: true });
+
+        if (oldMessages) {
+          const formattedMessages: HelpMessage[] = oldMessages.map((m) => ({
+            id: m.id,
+            type: m.sender_id === user?.id ? "user" : "bot",
+            content: m.content,
+            timestamp: new Date(m.created_at),
+          }));
+          setState((prev) => ({
+            ...prev,
+            messages: formattedMessages,
+            isLoading: false,
+          }));
+        }
+      } catch (error) {
+        console.error("Error selecting ticket:", error);
+        setState((prev) => ({ ...prev, isLoading: false }));
+      }
+    },
+    [user?.id],
+  );
+
   useEffect(() => {
     // Verificar se deve abrir o chat automaticamente (parametro de URL para deep-linking de notificações)
     const checkDeepLink = async () => {
       if (typeof window !== "undefined") {
         const params = new URLSearchParams(window.location.search);
+        const urlConvId = params.get("conversation_id");
+
         if (params.get("open") === "chat") {
           openChat();
 
           if (user?.id) {
-            const { data: checkSupport } = await supabase
-              .from("support_tickets")
-              .select("id")
-              .eq("user_id", user.id)
-              .eq("status", "open")
-              .maybeSingle();
+            if (urlConvId) {
+              // Se houver conversation_id direto, carregar ela
+              selectTicket(urlConvId);
+            } else {
+              // Comportamento para o usuário final: procurar ticket aberto
+              const { data: checkSupport } = await supabase
+                .from("support_tickets")
+                .select("id, conversation_id")
+                .eq("user_id", user.id)
+                .eq("status", "open")
+                .maybeSingle();
 
-            if (checkSupport) {
-              startSupportTicket();
+              if (checkSupport) {
+                selectTicket(checkSupport.conversation_id);
+              }
             }
           }
         }
@@ -320,7 +412,7 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     };
 
     checkDeepLink();
-  }, [openChat, startSupportTicket, user?.id]);
+  }, [openChat, selectTicket, user?.id]);
 
   const value: HelpChatContextType = {
     ...state,
@@ -334,6 +426,10 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     setLoading,
     startSupportTicket,
     isSupportMode,
+    isAdmin,
+    adminTickets,
+    selectTicket,
+    fetchAdminTickets,
   };
 
   return (
