@@ -74,17 +74,33 @@ export function QuickActionMenu() {
       <motion.div
         initial={false}
         animate={{
-          y: isVisible ? 0 : 100,
-          opacity: isVisible ? 1 : 0,
+          y: 0,
+          opacity: 1,
         }}
         transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-[90]"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-[90] pointer-events-none overflow-visible"
       >
         <nav
-          className="bg-white/95 dark:bg-gray-950/95 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.4)]"
+          className="relative px-2 flex items-center justify-around pointer-events-none"
           style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         >
-          <div className="flex items-center justify-around px-2 h-14">
+          {/* Animated Background layer */}
+          <motion.div
+            initial={false}
+            animate={{
+              y: isVisible ? 0 : 100,
+              opacity: isVisible ? 1 : 0,
+            }}
+            transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+            className="absolute inset-0 bg-white/95 dark:bg-gray-950/95 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.4)] -z-10"
+          />
+
+          <div
+            className={cn(
+              "flex items-center justify-around w-full transition-all duration-500",
+              isVisible ? "h-14" : "h-12",
+            )}
+          >
             {quickActions.map((action) => {
               const Icon = action.icon;
               const isContact = action.id === "contact";
@@ -94,9 +110,14 @@ export function QuickActionMenu() {
                   pathname.startsWith(action.href + "/");
 
               const itemContent = (
-                <div className="flex flex-col items-center justify-center h-full pt-1 pb-0.5 relative">
+                <div className="flex flex-col items-center justify-center h-full relative">
                   {/* Container for Icon and Active Pill */}
-                  <div className="relative flex items-center justify-center w-12 h-10">
+                  <div
+                    className={cn(
+                      "relative flex items-center justify-center w-12 transition-all duration-500",
+                      isVisible ? "h-10" : "h-12",
+                    )}
+                  >
                     {action.badge && action.badge > 0 && (
                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center border-[1.5px] border-white dark:border-gray-950 z-30">
                         {action.badge}
@@ -106,7 +127,7 @@ export function QuickActionMenu() {
                     {/* Active Pill & Icon Wrapper - Moves as one unit */}
                     <motion.div
                       animate={{
-                        y: isActive ? -18 : 0,
+                        y: isActive && isVisible ? -18 : 0,
                       }}
                       transition={{
                         type: "spring",
@@ -153,10 +174,12 @@ export function QuickActionMenu() {
 
                   {/* Label */}
                   <motion.span
+                    initial={false}
                     animate={{
-                      color: isActive ? "#00b0b0" : "#9ca3af",
+                      opacity: isVisible ? 1 : 0,
+                      height: isVisible ? "auto" : 0,
                       scale: isActive ? 1.05 : 1,
-                      y: isActive ? 2 : 0,
+                      marginTop: isVisible ? "2px" : "0px",
                     }}
                     transition={{
                       type: "spring",
@@ -164,7 +187,7 @@ export function QuickActionMenu() {
                       damping: 30,
                     }}
                     className={cn(
-                      "text-[10px] font-medium leading-none relative z-10",
+                      "text-[10px] font-medium leading-none relative z-10 overflow-hidden whitespace-nowrap",
                       isActive && "font-bold",
                     )}
                   >
@@ -173,12 +196,17 @@ export function QuickActionMenu() {
                 </div>
               );
 
+              const itemClassName = cn(
+                "flex-1 flex justify-center active:scale-90 transition-all duration-500 pointer-events-auto",
+                isVisible ? "h-14" : "h-12",
+              );
+
               return isContact ? (
                 <a
                   key={action.id}
                   id={`nav-item-${action.id}`}
                   href={action.href}
-                  className="flex-1 flex justify-center active:scale-90 transition-transform duration-150 h-14"
+                  className={itemClassName}
                   aria-label={action.label}
                 >
                   {itemContent}
@@ -188,7 +216,7 @@ export function QuickActionMenu() {
                   key={action.id}
                   id={`nav-item-${action.id}`}
                   href={action.href}
-                  className="flex-1 flex justify-center active:scale-90 transition-transform duration-150 h-14"
+                  className={itemClassName}
                   aria-label={action.label}
                 >
                   {itemContent}
