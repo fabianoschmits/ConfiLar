@@ -21,6 +21,7 @@ export default function HelpChatWindow() {
     minimizeChat,
     maximizeChat,
     sendMessage,
+    isSupportMode,
   } = useHelpChat();
 
   const [inputValue, setInputValue] = useState("");
@@ -105,10 +106,17 @@ export default function HelpChatWindow() {
               </div>
               <div>
                 <h3 className="font-semibold text-foreground">
-                  Central de Ajuda
+                  {isSupportMode ? "Chat com Moderador" : "Central de Ajuda"}
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Estamos aqui para ajudar!
+                  {isSupportMode ? (
+                    <span className="flex items-center gap-1 text-primary">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                      Moderador Online
+                    </span>
+                  ) : (
+                    "Estamos aqui para ajudar!"
+                  )}
                 </p>
               </div>
             </div>

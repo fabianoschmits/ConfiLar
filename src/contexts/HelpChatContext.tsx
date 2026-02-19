@@ -4,7 +4,15 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 import type { HelpMessage, HelpChatState } from "@/types/help";
 
 interface HelpChatContextType extends HelpChatState {
@@ -16,6 +24,8 @@ interface HelpChatContextType extends HelpChatState {
   addBotMessage: (content: string, article?: any) => void;
   clearHistory: () => void;
   setLoading: (loading: boolean) => void;
+  startSupportTicket: () => Promise<void>;
+  isSupportMode: boolean;
 }
 
 const HelpChatContext = createContext<HelpChatContextType | undefined>(
@@ -23,12 +33,16 @@ const HelpChatContext = createContext<HelpChatContextType | undefined>(
 );
 
 export function HelpChatProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuthContext();
   const [state, setState] = useState<HelpChatState>({
     isOpen: false,
     isMinimized: false,
     messages: [],
     isLoading: false,
   });
+  const [isSupportMode, setIsSupportMode] = useState(false);
+  const [activeTicketId, setActiveTicketId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
 
   const openChat = useCallback(() => {
     setState((prev) => ({ ...prev, isOpen: true, isMinimized: false }));
@@ -60,9 +74,124 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  // Monitorar mensagens em tempo real se estiver em modo suporte
+  useEffect(() => {
+    if (!conversationId || !isSupportMode) return;
+
+    const channel = supabase
+      .channel(`support_messages_${conversationId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          const newMessage = payload.new as any;
+          if (newMessage.sender_id !== user?.id) {
+            const helpMessage: HelpMessage = {
+              id: newMessage.id,
+              type: "bot", // Admin aparece como bot no chat de ajuda simplificado
+              content: newMessage.content,
+              timestamp: new Date(newMessage.created_at),
+            };
+            setState((prev) => ({
+              ...prev,
+              messages: [...prev.messages, helpMessage],
+            }));
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [conversationId, isSupportMode, user?.id]);
+
+  const startSupportTicket = useCallback(async () => {
+    if (!user) return;
+
+    setState((prev) => ({ ...prev, isLoading: true }));
+    try {
+      const ADMIN_ID = "f7444305-a3bd-4d71-874a-bb95fd27f96a";
+
+      // 1. Verificar ticket aberto
+      const { data: existingTicket } = await supabase
+        .from("support_tickets")
+        .select("id, conversation_id")
+        .eq("user_id", user.id)
+        .eq("status", "open")
+        .maybeSingle();
+
+      let currentConversationId = existingTicket?.conversation_id;
+
+      if (!existingTicket) {
+        // 2. Criar conversa se não existir
+        const { data: convData } = await supabase
+          .from("conversations")
+          .insert({
+            client_id: user.id,
+            professional_id: ADMIN_ID,
+            status: "active",
+          })
+          .select()
+          .single();
+
+        currentConversationId = convData.id;
+
+        // 3. Criar ticket
+        const { data: ticketData } = await supabase
+          .from("support_tickets")
+          .insert({
+            user_id: user.id,
+            conversation_id: currentConversationId,
+            subject: "Suporte via Central de Ajuda",
+          })
+          .select()
+          .single();
+
+        setActiveTicketId(ticketData.id);
+      } else {
+        setActiveTicketId(existingTicket.id);
+      }
+
+      setConversationId(currentConversationId);
+      setIsSupportMode(true);
+
+      // Carregar mensagens anteriores se houver
+      const { data: oldMessages } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("conversation_id", currentConversationId)
+        .order("created_at", { ascending: true });
+
+      if (oldMessages && oldMessages.length > 0) {
+        const formattedMessages: HelpMessage[] = oldMessages.map((m) => ({
+          id: m.id,
+          type: m.sender_id === user.id ? "user" : "bot",
+          content: m.content,
+          timestamp: new Date(m.created_at),
+        }));
+        setState((prev) => ({ ...prev, messages: formattedMessages }));
+      } else {
+        // Se for uma conversa nova, dar as boas vindas sem o disclaimer ainda
+        addBotMessage(
+          "Olá! Você agora está conectado com nosso suporte. Como posso te ajudar hoje?",
+        );
+      }
+    } catch (error) {
+      console.error("Error starting support ticket:", error);
+    } finally {
+      setState((prev) => ({ ...prev, isLoading: false }));
+    }
+  }, [user, addBotMessage]);
+
   const sendMessage = useCallback(
     async (content: string) => {
-      // Add user message
+      // Add user message localmente
       const userMessage: HelpMessage = {
         id: Date.now().toString(),
         type: "user",
@@ -73,11 +202,52 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
       setState((prev) => ({
         ...prev,
         messages: [...prev.messages, userMessage],
-        isLoading: true,
+        isLoading: !isSupportMode, // Loading apenas para bot
       }));
 
+      if (isSupportMode && conversationId && user) {
+        try {
+          const ADMIN_ID = "f7444305-a3bd-4d71-874a-bb95fd27f96a";
+
+          // Verificar se esta é a primeira mensagem do usuário nesta sessão de suporte
+          // para enviar a mensagem automática sobre o prazo
+          const userMessageCount = state.messages.filter(
+            (m) => m.type === "user",
+          ).length;
+
+          await supabase.from("messages").insert({
+            conversation_id: conversationId,
+            sender_id: user.id,
+            receiver_id: ADMIN_ID,
+            content,
+          });
+
+          // Se for a primeira mensagem, enviar a resposta automática do sistema
+          if (userMessageCount === 0) {
+            setTimeout(() => {
+              addBotMessage(
+                "Entendido. Um moderador foi notificado e analisará sua solicitação o quanto antes. 😊\n\n*Nota: O moderador pode levar algumas horas para responder, com um prazo máximo de 48 horas.*",
+              );
+            }, 1000);
+          }
+
+          // Notificar admin via notificação do sistema
+          await supabase.from("notifications").insert({
+            user_id: ADMIN_ID,
+            title: "Nova mensagem de suporte",
+            message: `${user.email || "Um usuário"} enviou uma mensagem no ticket.`,
+            type: "chat",
+            action_url: `/chat?id=${conversationId}`,
+            category: "admin",
+          });
+        } catch (error) {
+          console.error("Error sending support message:", error);
+        }
+        return;
+      }
+
       try {
-        // Search for help article
+        // Search for help article (Modo Bot)
         const response = await fetch("/api/help/search", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -98,8 +268,7 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
           } else {
             // Add fallback message
             addBotMessage(
-              "Não encontrei uma solução exata para isso 😕\n\nVocê pode entrar em contato com nosso suporte pelo e-mail suporte@confilar.com.br que a gente te ajuda rapidinho!",
-              { action_type: "email", action_value: "suporte@confilar.com.br" },
+              "Não encontrei uma solução exata para isso 😕\n\nVocê pode falar com um moderador clicando na opção de suporte!",
             );
           }
           setState((prev) => ({ ...prev, isLoading: false }));
@@ -107,21 +276,51 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         console.error("Error sending message:", error);
         addBotMessage(
-          "Desculpe, ocorreu um erro. Por favor, tente novamente ou entre em contato com suporte@confilar.com.br",
+          "Desculpe, ocorreu um erro. Por favor, tente novamente ou fale com um moderador.",
         );
         setState((prev) => ({ ...prev, isLoading: false }));
       }
     },
-    [addBotMessage],
+    [addBotMessage, isSupportMode, conversationId, user],
   );
 
   const clearHistory = useCallback(() => {
     setState((prev) => ({ ...prev, messages: [] }));
+    setIsSupportMode(false);
+    setConversationId(null);
+    setActiveTicketId(null);
   }, []);
 
   const setLoading = useCallback((loading: boolean) => {
     setState((prev) => ({ ...prev, isLoading: loading }));
   }, []);
+
+  useEffect(() => {
+    // Verificar se deve abrir o chat automaticamente (parametro de URL para deep-linking de notificações)
+    const checkDeepLink = async () => {
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("open") === "chat") {
+          openChat();
+
+          if (user?.id) {
+            const { data: checkSupport } = await supabase
+              .from("support_tickets")
+              .select("id")
+              .eq("user_id", user.id)
+              .eq("status", "open")
+              .maybeSingle();
+
+            if (checkSupport) {
+              startSupportTicket();
+            }
+          }
+        }
+      }
+    };
+
+    checkDeepLink();
+  }, [openChat, startSupportTicket, user?.id]);
 
   const value: HelpChatContextType = {
     ...state,
@@ -133,6 +332,8 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     addBotMessage,
     clearHistory,
     setLoading,
+    startSupportTicket,
+    isSupportMode,
   };
 
   return (
