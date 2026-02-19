@@ -19,7 +19,7 @@ export function Skeleton({
   style,
   ...props
 }: SkeletonProps) {
-  const baseClasses = "animate-pulse bg-gray-200 dark:bg-gray-700";
+  const baseClasses = "skeleton-shimmer bg-gray-200 dark:bg-zinc-800";
 
   const variantClasses = {
     default: "rounded-md",

@@ -38,6 +38,15 @@ import { SidebarProvider } from "@/contexts/SidebarContext";
 import "@/utils/errorInterceptor"; // Interceptor de erros
 // import { AuthContextDebug } from "@/components/debug/AuthContextDebug"
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#00b0b0",
+};
+
 export const metadata: Metadata = {
   title: "ConfiLar - Marketplace de Serviços",
   description:
@@ -45,6 +54,11 @@ export const metadata: Metadata = {
   icons: {
     icon: "/imagens/logo/Logo azul - sem fundo - Vertical.png",
     shortcut: "/imagens/logo/Logo azul - sem fundo - Vertical.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "ConfiLar",
   },
   formatDetection: {
     telephone: false,

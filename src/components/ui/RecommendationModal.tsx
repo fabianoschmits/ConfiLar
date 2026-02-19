@@ -113,7 +113,7 @@ export function RecommendationModal({
   };
 
   const handleRecommendUser = async () => {
-    if (!user) {
+    if (!user || !profile) {
       toast.error("Faça login para recomendar usuários");
       return;
     }
@@ -123,39 +123,51 @@ export function RecommendationModal({
       return;
     }
 
+    // --- OPTIMISTIC UPDATE START ---
+    const recommendationType =
+      profile.user_type === "professional"
+        ? "professional_to_client"
+        : "client_to_professional";
+
+    const optimisticId = `temp-${Date.now()}`;
+    const optimisticRec: RecommendationWithProfile = {
+      id: optimisticId,
+      recommender_id: user.id,
+      recommended_id: userId,
+      recommendation_type: recommendationType,
+      created_at: new Date().toISOString(),
+      recommender: {
+        id: user.id,
+        full_name: profile.full_name || "Você",
+        avatar_url: profile.avatar_url || "",
+        user_type: profile.user_type,
+        location_city: profile.location_city || "",
+        location_state: profile.location_state || "",
+        is_verified: profile.is_verified || false,
+      } as Profile,
+    };
+
+    const previousRecommendations = [...recommendations];
+    const previousHasRecommended = hasRecommended;
+    const previousRecId = userRecommendationId;
+
+    setRecommendations([optimisticRec, ...recommendations]);
+    setHasRecommended(true);
+    setUserRecommendationId(optimisticId);
+    // --- OPTIMISTIC UPDATE END ---
+
     try {
       setRecommending(true);
 
-      // Verificar se já existe uma recomendação
-      const { data: existingRecommendation } = await supabase
+      const { data: recData, error } = await supabase
         .from("user_recommendations")
+        .insert({
+          recommender_id: user.id,
+          recommended_id: userId,
+          recommendation_type: recommendationType,
+        })
         .select("id")
-        .eq("recommender_id", user.id)
-        .eq("recommended_id", userId)
         .single();
-
-      if (existingRecommendation) {
-        toast.info("Você já recomendou este usuário!");
-        return;
-      }
-
-      // Determinar o tipo de recomendação baseado no tipo do usuário atual
-      const { data: currentUserProfile } = await supabase
-        .from("profiles")
-        .select("user_type")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      const recommendationType =
-        currentUserProfile?.user_type === "professional"
-          ? "professional_to_client"
-          : "client_to_professional";
-
-      const { error } = await supabase.from("user_recommendations").insert({
-        recommender_id: user.id,
-        recommended_id: userId,
-        recommendation_type: recommendationType,
-      });
 
       if (error) {
         if (error.code === "23505") {
@@ -163,7 +175,21 @@ export function RecommendationModal({
         } else {
           throw error;
         }
+        // Revert on 23505 too just in case it was already there but not in local state
+        setRecommendations(previousRecommendations);
+        setHasRecommended(previousHasRecommended);
+        setUserRecommendationId(previousRecId);
         return;
+      }
+
+      // Update the temp ID with the real one
+      if (recData?.id) {
+        setUserRecommendationId(recData.id);
+        setRecommendations((prev) =>
+          prev.map((rec) =>
+            rec.id === optimisticId ? { ...rec, id: recData.id } : rec,
+          ),
+        );
       }
 
       toast.success(`Você recomendou ${userName}!`);
@@ -181,20 +207,34 @@ export function RecommendationModal({
       } catch (postError) {
         console.error("Erro ao criar post de recomendação:", postError);
       }
-
-      loadRecommendations();
     } catch (error) {
       console.error("Erro ao recomendar usuário:", error);
       toast.error("Erro ao recomendar usuário");
+      // Rollback
+      setRecommendations(previousRecommendations);
+      setHasRecommended(previousHasRecommended);
+      setUserRecommendationId(previousRecId);
     } finally {
       setRecommending(false);
     }
   };
 
   const handleCancelRecommendation = async () => {
-    if (!user || !userRecommendationId) {
+    if (!user || (!userRecommendationId && !hasRecommended)) {
       return;
     }
+
+    const previousRecommendations = [...recommendations];
+    const previousHasRecommended = hasRecommended;
+    const previousRecId = userRecommendationId;
+
+    // --- OPTIMISTIC UPDATE START ---
+    setRecommendations(
+      recommendations.filter((rec) => rec.recommender_id !== user.id),
+    );
+    setHasRecommended(false);
+    setUserRecommendationId(null);
+    // --- OPTIMISTIC UPDATE END ---
 
     try {
       setRecommending(true);
@@ -202,15 +242,19 @@ export function RecommendationModal({
       const { error } = await supabase
         .from("user_recommendations")
         .delete()
-        .eq("id", userRecommendationId);
+        .eq("recommender_id", user.id)
+        .eq("recommended_id", userId);
 
       if (error) throw error;
 
       toast.success("Recomendação cancelada!");
-      loadRecommendations();
     } catch (error) {
       console.error("Erro ao cancelar recomendação:", error);
       toast.error("Erro ao cancelar recomendação");
+      // Rollback
+      setRecommendations(previousRecommendations);
+      setHasRecommended(previousHasRecommended);
+      setUserRecommendationId(previousRecId);
     } finally {
       setRecommending(false);
     }
