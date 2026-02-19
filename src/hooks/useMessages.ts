@@ -63,7 +63,6 @@ export interface Conversation {
   };
 }
 
-
 export function useMessages() {
   const { user, profile } = useAuthContext();
   const { addNotification } = useNotifications();
@@ -107,8 +106,21 @@ export function useMessages() {
 
       if (error) throw error;
 
-      // Filtrar conversas que NÃO foram deletadas pelo usuário atual
+      // EXCLUSÃO: Buscar IDs de conversas que são tickets de suporte
+      const { data: supportTickets } = await supabase
+        .from("support_tickets")
+        .select("conversation_id")
+        .eq("user_id", user.id);
+
+      const supportConvIds = new Set(
+        (supportTickets || []).map((t) => t.conversation_id),
+      );
+
+      // Filtrar conversas que NÃO foram deletadas pelo usuário atual E que NÃO são de suporte
       const activeConversations = (data || []).filter((conversation) => {
+        // Ocultar se for uma conversa de suporte (deve aparecer apenas na Central de Ajuda)
+        if (supportConvIds.has(conversation.id)) return false;
+
         const isClient = conversation.client_id === user.id;
         const isProfessional = conversation.professional_id === user.id;
 
@@ -334,8 +346,6 @@ export function useMessages() {
     },
     [user?.id, profile],
   );
-
-
 
   // Enviar mensagem
   const sendMessage = useCallback(
@@ -660,7 +670,6 @@ export function useMessages() {
             .from("messages")
             .delete()
             .eq("conversation_id", conversationId);
-
 
           // Deletar conversa
           await supabase

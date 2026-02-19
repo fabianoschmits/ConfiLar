@@ -16,14 +16,29 @@ interface HelpMessageBubbleProps {
 
 export default function HelpMessageBubble({ message }: HelpMessageBubbleProps) {
   const isUser = message.type === "user";
+  const isBot = message.type === "bot";
 
   return (
     <div
-      className={`flex ${isUser ? "justify-end" : "justify-start"} animate-in slide-in-from-bottom-2 duration-300`}
+      className={`flex items-start gap-2 ${isUser ? "justify-end" : "justify-start"} animate-in slide-in-from-bottom-2 duration-300`}
     >
+      {!isUser && (
+        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
+          <img
+            src="/imagens/logo/Logo azul - sem fundo - Vertical.png"
+            alt="Suporte"
+            className="w-5 h-5 object-contain"
+          />
+        </div>
+      )}
       <div
         className={`max-w-[85%] sm:max-w-[75%] ${isUser ? "order-2" : "order-1"}`}
       >
+        {!isUser && (
+          <p className="text-[10px] font-semibold text-muted-foreground mb-1 ml-1 uppercase tracking-wider">
+            Suporte ConfiLar
+          </p>
+        )}
         <div
           className={`rounded-2xl px-4 py-3 ${
             isUser

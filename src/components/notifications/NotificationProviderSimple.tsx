@@ -386,9 +386,14 @@ export const NotificationProviderSimple: React.FC<
 
           // Se for notificação de mensagem, abrir chat flutuante automaticamente
           const titleLower = newNotification.title?.toLowerCase() || "";
+          const isSupport =
+            titleLower.includes("suporte") ||
+            newNotification.action_url?.includes("/help");
+
           if (
-            newNotification.type === "message" ||
-            titleLower.includes("mensagem")
+            (newNotification.type === "message" ||
+              titleLower.includes("mensagem")) &&
+            !isSupport
           ) {
             try {
               const metadata = newNotification.metadata || {};

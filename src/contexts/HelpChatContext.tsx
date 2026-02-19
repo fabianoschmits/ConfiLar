@@ -143,7 +143,7 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
           if (newMessage.sender_id !== user?.id) {
             const helpMessage: HelpMessage = {
               id: newMessage.id,
-              type: "bot", // Admin aparece como bot no chat de ajuda simplificado
+              type: "bot", // Admin sempre aparece como bot para anonimato
               content: newMessage.content,
               timestamp: new Date(newMessage.created_at),
             };
