@@ -117,17 +117,23 @@ export function FloatingChat() {
     }
 
     if (unreadMessageCount > lastUnreadMessageCount) {
+      console.log("💬 [FloatingChat] Nova mensagem detectada via contagem:", {
+        current: unreadMessageCount,
+        previous: lastUnreadMessageCount,
+        isOpen,
+      });
       // Nova notificação de mensagem detectada
       setLastUnreadMessageCount(unreadMessageCount);
 
       // Abrir chat automaticamente se houver nova notificação
       if (!isOpen) {
-        console.log(
-          "💬 Nova notificação de mensagem detectada, abrindo chat automaticamente",
-        );
+        console.log("💬 [FloatingChat] Abrindo chat automaticamente.");
         openChat();
       }
-    } else {
+    } else if (unreadMessageCount < lastUnreadMessageCount) {
+      console.log(
+        "💬 [FloatingChat] Contagem de mensagens diminuiu, sincronizando...",
+      );
       setLastUnreadMessageCount(unreadMessageCount);
     }
   }, [unreadMessageCount, lastUnreadMessageCount, isOpen, openChat]);

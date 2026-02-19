@@ -396,11 +396,23 @@ export const NotificationProviderSimple: React.FC<
             newNotification.action_url?.includes("open=help") ||
             newNotification.action_url?.includes("/help");
 
+          console.log("🔔 [NotificationFlow] Nova notificação:", {
+            id: newNotification.id,
+            type: newNotification.type,
+            title: newNotification.title,
+            isSupport,
+            action_url: newNotification.action_url,
+          });
+
           if (
             (newNotification.type === "message" ||
               titleLower.includes("mensagem")) &&
             !isSupport
           ) {
+            console.log(
+              "🔔 [NotificationFlow] Gatilho de chat normal detectado!",
+            );
+            // ... resto do código ...
             try {
               const metadata = newNotification.metadata || {};
               const senderId = metadata.sender_id;

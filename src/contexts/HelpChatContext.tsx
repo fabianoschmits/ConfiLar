@@ -79,21 +79,63 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
 
   // Buscar tickets se for admin
   const fetchAdminTickets = useCallback(async () => {
-    if (!isAdmin) return;
-    const { data } = await supabase
-      .from("support_tickets")
-      .select(
-        `
-        *,
-        user:profiles!user_id(full_name, avatar_url),
-        last_message:messages!conversation_id(content, created_at)
-      `,
-      )
-      .order("updated_at", { ascending: false });
+    if (!isAdmin) {
+      console.log("🎫 fetchAdminTickets: Usuário não é admin, ignorando.");
+      return;
+    }
 
-    // Sort logic to get newest message correctly if multiple exist (Postgrest limitation)
-    if (data) {
-      setAdminTickets(data);
+    console.log("🎫 fetchAdminTickets: Iniciando busca de tickets...");
+    try {
+      const { data: tickets, error: ticketError } = await supabase
+        .from("support_tickets")
+        .select("*")
+        .order("updated_at", { ascending: false });
+
+      if (ticketError) throw ticketError;
+
+      if (!tickets || tickets.length === 0) {
+        console.log("🎫 fetchAdminTickets: Nenhum ticket encontrado.");
+        setAdminTickets([]);
+        return;
+      }
+
+      console.log(
+        `🎫 fetchAdminTickets: ${tickets.length} tickets encontrados.`,
+      );
+
+      // Buscar perfis e últimas mensagens separadamente para evitar erro 400 de join complexo
+      const ticketsWithData = await Promise.all(
+        tickets.map(async (ticket) => {
+          // Buscar perfil do usuário
+          const { data: userData } = await supabase
+            .from("profiles")
+            .select("full_name, avatar_url")
+            .eq("id", ticket.user_id)
+            .maybeSingle();
+
+          // Buscar última mensagem
+          const { data: msgData } = await supabase
+            .from("messages")
+            .select("content, created_at")
+            .eq("conversation_id", ticket.conversation_id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          return {
+            ...ticket,
+            user: userData,
+            last_message: msgData,
+          };
+        }),
+      );
+
+      console.log(
+        "🎫 fetchAdminTickets: Dados dos tickets carregados com sucesso.",
+      );
+      setAdminTickets(ticketsWithData);
+    } catch (error) {
+      console.error("❌ fetchAdminTickets: Erro ao buscar tickets:", error);
     }
   }, [isAdmin]);
 
