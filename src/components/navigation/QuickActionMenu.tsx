@@ -84,7 +84,7 @@ export function QuickActionMenu() {
           className="relative px-2 flex items-center justify-around pointer-events-none"
           style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         >
-          {/* Animated Background layer */}
+          {/* Animated Background layer (Bar) */}
           <motion.div
             initial={false}
             animate={{
@@ -97,7 +97,7 @@ export function QuickActionMenu() {
 
           <div
             className={cn(
-              "flex items-center justify-around w-full transition-all duration-500",
+              "flex items-center justify-around w-full transition-all duration-500 relative",
               isVisible ? "h-14" : "h-12",
             )}
           >
@@ -136,19 +136,37 @@ export function QuickActionMenu() {
                       }}
                       className="relative flex items-center justify-center w-12 h-12"
                     >
-                      {/* Active Indicator - Slides smoothly */}
+                      {/* Active Indicator - Squash & Stretch Animation */}
                       <AnimatePresence>
                         {isActive && (
                           <motion.div
                             layoutId="active-pill"
                             className="absolute inset-0 bg-[#00b0b0] rounded-full shadow-lg shadow-[#00b0b0]/30 z-10"
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.8 }}
+                            initial={{
+                              opacity: 0,
+                              scaleX: 1.5,
+                              scaleY: 0.6,
+                            }}
+                            animate={{
+                              opacity: 1,
+                              scaleX: 1,
+                              scaleY: 1,
+                            }}
+                            exit={{
+                              opacity: 0,
+                              scaleX: 0.5,
+                              scaleY: 1.5,
+                            }}
                             transition={{
                               type: "spring",
-                              stiffness: 380,
-                              damping: 30,
+                              stiffness: 400,
+                              damping: 25,
+                              mass: 1,
+                              layout: {
+                                type: "spring",
+                                stiffness: 350,
+                                damping: 25,
+                              },
                             }}
                           />
                         )}
