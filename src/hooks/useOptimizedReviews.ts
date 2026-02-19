@@ -294,17 +294,18 @@ export function useCanReview(reviewerId: string, reviewedId: string) {
         return { canReview: false, reason: "already_reviewed" };
       }
 
-      // Verificar se existe acordo entre os usuários
-      const { data: agreement } = await supabase
-        .from("contact_agreements")
+      // Verificar se existe uma solicitação de avaliação aceita entre os usuários
+      const { data: request } = await supabase
+        .from("evaluation_requests")
         .select("id, status")
-        .or(`client_id.eq.${reviewerId},professional_id.eq.${reviewerId}`)
-        .or(`client_id.eq.${reviewedId},professional_id.eq.${reviewedId}`)
+        .or(
+          `and(requester_id.eq.${reviewerId},target_id.eq.${reviewedId}),and(requester_id.eq.${reviewedId},target_id.eq.${reviewerId})`,
+        )
         .eq("status", "accepted")
         .maybeSingle();
 
-      if (!agreement) {
-        return { canReview: false, reason: "no_agreement" };
+      if (!request) {
+        return { canReview: false, reason: "no_evaluation_request" };
       }
 
       return { canReview: true, reason: null };

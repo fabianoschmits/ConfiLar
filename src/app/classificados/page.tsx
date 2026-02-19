@@ -711,7 +711,7 @@ export default function ClassificadosPage() {
     <ClientOnly>
       <MainLayout requireAuth={false}>
         <div className="min-h-screen bg-gray-50 dark:bg-black">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-0">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             {/* Estatísticas Compactas */}
             {/* Estatísticas - Card Compacto */}
 
@@ -781,11 +781,10 @@ export default function ClassificadosPage() {
                     id="ad-filters"
                     variant="outline"
                     onClick={() => setShowFilters(!showFilters)}
-                    className={`h-10 px-3 flex items-center gap-2 ${
-                      filters.state || filters.city
+                    className={`h-10 px-3 flex items-center gap-2 ${filters.state || filters.city
                         ? "bg-primary-50 dark:bg-primary-900/30 border-primary-300 dark:border-primary-600 text-primary-700 dark:text-primary-400"
                         : "border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400"
-                    }`}
+                      }`}
                   >
                     <MapPin className="h-4 w-4" />
                     <span className="hidden sm:inline">
@@ -912,11 +911,10 @@ export default function ClassificadosPage() {
                 <nav className="-mb-px flex space-x-8">
                   <button
                     onClick={() => setActiveTab("all")}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                      activeTab === "all"
+                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${activeTab === "all"
                         ? "border-gray-500 dark:border-gray-400 text-gray-900 dark:text-white"
                         : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2">
                       <Grid3X3 className="h-4 w-4" />
@@ -925,11 +923,10 @@ export default function ClassificadosPage() {
                   </button>
                   <button
                     onClick={() => setActiveTab("offers")}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                      activeTab === "offers"
+                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${activeTab === "offers"
                         ? "border-primary-500 dark:border-primary-400 text-primary-700 dark:text-primary-400"
                         : "border-transparent text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:border-primary-300 dark:hover:border-primary-600"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2">
                       <HandHeart className="h-4 w-4" />
@@ -938,11 +935,10 @@ export default function ClassificadosPage() {
                   </button>
                   <button
                     onClick={() => setActiveTab("requests")}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                      activeTab === "requests"
+                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${activeTab === "requests"
                         ? "border-success-500 dark:border-success-400 text-success-700 dark:text-success-400"
                         : "border-transparent text-gray-500 dark:text-gray-400 hover:text-success-600 dark:hover:text-success-400 hover:border-success-300 dark:hover:border-success-600"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2">
                       <ShoppingCart className="h-4 w-4" />
@@ -1205,7 +1201,7 @@ export default function ClassificadosPage() {
                                   {selectedAd.is_premium &&
                                     selectedAd.premium_expires_at &&
                                     new Date(selectedAd.premium_expires_at) <
-                                      new Date() && (
+                                    new Date() && (
                                       <DropdownMenuItem
                                         onClick={() => {
                                           setShowAdModal(false);
@@ -1273,11 +1269,10 @@ export default function ClassificadosPage() {
                                 selectedAd.user_name,
                               );
                             }}
-                            className={`flex-1 sm:flex-initial text-xs sm:text-sm px-3 py-2 sm:px-4 h-8 sm:h-9 ${
-                              selectedAd.ad_type === "oferecer"
+                            className={`flex-1 sm:flex-initial text-xs sm:text-sm px-3 py-2 sm:px-4 h-8 sm:h-9 ${selectedAd.ad_type === "oferecer"
                                 ? "bg-gray-700 hover:bg-gray-800"
                                 : "bg-gray-500 hover:bg-gray-600"
-                            } text-white`}
+                              } text-white`}
                           >
                             <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2 flex-shrink-0" />
                             <span className="hidden sm:inline">
@@ -1321,11 +1316,10 @@ export default function ClassificadosPage() {
                           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
                             <Badge
                               variant="outline"
-                              className={`text-xs ${
-                                selectedAd.ad_type === "oferecer"
+                              className={`text-xs ${selectedAd.ad_type === "oferecer"
                                   ? "border-gray-400 text-gray-800 bg-gray-100"
                                   : "border-gray-300 text-gray-600 bg-gray-50"
-                              }`}
+                                }`}
                             >
                               {selectedAd.ad_type === "oferecer"
                                 ? "Oferta"
@@ -1333,11 +1327,10 @@ export default function ClassificadosPage() {
                             </Badge>
                             <Badge
                               variant="outline"
-                              className={`text-xs ${
-                                selectedAd.ad_type === "oferecer"
+                              className={`text-xs ${selectedAd.ad_type === "oferecer"
                                   ? "border-gray-400 text-gray-800 bg-gray-100"
                                   : "border-gray-300 text-gray-600 bg-gray-50"
-                              }`}
+                                }`}
                             >
                               {getCategoryIcon(selectedAd.category)}{" "}
                               {selectedAd.category}
@@ -1491,45 +1484,45 @@ export default function ClassificadosPage() {
                                 <span>
                                   {(selectedAd as any).user_profile
                                     .escolaridade ===
-                                  "ensino_fundamental_incompleto"
+                                    "ensino_fundamental_incompleto"
                                     ? "Ensino Fundamental Incompleto"
                                     : (selectedAd as any).user_profile
-                                          .escolaridade ===
-                                        "ensino_fundamental_completo"
+                                      .escolaridade ===
+                                      "ensino_fundamental_completo"
                                       ? "Ensino Fundamental Completo"
                                       : (selectedAd as any).user_profile
-                                            .escolaridade ===
-                                          "ensino_medio_incompleto"
+                                        .escolaridade ===
+                                        "ensino_medio_incompleto"
                                         ? "Ensino Médio Incompleto"
                                         : (selectedAd as any).user_profile
-                                              .escolaridade ===
-                                            "ensino_medio_completo"
+                                          .escolaridade ===
+                                          "ensino_medio_completo"
                                           ? "Ensino Médio Completo"
                                           : (selectedAd as any).user_profile
-                                                .escolaridade ===
-                                              "ensino_superior_incompleto"
+                                            .escolaridade ===
+                                            "ensino_superior_incompleto"
                                             ? "Ensino Superior Incompleto"
                                             : (selectedAd as any).user_profile
-                                                  .escolaridade ===
-                                                "ensino_superior_completo"
+                                              .escolaridade ===
+                                              "ensino_superior_completo"
                                               ? "Ensino Superior Completo"
                                               : (selectedAd as any).user_profile
-                                                    .escolaridade ===
-                                                  "pos_graduacao"
+                                                .escolaridade ===
+                                                "pos_graduacao"
                                                 ? "Pós-Graduação"
                                                 : (selectedAd as any)
-                                                      .user_profile
-                                                      .escolaridade ===
-                                                    "mestrado"
+                                                  .user_profile
+                                                  .escolaridade ===
+                                                  "mestrado"
                                                   ? "Mestrado"
                                                   : (selectedAd as any)
-                                                        .user_profile
-                                                        .escolaridade ===
-                                                      "doutorado"
+                                                    .user_profile
+                                                    .escolaridade ===
+                                                    "doutorado"
                                                     ? "Doutorado"
                                                     : (selectedAd as any)
-                                                        .user_profile
-                                                        .escolaridade}
+                                                      .user_profile
+                                                      .escolaridade}
                                 </span>
                               </div>
                             )}
@@ -1543,23 +1536,23 @@ export default function ClassificadosPage() {
                                     .estado_civil === "solteiro"
                                     ? "Solteiro(a)"
                                     : (selectedAd as any).user_profile
-                                          .estado_civil === "casado"
+                                      .estado_civil === "casado"
                                       ? "Casado(a)"
                                       : (selectedAd as any).user_profile
-                                            .estado_civil === "divorciado"
+                                        .estado_civil === "divorciado"
                                         ? "Divorciado(a)"
                                         : (selectedAd as any).user_profile
-                                              .estado_civil === "viuvo"
+                                          .estado_civil === "viuvo"
                                           ? "Viúvo(a)"
                                           : (selectedAd as any).user_profile
-                                                .estado_civil ===
-                                              "uniao_estavel"
+                                            .estado_civil ===
+                                            "uniao_estavel"
                                             ? "União Estável"
                                             : (selectedAd as any).user_profile
-                                                  .estado_civil === "outro"
+                                              .estado_civil === "outro"
                                               ? "Outro"
                                               : (selectedAd as any).user_profile
-                                                  .estado_civil}
+                                                .estado_civil}
                                 </span>
                               </div>
                             )}
@@ -1571,7 +1564,7 @@ export default function ClassificadosPage() {
                                   <span>
                                     {(selectedAd as any).user_profile.filhos}{" "}
                                     {(selectedAd as any).user_profile.filhos ===
-                                    1
+                                      1
                                       ? "filho"
                                       : "filhos"}
                                   </span>
@@ -1579,75 +1572,75 @@ export default function ClassificadosPage() {
                               )}
                             {(selectedAd as any).user_profile.user_type ===
                               "professional" && (
-                              <>
-                                {(selectedAd as any).user_profile
-                                  .turno_trabalho && (
-                                  <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300">
-                                    <span className="font-semibold">
-                                      Turno de Trabalho:
-                                    </span>
-                                    <span>
-                                      {(selectedAd as any).user_profile
-                                        .turno_trabalho === "manha"
-                                        ? "Manhã"
-                                        : (selectedAd as any).user_profile
-                                              .turno_trabalho === "tarde"
-                                          ? "Tarde"
-                                          : (selectedAd as any).user_profile
-                                                .turno_trabalho === "noite"
-                                            ? "Noite"
+                                <>
+                                  {(selectedAd as any).user_profile
+                                    .turno_trabalho && (
+                                      <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300">
+                                        <span className="font-semibold">
+                                          Turno de Trabalho:
+                                        </span>
+                                        <span>
+                                          {(selectedAd as any).user_profile
+                                            .turno_trabalho === "manha"
+                                            ? "Manhã"
                                             : (selectedAd as any).user_profile
-                                                  .turno_trabalho === "integral"
-                                              ? "Turno Integral"
+                                              .turno_trabalho === "tarde"
+                                              ? "Tarde"
                                               : (selectedAd as any).user_profile
+                                                .turno_trabalho === "noite"
+                                                ? "Noite"
+                                                : (selectedAd as any).user_profile
+                                                  .turno_trabalho === "integral"
+                                                  ? "Turno Integral"
+                                                  : (selectedAd as any).user_profile
                                                     .turno_trabalho ===
-                                                  "flexivel"
-                                                ? "Horário Flexível"
-                                                : (selectedAd as any)
-                                                    .user_profile
-                                                    .turno_trabalho}
-                                    </span>
-                                  </div>
-                                )}
-                                {(selectedAd as any).user_profile
-                                  .professional_experience_years !==
-                                  undefined &&
-                                  (selectedAd as any).user_profile
-                                    .professional_experience_years !== null &&
-                                  (selectedAd as any).user_profile
-                                    .professional_experience_years > 0 && (
-                                    <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300">
-                                      <span className="font-semibold">
-                                        Experiência:
-                                      </span>
-                                      <span>
-                                        {
-                                          (selectedAd as any).user_profile
-                                            .professional_experience_years
-                                        }{" "}
-                                        {(selectedAd as any).user_profile
-                                          .professional_experience_years === 1
-                                          ? "ano"
-                                          : "anos"}
-                                      </span>
-                                    </div>
-                                  )}
-                                {(selectedAd as any).user_profile
-                                  .referencia_profissional && (
-                                  <div className="sm:col-span-2 mt-2">
-                                    <p className="text-xs font-semibold text-primary-900 dark:text-primary-200 mb-1">
-                                      Referência Profissional:
-                                    </p>
-                                    <p className="text-xs text-primary-800 dark:text-primary-300 leading-relaxed">
-                                      {
-                                        (selectedAd as any).user_profile
-                                          .referencia_profissional
-                                      }
-                                    </p>
-                                  </div>
-                                )}
-                              </>
-                            )}
+                                                    "flexivel"
+                                                    ? "Horário Flexível"
+                                                    : (selectedAd as any)
+                                                      .user_profile
+                                                      .turno_trabalho}
+                                        </span>
+                                      </div>
+                                    )}
+                                  {(selectedAd as any).user_profile
+                                    .professional_experience_years !==
+                                    undefined &&
+                                    (selectedAd as any).user_profile
+                                      .professional_experience_years !== null &&
+                                    (selectedAd as any).user_profile
+                                      .professional_experience_years > 0 && (
+                                      <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300">
+                                        <span className="font-semibold">
+                                          Experiência:
+                                        </span>
+                                        <span>
+                                          {
+                                            (selectedAd as any).user_profile
+                                              .professional_experience_years
+                                          }{" "}
+                                          {(selectedAd as any).user_profile
+                                            .professional_experience_years === 1
+                                            ? "ano"
+                                            : "anos"}
+                                        </span>
+                                      </div>
+                                    )}
+                                  {(selectedAd as any).user_profile
+                                    .referencia_profissional && (
+                                      <div className="sm:col-span-2 mt-2">
+                                        <p className="text-xs font-semibold text-primary-900 dark:text-primary-200 mb-1">
+                                          Referência Profissional:
+                                        </p>
+                                        <p className="text-xs text-primary-800 dark:text-primary-300 leading-relaxed">
+                                          {
+                                            (selectedAd as any).user_profile
+                                              .referencia_profissional
+                                          }
+                                        </p>
+                                      </div>
+                                    )}
+                                </>
+                              )}
                           </div>
                         </div>
                       )}
@@ -1667,7 +1660,7 @@ export default function ClassificadosPage() {
                           selectedAd.premium_expires_at && (
                             <div className="mt-2">
                               {new Date(selectedAd.premium_expires_at) <
-                              new Date() ? (
+                                new Date() ? (
                                 <div className="p-2 bg-error-50 dark:bg-error-900/20 rounded-lg border border-error-200 dark:border-error-800">
                                   <p className="text-xs sm:text-sm text-red-600 dark:text-red-400 font-medium">
                                     ⚠️ Seu anúncio premium expirou. Renove para
@@ -1698,21 +1691,21 @@ export default function ClassificadosPage() {
                 title={t("noResults")}
                 description={
                   filters.searchTerm ||
-                  filters.state ||
-                  filters.city ||
-                  filters.category !== "all"
+                    filters.state ||
+                    filters.city ||
+                    filters.category !== "all"
                     ? t("noResultsDescription")
                     : t("noAdsDescription")
                 }
                 action={
                   filters.searchTerm ||
-                  filters.state ||
-                  filters.city ||
-                  filters.category !== "all"
+                    filters.state ||
+                    filters.city ||
+                    filters.category !== "all"
                     ? {
-                        label: t("clearFilters"),
-                        onClick: clearFilters,
-                      }
+                      label: t("clearFilters"),
+                      onClick: clearFilters,
+                    }
                     : undefined
                 }
               />
@@ -1789,11 +1782,10 @@ export default function ClassificadosPage() {
                         }
                         size="sm"
                         onClick={() => goToPage(pageNumber)}
-                        className={`px-3 ${
-                          currentPage === pageNumber
+                        className={`px-3 ${currentPage === pageNumber
                             ? "bg-blue-600 text-white hover:bg-blue-700"
                             : ""
-                        }`}
+                          }`}
                       >
                         {pageNumber}
                       </Button>

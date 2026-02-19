@@ -11,6 +11,7 @@ interface NavigationLinkProps {
   onClick?: () => void;
   destination?: string;
   id?: string;
+  title?: string;
 }
 
 export function NavigationLink({
@@ -20,6 +21,7 @@ export function NavigationLink({
   onClick,
   destination,
   id,
+  title,
 }: NavigationLinkProps) {
   const router = useRouter();
 
@@ -42,7 +44,7 @@ export function NavigationLink({
   };
 
   return (
-    <button id={id} className={className} onClick={handleClick}>
+    <button id={id} className={className} onClick={handleClick} title={title}>
       {children}
     </button>
   );

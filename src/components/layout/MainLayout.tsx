@@ -5,13 +5,15 @@ import { ModernSidebar } from "./ModernSidebar";
 import { ModernHeader } from "./ModernHeader";
 import { QuickActionMenu } from "@/components/navigation/QuickActionMenu";
 import { LoginPrompt } from "./LoginPrompt";
-import { ReferralTicker } from "@/components/referral/ReferralTicker";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useAutoRedirect } from "@/hooks/useAutoRedirect";
 import { useProfileCheck } from "@/hooks/useProfileCheck";
 import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { AIAnnouncement } from "@/components/profile/AIAnnouncement";
+import { cn } from "@/lib/utils";
+
+import { useSidebar } from "@/contexts/SidebarContext";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -33,6 +35,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   // Hook para verificar se o perfil está completo
   const { isChecking: isCheckingProfile } = useProfileCheck();
 
+  const { isCollapsed } = useSidebar();
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -50,7 +54,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       {/* Header Moderno */}
       <ModernHeader />
 
-      <main className="min-h-screen bg-white dark:bg-black transition-colors duration-200 lg:ml-72 pb-20 lg:pb-0 pt-20 sm:pt-24 lg:pt-28">
+      <main className={cn(
+        "min-h-screen bg-gray-50 dark:bg-black transition-all duration-300 ease-in-out pb-24 lg:pb-0 pt-16 sm:pt-20 lg:pt-24",
+        isCollapsed ? "lg:ml-16" : "lg:ml-56"
+      )}>
         {requireAuth && !isLoggedIn ? (
           // Mostrar prompt de login se a página requer autenticação
           <div className="flex items-center justify-center min-h-screen">
@@ -77,8 +84,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         )}
       </main>
 
-      {/* Ticker de Top Indicadores - aparece em todo o projeto - RODAPÉ DA PÁGINA */}
-      {isLoggedIn && <ReferralTicker />}
 
       {/* Bottom Navigation para mobile - COMENTADO PARA TESTAR NOVO QUICK ACTION MENU */}
       {/* <ModernBottomNavigation /> */}

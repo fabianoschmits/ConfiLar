@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { useSidebar } from "@/contexts/SidebarContext";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
 import { useHelpChat } from "@/contexts/HelpChatContext";
@@ -194,11 +195,11 @@ export function ModernHeader({
       const averageRating =
         totalReviews > 0
           ? parseFloat(
-              (
-                reviewsData.reduce((sum, r) => sum + r.rating_person, 0) /
-                totalReviews
-              ).toFixed(1),
-            )
+            (
+              reviewsData.reduce((sum, r) => sum + r.rating_person, 0) /
+              totalReviews
+            ).toFixed(1),
+          )
           : 0;
       const totalViews = viewsData?.length || 0;
 
@@ -276,7 +277,9 @@ export function ModernHeader({
   // Dados seguros para renderização
   const userId = user?.id || "";
   const profileId = profile?.id || "";
-  const userFullName = profile?.full_name || "Usuário";
+  const { isCollapsed } = useSidebar();
+
+  const userFullName = profile?.full_name || user?.email || "Usuário";
   const userAvatarUrl = profile?.avatar_url || "";
   const userType = profile?.user_type || "client";
 
@@ -316,13 +319,11 @@ export function ModernHeader({
       {/* Header Moderno - Flutuante no Mobile (dinâmico) e Desktop (fixo) */}
       <div
         className={cn(
-          "fixed z-50 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] border border-gray-200 dark:border-gray-900",
-          // Desktop styles (always pill-like)
-          "lg:top-6 lg:left-80 lg:right-6 lg:translate-x-0 lg:w-auto lg:max-w-[calc(100vw-18rem)] lg:rounded-2xl lg:shadow-[0_8px_30px_rgb(0,0,0,0.12)] lg:dark:shadow-2xl lg:backdrop-blur-lg lg:bg-white lg:dark:bg-black/95",
-          // Mobile styles (dynamic)
-          isScrolled
-            ? "top-4 left-1/2 -translate-x-1/2 w-[92%] rounded-[2rem] shadow-[0_12px_40px_rgba(0,0,0,0.15),inset_0_1px_1px_rgba(255,255,255,0.6)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-xl bg-white/70 dark:bg-black/70 border border-white/40 dark:border-white/10 ring-1 ring-black/5 dark:ring-white/5"
-            : "top-0 left-0 translate-x-0 w-full rounded-none shadow-none border-x-0 border-t-0 bg-white dark:bg-black",
+          "fixed z-50 transition-all duration-300 ease-in-out",
+          // All screen sizes: flat bar at top, full-width on mobile, sidebar-offset on desktop
+          "top-0 left-0 right-0 w-auto",
+          isCollapsed ? "lg:left-16" : "lg:left-56",
+          "rounded-none border-b border-gray-100 dark:border-gray-900 bg-white dark:bg-black shadow-sm",
         )}
       >
         <div className="px-3 sm:px-4 lg:px-4">
@@ -381,12 +382,8 @@ export function ModernHeader({
               </Link>
             </div>
 
-            {/* Center - Title */}
-            <div className="flex-1 text-center">
-              <h1 className="text-sm font-semibold text-gray-900 dark:text-white sm:text-base">
-                {getPageTitle()}
-              </h1>
-            </div>
+            {/* Spacer — pushes icons to the right on all screen sizes */}
+            <div className="flex-1" />
 
             {/* Right side - Actions */}
             <div className="flex items-center">

@@ -29,7 +29,7 @@ export interface DashboardMetrics {
   // Atividade recente
   recentActivity: Array<{
     id: string;
-    type: "message" | "review" | "agreement" | "view";
+    type: "message" | "review" | "view";
     title: string;
     description: string;
     timestamp: string;
@@ -177,7 +177,7 @@ export function useDashboardMetrics() {
       const averageRating =
         reviewsData?.length > 0
           ? reviewsData.reduce((sum, review) => sum + review.rating_person, 0) /
-            reviewsData.length
+          reviewsData.length
           : 0;
 
       // Calcular crescimento baseado em dados reais (últimos 30 dias)

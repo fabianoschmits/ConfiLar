@@ -120,13 +120,13 @@ export default function ConfiPointsDashboardPage() {
       amount: isSent ? -transfer.points_amount : transfer.points_amount,
       description: isSent
         ? t("transferredPoints", {
-            amount: transfer.points_amount.toLocaleString(),
-            user: otherUser?.full_name || tCommon("user"),
-          })
+          amount: transfer.points_amount.toLocaleString(),
+          user: otherUser?.full_name || tCommon("user"),
+        })
         : t("receivedTransfer", {
-            amount: transfer.points_amount.toLocaleString(),
-            user: otherUser?.full_name || tCommon("user"),
-          }),
+          amount: transfer.points_amount.toLocaleString(),
+          user: otherUser?.full_name || tCommon("user"),
+        }),
       date: transfer.created_at,
       status: "completed",
       source: "transfer",
@@ -322,8 +322,8 @@ export default function ConfiPointsDashboardPage() {
   return (
     <MainLayout requireAuth={true}>
       <div className="min-h-screen bg-gray-50 dark:bg-black">
-        <div className="container py-8">
-          <div className="mx-auto max-w-6xl">
+        <div className="container py-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             {/* Header */}
             <div className="mb-8">
               <div className="flex items-center gap-3">
@@ -379,8 +379,8 @@ export default function ConfiPointsDashboardPage() {
                         {loadingPoints
                           ? "..."
                           : (balance?.total_earned || 0).toLocaleString(
-                              "pt-BR",
-                            )}
+                            "pt-BR",
+                          )}
                       </p>
                     </div>
                   </div>
@@ -520,11 +520,10 @@ export default function ConfiPointsDashboardPage() {
                             >
                               <div className="flex items-center gap-2">
                                 <div
-                                  className={`w-7 h-7 rounded-full flex items-center justify-center ${
-                                    transaction.amount > 0
+                                  className={`w-7 h-7 rounded-full flex items-center justify-center ${transaction.amount > 0
                                       ? "bg-green-50 dark:bg-green-900/10"
                                       : "bg-red-50 dark:bg-red-900/10"
-                                  }`}
+                                    }`}
                                 >
                                   <div
                                     className={
@@ -831,11 +830,10 @@ export default function ConfiPointsDashboardPage() {
                             >
                               <div className="flex items-center gap-4">
                                 <div
-                                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                    transaction.amount > 0
+                                  className={`w-10 h-10 rounded-full flex items-center justify-center ${transaction.amount > 0
                                       ? "bg-green-100 dark:bg-green-900/20"
                                       : "bg-red-100 dark:bg-red-900/20"
-                                  }`}
+                                    }`}
                                 >
                                   <div
                                     className={getTransactionColor(
@@ -1094,11 +1092,10 @@ export default function ConfiPointsDashboardPage() {
                               </div>
                               <div className="text-right">
                                 <p
-                                  className={`text-lg font-bold ${
-                                    transaction.amount > 0
+                                  className={`text-lg font-bold ${transaction.amount > 0
                                       ? "text-green-600"
                                       : "text-red-600"
-                                  }`}
+                                    }`}
                                 >
                                   {transaction.amount > 0 ? "+" : ""}
                                   {transaction.amount.toLocaleString("pt-BR")}

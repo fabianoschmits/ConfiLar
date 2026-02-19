@@ -45,7 +45,7 @@ export default function ConfiPointsRankingPage() {
     return (
       <MainLayout requireAuth={true}>
         <div className="min-h-screen bg-gray-50 dark:bg-black">
-          <div className="container py-8">
+          <div className="container py-4">
             <div className="mx-auto max-w-4xl">
               <div className="mb-8">
                 <div className="flex items-center gap-3 mb-4">
@@ -94,7 +94,7 @@ export default function ConfiPointsRankingPage() {
   return (
     <MainLayout requireAuth={true}>
       <div className="min-h-screen bg-gray-50 dark:bg-black">
-        <div className="container py-8">
+        <div className="container py-4">
           <div className="mx-auto max-w-4xl">
             {/* Header */}
             <div className="mb-8">

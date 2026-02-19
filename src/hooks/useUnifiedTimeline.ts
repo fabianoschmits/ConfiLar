@@ -300,7 +300,6 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           "user_joined",
           "recommendation",
           "review",
-          "agreement",
           "classified_posted",
         ])
         .order("created_at", { ascending: false })
@@ -369,11 +368,11 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         const finalUserData =
           isWelcomePost && post.metadata
             ? {
-                full_name:
-                  post.metadata.user || userData?.full_name || "Usuário",
-                avatar_url: post.metadata.avatar_url || userData?.avatar_url,
-                user_type: post.metadata.user_type || userData?.user_type,
-              }
+              full_name:
+                post.metadata.user || userData?.full_name || "Usuário",
+              avatar_url: post.metadata.avatar_url || userData?.avatar_url,
+              user_type: post.metadata.user_type || userData?.user_type,
+            }
             : userData;
 
         // Verificar se premium expirou
@@ -536,12 +535,12 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
             page.map((item) =>
               item.type === "post" && item.id === postId
                 ? {
-                    ...item,
-                    likes_count: likedPosts.has(postId)
-                      ? item.likes_count - 1
-                      : item.likes_count + 1,
-                    is_liked: !likedPosts.has(postId),
-                  }
+                  ...item,
+                  likes_count: likedPosts.has(postId)
+                    ? item.likes_count - 1
+                    : item.likes_count + 1,
+                  is_liked: !likedPosts.has(postId),
+                }
                 : item,
             ),
           ),
@@ -582,9 +581,9 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         // Preparar metadata com informações do vídeo (se houver)
         const metadata = firstVideo
           ? {
-              youtube_video_id: firstVideo.id,
-              youtube_video_url: firstVideo.url,
-            }
+            youtube_video_id: firstVideo.id,
+            youtube_video_url: firstVideo.url,
+          }
           : null;
 
         // Buscar país do perfil do usuário se não foi fornecido
@@ -1640,8 +1639,6 @@ function getActivityTitle(
       return `${userName} recomendou ${metadata.target_user_name || "alguém"} `;
     case "review":
       return `${userName} avaliou ${metadata.target_user_name || "alguém"} com ${metadata.rating || 5} estrelas`;
-    case "agreement":
-      return `${userName} fechou um acordo`;
     case "classified_posted":
       return `${userName} publicou um anúncio`;
     default:
@@ -1657,8 +1654,6 @@ function getActivityDescription(activityType: string, metadata: any): string {
       return `Recomendação para ${metadata.service_description || "serviço"} `;
     case "review":
       return `Avaliação: ${metadata.service_description || "serviço realizado"} `;
-    case "agreement":
-      return `Acordo para: ${metadata.service_description || "serviço"} `;
     case "classified_posted":
       return `Categoria: ${metadata.category || "geral"} `;
     default:
@@ -1674,8 +1669,6 @@ function getActivityIcon(activityType: string): string {
       return "👍";
     case "review":
       return "⭐";
-    case "agreement":
-      return "🤝";
     case "classified_posted":
       return "📢";
     default:
@@ -1691,8 +1684,6 @@ function getActivityColor(activityType: string): string {
       return "bg-blue-100 text-blue-800";
     case "review":
       return "bg-yellow-100 text-yellow-800";
-    case "agreement":
-      return "bg-purple-100 text-purple-800";
     case "classified_posted":
       return "bg-orange-100 text-orange-800";
     default:

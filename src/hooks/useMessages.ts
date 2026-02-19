@@ -63,27 +63,12 @@ export interface Conversation {
   };
 }
 
-export interface ContactAgreement {
-  id: string;
-  conversation_id: string;
-  client_id: string;
-  professional_id: string;
-  ad_id: string;
-  status: "pending" | "accepted" | "rejected";
-  terms: string;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-}
 
 export function useMessages() {
-  const { user } = useAuthContext();
+  const { user, profile } = useAuthContext();
   const { addNotification } = useNotifications();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [contactAgreements, setContactAgreements] = useState<
-    ContactAgreement[]
-  >([]);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -320,147 +305,37 @@ export function useMessages() {
     [user?.id],
   );
 
-  // Criar notificação para nova mensagem - REMOVIDO para evitar duplicação
-  const createMessageNotification = useCallback(
-    async (message: Message, conversation: Conversation) => {
-      // Função removida para evitar duplicação de notificações
-      return;
-    },
-    [],
-  );
-
-  // Criar notificação para acordo
-  const createAgreementNotification = useCallback(
-    async (
-      agreement: any,
-      type: "proposal" | "accepted" | "rejected" | "review_available",
-    ) => {
-      if (!user?.id) return;
-
-      try {
-        let title = "";
-        let message = "";
-        let notificationType:
-          | "info"
-          | "success"
-          | "warning"
-          | "error"
-          | "message"
-          | "review"
-          | "booking"
-          | "verification"
-          | "achievement"
-          | "system" = "info";
-
-        switch (type) {
-          case "proposal":
-            title = "Nova proposta de acordo";
-            message = `${agreement.professional?.full_name || "Profissional"} enviou uma proposta de acordo`;
-            notificationType = "info";
-            break;
-          case "accepted":
-            title = "Acordo aceito";
-            message = `${agreement.client?.full_name || "Cliente"} aceitou sua proposta de acordo`;
-            notificationType = "success";
-            break;
-          case "rejected":
-            title = "Acordo rejeitado";
-            message = `${agreement.client?.full_name || "Cliente"} rejeitou sua proposta de acordo`;
-            notificationType = "warning";
-            break;
-          case "review_available":
-            title = "Avaliação disponível!";
-            message = `Você já pode avaliar ${agreement.client?.full_name || "Cliente"} após o acordo aceito`;
-            notificationType = "review";
-            break;
-        }
-
-        // Determinar o destinatário da notificação
-        let recipientId: string;
-
-        if (type === "proposal") {
-          // Para proposta: enviar para quem NÃO fez a proposta
-          // Se quem propôs é o cliente, enviar para o profissional
-          // Se quem propôs é o profissional, enviar para o cliente
-          recipientId =
-            agreement.proposed_by === agreement.client_id
-              ? agreement.professional_id
-              : agreement.client_id;
-        } else if (type === "accepted") {
-          // Para aceito: enviar para quem fez a proposta
-          recipientId = agreement.proposed_by;
-        } else if (type === "review_available") {
-          // Para avaliação disponível: enviar para ambos os usuários
-          // Esta função será chamada duas vezes (uma para cada usuário)
-          recipientId =
-            user.id === agreement.client_id
-              ? agreement.professional_id
-              : agreement.client_id;
-        } else {
-          // Para rejeitado: enviar para quem fez a proposta
-          recipientId = agreement.proposed_by;
-        }
-
-        await addNotification({
-          user_id: recipientId,
-          title,
-          message,
-          type: notificationType,
-          action_url: `/mensagens?conversation=${agreement.conversation_id}`,
-          priority: "normal",
-        });
-      } catch (error) {
-        console.error("❌ Erro ao criar notificação de acordo:", error);
-      }
-    },
-    [user?.id, addNotification],
-  );
-
-  // Função para enviar notificação automática de nova conversa - DESABILITADA
+  // Enviar notificação de nova conversa
   const sendNewConversationNotification = useCallback(
     async (conversation: Conversation) => {
-      // NOTIFICAÇÃO DE CONVERSA INICIADA DESABILITADA
-      return;
+      try {
+        const otherUserId =
+          user?.id === conversation.client_id
+            ? conversation.professional_id
+            : conversation.client_id;
 
-      // Código original comentado para referência:
-      /*
-    if (!user?.id) return
+        const senderName = (profile as any)?.full_name || "Alguém";
 
-    try {
-      // Determinar quem recebe a notificação (quem não iniciou a conversa)
-      const recipientId = user.id === conversation.client_id 
-        ? conversation.professional_id 
-        : conversation.client_id
-
-      // Verificar se o destinatário é válido e diferente do remetente
-      if (!recipientId || recipientId === user.id) {
-        return
+        await supabase.from("notifications").insert({
+          user_id: otherUserId,
+          title: "Nova conversa iniciada",
+          message: `${senderName} iniciou uma conversa com você.`,
+          type: "message",
+          priority: "normal",
+          metadata: {
+            conversation_id: conversation.id,
+            sender_id: user?.id,
+            sender_name: senderName,
+          },
+        });
+      } catch (err) {
+        console.error("❌ Erro ao enviar notificação de nova conversa:", err);
       }
-
-      const recipientName = user.id === conversation.client_id 
-        ? conversation.professional?.full_name || 'Profissional'
-        : conversation.client?.full_name || 'Cliente'
-
-      const senderName = user.id === conversation.client_id 
-        ? conversation.client?.full_name || 'Usuário'
-        : conversation.professional?.full_name || 'Usuário'
-
-      await addNotification({
-        user_id: recipientId,
-        title: 'Nova conversa iniciada',
-        message: `${senderName} iniciou uma conversa com você. Clique para responder!`,
-        type: 'message',
-        action_url: `/mensagens?conversation=${conversation.id}`,
-        priority: 'normal'
-      })
-
-    } catch (error) {
-      console.error('Erro ao enviar notificação de nova conversa:', error)
-    }
-    */
     },
-    [user, addNotification],
+    [user?.id, profile],
   );
+
+
 
   // Enviar mensagem
   const sendMessage = useCallback(
@@ -622,26 +497,6 @@ export function useMessages() {
   );
 
   // Buscar acordos de contato
-  const loadContactAgreements = useCallback(
-    async (conversationId: string) => {
-      if (!user?.id) return;
-
-      try {
-        const { data, error } = await supabase
-          .from("contact_agreements")
-          .select("*")
-          .eq("conversation_id", conversationId)
-          .order("created_at", { ascending: false });
-
-        if (error) throw error;
-
-        setContactAgreements(data || []);
-      } catch (err) {
-        console.error("❌ Erro ao buscar acordos de contato:", err);
-      }
-    },
-    [user?.id],
-  );
 
   // Criar ou encontrar conversa
   const createOrFindConversation = useCallback(
@@ -806,11 +661,6 @@ export function useMessages() {
             .delete()
             .eq("conversation_id", conversationId);
 
-          // Deletar acordos (se existirem)
-          await supabase
-            .from("contact_agreements")
-            .delete()
-            .eq("conversation_id", conversationId);
 
           // Deletar conversa
           await supabase
@@ -1183,7 +1033,6 @@ export function useMessages() {
   return {
     conversations,
     messages,
-    contactAgreements,
     loading,
     sending,
     error,
@@ -1191,14 +1040,12 @@ export function useMessages() {
     loadMessages,
     sendMessage,
     markMessagesAsRead,
-    loadContactAgreements,
     createConversation: createOrFindConversation,
     createOrFindConversation,
     deleteConversation,
     deleteMessage,
     editMessage,
     getTotalUnreadCount,
-    createAgreementNotification,
     sendNewConversationNotification,
   };
 }

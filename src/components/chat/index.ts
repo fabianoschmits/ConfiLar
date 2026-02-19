@@ -12,5 +12,4 @@ export { useMessages } from "../../hooks/useMessages";
 export type {
   Message,
   Conversation,
-  ContactAgreement,
 } from "../../hooks/useMessages";

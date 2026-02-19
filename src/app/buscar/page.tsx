@@ -331,7 +331,7 @@ export default function BuscarPage() {
   return (
     <MainLayout requireAuth={false}>
       <div className="min-h-screen bg-gray-50 dark:bg-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           {/* Estatísticas - Card Compacto */}
           <Card className="mb-8 hover:shadow-xl transition-all duration-300">
             <CardContent className="py-2 px-3 sm:py-3 sm:px-4">
@@ -475,11 +475,10 @@ export default function BuscarPage() {
             <div className="flex items-center gap-1 sm:gap-2 p-1 bg-gray-100 dark:bg-gray-900 rounded-lg overflow-x-auto">
               <button
                 onClick={() => setActiveTab("all")}
-                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
-                  activeTab === "all"
+                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${activeTab === "all"
                     ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                }`}
+                  }`}
               >
                 <Users className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="text-xs sm:text-sm">{t("all")}</span>
@@ -493,11 +492,10 @@ export default function BuscarPage() {
 
               <button
                 onClick={() => setActiveTab("clients")}
-                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
-                  activeTab === "clients"
+                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${activeTab === "clients"
                     ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                }`}
+                  }`}
               >
                 <User className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="text-xs sm:text-sm">{t("clients")}</span>
@@ -511,11 +509,10 @@ export default function BuscarPage() {
 
               <button
                 onClick={() => setActiveTab("professionals")}
-                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
-                  activeTab === "professionals"
+                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${activeTab === "professionals"
                     ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                }`}
+                  }`}
               >
                 <UserCheck className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="text-xs sm:text-sm">{t("professionals")}</span>
@@ -554,21 +551,21 @@ export default function BuscarPage() {
                   title={t("noResults")}
                   description={
                     filters.searchTerm ||
-                    filters.state ||
-                    filters.city ||
-                    filters.service !== "all"
+                      filters.state ||
+                      filters.city ||
+                      filters.service !== "all"
                       ? t("noResultsDescription")
                       : t("noUsersDescription")
                   }
                   action={
                     filters.searchTerm ||
-                    filters.state ||
-                    filters.city ||
-                    filters.service !== "all"
+                      filters.state ||
+                      filters.city ||
+                      filters.service !== "all"
                       ? {
-                          label: t("clearFilters"),
-                          onClick: clearFilters,
-                        }
+                        label: t("clearFilters"),
+                        onClick: clearFilters,
+                      }
                       : undefined
                   }
                 />
@@ -684,11 +681,10 @@ export default function BuscarPage() {
               </div>
             ) : (
               <div
-                className={`grid gap-6 ${
-                  viewMode === "grid"
+                className={`grid gap-6 ${viewMode === "grid"
                     ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
                     : "grid-cols-1"
-                }`}
+                  }`}
               >
                 {displayProfiles.map((profile) => (
                   <div key={profile.id} className="h-full">
@@ -752,11 +748,10 @@ export default function BuscarPage() {
                         }
                         size="sm"
                         onClick={() => setCurrentPage(pageNumber)}
-                        className={`px-3 ${
-                          currentPage === pageNumber
+                        className={`px-3 ${currentPage === pageNumber
                             ? "bg-primary-600 text-white hover:bg-primary-700"
                             : ""
-                        }`}
+                          }`}
                       >
                         {pageNumber}
                       </Button>

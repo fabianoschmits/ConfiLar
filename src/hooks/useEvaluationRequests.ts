@@ -131,6 +131,27 @@ export function useEvaluationRequests() {
 
         if (error) throw error;
 
+        // Criar notificação para o usuário alvo
+        try {
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("full_name")
+            .eq("id", user.id)
+            .single();
+
+          await supabase.from("notifications").insert({
+            user_id: targetId,
+            title: "Nova Solicitação de Avaliação",
+            message: `${profileData?.full_name || "Alguém"} solicitou uma avaliação sua.`,
+            type: "evaluation_request",
+            is_read: false,
+            action_url: "/avaliacoes",
+            priority: "normal",
+          });
+        } catch (notifErr) {
+          console.error("Erro ao criar notificação de solicitação:", notifErr);
+        }
+
         // Recarregar solicitações
         await loadRequests();
 
@@ -186,6 +207,27 @@ export function useEvaluationRequests() {
             bidirectionalError,
           );
           // Não falhar se a bidirecional falhar, pois a original já foi aceita
+        }
+
+        // Criar notificação informando que a solicitação foi aceita
+        try {
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("full_name")
+            .eq("id", user.id)
+            .single();
+
+          await supabase.from("notifications").insert({
+            user_id: originalRequest.requester_id,
+            title: "Solicitação de Avaliação Aceita",
+            message: `${profileData?.full_name || "O usuário"} aceitou sua solicitação. Agora vocês podem se avaliar!`,
+            type: "evaluation_accepted",
+            is_read: false,
+            action_url: `/perfil/${user.id}`,
+            priority: "normal",
+          });
+        } catch (notifErr) {
+          console.error("Erro ao criar notificação de aceite:", notifErr);
         }
 
         // Recarregar solicitações

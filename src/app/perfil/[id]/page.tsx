@@ -209,7 +209,7 @@ export default function ProfilePage() {
   return (
     <MainLayout requireAuth={false}>
       {profile && <AIProfileSchema profile={profile} />}
-      <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+      <div className="min-h-screen bg-gray-50 text-foreground transition-colors duration-300">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           {/* Header Minimalista */}
           {/* Header Minimalista Unificado */}
@@ -553,7 +553,7 @@ export default function ProfilePage() {
                                     className="text-[10px] px-1.5 py-0 h-5"
                                   >
                                     {rec.recommender.user_type ===
-                                    "professional"
+                                      "professional"
                                       ? t("professional")
                                       : t("client")}
                                   </Badge>
@@ -702,7 +702,7 @@ export default function ProfilePage() {
                     </div>
 
                     {profile.professional_services &&
-                    profile.professional_services.length > 0 ? (
+                      profile.professional_services.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {profile.professional_services.map((service, index) => (
                           <div

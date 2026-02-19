@@ -34,6 +34,7 @@ import { HelpChatProvider } from "@/contexts/HelpChatContext";
 import HelpChatWindow from "@/components/help/HelpChatWindow";
 import HelpChatButton from "@/components/help/HelpChatButton";
 import { FontSizeApplier } from "@/components/ui/FontSizeApplier";
+import { SidebarProvider } from "@/contexts/SidebarContext";
 import "@/utils/errorInterceptor"; // Interceptor de erros
 // import { AuthContextDebug } from "@/components/debug/AuthContextDebug"
 
@@ -122,7 +123,7 @@ export default async function RootLayout({
         <meta name="msapplication-TileColor" content="#9CA3AF" />
         <meta name="color-scheme" content="light dark" />
       </head>
-      <body className="font-sans bg-white dark:bg-black">
+      <body className="font-sans bg-gray-50 dark:bg-black">
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -140,44 +141,46 @@ export default async function RootLayout({
                 <LocaleProvider>
                   <OfflineProvider>
                     <LoadingProvider>
-                      <AuthProvider initialSession={session}>
-                        <FontSizeApplier />
-                        {/* <AutoReauthentication> */}
-                        <AvailabilityProvider>
-                          <FloatingChatProviderSimple>
-                            <NotificationProviderSimple>
-                              <HelpChatProvider>
-                                <TutorialProvider>
-                                  <Suspense
-                                    fallback={
-                                      <LoadingOverlay
-                                        isLoading={true}
-                                        message="Carregando aplicação..."
-                                      />
-                                    }
-                                  >
-                                    <BanNotification>
-                                      {children}
-                                    </BanNotification>
-                                  </Suspense>
-                                  <FloatingChatWrapper />
-                                  <LoadingOverlayProvider />
-                                  <NewNotificationSystem />
-                                  <CookieConsentBanner />
-                                  <PWAManager />
-                                  <TutorialOverlay />
-                                  <HelpChatWindow />
-                                  <ToasterWithSounds
-                                    position="top-right"
-                                    richColors
-                                  />
-                                </TutorialProvider>
-                              </HelpChatProvider>
-                            </NotificationProviderSimple>
-                          </FloatingChatProviderSimple>
-                        </AvailabilityProvider>
-                        {/* </AutoReauthentication> */}
-                      </AuthProvider>
+                      <SidebarProvider>
+                        <AuthProvider initialSession={session}>
+                          <FontSizeApplier />
+                          {/* <AutoReauthentication> */}
+                          <AvailabilityProvider>
+                            <FloatingChatProviderSimple>
+                              <NotificationProviderSimple>
+                                <HelpChatProvider>
+                                  <TutorialProvider>
+                                    <Suspense
+                                      fallback={
+                                        <LoadingOverlay
+                                          isLoading={true}
+                                          message="Carregando aplicação..."
+                                        />
+                                      }
+                                    >
+                                      <BanNotification>
+                                        {children}
+                                      </BanNotification>
+                                    </Suspense>
+                                    <FloatingChatWrapper />
+                                    <LoadingOverlayProvider />
+                                    <NewNotificationSystem />
+                                    <CookieConsentBanner />
+                                    <PWAManager />
+                                    <TutorialOverlay />
+                                    <HelpChatWindow />
+                                    <ToasterWithSounds
+                                      position="top-right"
+                                      richColors
+                                    />
+                                  </TutorialProvider>
+                                </HelpChatProvider>
+                              </NotificationProviderSimple>
+                            </FloatingChatProviderSimple>
+                          </AvailabilityProvider>
+                          {/* </AutoReauthentication> */}
+                        </AuthProvider>
+                      </SidebarProvider>
                     </LoadingProvider>
                   </OfflineProvider>
                 </LocaleProvider>
