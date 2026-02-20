@@ -6,7 +6,6 @@ import { supabase } from "@/lib/supabase";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useNotificationSound } from "@/hooks/useNotificationSound";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
-import { useHelpChat } from "@/contexts/HelpChatContext";
 import { NotificationSoundType } from "@/types/sound";
 
 export interface Notification {
@@ -78,7 +77,6 @@ export const NotificationProviderSimple: React.FC<
   const { user } = useAuthContext();
   const { playSound, isEnabled: soundEnabled } = useNotificationSound();
   const { openChat } = useFloatingChat();
-  const { openChat: openHelpChat, selectTicket } = useHelpChat();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [hasPermission, setHasPermission] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -381,7 +379,6 @@ export const NotificationProviderSimple: React.FC<
                   label: "Ver",
                   onClick: () => {
                     if (isToastSupport) {
-                      openHelpChat();
                       if (newNotification.action_url) {
                         try {
                           const url = new URL(
@@ -390,8 +387,14 @@ export const NotificationProviderSimple: React.FC<
                           );
                           const convId =
                             url.searchParams.get("conversation_id");
-                          if (convId) selectTicket(convId);
-                        } catch {}
+                          window.location.href = convId
+                            ? `/ajuda?ticket_id=${convId}`
+                            : "/ajuda";
+                        } catch {
+                          window.location.href = "/ajuda";
+                        }
+                      } else {
+                        window.location.href = "/ajuda";
                       }
                     } else if (newNotification.action_url?.startsWith("/")) {
                       window.location.href = newNotification.action_url;
@@ -462,21 +465,10 @@ export const NotificationProviderSimple: React.FC<
               );
             }
           } else if (isSupport) {
-            console.log("🔔 [NotificationFlow] Abrindo Central de Ajuda!");
-            openHelpChat();
-
-            // Se tiver conversation_id na URL da ação, carregar ela
-            if (newNotification.action_url) {
-              const url = new URL(
-                newNotification.action_url,
-                window.location.origin,
-              );
-              const convId = url.searchParams.get("conversation_id");
-              if (convId) {
-                console.log("🎫 Selecionando ticket:", convId);
-                selectTicket(convId);
-              }
-            }
+            console.log(
+              "🔔 [NotificationFlow] Notificação de suporte recebida!",
+            );
+            // Apenas mostrar o toast, o clique no toast ou na lista levará para /ajuda
           }
         },
       )
@@ -552,7 +544,7 @@ export const NotificationProviderSimple: React.FC<
       console.log("🛑 Desconectando realtime de notificações");
       channel.unsubscribe();
     };
-  }, [user, openChat, openHelpChat, selectTicket]);
+  }, [user, openChat, soundEnabled, playSound]);
 
   // Verificar permissão na inicialização
   useEffect(() => {

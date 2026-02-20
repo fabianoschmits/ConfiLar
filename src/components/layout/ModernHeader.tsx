@@ -8,7 +8,6 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
-import { useHelpChat } from "@/contexts/HelpChatContext";
 import { supabase } from "@/lib/supabase";
 import { StarRating } from "@/components/ui/StarRating";
 import { Button } from "@/components/ui/button";
@@ -90,10 +89,10 @@ export function ModernHeader({
   const router = useRouter();
   const { user, profile, signOut } = useAuthContext();
   const { openChat } = useFloatingChat();
-  const { openChat: openHelpChat } = useHelpChat();
   const { getTotalUnreadCount } = useMessages();
   const { isAvailable } = useAvailability();
   const t = useTranslations("header");
+  const { isCollapsed } = useSidebar();
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(),
@@ -195,11 +194,11 @@ export function ModernHeader({
       const averageRating =
         totalReviews > 0
           ? parseFloat(
-            (
-              reviewsData.reduce((sum, r) => sum + r.rating_person, 0) /
-              totalReviews
-            ).toFixed(1),
-          )
+              (
+                reviewsData.reduce((sum, r) => sum + r.rating_person, 0) /
+                totalReviews
+              ).toFixed(1),
+            )
           : 0;
       const totalViews = viewsData?.length || 0;
 
@@ -277,7 +276,6 @@ export function ModernHeader({
   // Dados seguros para renderização
   const userId = user?.id || "";
   const profileId = profile?.id || "";
-  const { isCollapsed } = useSidebar();
 
   const userFullName = profile?.full_name || user?.email || "Usuário";
   const userAvatarUrl = profile?.avatar_url || "";
@@ -912,18 +910,6 @@ export function ModernHeader({
                               <span className="truncate">
                                 {t("helpCenter")}
                               </span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                openHelpChat();
-                                setIsMenuExpanded(false);
-                              }}
-                              className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
-                            >
-                              <MessageCircle className="h-3 w-3" />
-                              <span className="truncate">Chat de Ajuda</span>
                             </Button>
                             <Button
                               variant="ghost"

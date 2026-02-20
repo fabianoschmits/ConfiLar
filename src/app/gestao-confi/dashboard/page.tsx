@@ -436,6 +436,12 @@ export default function AdminDashboardPage() {
                 label="Logs Ativos"
                 color="text-cyan-500"
               />
+              <QuickLink
+                href="/gestao-confi/dashboard/tickets"
+                icon={MessageSquare}
+                label="Tickets"
+                color="text-orange-500"
+              />
             </CardContent>
           </Card>
 

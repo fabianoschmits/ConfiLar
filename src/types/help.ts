@@ -23,27 +23,12 @@ export interface HelpSearchResult {
   confidence: number;
 }
 
-export interface HelpMessage {
-  id: string;
-  type: "user" | "bot" | "admin" | "system";
-  content: string;
-  timestamp: Date;
-  article?: HelpArticle;
-}
-
 export interface HelpLogEntry {
   id?: string;
   user_id?: string | null;
   user_message: string;
   matched_article_id?: string | null;
   created_at?: string;
-}
-
-export interface HelpChatState {
-  isOpen: boolean;
-  isMinimized: boolean;
-  messages: HelpMessage[];
-  isLoading: boolean;
 }
 
 export interface QuickSuggestion {

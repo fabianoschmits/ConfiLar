@@ -29,9 +29,6 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getLocale } from "next-intl/server";
 import { TutorialProvider } from "@/contexts/TutorialContext";
 import { TutorialOverlay } from "@/components/tutorial/TutorialOverlay";
-import { HelpChatProvider } from "@/contexts/HelpChatContext";
-import HelpChatWindow from "@/components/help/HelpChatWindow";
-import HelpChatButton from "@/components/help/HelpChatButton";
 import { FontSizeApplier } from "@/components/ui/FontSizeApplier";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import "@/utils/errorInterceptor"; // Interceptor de erros
@@ -159,35 +156,32 @@ export default async function RootLayout({
                           {/* <AutoReauthentication> */}
                           <AvailabilityProvider>
                             <FloatingChatProviderSimple>
-                              <HelpChatProvider>
-                                <NotificationProviderSimple>
-                                  <TutorialProvider>
-                                    <Suspense
-                                      fallback={
-                                        <LoadingOverlay
-                                          isLoading={true}
-                                          message="Carregando aplicação..."
-                                        />
-                                      }
-                                    >
-                                      <BanNotification>
-                                        {children}
-                                      </BanNotification>
-                                    </Suspense>
-                                    <FloatingChatWrapper />
-                                    <LoadingOverlayProvider />
-                                    <NewNotificationSystem />
-                                    <CookieConsentBanner />
-                                    <PWAManager />
-                                    <TutorialOverlay />
-                                    <HelpChatWindow />
-                                    <ToasterWithSounds
-                                      position="top-right"
-                                      richColors
-                                    />
-                                  </TutorialProvider>
-                                </NotificationProviderSimple>
-                              </HelpChatProvider>
+                              <NotificationProviderSimple>
+                                <TutorialProvider>
+                                  <Suspense
+                                    fallback={
+                                      <LoadingOverlay
+                                        isLoading={true}
+                                        message="Carregando aplicação..."
+                                      />
+                                    }
+                                  >
+                                    <BanNotification>
+                                      {children}
+                                    </BanNotification>
+                                  </Suspense>
+                                  <FloatingChatWrapper />
+                                  <LoadingOverlayProvider />
+                                  <NewNotificationSystem />
+                                  <CookieConsentBanner />
+                                  <PWAManager />
+                                  <TutorialOverlay />
+                                  <ToasterWithSounds
+                                    position="top-right"
+                                    richColors
+                                  />
+                                </TutorialProvider>
+                              </NotificationProviderSimple>
                             </FloatingChatProviderSimple>
                           </AvailabilityProvider>
                           {/* </AutoReauthentication> */}

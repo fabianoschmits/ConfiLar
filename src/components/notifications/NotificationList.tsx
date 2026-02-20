@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { useHelpChat } from "@/contexts/HelpChatContext";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
 import {
   Bell,
@@ -115,7 +114,6 @@ export const NotificationList: React.FC = () => {
     refreshNotifications,
   } = useNotifications();
 
-  const { openChat: openHelpChat, selectTicket } = useHelpChat();
   const { openChat: openFloatingChat } = useFloatingChat();
 
   const handleNotificationAction = (
@@ -126,13 +124,18 @@ export const NotificationList: React.FC = () => {
       notification.action_url?.includes("open=help");
 
     if (isSupport) {
-      openHelpChat();
       if (notification.action_url) {
         try {
           const url = new URL(notification.action_url, window.location.origin);
           const convId = url.searchParams.get("conversation_id");
-          if (convId) selectTicket(convId);
-        } catch {}
+          window.location.href = convId
+            ? `/ajuda?ticket_id=${convId}`
+            : "/ajuda";
+        } catch {
+          window.location.href = "/ajuda";
+        }
+      } else {
+        window.location.href = "/ajuda";
       }
     } else if (notification.action_url) {
       if (notification.action_url.startsWith("/")) {

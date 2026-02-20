@@ -170,6 +170,47 @@ export async function middleware(request: NextRequest) {
         { status: 401 },
       );
     }
+
+    // Se for rota de gestão, verificar se é admin
+    if (pathname.startsWith("/api/gestao-confi")) {
+      const { data: admin } = await supabase
+        .from("admins")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .single();
+
+      if (!admin) {
+        return NextResponse.json(
+          {
+            error: "Forbidden",
+            message: "Acesso restrito a administradores",
+          },
+          { status: 403 },
+        );
+      }
+    }
+  }
+
+  // Proteger páginas de gestão
+  if (
+    pathname.startsWith("/gestao-confi") &&
+    !pathname.startsWith("/gestao-confi/login")
+  ) {
+    if (!user) {
+      return NextResponse.redirect(new URL("/auth", request.url));
+    }
+
+    const { data: admin } = await supabase
+      .from("admins")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("is_active", true)
+      .single();
+
+    if (!admin) {
+      return NextResponse.redirect(new URL("/auth", request.url));
+    }
   }
 
   // Permitir acesso às rotas especiais sem redirecionamento automático
