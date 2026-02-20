@@ -159,8 +159,8 @@ export default async function RootLayout({
                           {/* <AutoReauthentication> */}
                           <AvailabilityProvider>
                             <FloatingChatProviderSimple>
-                              <NotificationProviderSimple>
-                                <HelpChatProvider>
+                              <HelpChatProvider>
+                                <NotificationProviderSimple>
                                   <TutorialProvider>
                                     <Suspense
                                       fallback={
@@ -186,8 +186,8 @@ export default async function RootLayout({
                                       richColors
                                     />
                                   </TutorialProvider>
-                                </HelpChatProvider>
-                              </NotificationProviderSimple>
+                                </NotificationProviderSimple>
+                              </HelpChatProvider>
                             </FloatingChatProviderSimple>
                           </AvailabilityProvider>
                           {/* </AutoReauthentication> */}
