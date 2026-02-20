@@ -43,6 +43,8 @@ interface HelpChatContextType extends HelpChatState {
   ) => Promise<void>;
   showHistory: boolean;
   setShowHistory: (show: boolean) => void;
+  loadMoreMessages: () => Promise<void>;
+  hasMore: boolean;
 }
 
 const HelpChatContext = createContext<HelpChatContextType | undefined>(
@@ -71,6 +73,9 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
   const [showHistory, setShowHistory] = useState(false);
   const [userTickets, setUserTickets] = useState<any[]>([]);
   const [isAdminLoading, setIsAdminLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 30;
 
   // Verificar se o usuário é admin
   useEffect(() => {
@@ -143,12 +148,12 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
         if (messages) {
           const formattedMessages: HelpMessage[] = messages.map((m) => ({
             id: m.id,
-            type:
-              m.sender_id === user.id
+            type: (m.sender_type ||
+              (m.sender_id === user.id
                 ? "user"
                 : m.sender_id === "BOT"
                   ? "bot"
-                  : "admin",
+                  : "admin")) as any,
             content: m.content,
             timestamp: new Date(m.created_at),
           }));
@@ -287,7 +292,8 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
 
               const helpMessage: HelpMessage = {
                 id: newMessage.id,
-                type: newMessage.sender_id === "BOT" ? "bot" : "admin",
+                type: (newMessage.sender_type ||
+                  (newMessage.sender_id === "BOT" ? "bot" : "admin")) as any,
                 content: newMessage.content,
                 timestamp: new Date(newMessage.created_at),
               };
@@ -463,7 +469,8 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
               sender_id: user.id,
               receiver_id: targetUserId,
               content,
-              type: "admin", // Tipo admin para mensagens de moderadores
+              sender_type: "admin", // Novo campo estruturado
+              type: "admin", // Mantendo legado para compatibilidade se necessário
             });
 
             // Notificar o usuário que recebeu resposta do suporte
@@ -489,6 +496,7 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
               sender_id: user.id,
               receiver_id: ADMIN_ID,
               content,
+              sender_type: "user",
             });
 
             // Se for a primeira mensagem, enviar a resposta automática do sistema
@@ -604,22 +612,28 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
           .from("messages")
           .select("*")
           .eq("conversation_id", convId)
-          .order("created_at", { ascending: true });
+          .order("created_at", { ascending: false })
+          .range(0, PAGE_SIZE - 1);
 
         if (oldMessages) {
-          const formattedMessages: HelpMessage[] = oldMessages.map((m) => ({
-            id: m.id,
-            type:
-              m.sender_id === user?.id
-                ? "user"
-                : m.type === "system"
-                  ? "system"
-                  : m.sender_id === "BOT"
-                    ? "bot"
-                    : "admin",
-            content: m.content,
-            timestamp: new Date(m.created_at),
-          }));
+          setPage(0);
+          setHasMore(oldMessages.length === PAGE_SIZE);
+
+          const formattedMessages: HelpMessage[] = [...oldMessages]
+            .reverse()
+            .map((m) => ({
+              id: m.id,
+              type: (m.sender_type ||
+                (m.sender_id === user?.id
+                  ? "user"
+                  : m.type === "system"
+                    ? "system"
+                    : m.sender_id === "BOT"
+                      ? "bot"
+                      : "admin")) as any,
+              content: m.content,
+              timestamp: new Date(m.created_at),
+            }));
           setState((prev) => ({
             ...prev,
             messages: formattedMessages,
@@ -666,7 +680,8 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
               sender_id: user?.id,
               receiver_id: activeTicketUserId,
               content: msg,
-              type: "system", // Marcar como mensagem de sistema
+              type: "system",
+              sender_type: "system", // Novo tipo estruturado
             });
 
             // Notificar o usuário sobre a mudança de status via notificação push tbm
@@ -756,32 +771,83 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
       setActiveTicketId(ticketId);
       setActiveTicketStatus(ticketStatus);
 
-      // Carregar mensagens
+      // Carregar mensagens (paginado)
       const { data: messages } = await supabase
         .from("messages")
         .select("*")
         .eq("conversation_id", conversationId)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: false })
+        .range(0, PAGE_SIZE - 1);
 
       if (messages) {
-        const formattedMessages: HelpMessage[] = messages.map((m) => ({
-          id: m.id,
-          type:
-            m.sender_id === user?.id
-              ? "user"
-              : m.type === "system"
-                ? "system"
-                : m.sender_id === "BOT"
-                  ? "bot"
-                  : "admin",
-          content: m.content,
-          timestamp: new Date(m.created_at),
-        }));
+        setPage(0);
+        setHasMore(messages.length === PAGE_SIZE);
+
+        const formattedMessages: HelpMessage[] = [...messages]
+          .reverse()
+          .map((m) => ({
+            id: m.id,
+            type: (m.sender_type ||
+              (m.sender_id === user?.id
+                ? "user"
+                : m.type === "system"
+                  ? "system"
+                  : m.sender_id === "BOT"
+                    ? "bot"
+                    : "admin")) as any,
+            content: m.content,
+            timestamp: new Date(m.created_at),
+          }));
         setState((prev) => ({ ...prev, messages: formattedMessages }));
       }
     },
     [supabase, user?.id],
   );
+
+  const loadMoreMessages = useCallback(async () => {
+    if (!conversationId || !hasMore || state.isLoading) return;
+
+    const nextPage = page + 1;
+    const from = nextPage * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+
+    try {
+      const { data: moreMessages, error } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+
+      if (moreMessages) {
+        setHasMore(moreMessages.length === PAGE_SIZE);
+        setPage(nextPage);
+
+        const formattedMessages: HelpMessage[] = moreMessages.map((m) => ({
+          id: m.id,
+          type: (m.sender_type ||
+            (m.sender_id === user?.id
+              ? "user"
+              : m.type === "system"
+                ? "system"
+                : m.sender_id === "BOT"
+                  ? "bot"
+                  : "admin")) as any,
+          content: m.content,
+          timestamp: new Date(m.created_at),
+        }));
+
+        setState((prev) => ({
+          ...prev,
+          messages: [...formattedMessages.reverse(), ...prev.messages],
+        }));
+      }
+    } catch (error) {
+      console.error("Error loading more messages:", error);
+    }
+  }, [conversationId, hasMore, page, state.isLoading, user?.id]);
 
   const value: HelpChatContextType = {
     ...state,
@@ -808,6 +874,8 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     selectUserTicket,
     showHistory,
     setShowHistory,
+    loadMoreMessages,
+    hasMore,
   };
 
   return (

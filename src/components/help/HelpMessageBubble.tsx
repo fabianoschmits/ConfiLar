@@ -15,10 +15,14 @@ interface HelpMessageBubbleProps {
 }
 
 export default function HelpMessageBubble({ message }: HelpMessageBubbleProps) {
-  const isUser = message.type === "user";
-  const isBot = message.type === "bot";
-  const isAdminMsg = message.type === "admin";
-  const isSystem = message.type === "system";
+  const isUser =
+    message.type === "user" || (message as any).sender_type === "user";
+  const isBot =
+    message.type === "bot" || (message as any).sender_type === "bot";
+  const isAdminMsg =
+    message.type === "admin" || (message as any).sender_type === "admin";
+  const isSystem =
+    message.type === "system" || (message as any).sender_type === "system";
 
   if (isSystem) {
     return (

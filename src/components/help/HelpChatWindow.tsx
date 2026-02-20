@@ -43,6 +43,8 @@ export default function HelpChatWindow() {
     showHistory,
     setShowHistory,
     startSupportTicket,
+    loadMoreMessages,
+    hasMore,
   } = useHelpChat();
 
   const [inputValue, setInputValue] = useState("");
@@ -316,6 +318,19 @@ export default function HelpChatWindow() {
 
                 {showMessages && (
                   <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-muted">
+                    {hasMore && (
+                      <div className="flex justify-center mb-2">
+                        <button
+                          onClick={loadMoreMessages}
+                          disabled={isLoading}
+                          className="text-[10px] font-bold text-primary hover:text-primary/70 transition-colors uppercase tracking-widest py-1 px-3 rounded-full bg-primary/5 border border-primary/20"
+                        >
+                          {isLoading
+                            ? "Carregando..."
+                            : "Carregar mensagens anteriores"}
+                        </button>
+                      </div>
+                    )}
                     {messages.map((message) => (
                       <HelpMessageBubble key={message.id} message={message} />
                     ))}
