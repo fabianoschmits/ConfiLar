@@ -57,10 +57,15 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 export default function HelpSuggestions({
   onSuggestionClick,
 }: HelpSuggestionsProps) {
-  const { startSupportTicket, isSupportMode } = useHelpChat();
+  const { startSupportTicket, isSupportMode, userTickets, setShowHistory } =
+    useHelpChat();
 
   const handleSupportClick = async () => {
-    await startSupportTicket();
+    if (userTickets.length > 0) {
+      setShowHistory(true);
+    } else {
+      await startSupportTicket();
+    }
   };
 
   return (

@@ -37,6 +37,12 @@ export default function HelpChatWindow() {
     clearHistory,
     activeTicketStatus,
     updateTicketStatus,
+    userTickets,
+    fetchUserTickets,
+    selectUserTicket,
+    showHistory,
+    setShowHistory,
+    startSupportTicket,
   } = useHelpChat();
 
   const [inputValue, setInputValue] = useState("");
@@ -77,7 +83,8 @@ export default function HelpChatWindow() {
   };
 
   const handleBackToInbox = () => {
-    clearHistory(); // Reseta o estado do chat (isSupportMode, conversationId) mas mantém isAdmin
+    clearHistory(); // Reseta o estado do chat (isSupportMode, conversationId)
+    setShowHistory(true); // Se for usuário, volta para o histórico
   };
 
   if (!isOpen) return null;
@@ -86,7 +93,8 @@ export default function HelpChatWindow() {
   const showAdminInbox = isAdmin && !isSupportMode;
   const showMessages =
     !showAdminInbox && (messages.length > 0 || isSupportMode);
-  const showSuggestions = !isAdmin && messages.length === 0 && !isSupportMode;
+  const showSuggestions =
+    !isAdmin && !showHistory && messages.length === 0 && !isSupportMode;
 
   return (
     <>
@@ -120,12 +128,14 @@ export default function HelpChatWindow() {
                         bg-gradient-to-r from-primary/10 to-primary/5"
           >
             <div className="flex items-center gap-3">
-              {isAdmin && isSupportMode && (
+              {isSupportMode && (
                 <button
                   onClick={handleBackToInbox}
                   className="w-8 h-8 rounded-lg hover:bg-muted/50 flex items-center justify-center
                            transition-colors duration-200 mr-1"
-                  title="Voltar para Inbox"
+                  title={
+                    isAdmin ? "Voltar para Inbox" : "Voltar para Histórico"
+                  }
                 >
                   <ArrowLeft className="w-4 h-4 text-muted-foreground" />
                 </button>
@@ -212,11 +222,95 @@ export default function HelpChatWindow() {
               <div className="flex-1 flex flex-col overflow-hidden relative">
                 {showAdminInbox && <HelpAdminInbox />}
 
+                {/* Histórico de tickets do usuário */}
+                {!isAdmin &&
+                  showHistory &&
+                  userTickets.length > 0 &&
+                  !isSupportMode && (
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin scrollbar-thumb-muted">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-sm font-semibold text-foreground">
+                          Seus chamados
+                        </h4>
+                        <button
+                          onClick={() => setShowHistory(false)}
+                          className="text-xs text-primary font-medium hover:underline"
+                        >
+                          Nova dúvida
+                        </button>
+                      </div>
+                      {userTickets.map((ticket) => (
+                        <button
+                          key={ticket.id}
+                          onClick={() =>
+                            selectUserTicket(
+                              ticket.id,
+                              ticket.conversation_id,
+                              ticket.status,
+                            )
+                          }
+                          className="w-full text-left p-4 rounded-xl border border-border/50 bg-background/50 hover:bg-muted/30 transition-all flex flex-col gap-2 group"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
+                              #{ticket.id.substring(0, 8)}
+                            </span>
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                ticket.status === "open"
+                                  ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
+                                  : ticket.status === "in_progress"
+                                    ? "bg-primary/10 text-primary border-primary/30"
+                                    : "bg-emerald-500/10 text-emerald-600 border-emerald-500/30"
+                              }`}
+                            >
+                              {ticket.status === "open"
+                                ? "Aberto"
+                                : ticket.status === "in_progress"
+                                  ? "Atendimento"
+                                  : "Resolvido"}
+                            </span>
+                          </div>
+                          <p className="text-sm font-medium line-clamp-1 group-hover:text-primary transition-colors">
+                            {ticket.messages?.[0]?.content ||
+                              "Chamado sem mensagens"}
+                          </p>
+                          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                            <Clock className="w-3 h-3" />
+                            {new Date(ticket.created_at).toLocaleDateString(
+                              "pt-BR",
+                            )}
+                          </div>
+                        </button>
+                      ))}
+
+                      <button
+                        onClick={async () => {
+                          setShowHistory(false);
+                          await startSupportTicket();
+                        }}
+                        className="w-full py-3 rounded-xl border-2 border-dashed border-primary/30 text-primary font-semibold hover:bg-primary/5 transition-all text-sm mt-2"
+                      >
+                        + Iniciar novo atendimento
+                      </button>
+                    </div>
+                  )}
+
                 {showSuggestions && (
                   <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-muted">
                     <HelpSuggestions
                       onSuggestionClick={handleSuggestionClick}
                     />
+                    {!isAdmin && userTickets.length > 0 && (
+                      <div className="mt-4 px-4 text-center">
+                        <button
+                          onClick={() => setShowHistory(true)}
+                          className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          Ver meus chamados anteriores
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 

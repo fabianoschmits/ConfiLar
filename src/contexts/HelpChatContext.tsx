@@ -34,6 +34,15 @@ interface HelpChatContextType extends HelpChatState {
   updateTicketStatus: (status: string) => Promise<void>;
   activeTicketUserId: string | null;
   deleteTicketForAdmin: (ticketId: string) => Promise<void>;
+  userTickets: any[];
+  fetchUserTickets: () => Promise<void>;
+  selectUserTicket: (
+    ticketId: string,
+    conversationId: string,
+    ticketStatus: string,
+  ) => Promise<void>;
+  showHistory: boolean;
+  setShowHistory: (show: boolean) => void;
 }
 
 const HelpChatContext = createContext<HelpChatContextType | undefined>(
@@ -59,6 +68,7 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
   const [activeTicketUserId, setActiveTicketUserId] = useState<string | null>(
     null,
   );
+  const [showHistory, setShowHistory] = useState(false);
 
   // Verificar se o usuário é admin
   useEffect(() => {
@@ -78,7 +88,9 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     checkAdmin();
   }, [user?.id]);
 
-  // Verificar se o usuário já tem um ticket aberto para persistência
+  const [userTickets, setUserTickets] = useState<any[]>([]);
+
+  // Verificar se o usuário já tem um ticket ativo para persistência
   useEffect(() => {
     const checkActiveTicket = async () => {
       if (!user?.id || isAdmin) return;
@@ -87,7 +99,9 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
         .from("support_tickets")
         .select("id, conversation_id, status")
         .eq("user_id", user.id)
-        .eq("status", "open")
+        .in("status", ["open", "in_progress"])
+        .order("created_at", { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (activeTicket) {
@@ -117,10 +131,27 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
           setState((prev) => ({ ...prev, messages: formattedMessages }));
         }
       }
+
+      // Carregar histórico de tickets do usuário
+      fetchUserTickets();
     };
 
     checkActiveTicket();
   }, [user?.id, isAdmin]);
+
+  const fetchUserTickets = useCallback(async () => {
+    if (!user?.id) return;
+
+    const { data } = await supabase
+      .from("support_tickets")
+      .select("*, messages(content, created_at)")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (data) {
+      setUserTickets(data);
+    }
+  }, [user?.id]);
 
   // Buscar tickets se for admin
   const fetchAdminTickets = useCallback(async () => {
@@ -427,7 +458,7 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
                   ? content.substring(0, 80) + "..."
                   : content,
               type: "support",
-              action_url: `/?open=help`,
+              action_url: `/?open=help&conversation_id=${conversationId}`,
               category: "support",
             });
           } else {
@@ -599,6 +630,16 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
               receiver_id: activeTicketUserId,
               content: msg,
             });
+
+            // Notificar o usuário sobre a mudança de status via notificação push tbm
+            await supabase.from("notifications").insert({
+              user_id: activeTicketUserId,
+              title: "Atualização do seu chamado",
+              message: msg,
+              type: "support",
+              action_url: `/?open=help&conversation_id=${conversationId}`,
+              category: "support",
+            });
           }
         }
       } catch (error) {
@@ -668,6 +709,33 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     checkDeepLink();
   }, [openChat, selectTicket, user?.id]);
 
+  const selectUserTicket = useCallback(
+    async (ticketId: string, conversationId: string, ticketStatus: string) => {
+      setConversationId(conversationId);
+      setIsSupportMode(true);
+      setActiveTicketId(ticketId);
+      setActiveTicketStatus(ticketStatus);
+
+      // Carregar mensagens
+      const { data: messages } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: true });
+
+      if (messages) {
+        const formattedMessages: HelpMessage[] = messages.map((m) => ({
+          id: m.id,
+          type: m.sender_id === user?.id ? "user" : "bot",
+          content: m.content,
+          timestamp: new Date(m.created_at),
+        }));
+        setState((prev) => ({ ...prev, messages: formattedMessages }));
+      }
+    },
+    [supabase, user?.id],
+  );
+
   const value: HelpChatContextType = {
     ...state,
     openChat,
@@ -688,6 +756,11 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     updateTicketStatus,
     activeTicketUserId,
     deleteTicketForAdmin,
+    userTickets,
+    fetchUserTickets,
+    selectUserTicket,
+    showHistory,
+    setShowHistory,
   };
 
   return (
