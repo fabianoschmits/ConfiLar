@@ -69,31 +69,54 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     null,
   );
   const [showHistory, setShowHistory] = useState(false);
+  const [userTickets, setUserTickets] = useState<any[]>([]);
+  const [isAdminLoading, setIsAdminLoading] = useState(true);
 
   // Verificar se o usuário é admin
   useEffect(() => {
     const checkAdmin = async () => {
       if (!user?.id) {
         setIsAdmin(false);
+        setIsAdminLoading(false);
         return;
       }
-      const { data } = await supabase
-        .from("admins")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("is_active", true)
-        .maybeSingle();
-      setIsAdmin(!!data);
+      setIsAdminLoading(true);
+      try {
+        const { data } = await supabase
+          .from("admins")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("is_active", true)
+          .maybeSingle();
+        setIsAdmin(!!data);
+      } catch (err) {
+        console.error("Error checking admin status:", err);
+      } finally {
+        setIsAdminLoading(false);
+      }
     };
     checkAdmin();
   }, [user?.id]);
 
-  const [userTickets, setUserTickets] = useState<any[]>([]);
+  const fetchUserTickets = useCallback(async () => {
+    if (!user?.id) return;
+
+    const { data } = await supabase
+      .from("support_tickets")
+      .select("*, messages(content, created_at)")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1, { foreignTable: "messages" }); // Otimização: Pegar apenas a última mensagem para o histórico
+
+    if (data) {
+      setUserTickets(data);
+    }
+  }, [user?.id]);
 
   // Verificar se o usuário já tem um ticket ativo para persistência
   useEffect(() => {
     const checkActiveTicket = async () => {
-      if (!user?.id || isAdmin) return;
+      if (!user?.id || isAdminLoading || isAdmin) return;
 
       const { data: activeTicket } = await supabase
         .from("support_tickets")
@@ -105,10 +128,6 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       if (activeTicket) {
-        console.log(
-          "🎫 Restaurando ticket ativo para o usuário:",
-          activeTicket.id,
-        );
         setConversationId(activeTicket.conversation_id);
         setActiveTicketId(activeTicket.id);
         setActiveTicketStatus(activeTicket.status);
@@ -124,7 +143,12 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
         if (messages) {
           const formattedMessages: HelpMessage[] = messages.map((m) => ({
             id: m.id,
-            type: m.sender_id === user.id ? "user" : "bot",
+            type:
+              m.sender_id === user.id
+                ? "user"
+                : m.sender_id === "BOT"
+                  ? "bot"
+                  : "admin",
             content: m.content,
             timestamp: new Date(m.created_at),
           }));
@@ -137,21 +161,7 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     };
 
     checkActiveTicket();
-  }, [user?.id, isAdmin]);
-
-  const fetchUserTickets = useCallback(async () => {
-    if (!user?.id) return;
-
-    const { data } = await supabase
-      .from("support_tickets")
-      .select("*, messages(content, created_at)")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-
-    if (data) {
-      setUserTickets(data);
-    }
-  }, [user?.id]);
+  }, [user?.id, isAdmin, isAdminLoading, fetchUserTickets]);
 
   // Buscar tickets se for admin
   const fetchAdminTickets = useCallback(async () => {
@@ -269,17 +279,23 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
         (payload) => {
           const newMessage = payload.new as any;
           if (newMessage.sender_id !== user?.id) {
-            const helpMessage: HelpMessage = {
-              id: newMessage.id,
-              // Admin sempre aparece como bot; quando o admin visualiza, o user aparece como "user"
-              type: "bot",
-              content: newMessage.content,
-              timestamp: new Date(newMessage.created_at),
-            };
-            setState((prev) => ({
-              ...prev,
-              messages: [...prev.messages, helpMessage],
-            }));
+            setState((prev) => {
+              // Deduplicação: evitar adicionar mensagem se já existir no estado
+              if (prev.messages.some((m) => m.id === newMessage.id)) {
+                return prev;
+              }
+
+              const helpMessage: HelpMessage = {
+                id: newMessage.id,
+                type: newMessage.sender_id === "BOT" ? "bot" : "admin",
+                content: newMessage.content,
+                timestamp: new Date(newMessage.created_at),
+              };
+              return {
+                ...prev,
+                messages: [...prev.messages, helpMessage],
+              };
+            });
           }
         },
       )
@@ -447,6 +463,7 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
               sender_id: user.id,
               receiver_id: targetUserId,
               content,
+              type: "admin", // Tipo admin para mensagens de moderadores
             });
 
             // Notificar o usuário que recebeu resposta do suporte
@@ -557,18 +574,31 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
       setState((prev) => ({ ...prev, isLoading: true }));
 
       try {
-        // Buscar ticket associado a esta conversa
-        const { data: ticket } = await supabase
+        // Validação de Ownership (Segurança)
+        const { data: ticket, error: ticketError } = await supabase
           .from("support_tickets")
           .select("id, status, user_id")
           .eq("conversation_id", convId)
           .maybeSingle();
 
-        if (ticket) {
-          setActiveTicketId(ticket.id);
-          setActiveTicketStatus(ticket.status);
-          setActiveTicketUserId(ticket.user_id);
+        if (ticketError || !ticket) {
+          console.error("Ticket not found or access denied");
+          setState((prev) => ({ ...prev, isLoading: false }));
+          return;
         }
+
+        // Se não for admin, validar que o ticket pertence ao usuário logado
+        if (!isAdmin && ticket.user_id !== user?.id) {
+          console.error(
+            "🔒 Security Block: Unauthorized ticket access attempt",
+          );
+          setState((prev) => ({ ...prev, isLoading: false }));
+          return;
+        }
+
+        setActiveTicketId(ticket.id);
+        setActiveTicketStatus(ticket.status);
+        setActiveTicketUserId(ticket.user_id);
 
         const { data: oldMessages } = await supabase
           .from("messages")
@@ -579,7 +609,14 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
         if (oldMessages) {
           const formattedMessages: HelpMessage[] = oldMessages.map((m) => ({
             id: m.id,
-            type: m.sender_id === user?.id ? "user" : "bot",
+            type:
+              m.sender_id === user?.id
+                ? "user"
+                : m.type === "system"
+                  ? "system"
+                  : m.sender_id === "BOT"
+                    ? "bot"
+                    : "admin",
             content: m.content,
             timestamp: new Date(m.created_at),
           }));
@@ -629,6 +666,7 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
               sender_id: user?.id,
               receiver_id: activeTicketUserId,
               content: msg,
+              type: "system", // Marcar como mensagem de sistema
             });
 
             // Notificar o usuário sobre a mudança de status via notificação push tbm
@@ -692,12 +730,14 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
               // Comportamento para o usuário final: procurar ticket aberto
               const { data: checkSupport } = await supabase
                 .from("support_tickets")
-                .select("id, conversation_id")
+                .select("id, conversation_id, user_id")
                 .eq("user_id", user.id)
                 .eq("status", "open")
                 .maybeSingle();
 
               if (checkSupport) {
+                // Validar ownership antes de selecionar via deep link automático
+                if (!isAdmin && checkSupport.user_id !== user?.id) return;
                 selectTicket(checkSupport.conversation_id);
               }
             }
@@ -726,7 +766,14 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
       if (messages) {
         const formattedMessages: HelpMessage[] = messages.map((m) => ({
           id: m.id,
-          type: m.sender_id === user?.id ? "user" : "bot",
+          type:
+            m.sender_id === user?.id
+              ? "user"
+              : m.type === "system"
+                ? "system"
+                : m.sender_id === "BOT"
+                  ? "bot"
+                  : "admin",
           content: m.content,
           timestamp: new Date(m.created_at),
         }));

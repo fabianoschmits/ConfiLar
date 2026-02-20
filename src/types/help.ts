@@ -25,7 +25,7 @@ export interface HelpSearchResult {
 
 export interface HelpMessage {
   id: string;
-  type: "user" | "bot";
+  type: "user" | "bot" | "admin" | "system";
   content: string;
   timestamp: Date;
   article?: HelpArticle;

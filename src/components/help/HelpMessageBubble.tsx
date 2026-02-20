@@ -17,6 +17,18 @@ interface HelpMessageBubbleProps {
 export default function HelpMessageBubble({ message }: HelpMessageBubbleProps) {
   const isUser = message.type === "user";
   const isBot = message.type === "bot";
+  const isAdminMsg = message.type === "admin";
+  const isSystem = message.type === "system";
+
+  if (isSystem) {
+    return (
+      <div className="flex justify-center my-4 animate-in fade-in duration-500">
+        <div className="bg-muted/30 backdrop-blur-sm border border-border/50 rounded-full px-4 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+          {message.content}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -26,7 +38,7 @@ export default function HelpMessageBubble({ message }: HelpMessageBubbleProps) {
         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
           <img
             src="/imagens/logo/Logo azul - sem fundo - Vertical.png"
-            alt="Suporte"
+            alt={isAdminMsg ? "Moderador" : "Suporte"}
             className="w-5 h-5 object-contain"
           />
         </div>
@@ -36,14 +48,16 @@ export default function HelpMessageBubble({ message }: HelpMessageBubbleProps) {
       >
         {!isUser && (
           <p className="text-[10px] font-semibold text-muted-foreground mb-1 ml-1 uppercase tracking-wider">
-            Suporte ConfiLar
+            {isAdminMsg ? "Moderador ConfiLar" : "Suporte ConfiLar"}
           </p>
         )}
         <div
           className={`rounded-2xl px-4 py-3 ${
             isUser
               ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground rounded-br-sm"
-              : "bg-gradient-to-br from-muted/80 to-muted/40 backdrop-blur-sm border border-border/50 text-foreground rounded-bl-sm"
+              : isAdminMsg
+                ? "bg-gradient-to-br from-primary/10 to-primary/5 backdrop-blur-sm border border-primary/20 text-foreground rounded-bl-sm"
+                : "bg-gradient-to-br from-muted/80 to-muted/40 backdrop-blur-sm border border-border/50 text-foreground rounded-bl-sm"
           }`}
         >
           <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
