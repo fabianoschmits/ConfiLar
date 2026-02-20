@@ -259,6 +259,34 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
     };
   }, [conversationId, user?.id]);
 
+  // Monitorar mudança de status do ticket em tempo real (para o usuário ver atualização ao vivo)
+  useEffect(() => {
+    if (!activeTicketId || isAdmin) return;
+
+    const ticketChannel = supabase
+      .channel(`ticket_status_${activeTicketId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "support_tickets",
+          filter: `id=eq.${activeTicketId}`,
+        },
+        (payload) => {
+          const updated = payload.new as any;
+          if (updated.status) {
+            setActiveTicketStatus(updated.status);
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(ticketChannel);
+    };
+  }, [activeTicketId, isAdmin]);
+
   const startSupportTicket = useCallback(async () => {
     if (!user) return;
 
@@ -314,13 +342,12 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
         });
       } else {
         setActiveTicketId(existingTicket.id);
+        setActiveTicketStatus(existingTicket.status);
       }
 
       setConversationId(currentConversationId);
       setIsSupportMode(true);
-      if (existingTicket) {
-        setActiveTicketStatus(existingTicket.status);
-      } else {
+      if (!existingTicket) {
         setActiveTicketStatus("open");
       }
 
@@ -340,7 +367,7 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
         }));
         setState((prev) => ({ ...prev, messages: formattedMessages }));
       } else {
-        // Se for uma conversa nova, dar as boas vindas sem o disclaimer ainda
+        // Se for uma conversa nova, dar as boas vindas
         addBotMessage(
           "Olá! Você agora está conectado com nosso suporte. Como posso te ajudar hoje?",
         );
@@ -556,8 +583,8 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
           prev.map((t) => (t.id === activeTicketId ? { ...t, status } : t)),
         );
 
-        // Notificar o usuário sobre a mudança de status
-        if (activeTicketUserId) {
+        // Registrar mensagem de sistema na conversa (sem notificação push)
+        if (activeTicketUserId && conversationId) {
           const statusMessages: Record<string, string> = {
             in_progress: "Seu chamado está sendo analisado pelo suporte. 🔍",
             resolved:
@@ -566,23 +593,11 @@ export function HelpChatProvider({ children }: { children: React.ReactNode }) {
           };
           const msg = statusMessages[status];
           if (msg) {
-            // Registrar mensagem de sistema na conversa
-            if (conversationId) {
-              await supabase.from("messages").insert({
-                conversation_id: conversationId,
-                sender_id: user?.id,
-                receiver_id: activeTicketUserId,
-                content: msg,
-              });
-            }
-            // Notificação push
-            await supabase.from("notifications").insert({
-              user_id: activeTicketUserId,
-              title: "Atualização do seu chamado",
-              message: msg,
-              type: "support",
-              action_url: `/?open=help`,
-              category: "support",
+            await supabase.from("messages").insert({
+              conversation_id: conversationId,
+              sender_id: user?.id,
+              receiver_id: activeTicketUserId,
+              content: msg,
             });
           }
         }

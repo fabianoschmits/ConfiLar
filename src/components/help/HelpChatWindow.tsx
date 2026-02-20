@@ -151,9 +151,31 @@ export default function HelpChatWindow() {
                 </h3>
                 <p className="text-xs text-muted-foreground">
                   {isSupportMode ? (
-                    <span className="flex items-center gap-1 text-primary">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                      {isAdmin ? "Conversando com Usuário" : "Moderador Online"}
+                    <span className="flex items-center gap-2">
+                      <span className="flex items-center gap-1 text-primary">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                        {isAdmin
+                          ? "Conversando com Usuário"
+                          : "Moderador Online"}
+                      </span>
+                      {/* Badge de status do ticket para o usuário */}
+                      {!isAdmin && activeTicketStatus && (
+                        <span
+                          className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                            activeTicketStatus === "open"
+                              ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
+                              : activeTicketStatus === "in_progress"
+                                ? "bg-primary/10 text-primary border-primary/30"
+                                : "bg-emerald-500/10 text-emerald-600 border-emerald-500/30"
+                          }`}
+                        >
+                          {activeTicketStatus === "open"
+                            ? "Aguardando"
+                            : activeTicketStatus === "in_progress"
+                              ? "Em Atendimento"
+                              : "Resolvido ✓"}
+                        </span>
+                      )}
                     </span>
                   ) : isAdmin ? (
                     "Gerencie chamados de suporte"

@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { useHelpChat } from "@/contexts/HelpChatContext";
+import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
 import {
   Bell,
   Check,
@@ -111,8 +113,35 @@ export const NotificationList: React.FC = () => {
     removeNotification,
     clearAll,
     refreshNotifications,
-    // isConnected removido - não existe no contexto
   } = useNotifications();
+
+  const { openChat: openHelpChat, selectTicket } = useHelpChat();
+  const { openChat: openFloatingChat } = useFloatingChat();
+
+  const handleNotificationAction = (
+    notification: (typeof notifications)[0],
+  ) => {
+    const isSupport =
+      notification.type === "support" ||
+      notification.action_url?.includes("open=help");
+
+    if (isSupport) {
+      openHelpChat();
+      if (notification.action_url) {
+        try {
+          const url = new URL(notification.action_url, window.location.origin);
+          const convId = url.searchParams.get("conversation_id");
+          if (convId) selectTicket(convId);
+        } catch {}
+      }
+    } else if (notification.action_url) {
+      if (notification.action_url.startsWith("/")) {
+        window.location.href = notification.action_url;
+      } else {
+        window.open(notification.action_url, "_blank");
+      }
+    }
+  };
 
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
   const [category, setCategory] = useState<string>("all");
@@ -425,13 +454,7 @@ export const NotificationList: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {
-                          if (notification.action_url?.startsWith("/")) {
-                            window.location.href = notification.action_url;
-                          } else {
-                            window.open(notification.action_url, "_blank");
-                          }
-                        }}
+                        onClick={() => handleNotificationAction(notification)}
                         className="h-7 px-3 text-xs border-gray-300 hover:bg-gray-50 shadow-sm hover:shadow-md transition-all duration-200"
                       >
                         {(notification as any).action_label || "Ver detalhes"}

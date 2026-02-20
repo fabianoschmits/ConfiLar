@@ -370,14 +370,30 @@ export const NotificationProviderSimple: React.FC<
           }
 
           // Mostrar toast para nova notificação
+          const isToastSupport =
+            newNotification.type === "support" ||
+            newNotification.action_url?.includes("open=help");
+
           toast(newNotification.title, {
             description: newNotification.message,
             action: newNotification.action_url
               ? {
                   label: "Ver",
                   onClick: () => {
-                    if (newNotification.action_url?.startsWith("/")) {
-                      // Se for um link interno, navegar na mesma aba
+                    if (isToastSupport) {
+                      openHelpChat();
+                      if (newNotification.action_url) {
+                        try {
+                          const url = new URL(
+                            newNotification.action_url,
+                            window.location.origin,
+                          );
+                          const convId =
+                            url.searchParams.get("conversation_id");
+                          if (convId) selectTicket(convId);
+                        } catch {}
+                      }
+                    } else if (newNotification.action_url?.startsWith("/")) {
                       window.location.href = newNotification.action_url;
                     } else if (newNotification.action_url?.startsWith("#")) {
                       window.location.hash = newNotification.action_url;
