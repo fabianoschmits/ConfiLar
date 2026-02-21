@@ -258,7 +258,8 @@
     "professionalActive": "Professional Active",
     "clientActive": "Client Active",
     "client": "Client",
-    "accessibility": "Accessibility"
+    "accessibility": "Accessibility",
+    "memberSince": "Member since"
   },
   "home": {
     "welcome": "Welcome to ConfiLar",

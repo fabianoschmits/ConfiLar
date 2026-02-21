@@ -107,22 +107,8 @@ export function useMessages() {
 
       if (error) throw error;
 
-      // EXCLUSÃO: Buscar IDs de conversas que são tickets de suporte entre as conversas carregadas
-      const convIds = (data || []).map((c) => c.id);
-      const { data: supportTickets } = await supabase
-        .from("support_tickets")
-        .select("conversation_id")
-        .in("conversation_id", convIds);
-
-      const supportConvIds = new Set(
-        (supportTickets || []).map((t) => t.conversation_id),
-      );
-
-      // Filtrar conversas que NÃO foram deletadas pelo usuário atual E que NÃO são de suporte
+      // Filas de conversas ativas
       const activeConversations = (data || []).filter((conversation) => {
-        // Ocultar se for uma conversa de suporte (deve aparecer apenas na Central de Ajuda)
-        if (supportConvIds.has(conversation.id)) return false;
-
         const isClient = conversation.client_id === user.id;
         const isProfessional = conversation.professional_id === user.id;
 

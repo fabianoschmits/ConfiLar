@@ -70,6 +70,7 @@ function StatCard({
   description,
   trend,
   loading,
+  href,
 }: {
   title: string;
   value: string | number;
@@ -77,24 +78,10 @@ function StatCard({
   description?: string;
   trend?: "up" | "down" | "neutral";
   loading?: boolean;
+  href?: string;
 }) {
-  if (loading) {
-    return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-4 w-4 rounded-full" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-8 w-16 mb-1" />
-          <Skeleton className="h-3 w-32" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
+  const content = (
+    <>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <Icon className="h-4 w-4 text-muted-foreground" />
@@ -110,8 +97,38 @@ function StatCard({
           </p>
         )}
       </CardContent>
-    </Card>
+    </>
   );
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-4 w-4 rounded-full" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-8 w-16 mb-1" />
+          <Skeleton className="h-3 w-32" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="block transition-transform active:scale-[0.98]"
+      >
+        <Card className="hover:border-primary/50 hover:bg-muted/30 transition-colors cursor-pointer">
+          {content}
+        </Card>
+      </Link>
+    );
+  }
+
+  return <Card>{content}</Card>;
 }
 
 function QuickLink({
@@ -267,6 +284,7 @@ export default function AdminDashboardPage() {
           description={`+${stats.newUsersToday} hoje`}
           trend="up"
           loading={loading}
+          href="/gestao-confi/dashboard/users"
         />
         <StatCard
           title="Postagens"
@@ -274,6 +292,7 @@ export default function AdminDashboardPage() {
           icon={FileText}
           description="Total na plataforma"
           loading={loading}
+          href="/gestao-confi/dashboard/posts"
         />
         <StatCard
           title="Denúncias Pendentes"
@@ -284,6 +303,7 @@ export default function AdminDashboardPage() {
           }
           trend={stats.pendingReports > 0 ? "down" : "neutral"} // 'down' is bad here visually, but context aware
           loading={loading}
+          href="/gestao-confi/dashboard/reports"
         />
         <StatCard
           title="Saúde do Sistema"
@@ -291,6 +311,7 @@ export default function AdminDashboardPage() {
           icon={Activity}
           description="Status dos serviços"
           loading={loading}
+          href="/gestao-confi/dashboard/system"
         />
       </div>
 
@@ -400,47 +421,29 @@ export default function AdminDashboardPage() {
                 color="text-red-500"
               />
               <QuickLink
-                href="/gestao-confi/dashboard/verifications"
-                icon={ShieldCheck}
-                label="Verificações"
-                color="text-blue-500"
+                href="/gestao-confi/dashboard/tickets"
+                icon={MessageSquare}
+                label="Gestão de Tickets"
+                color="text-orange-500"
                 highlight
               />
               <QuickLink
-                href="/gestao-confi/dashboard/posts"
-                icon={FileText}
-                label="Posts"
-                color="text-emerald-500"
+                href="/gestao-confi/dashboard/reports"
+                icon={AlertTriangle}
+                label="Denúncias"
+                color="text-red-500"
               />
               <QuickLink
-                href="/gestao-confi/dashboard/classifieds"
-                icon={Megaphone}
-                label="Anúncios"
-                color="text-amber-500"
-              />
-              <QuickLink
-                href="/gestao-confi/dashboard/logs"
-                icon={Clock}
-                label="Logs"
-                color="text-slate-400"
-              />
-              <QuickLink
-                href="/gestao-confi/dashboard/revenue"
+                href="/gestao-confi/dashboard/purchases"
                 icon={CreditCard}
                 label="Financeiro"
                 color="text-purple-500"
               />
               <QuickLink
-                href="/gestao-confi/dashboard/active-log"
+                href="/gestao-confi/dashboard/system"
                 icon={Activity}
-                label="Logs Ativos"
+                label="Sistema"
                 color="text-cyan-500"
-              />
-              <QuickLink
-                href="/gestao-confi/dashboard/tickets"
-                icon={MessageSquare}
-                label="Tickets"
-                color="text-orange-500"
               />
             </CardContent>
           </Card>

@@ -198,54 +198,110 @@ export function SupportTicketChat({
           </div>
         </div>
 
-        {filteredMessages?.map((msg) => {
+        {filteredMessages?.map((msg, index) => {
           const isMe = msg.sender_id === currentUser.id;
           const isModerator = msg.sender_type === "moderator";
 
+          const msgDate = new Date(msg.created_at);
+          const showDateSeparator =
+            index === 0
+              ? false
+              : format(msgDate, "yyyy-MM-dd") !==
+                format(
+                  new Date(filteredMessages[index - 1].created_at),
+                  "yyyy-MM-dd",
+                );
+
           return (
-            <div
-              key={msg.id}
-              className={`flex items-start gap-2 ${isMe ? "justify-end" : "justify-start"}`}
-            >
-              {!isMe && (
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1 shadow-sm ${
-                    isModerator
-                      ? "bg-primary/20 text-primary"
-                      : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  {isModerator ? (
-                    <ShieldCheck className="w-4 h-4" />
-                  ) : (
-                    <User className="w-4 h-4" />
-                  )}
+            <React.Fragment key={msg.id}>
+              {showDateSeparator && (
+                <div className="flex justify-center my-4">
+                  <div className="bg-muted/30 border border-border/50 rounded-full px-4 py-1 text-[10px] text-muted-foreground uppercase tracking-wider text-center max-w-[80%]">
+                    {format(msgDate, "dd 'de' MMMM 'de' yyyy", {
+                      locale: ptBR,
+                    })}
+                  </div>
                 </div>
               )}
-              <div className={`max-w-[80%] ${isMe ? "order-2" : "order-1"}`}>
+              <div
+                className={`flex items-end gap-2 mb-2 ${isMe ? "justify-end" : "justify-start"}`}
+              >
+                {!isMe && (
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm ${
+                      isModerator
+                        ? "bg-primary/20 text-primary"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {isModerator ? (
+                      <ShieldCheck className="w-4 h-4" />
+                    ) : ticket.profiles?.avatar_url ? (
+                      <img
+                        src={ticket.profiles.avatar_url}
+                        alt="Usuário"
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-4 h-4" />
+                    )}
+                  </div>
+                )}
+
                 <div
-                  className={`rounded-2xl px-4 py-3 shadow-sm ${
-                    isMe
-                      ? "bg-primary text-primary-foreground rounded-br-sm"
-                      : isModerator
-                        ? "bg-muted/80 border border-primary/10 rounded-bl-sm"
-                        : "bg-muted/50 rounded-bl-sm"
-                  }`}
+                  className={`max-w-[75%] flex flex-col ${isMe ? "items-end" : "items-start"}`}
                 >
-                  <p className="text-sm leading-relaxed">{msg.message}</p>
-                </div>
-                <p
-                  className={`text-[9px] text-muted-foreground mt-1 ${isMe ? "text-right" : "text-left"}`}
-                >
-                  {isModerator && (
-                    <span className="font-bold text-primary mr-2">
-                      Suporte ConfiLar
+                  <div
+                    className={`px-4 py-2.5 shadow-sm text-sm leading-relaxed ${
+                      isMe
+                        ? "bg-primary text-primary-foreground rounded-2xl rounded-br-sm"
+                        : "bg-muted border border-border/50 text-foreground rounded-2xl rounded-bl-sm"
+                    }`}
+                  >
+                    {msg.message}
+                  </div>
+
+                  <div
+                    className={`flex flex-col mt-1 ${isMe ? "text-right" : "text-left"}`}
+                  >
+                    <span className="text-[10.5px] font-semibold text-muted-foreground">
+                      {isMe
+                        ? "Você"
+                        : isModerator
+                          ? "Suporte ConfiLar"
+                          : ticket.profiles?.full_name || "Usuário"}
                     </span>
-                  )}
-                  {format(new Date(msg.created_at), "HH:mm", { locale: ptBR })}
-                </p>
+                    <span className="text-[9px] text-muted-foreground/80 -mt-0.5">
+                      {format(new Date(msg.created_at), "HH:mm", {
+                        locale: ptBR,
+                      })}
+                    </span>
+                  </div>
+                </div>
+
+                {isMe && (
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm ${
+                      isModerator
+                        ? "bg-primary/20 text-primary"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {isModerator ? (
+                      <ShieldCheck className="w-4 h-4" />
+                    ) : ticket.profiles?.avatar_url ? (
+                      <img
+                        src={ticket.profiles.avatar_url}
+                        alt="Usuário"
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-4 h-4" />
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
+            </React.Fragment>
           );
         })}
       </div>

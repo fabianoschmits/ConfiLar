@@ -28,6 +28,8 @@ export interface SupportTicket {
   profiles?: {
     full_name: string;
     avatar_url: string;
+    user_type?: "client" | "professional";
+    is_pro?: boolean;
   };
 }
 

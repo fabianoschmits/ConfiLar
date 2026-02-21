@@ -179,10 +179,18 @@ export default function AdminTicketsPage() {
                 }
               >
                 <div className="flex items-center p-4 gap-4">
-                  <div
-                    className={`p-3 rounded-full bg-muted/50 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors`}
-                  >
-                    <StatusIcon className="w-5 h-5" />
+                  <div className="relative shrink-0">
+                    {(ticket as any).profiles?.avatar_url ? (
+                      <img
+                        src={(ticket as any).profiles.avatar_url}
+                        alt={(ticket as any).profiles.full_name || "Usuário"}
+                        className="w-11 h-11 rounded-full object-cover shadow-sm border border-border"
+                      />
+                    ) : (
+                      <div className="w-11 h-11 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground border border-border shadow-sm">
+                        <UserIcon className="w-5 h-5" />
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -209,17 +217,34 @@ export default function AdminTicketsPage() {
                     <h4 className="font-semibold text-sm truncate">
                       {ticket.subject}
                     </h4>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
-                      Por{" "}
-                      <span className="font-medium text-foreground">
-                        {(ticket as any).profiles?.full_name ||
-                          "Usuário desconhecido"}
-                      </span>{" "}
-                      •
-                      {format(new Date(ticket.created_at), " dd/MM HH:mm", {
-                        locale: ptBR,
-                      })}
-                    </p>
+                    <div className="flex flex-col gap-0.5 mt-0.5">
+                      <p className="text-[11px] text-muted-foreground">
+                        Por{" "}
+                        <span className="font-medium text-foreground">
+                          {(ticket as any).profiles?.full_name ||
+                            "Usuário desconhecido"}
+                        </span>{" "}
+                        •
+                        {format(new Date(ticket.created_at), " dd/MM HH:mm", {
+                          locale: ptBR,
+                        })}
+                      </p>
+                      {(ticket as any).profiles?.user_type && (
+                        <div className="flex items-center gap-1">
+                          <span className="text-[9px] font-bold uppercase text-muted-foreground bg-muted px-1.5 py-0.5 rounded-sm">
+                            {(ticket as any).profiles.user_type ===
+                            "professional"
+                              ? "Profissional"
+                              : "Cliente"}
+                          </span>
+                          {(ticket as any).profiles.is_pro && (
+                            <span className="text-[9px] font-bold uppercase bg-gradient-to-r from-amber-200 to-amber-500 text-amber-900 px-1.5 py-0.5 rounded-sm shadow-sm">
+                              PRO
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="hidden sm:flex flex-col items-end gap-1">

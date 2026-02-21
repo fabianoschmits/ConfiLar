@@ -31,6 +31,7 @@ import {
   Zap,
   Clock,
   MessageSquare,
+  User,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -273,7 +274,37 @@ export default function AdminTicketDetailPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader className="pb-4">
-              <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+              <div className="flex flex-col items-center gap-3 mb-4">
+                {ticket.profiles?.avatar_url ? (
+                  <img
+                    src={ticket.profiles.avatar_url}
+                    alt={ticket.profiles?.full_name || "Usuário"}
+                    className="w-16 h-16 rounded-full object-cover shadow-sm border border-border"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center shadow-sm border border-border">
+                    <User className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                )}
+                <div className="text-center">
+                  <h3 className="font-bold text-sm">
+                    {ticket.profiles?.full_name || "Usuário Desconhecido"}
+                  </h3>
+                  <div className="flex items-center justify-center gap-1 mt-1.5">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground bg-muted border border-border/50 px-1.5 py-0.5 rounded-sm">
+                      {ticket.profiles?.user_type === "professional"
+                        ? "Profissional"
+                        : "Cliente"}
+                    </span>
+                    {ticket.profiles?.is_pro && (
+                      <span className="text-[9px] font-bold uppercase tracking-widest bg-gradient-to-r from-amber-200 to-amber-500 text-amber-900 px-2 py-0.5 rounded-sm shadow-sm">
+                        PRO
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground border-t border-border/50 pt-4">
                 Infos do Ticket
               </CardTitle>
             </CardHeader>

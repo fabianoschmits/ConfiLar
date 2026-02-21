@@ -68,12 +68,23 @@ export const supportService = {
     type: string,
     content: string,
   ) {
-    return supabase.from("support_ticket_notifications").insert({
+    let title = "Suporte ConfiLar";
+    let action_url = `/ajuda?ticket_id=${ticketId}`;
+
+    if (type === "status_update") {
+      title = "Atualização de Status (Suporte)";
+    } else if (type === "new_message") {
+      title = "Nova resposta no ticket";
+    }
+
+    return supabase.from("notifications").insert({
       user_id: userId,
-      ticket_id: ticketId,
-      type,
-      content,
-      is_read: false,
+      type: "message",
+      title,
+      message: content,
+      action_url,
+      priority: "normal",
+      metadata: { ticket_id: ticketId, is_support: true, original_type: type },
     });
   },
 
@@ -86,13 +97,19 @@ export const supportService = {
 
     const notifications = admins.map((admin) => ({
       user_id: admin.user_id,
-      ticket_id: ticketId,
-      type: "admin_alert",
-      content,
-      is_read: false,
+      type: "system",
+      title: "Alerta Administrativo (Suporte)",
+      message: content,
+      action_url: `/gestao-confi/dashboard/tickets/${ticketId}`,
+      priority: "normal",
+      metadata: {
+        ticket_id: ticketId,
+        is_support: true,
+        original_type: "admin_alert",
+      },
     }));
 
-    return supabase.from("support_ticket_notifications").insert(notifications);
+    return supabase.from("notifications").insert(notifications);
   },
 
   // --- Tickets ---
@@ -148,11 +165,9 @@ export const supportService = {
   },
 
   async getTicketById(ticketId: string): Promise<SupportTicket> {
-    const { data, error } = await supabase
+    const { data: ticket, error } = await supabase
       .from("support_tickets")
-      .select(
-        "*, support_ticket_messages(*), profiles:user_id(full_name, avatar_url)",
-      )
+      .select("*, support_ticket_messages(*)")
       .eq("id", ticketId)
       .order("created_at", {
         foreignTable: "support_ticket_messages",
@@ -161,7 +176,22 @@ export const supportService = {
       .single();
 
     if (error) throw error;
-    return data;
+
+    // Fetch profile manually to avoid foreign key issues
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name, avatar_url, user_type, is_pro")
+      .eq("id", ticket.user_id)
+      .single();
+
+    return {
+      ...ticket,
+      messages: ticket.support_ticket_messages || [],
+      profiles: profile || {
+        full_name: "Usuário Desconhecido",
+        avatar_url: "",
+      },
+    } as SupportTicket;
   },
 
   // --- Messages ---
@@ -372,13 +402,34 @@ export const supportService = {
   },
 
   async getAllTicketsForAdmin(): Promise<SupportTicket[]> {
-    const { data, error } = await supabase
+    const { data: tickets, error } = await supabase
       .from("support_tickets")
-      .select("*, profiles:user_id(full_name, avatar_url)")
+      .select("*")
       .order("created_at", { ascending: false });
 
     if (error) throw error;
-    return data;
+    if (!tickets || tickets.length === 0) return [];
+
+    const userIds = Array.from(
+      new Set(tickets.map((t) => t.user_id).filter(Boolean)),
+    );
+
+    if (userIds.length === 0) return tickets as SupportTicket[];
+
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, full_name, avatar_url, user_type, is_pro")
+      .in("id", userIds);
+
+    const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
+
+    return tickets.map((t) => ({
+      ...t,
+      profiles: profileMap.get(t.user_id) || {
+        full_name: "Usuário Desconhecido",
+        avatar_url: "",
+      },
+    })) as SupportTicket[];
   },
 
   // --- Categories, Macros & Ratings ---

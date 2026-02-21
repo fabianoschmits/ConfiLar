@@ -14,6 +14,7 @@ import {
   Settings,
   ShoppingCart,
   ShieldCheck,
+  MessageSquare,
 } from "lucide-react";
 
 const allNavItems = [
@@ -51,6 +52,11 @@ const allNavItems = [
     href: "/gestao-confi/dashboard/moderation",
     label: "Moderação",
     icon: Shield,
+  },
+  {
+    href: "/gestao-confi/dashboard/tickets",
+    label: "Tickets",
+    icon: MessageSquare,
   },
   {
     href: "/gestao-confi/dashboard/logs",

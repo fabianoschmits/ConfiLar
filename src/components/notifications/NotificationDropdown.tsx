@@ -76,6 +76,12 @@ const getNotificationIcon = (type: string) => {
           className={cn(iconClass, "text-purple-500 dark:text-purple-400")}
         />
       );
+    case "support":
+      return (
+        <Shield
+          className={cn(iconClass, "text-indigo-500 dark:text-indigo-400")}
+        />
+      );
     case "achievement":
       return (
         <Trophy
@@ -250,6 +256,35 @@ export const NotificationDropdown: React.FC = () => {
     const metadata = notification.metadata || {};
     const notificationType = notification.type || "";
     const titleLower = (notification.title || "").toLowerCase();
+
+    // Suporte - Redirecionar para ajuda
+    const isSupport =
+      metadata.is_support === true ||
+      notificationType === "support" ||
+      notification.action_url?.includes("/help") ||
+      notification.action_url?.includes("open=help") ||
+      titleLower.includes("suporte");
+
+    if (isSupport) {
+      console.log("🔔 [NotificationDropdown] Notificação de suporte detectada");
+      if (notification.action_url) {
+        try {
+          // Extrair conversation_id se houver
+          const url = new URL(notification.action_url, window.location.origin);
+          const convId =
+            url.searchParams.get("conversation_id") ||
+            url.searchParams.get("id");
+          window.location.href = convId
+            ? `/ajuda?ticket_id=${convId}`
+            : "/ajuda";
+        } catch {
+          window.location.href = "/ajuda";
+        }
+      } else {
+        window.location.href = "/ajuda";
+      }
+      return;
+    }
 
     // Mensagem - Abrir chat
     if (notificationType === "message" || titleLower.includes("mensagem")) {

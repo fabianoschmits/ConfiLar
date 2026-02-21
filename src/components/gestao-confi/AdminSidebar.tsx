@@ -16,6 +16,7 @@ import {
   Menu,
   ShoppingCart,
   ShieldCheck,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -61,6 +62,12 @@ export const adminNavItems = [
     label: "Moderação",
     icon: Shield,
     description: "Denúncias e banimentos",
+  },
+  {
+    href: "/gestao-confi/dashboard/tickets",
+    label: "Tickets de Suporte",
+    icon: MessageSquare,
+    description: "Gerenciar chamados de suporte",
   },
   {
     href: "/gestao-confi/dashboard/cron",

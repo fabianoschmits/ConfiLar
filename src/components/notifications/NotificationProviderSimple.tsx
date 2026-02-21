@@ -368,9 +368,13 @@ export const NotificationProviderSimple: React.FC<
           }
 
           // Mostrar toast para nova notificação
+          const metadata = (newNotification.metadata || {}) as any;
           const isToastSupport =
             newNotification.type === "support" ||
-            newNotification.action_url?.includes("open=help");
+            metadata.is_support === true ||
+            newNotification.action_url?.includes("open=help") ||
+            newNotification.action_url?.includes("/help") ||
+            newNotification.title?.toLowerCase().includes("suporte");
 
           toast(newNotification.title, {
             description: newNotification.message,
