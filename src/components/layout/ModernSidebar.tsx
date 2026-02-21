@@ -33,6 +33,7 @@ import {
   ChevronRight,
   ChevronLeft,
   Menu,
+  Flag,
 } from "lucide-react";
 import { useSupabaseNotifications } from "@/hooks/useSupabaseNotifications";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
@@ -234,6 +235,12 @@ export function ModernSidebar() {
           title: "Privacidade",
           href: "/privacidade",
           icon: <Shield className="h-4 w-4" />,
+        },
+        {
+          id: "reports",
+          title: "Minhas Denúncias",
+          href: "/minhas-denuncias",
+          icon: <Flag className="h-4 w-4" />,
         },
       ],
     },

@@ -2,10 +2,12 @@
 
 import { Card } from "@/components/ui/card";
 import { MainLayout } from "@/components/layout/MainLayout";
-import { Flag, Info } from "lucide-react";
+import { Flag, Info, ChevronLeft } from "lucide-react";
 import { ClientOnly } from "@/components/ClientOnly";
 import ReportsModule from "@/modules/reports/ReportsModule";
 import { useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function MinhasDenunciasPage() {
   const searchParams = useSearchParams();
@@ -16,6 +18,17 @@ export default function MinhasDenunciasPage() {
       <MainLayout requireAuth={true}>
         <div className="min-h-screen bg-gray-50 dark:bg-black">
           <div className="max-w-4xl mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-8">
+            <Link href="/ajuda">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mb-4 sm:mb-6 gap-2 text-muted-foreground hover:text-primary transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Voltar para a Central de Ajuda
+              </Button>
+            </Link>
+
             {/* Header */}
             <div className="mb-8 flex items-center gap-3">
               <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">

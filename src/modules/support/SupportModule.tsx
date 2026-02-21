@@ -43,8 +43,13 @@ export default function SupportModule({
   }, [initialTicketId, fetchTicketDetails]);
 
   const handleSelectTicket = async (ticket: SupportTicket) => {
-    await fetchTicketDetails(ticket.id);
-    setView("chat");
+    try {
+      if (!ticket?.id) return;
+      await fetchTicketDetails(ticket.id);
+      setView("chat");
+    } catch (error) {
+      console.error("Failed to fetch ticket details:", error);
+    }
   };
 
   const handleCreateTicket = async (data: any) => {
@@ -58,7 +63,13 @@ export default function SupportModule({
     }
   };
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center p-8 text-muted-foreground italic">
+        Você precisa estar logado para acessar o suporte.
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full overflow-hidden">

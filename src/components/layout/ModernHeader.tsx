@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { SimpleHeaderBell } from "@/components/notifications/SimpleHeaderBell";
-import { UserReportsModal } from "@/components/UserReportsModal";
+
 import { useMessages } from "@/hooks/useMessages";
 import { AvailabilityToggleCompact } from "@/components/ui/AvailabilityToggle";
 import { useAvailability } from "@/hooks/useAvailability";
@@ -949,18 +949,17 @@ export function ModernHeader({
                                 Política de Privacidade
                               </span>
                             </Button>
-                            <UserReportsModal>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="flex items-center gap-1 text-xs py-1 h-7 justify-start w-full"
-                              >
-                                <Flag className="h-3 w-3" />
-                                <span className="truncate">
-                                  {t("myReports")}
-                                </span>
-                              </Button>
-                            </UserReportsModal>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                handleNavigation("/minhas-denuncias")
+                              }
+                              className="flex items-center gap-1 text-xs py-1 h-7 justify-start w-full"
+                            >
+                              <Flag className="h-3 w-3" />
+                              <span className="truncate">{t("myReports")}</span>
+                            </Button>
                           </div>
                         )}
                       </div>
