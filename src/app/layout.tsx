@@ -47,6 +47,7 @@ export const metadata: Metadata = {
   title: "ConfiLar - Marketplace de Serviços",
   description:
     "Encontre os melhores profissionais para seus serviços ou ofereça seus serviços profissionais",
+  manifest: "/manifest.json",
   icons: {
     icon: "/imagens/logo/Logo azul - sem fundo - Vertical.png",
     shortcut: "/imagens/logo/Logo azul - sem fundo - Vertical.png",
@@ -131,6 +132,8 @@ export default async function RootLayout({
           content="/imagens/logo/Logo branco - fundo verde - Vertical.png"
         />
         <meta name="msapplication-TileColor" content="#9CA3AF" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="color-scheme" content="light dark" />
       </head>
       <body className="font-sans bg-gray-50 dark:bg-black">
