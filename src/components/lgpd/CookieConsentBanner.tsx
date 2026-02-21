@@ -14,6 +14,8 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 interface CookiePreferences {
   essential: boolean;
@@ -31,6 +33,7 @@ export function CookieConsentBanner() {
     analytical: false,
     marketing: false,
   });
+  const { user } = useAuthContext();
 
   useEffect(() => {
     // Verificar se o usuário já deu consentimento
@@ -45,6 +48,26 @@ export function CookieConsentBanner() {
       }
     }
   }, []);
+
+  // Sincronizar consentimento com o banco de dados quando o usuário logar
+  useEffect(() => {
+    if (user) {
+      const consent = localStorage.getItem("cookie-consent");
+      const savedPreferences = localStorage.getItem("cookie-preferences");
+      const lastSyncedUser = sessionStorage.getItem(
+        "cookie-consent-synced-user",
+      );
+
+      if (
+        consent === "true" &&
+        savedPreferences &&
+        lastSyncedUser !== user.id
+      ) {
+        savePreferences(JSON.parse(savedPreferences));
+        sessionStorage.setItem("cookie-consent-synced-user", user.id);
+      }
+    }
+  }, [user]);
 
   const handleAcceptAll = () => {
     const allAccepted = {
@@ -78,12 +101,37 @@ export function CookieConsentBanner() {
     setShowSettings(false);
   };
 
-  const savePreferences = (prefs: CookiePreferences) => {
+  const savePreferences = async (prefs: CookiePreferences) => {
     localStorage.setItem("cookie-consent", "true");
     localStorage.setItem("cookie-preferences", JSON.stringify(prefs));
 
     // Aplicar preferências (aqui você implementaria a lógica real)
     console.log("Cookie preferences saved:", prefs);
+
+    // Auditoria de Consentimento (LGPD)
+    if (user) {
+      try {
+        const consentType =
+          prefs.marketing && prefs.analytical && prefs.functional
+            ? "all"
+            : !prefs.marketing && !prefs.analytical && !prefs.functional
+              ? "essential"
+              : "custom";
+
+        await supabase.from("user_consents").insert({
+          user_id: user.id,
+          policy_version: "1.0",
+          consent_type: consentType,
+          preferences: prefs,
+          user_agent:
+            typeof window !== "undefined"
+              ? window.navigator.userAgent
+              : "Unknown",
+        });
+      } catch (error) {
+        console.error("Erro ao salvar auditoria de consentimento:", error);
+      }
+    }
   };
 
   const togglePreference = (key: keyof CookiePreferences) => {
@@ -98,199 +146,168 @@ export function CookieConsentBanner() {
   if (!showBanner) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-2 sm:p-4">
-      <Card className="max-w-2xl mx-auto shadow-lg border bg-white/95 backdrop-blur-sm">
-        <CardContent className="p-3 sm:p-4">
+    <div className="fixed bottom-0 left-0 right-0 z-[100] p-4 sm:p-6 pointer-events-none">
+      <Card className="max-w-lg mx-auto shadow-2xl border-zinc-800 bg-zinc-950/90 backdrop-blur-xl text-zinc-100 pointer-events-auto overflow-hidden rounded-2xl">
+        <CardContent className="p-0">
           {!showSettings ? (
-            // Banner Principal - Compacto
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Cookie className="h-3 w-3 text-blue-600" />
+            <div className="p-3 sm:p-6 space-y-3 sm:space-y-4">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-zinc-800 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Cookie className="h-4 w-4 sm:h-5 sm:w-5 text-[#00b0b0]" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-medium text-gray-900 text-sm sm:text-base">
-                    🍪 Cookies
-                  </h3>
-                  <p className="text-gray-600 text-xs sm:text-sm">
-                    Usamos cookies essenciais. Você pode personalizar.
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-xs sm:text-lg tracking-tight">
+                      Privacidade e Cookies
+                    </h3>
+                    <div className="sm:hidden">
+                      <Link
+                        href="/privacidade"
+                        className="text-[#00b0b0] text-[10px] hover:underline"
+                      >
+                        Saiba mais
+                      </Link>
+                    </div>
+                  </div>
+                  <p className="text-zinc-400 text-[10px] sm:text-sm leading-snug sm:leading-relaxed">
+                    Utilizamos cookies para o funcionamento do site e para
+                    melhorar sua experiência.
                   </p>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex flex-row gap-2 sm:gap-3">
                 <Button
                   onClick={handleAcceptAll}
-                  className="bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm h-8 sm:h-9"
-                  size="sm"
+                  className="bg-[#00b0b0] hover:bg-[#008c8c] text-white font-medium rounded-lg sm:rounded-xl h-8 sm:h-11 flex-1 shadow-lg text-[10px] sm:text-base px-0"
                 >
-                  <Check className="h-3 w-3 mr-1 sm:mr-2" />
-                  Aceitar
+                  Aceitar Todos
                 </Button>
 
                 <Button
                   onClick={handleRejectAll}
-                  variant="outline"
-                  className="text-xs sm:text-sm h-8 sm:h-9"
-                  size="sm"
+                  variant="secondary"
+                  className="bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border-zinc-700 rounded-lg sm:rounded-xl h-8 sm:h-11 flex-1 text-[10px] sm:text-base px-0"
                 >
-                  <X className="h-3 w-3 mr-1 sm:mr-2" />
-                  Apenas Essenciais
+                  Essenciais
                 </Button>
 
                 <Button
                   onClick={() => setShowSettings(true)}
                   variant="ghost"
-                  className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm h-8 sm:h-9"
-                  size="sm"
+                  className="hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg sm:rounded-xl h-8 sm:h-11 w-8 sm:w-11 p-0 shrink-0"
                 >
-                  <Settings className="h-3 w-3 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">Personalizar</span>
-                  <span className="sm:hidden">Opções</span>
+                  <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </div>
 
-              <div className="text-xs text-gray-500 text-center">
-                Ao continuar, você concorda com nossa{" "}
+              <div className="hidden sm:flex text-[10px] sm:text-xs text-zinc-500 items-center justify-center gap-1.5 opacity-80">
+                <Shield className="h-3 w-3" />
+                <span>Em conformidade com a LGPD.</span>
                 <Link
                   href="/privacidade"
-                  className="text-blue-600 hover:underline"
+                  className="text-[#00b0b0] hover:underline font-medium"
                 >
-                  Política de Privacidade
+                  Saiba mais
                 </Link>
-                .
               </div>
             </div>
           ) : (
-            // Configurações Detalhadas - Compactas
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-medium text-gray-900 text-sm sm:text-base">
-                  Configurações de Cookies
-                </h3>
+            <div className="p-5 sm:p-6 space-y-6">
+              <div className="flex items-center justify-between border-b border-zinc-900 pb-4">
+                <div className="flex items-center gap-2">
+                  <Settings className="h-5 w-5 text-[#00b0b0]" />
+                  <h3 className="font-semibold text-lg">Preferências</h3>
+                </div>
                 <Button
                   onClick={() => setShowSettings(false)}
                   variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0"
+                  size="icon"
+                  className="h-8 w-8 text-zinc-500 hover:text-white"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {/* Cookies Essenciais */}
-                <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                  <div className="flex items-center space-x-2">
-                    <Shield className="h-4 w-4 text-green-600" />
+                <div className="flex items-center justify-between p-3 bg-zinc-900/50 rounded-xl border border-zinc-800/50">
+                  <div className="flex items-center space-x-3">
+                    <Shield className="h-5 w-5 text-emerald-500" />
                     <div>
-                      <h4 className="font-medium text-gray-900 text-xs sm:text-sm">
-                        Essenciais
-                      </h4>
-                      <p className="text-xs text-gray-600 hidden sm:block">
-                        Funcionamento básico
+                      <h4 className="font-medium text-sm">Essenciais</h4>
+                      <p className="text-xs text-zinc-500">
+                        Garante a segurança e o login.
                       </p>
                     </div>
                   </div>
-                  <Badge
-                    variant="secondary"
-                    className="bg-green-100 text-green-800 text-xs"
-                  >
-                    Sempre
+                  <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[10px] uppercase tracking-wider font-bold">
+                    Obrigatório
                   </Badge>
                 </div>
 
-                {/* Cookies Funcionais */}
-                <div className="flex items-center justify-between p-2 border rounded">
-                  <div className="flex items-center space-x-2">
-                    <Zap className="h-4 w-4 text-blue-600" />
-                    <div>
-                      <h4 className="font-medium text-gray-900 text-xs sm:text-sm">
-                        Funcionais
-                      </h4>
-                      <p className="text-xs text-gray-600 hidden sm:block">
-                        Personalização
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    onClick={() => togglePreference("functional")}
-                    variant={preferences.functional ? "default" : "outline"}
-                    size="sm"
-                    className="h-6 text-xs"
-                  >
-                    {preferences.functional ? "Sim" : "Não"}
-                  </Button>
-                </div>
-
                 {/* Cookies Analíticos */}
-                <div className="flex items-center justify-between p-2 border rounded">
-                  <div className="flex items-center space-x-2">
-                    <BarChart3 className="h-4 w-4 text-purple-600" />
+                <div className="flex items-center justify-between p-3 bg-zinc-900/50 rounded-xl border border-zinc-800/50">
+                  <div className="flex items-center space-x-3">
+                    <BarChart3 className="h-5 w-5 text-indigo-400" />
                     <div>
-                      <h4 className="font-medium text-gray-900 text-xs sm:text-sm">
-                        Analíticos
-                      </h4>
-                      <p className="text-xs text-gray-600 hidden sm:block">
-                        Análise e melhorias
+                      <h4 className="font-medium text-sm">Analíticos</h4>
+                      <p className="text-xs text-zinc-500">
+                        Melhorar a navegação.
                       </p>
                     </div>
                   </div>
                   <Button
                     onClick={() => togglePreference("analytical")}
-                    variant={preferences.analytical ? "default" : "outline"}
-                    size="sm"
-                    className="h-6 text-xs"
+                    variant="ghost"
+                    className={`h-8 w-12 rounded-full p-0 transition-colors ${preferences.analytical ? "bg-[#00b0b0] text-white" : "bg-zinc-800 text-zinc-500"}`}
                   >
-                    {preferences.analytical ? "Sim" : "Não"}
+                    <div
+                      className={`h-6 w-6 bg-white rounded-full shadow-md transition-transform transform ${preferences.analytical ? "translate-x-2" : "-translate-x-2"}`}
+                    />
                   </Button>
                 </div>
 
                 {/* Cookies de Marketing */}
-                <div className="flex items-center justify-between p-2 border rounded">
-                  <div className="flex items-center space-x-2">
-                    <Cookie className="h-4 w-4 text-orange-600" />
+                <div className="flex items-center justify-between p-3 bg-zinc-900/50 rounded-xl border border-zinc-800/50">
+                  <div className="flex items-center space-x-3">
+                    <Zap className="h-5 w-5 text-amber-400" />
                     <div>
-                      <h4 className="font-medium text-gray-900 text-xs sm:text-sm">
-                        Marketing
-                      </h4>
-                      <p className="text-xs text-gray-600 hidden sm:block">
-                        Publicidade
+                      <h4 className="font-medium text-sm">Marketing</h4>
+                      <p className="text-xs text-zinc-500">
+                        Conteúdo personalizado.
                       </p>
                     </div>
                   </div>
                   <Button
                     onClick={() => togglePreference("marketing")}
-                    variant={preferences.marketing ? "default" : "outline"}
-                    size="sm"
-                    className="h-6 text-xs"
+                    variant="ghost"
+                    className={`h-8 w-12 rounded-full p-0 transition-colors ${preferences.marketing ? "bg-[#00b0b0] text-white" : "bg-zinc-800 text-zinc-500"}`}
                   >
-                    {preferences.marketing ? "Sim" : "Não"}
+                    <div
+                      className={`h-6 w-6 bg-white rounded-full shadow-md transition-transform transform ${preferences.marketing ? "translate-x-2" : "-translate-x-2"}`}
+                    />
                   </Button>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-2 pt-3 border-t">
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <Button
                   onClick={handleSavePreferences}
-                  className="bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm h-8 sm:h-9"
-                  size="sm"
+                  className="bg-[#00b0b0] hover:bg-[#008c8c] text-white font-medium rounded-xl h-11 flex-1 shadow-lg shadow-teal-900/20"
                 >
-                  <Check className="h-3 w-3 mr-1 sm:mr-2" />
-                  Salvar
+                  <Check className="h-4 w-4 mr-2" />
+                  Salvar Preferências
                 </Button>
-
                 <Button
-                  onClick={handleAcceptAll}
-                  variant="outline"
-                  className="text-xs sm:text-sm h-8 sm:h-9"
-                  size="sm"
+                  onClick={() => setShowSettings(false)}
+                  variant="ghost"
+                  className="text-zinc-400 hover:text-white rounded-xl h-11"
                 >
-                  Aceitar Todos
+                  Voltar
                 </Button>
               </div>
-
-              <div className="text-xs text-gray-500 text-center">
+              <div className="text-xs text-zinc-500 text-center pt-2 opacity-60">
                 Você pode alterar essas configurações a qualquer momento.
               </div>
             </div>

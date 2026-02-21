@@ -18,6 +18,7 @@ import {
   Database,
   Bell,
   Lock,
+  Cookie,
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { DashboardSkeleton } from "@/components/ui/skeleton";
@@ -26,6 +27,7 @@ import { DeleteAccountForm } from "@/components/forms/DeleteAccountForm";
 import { ProfileVisibilitySettings } from "@/components/lgpd/ProfileVisibilitySettings";
 import { NotificationPreferences } from "@/components/lgpd/NotificationPreferences";
 import { LocationDataSettings } from "@/components/lgpd/LocationDataSettings";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
@@ -40,7 +42,48 @@ export default function ConfiguracoesPrivacidadePage() {
 
   useEffect(() => {
     setMounted(true);
+    // Load cookie preferences
+    const saved = localStorage.getItem("cookie-preferences");
+    if (saved) {
+      setCookiePrefs(JSON.parse(saved));
+    }
   }, []);
+
+  const [cookiePrefs, setCookiePrefs] = useState({
+    essential: true,
+    functional: false,
+    analytical: false,
+    marketing: false,
+  });
+
+  const saveCookiePrefs = async (newPrefs: typeof cookiePrefs) => {
+    localStorage.setItem("cookie-consent", "true");
+    localStorage.setItem("cookie-preferences", JSON.stringify(newPrefs));
+
+    if (user) {
+      try {
+        const consentType =
+          newPrefs.marketing && newPrefs.analytical && newPrefs.functional
+            ? "all"
+            : !newPrefs.marketing &&
+                !newPrefs.analytical &&
+                !newPrefs.functional
+              ? "essential"
+              : "custom";
+
+        await supabase.from("user_consents").insert({
+          user_id: user.id,
+          policy_version: "1.0",
+          consent_type: consentType,
+          preferences: newPrefs,
+          user_agent: window.navigator.userAgent,
+        });
+        toast.success(t("saveSuccess") || "Preferências salvas com sucesso!");
+      } catch (error) {
+        console.error("Erro ao salvar auditoria:", error);
+      }
+    }
+  };
 
   if (!mounted) {
     return null;
@@ -91,6 +134,15 @@ export default function ConfiguracoesPrivacidadePage() {
       icon: <Database className="h-5 w-5" />,
       status: t("inDevelopment"),
       action: t("comingSoon"),
+    },
+    {
+      id: "cookies",
+      title: "Cookies e Rastreamento",
+      description:
+        "Gerencie quais tipos de cookies você permite de acordo com a LGPD.",
+      icon: <Cookie className="h-5 w-5" />,
+      status: t("active"),
+      action: "Gerenciar",
     },
   ];
 
@@ -217,6 +269,71 @@ export default function ConfiguracoesPrivacidadePage() {
             {activeSection === "notifications" && <NotificationPreferences />}
 
             {activeSection === "location" && <LocationDataSettings />}
+
+            {activeSection === "cookies" && (
+              <Card>
+                <CardContent className="p-6 space-y-4">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">Cookies Essenciais</h4>
+                        <p className="text-sm text-gray-500">
+                          Necessários para o site funcionar. Não podem ser
+                          desativados.
+                        </p>
+                      </div>
+                      <Badge variant="secondary">Sempre Ativo</Badge>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t">
+                      <div>
+                        <h4 className="font-medium">Cookies de Desempenho</h4>
+                        <p className="text-sm text-gray-500">
+                          Nos ajudam a entender como o site é usado.
+                        </p>
+                      </div>
+                      <Button
+                        variant={cookiePrefs.analytical ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => {
+                          const n = {
+                            ...cookiePrefs,
+                            analytical: !cookiePrefs.analytical,
+                          };
+                          setCookiePrefs(n);
+                          saveCookiePrefs(n);
+                        }}
+                      >
+                        {cookiePrefs.analytical ? "Ativo" : "Desativado"}
+                      </Button>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t">
+                      <div>
+                        <h4 className="font-medium">Cookies de Marketing</h4>
+                        <p className="text-sm text-gray-500">
+                          Usados para oferecer conteúdo e anúncios relevantes.
+                        </p>
+                      </div>
+                      <Button
+                        variant={cookiePrefs.marketing ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => {
+                          const n = {
+                            ...cookiePrefs,
+                            marketing: !cookiePrefs.marketing,
+                          };
+                          setCookiePrefs(n);
+                          saveCookiePrefs(n);
+                        }}
+                      >
+                        {cookiePrefs.marketing ? "Ativo" : "Desativado"}
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Direitos LGPD */}
             <div className="space-y-6">
