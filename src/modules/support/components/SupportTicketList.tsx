@@ -75,25 +75,25 @@ export function SupportTicketList({
                 <div className="flex items-center gap-2 mb-1">
                   <Badge
                     variant={status.variant}
-                    className="text-[10px] uppercase tracking-wider font-bold"
+                    className="text-[8px] sm:text-[10px] uppercase tracking-wider font-bold px-1 h-3.5 sm:h-4"
                   >
                     {status.label}
                   </Badge>
-                  <span className="text-[10px] text-muted-foreground uppercase flex items-center gap-1">
-                    <PriorityIcon className={`w-3 h-3 ${priority.color}`} />
+                  <span className="text-[9px] sm:text-[10px] text-muted-foreground uppercase flex items-center gap-1">
+                    <PriorityIcon
+                      className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${priority.color}`}
+                    />
                     {priority.label}
                   </span>
                 </div>
-                <h4 className="text-sm font-semibold truncate group-hover:text-primary transition-colors">
+                <h4 className="text-[13px] sm:text-sm font-semibold truncate group-hover:text-primary transition-colors">
                   {ticket.subject}
                 </h4>
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  {ticket.category} • Aberto em{" "}
-                  {format(
-                    new Date(ticket.created_at),
-                    "dd/MM/yyyy 'às' HH:mm",
-                    { locale: ptBR },
-                  )}
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-1">
+                  {ticket.category} •{" "}
+                  {format(new Date(ticket.created_at), "dd/MM/yyyy", {
+                    locale: ptBR,
+                  })}
                 </p>
               </div>
               <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-all group-hover:translate-x-1" />

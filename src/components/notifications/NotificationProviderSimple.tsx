@@ -374,7 +374,9 @@ export const NotificationProviderSimple: React.FC<
             metadata.is_support === true ||
             newNotification.action_url?.includes("open=help") ||
             newNotification.action_url?.includes("/help") ||
-            newNotification.title?.toLowerCase().includes("suporte");
+            newNotification.action_url?.includes("/ajuda") ||
+            newNotification.title?.toLowerCase().includes("suporte") ||
+            newNotification.title?.toLowerCase().includes("chamado");
 
           toast(newNotification.title, {
             description: newNotification.message,
@@ -393,12 +395,12 @@ export const NotificationProviderSimple: React.FC<
                             url.searchParams.get("conversation_id");
                           window.location.href = convId
                             ? `/ajuda?ticket_id=${convId}`
-                            : "/ajuda";
+                            : "/ajuda?show=support";
                         } catch {
-                          window.location.href = "/ajuda";
+                          window.location.href = "/ajuda?show=support";
                         }
                       } else {
-                        window.location.href = "/ajuda";
+                        window.location.href = "/ajuda?show=support";
                       }
                     } else if (newNotification.action_url?.startsWith("/")) {
                       window.location.href = newNotification.action_url;
@@ -419,7 +421,8 @@ export const NotificationProviderSimple: React.FC<
             titleLower.includes("suporte") ||
             titleLower.includes("chamado") ||
             newNotification.action_url?.includes("open=help") ||
-            newNotification.action_url?.includes("/help");
+            newNotification.action_url?.includes("/help") ||
+            newNotification.action_url?.includes("/ajuda");
 
           console.log("🔔 [NotificationFlow] Nova notificação:", {
             id: newNotification.id,

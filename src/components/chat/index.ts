@@ -9,7 +9,4 @@ export {
 export { useMessages } from "../../hooks/useMessages";
 
 // Tipos
-export type {
-  Message,
-  Conversation,
-} from "../../hooks/useMessages";
+export type { Message, Conversation } from "../../hooks/useMessages";

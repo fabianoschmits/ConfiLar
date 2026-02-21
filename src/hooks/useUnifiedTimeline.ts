@@ -368,11 +368,11 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         const finalUserData =
           isWelcomePost && post.metadata
             ? {
-              full_name:
-                post.metadata.user || userData?.full_name || "Usuário",
-              avatar_url: post.metadata.avatar_url || userData?.avatar_url,
-              user_type: post.metadata.user_type || userData?.user_type,
-            }
+                full_name:
+                  post.metadata.user || userData?.full_name || "Usuário",
+                avatar_url: post.metadata.avatar_url || userData?.avatar_url,
+                user_type: post.metadata.user_type || userData?.user_type,
+              }
             : userData;
 
         // Verificar se premium expirou
@@ -535,12 +535,12 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
             page.map((item) =>
               item.type === "post" && item.id === postId
                 ? {
-                  ...item,
-                  likes_count: likedPosts.has(postId)
-                    ? item.likes_count - 1
-                    : item.likes_count + 1,
-                  is_liked: !likedPosts.has(postId),
-                }
+                    ...item,
+                    likes_count: likedPosts.has(postId)
+                      ? item.likes_count - 1
+                      : item.likes_count + 1,
+                    is_liked: !likedPosts.has(postId),
+                  }
                 : item,
             ),
           ),
@@ -581,9 +581,9 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         // Preparar metadata com informações do vídeo (se houver)
         const metadata = firstVideo
           ? {
-            youtube_video_id: firstVideo.id,
-            youtube_video_url: firstVideo.url,
-          }
+              youtube_video_id: firstVideo.id,
+              youtube_video_url: firstVideo.url,
+            }
           : null;
 
         // Buscar país do perfil do usuário se não foi fornecido

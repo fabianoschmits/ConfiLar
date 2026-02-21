@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Bell, X, Check, Trash2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNotifications } from "./NotificationProviderSimple";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -59,6 +60,33 @@ export function NewNotificationBell() {
     const metadata = notification.metadata || {};
     const notificationType = notification.type || "";
     const titleLower = (notification.title || "").toLowerCase();
+
+    // 0. SUPORTE - Redirecionar para ajuda
+    const isSupport =
+      notification.type === "support" ||
+      metadata.is_support === true ||
+      notification.action_url?.includes("/ajuda") ||
+      notification.action_url?.includes("/help") ||
+      notification.action_url?.includes("open=help") ||
+      titleLower.includes("suporte") ||
+      titleLower.includes("chamado");
+
+    if (isSupport) {
+      if (notification.action_url) {
+        try {
+          const url = new URL(notification.action_url, window.location.origin);
+          const convId = url.searchParams.get("conversation_id");
+          window.location.href = convId
+            ? `/ajuda?ticket_id=${convId}`
+            : "/ajuda?show=support";
+        } catch {
+          window.location.href = "/ajuda?show=support";
+        }
+      } else {
+        window.location.href = "/ajuda?show=support";
+      }
+      return;
+    }
 
     // 1. MENSAGEM - Abrir chat flutuante
     if (notificationType === "message" || titleLower.includes("mensagem")) {
@@ -270,21 +298,36 @@ export function NewNotificationBell() {
             </div>
           ) : (
             <div className="space-y-2">
-              {notifications.map((notification) => (
-                <MobileNotificationItem
-                  key={notification.id}
-                  notification={{
-                    ...notification,
-                    created_at:
-                      notification.created_at instanceof Date
-                        ? notification.created_at.toISOString()
-                        : notification.created_at,
-                  }}
-                  onDelete={handleDeleteNotification}
-                  onMarkAsRead={markAsRead}
-                  onClick={handleNotificationClick}
-                />
-              ))}
+              <AnimatePresence initial={false}>
+                {notifications.map((notification) => (
+                  <motion.div
+                    key={notification.id}
+                    initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, height: "auto", scale: 1 }}
+                    exit={{
+                      opacity: 0,
+                      height: 0,
+                      scale: 0.9,
+                      transition: { duration: 0.2 },
+                    }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  >
+                    <MobileNotificationItem
+                      key={notification.id}
+                      notification={{
+                        ...notification,
+                        created_at:
+                          notification.created_at instanceof Date
+                            ? notification.created_at.toISOString()
+                            : notification.created_at,
+                      }}
+                      onDelete={handleDeleteNotification}
+                      onMarkAsRead={markAsRead}
+                      onClick={handleNotificationClick}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
           )}
         </ScrollArea>

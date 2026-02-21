@@ -121,6 +121,8 @@ export const NotificationList: React.FC = () => {
   ) => {
     const isSupport =
       notification.type === "support" ||
+      notification.action_url?.includes("/ajuda") ||
+      notification.action_url?.includes("/help") ||
       notification.action_url?.includes("open=help");
 
     if (isSupport) {

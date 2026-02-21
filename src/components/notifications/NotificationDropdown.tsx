@@ -261,9 +261,11 @@ export const NotificationDropdown: React.FC = () => {
     const isSupport =
       metadata.is_support === true ||
       notificationType === "support" ||
+      notification.action_url?.includes("/ajuda") ||
       notification.action_url?.includes("/help") ||
       notification.action_url?.includes("open=help") ||
-      titleLower.includes("suporte");
+      titleLower.includes("suporte") ||
+      titleLower.includes("chamado");
 
     if (isSupport) {
       console.log("🔔 [NotificationDropdown] Notificação de suporte detectada");
@@ -276,12 +278,12 @@ export const NotificationDropdown: React.FC = () => {
             url.searchParams.get("id");
           window.location.href = convId
             ? `/ajuda?ticket_id=${convId}`
-            : "/ajuda";
+            : "/ajuda?show=support";
         } catch {
-          window.location.href = "/ajuda";
+          window.location.href = "/ajuda?show=support";
         }
       } else {
-        window.location.href = "/ajuda";
+        window.location.href = "/ajuda?show=support";
       }
       return;
     }

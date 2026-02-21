@@ -62,7 +62,7 @@ export function SupportTicketForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
+      className="space-y-4 sm:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
     >
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -117,9 +117,9 @@ export function SupportTicketForm({
               </SelectItem>
             </SelectContent>
           </Select>
-          <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-            <Info className="w-3 h-3" /> Prazos baseados em dias úteis e
-            horários comerciais.
+          <p className="text-[8px] sm:text-[10px] text-muted-foreground flex items-center gap-1">
+            <Info className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> Prazos baseados em
+            dias úteis e horários comerciais.
           </p>
         </div>
 
@@ -137,7 +137,11 @@ export function SupportTicketForm({
         </div>
       </div>
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
+      <Button
+        type="submit"
+        className="w-full h-9 sm:h-10 text-sm"
+        disabled={isLoading}
+      >
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -119,6 +119,33 @@ export function FullNotificationList() {
 
     // Logic copied from AdaptiveNotificationCenter but simpler redirects where possible
 
+    // 0. SUPORTE - Redirecionar para ajuda
+    const isSupport =
+      notification.type === "support" ||
+      metadata.is_support === true ||
+      notification.action_url?.includes("/ajuda") ||
+      notification.action_url?.includes("/help") ||
+      notification.action_url?.includes("open=help") ||
+      titleLower.includes("suporte") ||
+      titleLower.includes("chamado");
+
+    if (isSupport) {
+      if (notification.action_url) {
+        try {
+          const url = new URL(notification.action_url, window.location.origin);
+          const convId = url.searchParams.get("conversation_id");
+          router.push(
+            convId ? `/ajuda?ticket_id=${convId}` : "/ajuda?show=support",
+          );
+        } catch {
+          router.push("/ajuda?show=support");
+        }
+      } else {
+        router.push("/ajuda?show=support");
+      }
+      return;
+    }
+
     // 1. MENSAGEM - Abrir chat flutuante
     if (notificationType === "message" || titleLower.includes("mensagem")) {
       const senderId = metadata.sender_id;

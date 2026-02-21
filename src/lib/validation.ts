@@ -117,7 +117,9 @@ export function formatFullName(name: string): string {
     return word;
   });
 
-  return (formattedWords.length > 0 ? formattedWords.join(" ") : "") + trailingSpaces;
+  return (
+    (formattedWords.length > 0 ? formattedWords.join(" ") : "") + trailingSpaces
+  );
 }
 
 /**

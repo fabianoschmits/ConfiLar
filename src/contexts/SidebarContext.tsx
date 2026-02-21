@@ -3,39 +3,39 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 interface SidebarContextValue {
-    isCollapsed: boolean;
-    toggleCollapsed: () => void;
+  isCollapsed: boolean;
+  toggleCollapsed: () => void;
 }
 
 const SidebarContext = createContext<SidebarContextValue>({
-    isCollapsed: false,
-    toggleCollapsed: () => { },
+  isCollapsed: false,
+  toggleCollapsed: () => {},
 });
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
-    const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
-    // Persist to localStorage
-    useEffect(() => {
-        const saved = localStorage.getItem("sidebar-collapsed");
-        if (saved === "true") setIsCollapsed(true);
-    }, []);
+  // Persist to localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("sidebar-collapsed");
+    if (saved === "true") setIsCollapsed(true);
+  }, []);
 
-    const toggleCollapsed = () => {
-        setIsCollapsed((prev) => {
-            const next = !prev;
-            localStorage.setItem("sidebar-collapsed", String(next));
-            return next;
-        });
-    };
+  const toggleCollapsed = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem("sidebar-collapsed", String(next));
+      return next;
+    });
+  };
 
-    return (
-        <SidebarContext.Provider value={{ isCollapsed, toggleCollapsed }}>
-            {children}
-        </SidebarContext.Provider>
-    );
+  return (
+    <SidebarContext.Provider value={{ isCollapsed, toggleCollapsed }}>
+      {children}
+    </SidebarContext.Provider>
+  );
 }
 
 export function useSidebar() {
-    return useContext(SidebarContext);
+  return useContext(SidebarContext);
 }

@@ -54,10 +54,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       {/* Header Moderno */}
       <ModernHeader />
 
-      <main className={cn(
-        "min-h-screen bg-gray-50 dark:bg-black transition-all duration-300 ease-in-out pb-24 lg:pb-0 pt-16 sm:pt-20 lg:pt-24",
-        isCollapsed ? "lg:ml-16" : "lg:ml-56"
-      )}>
+      <main
+        className={cn(
+          "min-h-screen bg-gray-50 dark:bg-black transition-all duration-300 ease-in-out pb-24 lg:pb-0 pt-16 sm:pt-20 lg:pt-24",
+          isCollapsed ? "lg:ml-16" : "lg:ml-56",
+        )}
+      >
         {requireAuth && !isLoggedIn ? (
           // Mostrar prompt de login se a página requer autenticação
           <div className="flex items-center justify-center min-h-screen">
@@ -83,7 +85,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           children
         )}
       </main>
-
 
       {/* Bottom Navigation para mobile - COMENTADO PARA TESTAR NOVO QUICK ACTION MENU */}
       {/* <ModernBottomNavigation /> */}

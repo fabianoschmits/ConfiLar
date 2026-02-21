@@ -32,9 +32,10 @@ export const supportService = {
       const day = deadline.getUTCDay();
       const hour = deadline.getUTCHours();
 
+      // --- TODO: Timezone Sensitivity ---
       // Skip weekends (0 = Sunday, 6 = Saturday) and non-business hours (before 9, after 18 UTC)
-      // Note: We are assuming UTC matches the business hours for this simplified test,
-      // but in production we should match the users local time or a configured timezone.
+      // Note: We are currently assuming UTC matches the business hours for this simplified test,
+      // but in production we should match the user's local time or a configured timezone (e.g., America/Sao_Paulo).
       const isWeekend = day === 0 || day === 6;
       const isBusinessHour = hour >= 9 && hour < 18;
 
@@ -79,7 +80,7 @@ export const supportService = {
 
     return supabase.from("notifications").insert({
       user_id: userId,
-      type: "message",
+      type: "support",
       title,
       message: content,
       action_url,
@@ -454,12 +455,16 @@ export const supportService = {
   },
 
   async submitRating(ticketId: string, rating: number, feedback?: string) {
-    const { error } = await supabase.from("support_ticket_ratings").upsert({
+    const { error } = await supabase.from("support_ticket_ratings").insert({
       ticket_id: ticketId,
       rating,
       feedback,
     });
-    if (error) throw error;
+    if (error) {
+      // If it fails because it already exists, we can ignore or return success
+      if ((error as any).code === "23505") return;
+      throw error;
+    }
   },
 
   async getAdvancedMetrics() {
@@ -519,5 +524,46 @@ export const supportService = {
         ([category, count]) => ({ category, count }),
       ),
     };
+  },
+
+  async getDetailedRatings() {
+    const { data: ratings, error } = await supabase
+      .from("support_ticket_ratings")
+      .select(
+        `
+        *,
+        support_tickets (
+          subject,
+          user_id
+        )
+      `,
+      )
+      .order("rated_at", { ascending: false });
+
+    if (error) throw error;
+    if (!ratings || ratings.length === 0) return [];
+
+    const userIds = Array.from(
+      new Set(
+        ratings.map((r: any) => r.support_tickets?.user_id).filter(Boolean),
+      ),
+    );
+
+    if (userIds.length === 0) return ratings;
+
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, full_name, avatar_url, user_type, is_pro")
+      .in("id", userIds);
+
+    const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
+
+    return ratings.map((r: any) => ({
+      ...r,
+      profiles: profileMap.get(r.support_tickets?.user_id) || {
+        full_name: "Usuário Desconhecido",
+        avatar_url: "",
+      },
+    }));
   },
 };

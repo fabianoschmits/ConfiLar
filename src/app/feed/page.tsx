@@ -347,10 +347,11 @@ export default function FeedPage() {
                 )}
                 <button
                   onClick={() => setShowSearch(!showSearch)}
-                  className={`p-2 rounded-full transition-colors ${showSearch || searchQuery
-                    ? "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400"
-                    : "hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-900 dark:text-white"
-                    }`}
+                  className={`p-2 rounded-full transition-colors ${
+                    showSearch || searchQuery
+                      ? "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-900 dark:text-white"
+                  }`}
                   title={t("title")} // Using translation key for search/title
                 >
                   <Search className="h-5 w-5" />
@@ -387,10 +388,11 @@ export default function FeedPage() {
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`mr-6 pb-2 border-b-2 transition-all font-medium text-sm capitalize ${activeTab === tab
-                      ? "border-brand text-gray-900 dark:text-white"
-                      : "border-transparent text-gray-500 dark:text-gray-400"
-                      }`}
+                    className={`mr-6 pb-2 border-b-2 transition-all font-medium text-sm capitalize ${
+                      activeTab === tab
+                        ? "border-brand text-gray-900 dark:text-white"
+                        : "border-transparent text-gray-500 dark:text-gray-400"
+                    }`}
                   >
                     {tab === "all"
                       ? t("all")
@@ -462,10 +464,11 @@ export default function FeedPage() {
                             }
                           }
                         }}
-                        className={`relative w-16 h-16 rounded-full p-0.5 block ${story.hasNew
-                          ? "bg-gradient-to-tr from-warning-400 via-error-500 to-primary-500"
-                          : "bg-gray-300 dark:bg-gray-700"
-                          }`}
+                        className={`relative w-16 h-16 rounded-full p-0.5 block ${
+                          story.hasNew
+                            ? "bg-gradient-to-tr from-warning-400 via-error-500 to-primary-500"
+                            : "bg-gray-300 dark:bg-gray-700"
+                        }`}
                       >
                         <div className="w-full h-full rounded-full bg-gray-50 dark:bg-black p-0.5">
                           {story.userAvatar ? (
@@ -1003,12 +1006,12 @@ function InstagramPost({
   const youtubeVideoId = (post.metadata as any)?.youtube_video_id || null;
   const youtubeVideos = youtubeVideoId
     ? [
-      {
-        id: youtubeVideoId,
-        url: (post.metadata as any)?.youtube_video_url || "",
-        thumbnail: `https://img.youtube.com/vi/${youtubeVideoId}/maxresdefault.jpg`,
-      },
-    ]
+        {
+          id: youtubeVideoId,
+          url: (post.metadata as any)?.youtube_video_url || "",
+          thumbnail: `https://img.youtube.com/vi/${youtubeVideoId}/maxresdefault.jpg`,
+        },
+      ]
     : detectYouTubeUrls(post.description || "");
   const cleanDescription = removeYouTubeUrls(post.description || "");
 
@@ -1080,12 +1083,13 @@ function InstagramPost({
   return (
     <article
       id={`post-${post.id}`}
-      className={`relative bg-white dark:bg-black border rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 scroll-mt-24 ${isHighlighted
-        ? "border-blue-400 dark:border-blue-700 z-10 shadow-lg shadow-blue-500/20"
-        : isActivePremium
-          ? "ring-2 ring-warning-400 dark:ring-warning-500 border-warning-200 dark:border-warning-800 bg-gradient-to-r from-warning-50/30 to-transparent dark:from-warning-900/10 dark:to-transparent shadow-[0_15px_30px_-15px_rgba(251,191,36,0.6)] dark:shadow-[0_15px_30px_-15px_rgba(251,191,36,0.3)] premium-border-shine"
-          : "border-gray-200 dark:border-gray-800"
-        }`}
+      className={`relative bg-white dark:bg-black border rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 scroll-mt-24 ${
+        isHighlighted
+          ? "border-blue-400 dark:border-blue-700 z-10 shadow-lg shadow-blue-500/20"
+          : isActivePremium
+            ? "ring-2 ring-warning-400 dark:ring-warning-500 border-warning-200 dark:border-warning-800 bg-gradient-to-r from-warning-50/30 to-transparent dark:from-warning-900/10 dark:to-transparent shadow-[0_15px_30px_-15px_rgba(251,191,36,0.6)] dark:shadow-[0_15px_30px_-15px_rgba(251,191,36,0.3)] premium-border-shine"
+            : "border-gray-200 dark:border-gray-800"
+      }`}
     >
       {isHighlighted && (
         <div className="absolute inset-0 rounded-xl ring-4 ring-blue-500 dark:ring-blue-600 animate-pulse pointer-events-none z-10 shadow-[0_0_20px_rgba(59,130,246,0.5)]" />
@@ -1272,10 +1276,11 @@ function InstagramPost({
               className="min-h-[44px] min-w-[44px] p-2 transition-transform active:scale-125 disabled:opacity-50 flex items-center gap-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <Heart
-                className={`h-5 w-5 transition-all ${isLikedByUser
-                  ? "text-red-500 fill-red-500"
-                  : "text-gray-700 dark:text-gray-300"
-                  }`}
+                className={`h-5 w-5 transition-all ${
+                  isLikedByUser
+                    ? "text-red-500 fill-red-500"
+                    : "text-gray-700 dark:text-gray-300"
+                }`}
               />
               <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
                 {likesCount > 0 ? likesCount.toLocaleString("pt-BR") : "0"}
@@ -1304,10 +1309,11 @@ function InstagramPost({
               className="min-h-[44px] min-w-[44px] p-2 transition-transform active:scale-125 flex items-center gap-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <MessageCircle
-                className={`h-5 w-5 transition-all ${showComments
-                  ? "text-primary-600 dark:text-primary-400"
-                  : "text-gray-700 dark:text-gray-300"
-                  }`}
+                className={`h-5 w-5 transition-all ${
+                  showComments
+                    ? "text-primary-600 dark:text-primary-400"
+                    : "text-gray-700 dark:text-gray-300"
+                }`}
               />
               <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
                 {(commentsCount ?? 0).toLocaleString("pt-BR")}

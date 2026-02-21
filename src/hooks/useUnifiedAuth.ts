@@ -126,9 +126,9 @@ type AuthAction =
   | { type: "SET_USER"; payload: { id: string; email: string } | null }
   | { type: "SET_PROFILE"; payload: Profile | null }
   | {
-    type: "SET_SESSION";
-    payload: { user: { id: string; email: string } } | null;
-  }
+      type: "SET_SESSION";
+      payload: { user: { id: string; email: string } } | null;
+    }
   | { type: "SET_READY"; payload: boolean }
   | { type: "RESET_AUTH" };
 

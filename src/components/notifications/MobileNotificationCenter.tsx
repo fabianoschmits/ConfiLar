@@ -1,6 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useTransform,
+} from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -37,6 +43,206 @@ import { NotificationSettingsOnlyModal } from "./NotificationSettingsOnlyModal";
 interface MobileNotificationCenterProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+// Componente para item de notificação com swipe
+function SwipeableNotificationItem({
+  notification,
+  config,
+  onRemove,
+  onMarkAsRead,
+  profile,
+}: {
+  notification: any;
+  config: any;
+  onRemove: (id: string) => void;
+  onMarkAsRead: (id: string) => void;
+  profile: any;
+}) {
+  const IconComponent = config.icon;
+  const x = useMotionValue(0);
+  const opacity = useTransform(x, [-100, -80, 0], [1, 0.5, 0]);
+  const scale = useTransform(x, [-100, -80, 0], [1.2, 1, 0.8]);
+
+  return (
+    <div className="relative overflow-hidden rounded-xl mb-2 group">
+      {/* Background Action (Delete) */}
+      <motion.div
+        style={{ opacity }}
+        className="absolute inset-0 bg-red-500 flex items-center justify-end px-6 z-0"
+      >
+        <motion.div style={{ scale }}>
+          <Trash2 className="w-6 h-6 text-white" />
+        </motion.div>
+      </motion.div>
+
+      {/* Foreground Card */}
+      <motion.div
+        drag="x"
+        dragConstraints={{ left: -100, right: 0 }}
+        dragElastic={0.2}
+        style={{ x }}
+        onDragEnd={(_, info) => {
+          if (info.offset.x < -80) {
+            onRemove(notification.id);
+          }
+        }}
+        className="relative z-10 touch-none"
+      >
+        <Card
+          className={`transition-all duration-200 border-none shadow-sm ${
+            !notification.is_read
+              ? `${config.bg} border-l-4 border-l-blue-500`
+              : "bg-white"
+          }`}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              {/* Ícone mobile-friendly */}
+              <div
+                className={`p-2.5 rounded-full ${config.color} text-white flex-shrink-0 shadow-sm`}
+              >
+                <IconComponent className="w-5 h-5" />
+              </div>
+
+              {/* Conteúdo */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between">
+                  <h4 className="font-semibold text-base text-gray-900 mb-1 leading-tight">
+                    {notification.title}
+                  </h4>
+                </div>
+
+                {notification.message && (
+                  <p className="text-sm text-gray-600 mb-3 leading-relaxed">
+                    {notification.message}
+                  </p>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] px-1.5 py-0 ${
+                        notification.priority === "urgent"
+                          ? "bg-red-100 text-red-800"
+                          : notification.priority === "high"
+                            ? "bg-orange-100 text-orange-800"
+                            : notification.priority === "normal"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {notification.priority}
+                    </Badge>
+                    <span className="text-[10px] text-gray-500 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {formatDistanceToNow(new Date(notification.created_at), {
+                        addSuffix: true,
+                        locale: ptBR,
+                      })}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    {!notification.is_read && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onMarkAsRead(notification.id);
+                        }}
+                        className="h-8 w-8 p-0 rounded-full bg-blue-100 hover:bg-blue-200"
+                      >
+                        <Check className="w-4 h-4 text-blue-600" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Ação da notificação */}
+                {notification.action_url && (
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const metadata = notification.metadata || {};
+                        const titleLower = (
+                          notification.title || ""
+                        ).toLowerCase();
+
+                        const isSupport =
+                          notification.type === "support" ||
+                          metadata.is_support === true ||
+                          notification.action_url?.includes("/ajuda") ||
+                          notification.action_url?.includes("/help") ||
+                          notification.action_url?.includes("open=help") ||
+                          titleLower.includes("suporte") ||
+                          titleLower.includes("chamado");
+
+                        if (isSupport) {
+                          if (notification.action_url) {
+                            try {
+                              const url = new URL(
+                                notification.action_url,
+                                window.location.origin,
+                              );
+                              const convId =
+                                url.searchParams.get("conversation_id");
+                              window.location.href = convId
+                                ? `/ajuda?ticket_id=${convId}`
+                                : "/ajuda?show=support";
+                            } catch {
+                              window.location.href = "/ajuda?show=support";
+                            }
+                          } else {
+                            window.location.href = "/ajuda?show=support";
+                          }
+                          onMarkAsRead(notification.id);
+                          return;
+                        }
+
+                        if (
+                          notification.action_url === "/feed" ||
+                          notification.action_url?.startsWith("/feed")
+                        ) {
+                          const hasCompletedOnboarding =
+                            (typeof window !== "undefined" &&
+                              localStorage.getItem("onboarding_completed") ===
+                                "true") ||
+                            (profile &&
+                              (profile as any)?.onboarding_completed === true);
+
+                          if (hasCompletedOnboarding) {
+                            window.location.href = "/feed";
+                            onMarkAsRead(notification.id);
+                            return;
+                          }
+                        }
+
+                        if (notification.action_url.startsWith("/")) {
+                          window.location.href = notification.action_url;
+                        } else {
+                          window.open(notification.action_url, "_blank");
+                        }
+                        onMarkAsRead(notification.id);
+                      }}
+                      className="w-full h-10 text-sm font-medium border-gray-200 text-gray-700 hover:bg-gray-50 active:scale-[0.98] transition-all"
+                    >
+                      Ver detalhes
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </div>
+  );
 }
 
 // Ícones e cores otimizados para mobile
@@ -105,9 +311,7 @@ export function MobileNotificationCenter({
                     </Badge>
                   )}
                 </SheetTitle>
-                <p className="text-sm text-gray-600">
-                  Gerencie suas notificações
-                </p>
+                <p className="text-sm text-gray-600">Arrasta para excluir</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -180,7 +384,7 @@ export function MobileNotificationCenter({
           </div>
 
           {/* Lista de Notificações Mobile */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden">
             {filteredNotifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-6">
                 <div className="p-4 bg-gray-100 rounded-full mb-4">
@@ -210,161 +414,42 @@ export function MobileNotificationCenter({
                 )}
               </div>
             ) : (
-              <div className="p-2 space-y-2">
-                {filteredNotifications.map((notification) => {
-                  const config =
-                    NOTIFICATION_CONFIG[
-                      notification.type as keyof typeof NOTIFICATION_CONFIG
-                    ] || NOTIFICATION_CONFIG.system;
-                  const IconComponent = config.icon;
+              <div className="p-2">
+                <AnimatePresence initial={false}>
+                  {filteredNotifications.map((notification) => {
+                    const config =
+                      NOTIFICATION_CONFIG[
+                        notification.type as keyof typeof NOTIFICATION_CONFIG
+                      ] || NOTIFICATION_CONFIG.system;
 
-                  return (
-                    <Card
-                      key={notification.id}
-                      className={`transition-all duration-200 ${
-                        !notification.is_read
-                          ? `${config.bg} border-l-4 border-l-blue-500`
-                          : "bg-white"
-                      }`}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          {/* Ícone mobile-friendly */}
-                          <div
-                            className={`p-2.5 rounded-full ${config.color} text-white flex-shrink-0`}
-                          >
-                            <IconComponent className="w-5 h-5" />
-                          </div>
-
-                          {/* Conteúdo */}
-                          <div className="flex-1 min-w-0">
-                            {/* Título */}
-                            <h4 className="font-semibold text-base text-gray-900 mb-1 leading-tight">
-                              {notification.title}
-                            </h4>
-
-                            {/* Mensagem */}
-                            {notification.message && (
-                              <p className="text-sm text-gray-600 mb-3 leading-relaxed">
-                                {notification.message}
-                              </p>
-                            )}
-
-                            {/* Metadados mobile */}
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <Badge
-                                  variant="outline"
-                                  className={`text-xs ${
-                                    notification.priority === "urgent"
-                                      ? "bg-red-100 text-red-800"
-                                      : notification.priority === "high"
-                                        ? "bg-orange-100 text-orange-800"
-                                        : notification.priority === "normal"
-                                          ? "bg-blue-100 text-blue-800"
-                                          : "bg-gray-100 text-gray-800"
-                                  }`}
-                                >
-                                  {notification.priority}
-                                </Badge>
-                                <span className="text-xs text-gray-500 flex items-center gap-1">
-                                  <Clock className="w-3 h-3" />
-                                  {formatDistanceToNow(
-                                    new Date(notification.created_at),
-                                    {
-                                      addSuffix: true,
-                                      locale: ptBR,
-                                    },
-                                  )}
-                                </span>
-                              </div>
-
-                              {/* Ações mobile */}
-                              <div className="flex items-center gap-1">
-                                {!notification.is_read && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => markAsRead(notification.id)}
-                                    className="h-8 w-8 p-0 rounded-full bg-blue-100 hover:bg-blue-200"
-                                  >
-                                    <Check className="w-4 h-4 text-blue-600" />
-                                  </Button>
-                                )}
-
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() =>
-                                    removeNotification(notification.id)
-                                  }
-                                  className="h-8 w-8 p-0 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            </div>
-
-                            {/* Ação da notificação */}
-                            {notification.action_url && (
-                              <div className="mt-3 pt-3 border-t border-gray-200">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    // Verificar se é redirecionamento para onboarding e se o usuário já completou
-                                    if (
-                                      notification.action_url === "/feed" ||
-                                      notification.action_url?.startsWith(
-                                        "/feed",
-                                      )
-                                    ) {
-                                      // Verificar se o usuário já completou o onboarding (usar localStorage ou verificar no profile como any)
-                                      const hasCompletedOnboarding =
-                                        (typeof window !== "undefined" &&
-                                          localStorage.getItem(
-                                            "onboarding_completed",
-                                          ) === "true") ||
-                                        (profile &&
-                                          (profile as any)
-                                            ?.onboarding_completed === true);
-
-                                      if (hasCompletedOnboarding) {
-                                        console.log(
-                                          "✅ Usuário já completou onboarding, redirecionando para feed ao invés de onboarding",
-                                        );
-                                        // Redirecionar para feed ao invés de onboarding
-                                        window.location.href = "/feed";
-                                        markAsRead(notification.id);
-                                        return;
-                                      }
-                                    }
-
-                                    if (
-                                      notification.action_url.startsWith("/")
-                                    ) {
-                                      window.location.href =
-                                        notification.action_url;
-                                    } else {
-                                      window.open(
-                                        notification.action_url,
-                                        "_blank",
-                                      );
-                                    }
-                                    markAsRead(notification.id);
-                                  }}
-                                  className="w-full h-10 text-sm font-medium"
-                                >
-                                  Ver detalhes
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+                    return (
+                      <motion.div
+                        key={notification.id}
+                        initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, height: "auto", scale: 1 }}
+                        exit={{
+                          opacity: 0,
+                          height: 0,
+                          scale: 0.9,
+                          marginBottom: 0,
+                        }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 300,
+                          damping: 30,
+                        }}
+                      >
+                        <SwipeableNotificationItem
+                          notification={notification}
+                          config={config}
+                          onRemove={removeNotification}
+                          onMarkAsRead={markAsRead}
+                          profile={profile}
+                        />
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
               </div>
             )}
           </div>

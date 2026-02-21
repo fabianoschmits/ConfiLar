@@ -532,7 +532,10 @@ export function useSupabaseReviews() {
         .eq("status", "accepted");
 
       if (requestError) {
-        console.error("Erro ao verificar solicitações de avaliação:", requestError);
+        console.error(
+          "Erro ao verificar solicitações de avaliação:",
+          requestError,
+        );
         return false;
       }
 

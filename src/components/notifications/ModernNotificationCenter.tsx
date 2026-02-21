@@ -471,7 +471,38 @@ export function ModernNotificationCenter({
                                       }
                                     }
 
-                                    if (
+                                    const isSupport =
+                                      notification.type === "support" ||
+                                      notification.action_url?.includes(
+                                        "/ajuda",
+                                      ) ||
+                                      notification.action_url?.includes(
+                                        "/help",
+                                      );
+
+                                    if (isSupport) {
+                                      if (notification.action_url) {
+                                        try {
+                                          const url = new URL(
+                                            notification.action_url,
+                                            window.location.origin,
+                                          );
+                                          const convId =
+                                            url.searchParams.get(
+                                              "conversation_id",
+                                            );
+                                          window.location.href = convId
+                                            ? `/ajuda?ticket_id=${convId}`
+                                            : "/ajuda?show=support";
+                                        } catch {
+                                          window.location.href =
+                                            "/ajuda?show=support";
+                                        }
+                                      } else {
+                                        window.location.href =
+                                          "/ajuda?show=support";
+                                      }
+                                    } else if (
                                       notification.action_url.startsWith("/")
                                     ) {
                                       window.location.href =

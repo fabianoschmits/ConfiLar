@@ -143,18 +143,26 @@ export default function TicketMetricsPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-success/5 border-success/20">
+        <Card
+          className="bg-success/5 border-success/20 hover:border-success/40 transition-all cursor-pointer group"
+          onClick={() => router.push("/gestao-confi/dashboard/tickets/ratings")}
+        >
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">
                   Média de Avaliação
                 </p>
-                <h3 className="text-3xl font-bold text-success">
-                  {metrics?.avg_rating.toFixed(1)}
-                </h3>
+                <div className="flex items-baseline gap-2">
+                  <h3 className="text-3xl font-bold text-success">
+                    {metrics?.avg_rating.toFixed(1)}
+                  </h3>
+                  <span className="text-[10px] text-success font-medium group-hover:underline">
+                    Ver detalhes →
+                  </span>
+                </div>
               </div>
-              <Star className="w-8 h-8 text-success/40 fill-success/40" />
+              <Star className="w-8 h-8 text-success/40 fill-success/40 group-hover:scale-110 transition-transform" />
             </div>
           </CardContent>
         </Card>

@@ -50,9 +50,7 @@ export default function AdminTicketsPage() {
   const filteredTickets = tickets.filter((ticket) => {
     const matchesSearch =
       ticket.subject.toLowerCase().includes(search.toLowerCase()) ||
-      (ticket as any).profiles?.full_name
-        ?.toLowerCase()
-        .includes(search.toLowerCase());
+      ticket.profiles?.full_name?.toLowerCase().includes(search.toLowerCase());
 
     const matchesStatus =
       statusFilter === "all" || ticket.status === statusFilter;
@@ -94,13 +92,13 @@ export default function AdminTicketsPage() {
   };
 
   return (
-    <div className="space-y-6 p-6 animate-in fade-in duration-700">
+    <div className="space-y-4 sm:space-y-6 p-3 sm:p-6 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
             Gestão de Tickets
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Monitore e responda chamados de suporte.
           </p>
         </div>
@@ -111,17 +109,17 @@ export default function AdminTicketsPage() {
             onClick={() =>
               router.push("/gestao-confi/dashboard/tickets/metrics")
             }
-            className="gap-2"
+            className="gap-1.5 sm:gap-2 h-8 sm:h-9 text-[11px] sm:text-xs px-2 sm:px-3"
           >
-            <TrendingUp className="w-4 h-4" /> Analytics
+            <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Analytics
           </Button>
           <div className="relative flex-1 md:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar assunto ou usuário..."
+              placeholder="Buscar..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
+              className="pl-8 h-8 sm:h-9 text-[11px] sm:text-sm"
             />
           </div>
         </div>
@@ -143,7 +141,7 @@ export default function AdminTicketsPage() {
             variant={statusFilter === status ? "default" : "outline"}
             size="sm"
             onClick={() => setStatusFilter(status)}
-            className="capitalize text-[11px] h-8"
+            className="capitalize text-[10px] sm:text-[11px] h-7 sm:h-8 px-2 sm:px-3"
           >
             {status === "all" ? "Todos" : status.replace("_", " ")}
           </Button>
@@ -178,67 +176,65 @@ export default function AdminTicketsPage() {
                   router.push(`/gestao-confi/dashboard/tickets/${ticket.id}`)
                 }
               >
-                <div className="flex items-center p-4 gap-4">
+                <div className="flex items-center p-3 sm:p-4 gap-3 sm:gap-4">
                   <div className="relative shrink-0">
-                    {(ticket as any).profiles?.avatar_url ? (
+                    {ticket.profiles?.avatar_url ? (
                       <img
-                        src={(ticket as any).profiles.avatar_url}
-                        alt={(ticket as any).profiles.full_name || "Usuário"}
-                        className="w-11 h-11 rounded-full object-cover shadow-sm border border-border"
+                        src={ticket.profiles.avatar_url}
+                        alt={ticket.profiles.full_name || "Usuário"}
+                        className="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover shadow-sm border border-border"
                       />
                     ) : (
-                      <div className="w-11 h-11 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground border border-border shadow-sm">
-                        <UserIcon className="w-5 h-5" />
+                      <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground border border-border shadow-sm">
+                        <UserIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                       </div>
                     )}
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex flex-wrap items-center gap-1.5 mb-1">
                       <Badge
                         variant={style.variant}
-                        className="text-[10px] uppercase font-bold"
+                        className="text-[8px] sm:text-[10px] uppercase font-bold px-1.5 h-3.5 sm:h-4"
                       >
                         {ticket.status.replace("_", " ")}
                       </Badge>
-                      <span className="text-[10px] text-muted-foreground uppercase font-medium">
+                      <span className="text-[8px] sm:text-[10px] text-muted-foreground uppercase font-medium">
                         {ticket.category}
                       </span>
                       {sla && (
                         <Badge
                           variant={sla.variant as any}
-                          className="text-[9px] gap-1 px-1.5 h-4"
+                          className="text-[8px] sm:text-[9px] gap-1 px-1.5 h-3.5 sm:h-4"
                         >
-                          <sla.icon className="w-2.5 h-2.5" />
+                          <sla.icon className="w-2 sm:w-2.5 h-2 sm:h-2.5" />
                           {sla.label}
                         </Badge>
                       )}
                     </div>
-                    <h4 className="font-semibold text-sm truncate">
+                    <h4 className="font-bold text-[13px] sm:text-sm truncate">
                       {ticket.subject}
                     </h4>
-                    <div className="flex flex-col gap-0.5 mt-0.5">
-                      <p className="text-[11px] text-muted-foreground">
+                    <div className="flex flex-wrap flex-col gap-0.5 mt-0.5">
+                      <p className="text-[10px] sm:text-[11px] text-muted-foreground">
                         Por{" "}
                         <span className="font-medium text-foreground">
-                          {(ticket as any).profiles?.full_name ||
-                            "Usuário desconhecido"}
+                          {ticket.profiles?.full_name || "Usuário"}
                         </span>{" "}
-                        •
-                        {format(new Date(ticket.created_at), " dd/MM HH:mm", {
+                        •{" "}
+                        {format(new Date(ticket.created_at), "dd/MM", {
                           locale: ptBR,
                         })}
                       </p>
-                      {(ticket as any).profiles?.user_type && (
+                      {ticket.profiles?.user_type && (
                         <div className="flex items-center gap-1">
-                          <span className="text-[9px] font-bold uppercase text-muted-foreground bg-muted px-1.5 py-0.5 rounded-sm">
-                            {(ticket as any).profiles.user_type ===
-                            "professional"
-                              ? "Profissional"
-                              : "Cliente"}
+                          <span className="text-[8px] font-bold uppercase text-muted-foreground bg-muted px-1.5 py-0.5 rounded-sm">
+                            {ticket.profiles.user_type === "professional"
+                              ? "Prof"
+                              : "Cli"}
                           </span>
-                          {(ticket as any).profiles.is_pro && (
-                            <span className="text-[9px] font-bold uppercase bg-gradient-to-r from-amber-200 to-amber-500 text-amber-900 px-1.5 py-0.5 rounded-sm shadow-sm">
+                          {ticket.profiles.is_pro && (
+                            <span className="text-[8px] font-bold uppercase bg-gradient-to-r from-amber-200 to-amber-500 text-amber-900 px-1.5 py-0.5 rounded-sm shadow-sm">
                               PRO
                             </span>
                           )}

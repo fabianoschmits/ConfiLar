@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { supportService } from "@/modules/support/services/supportService";
 import {
   SupportTicket,
@@ -52,8 +53,8 @@ export default function AdminTicketDetailPage() {
     loadData();
   }, [id]);
 
-  const loadData = async () => {
-    setIsLoading(true);
+  const loadData = async (silent = false) => {
+    if (!silent) setIsLoading(true);
     try {
       const [ticketData, macrosData] = await Promise.all([
         supportService.getTicketById(id),
@@ -71,11 +72,48 @@ export default function AdminTicketDetailPage() {
       setLogs(logsData || []);
     } catch (error) {
       console.error("Error loading ticket data:", error);
-      toast.error("Erro ao carregar dados.");
+      if (!silent) toast.error("Erro ao carregar dados.");
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   };
+
+  // Realtime subscription
+  useEffect(() => {
+    if (!id) return;
+
+    const channel = supabase
+      .channel(`admin_ticket_updates_${id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "support_ticket_messages",
+          filter: `ticket_id=eq.${id}`,
+        },
+        () => {
+          loadData(true);
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "support_tickets",
+          filter: `id=eq.${id}`,
+        },
+        () => {
+          loadData(true);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id]);
 
   const handleSendMessage = async (message: string) => {
     if (!user || !ticket) return;
@@ -156,40 +194,46 @@ export default function AdminTicketDetailPage() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="p-3 sm:p-6 max-w-6xl mx-auto space-y-4 sm:space-y-6">
+      <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 w-full xs:w-auto">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
-            className="rounded-full"
+            className="rounded-full h-8 w-8 shrink-0"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-2xl font-bold tracking-tight truncate">
               Gerenciar Ticket
             </h1>
-            <p className="text-muted-foreground">ID: {ticket.id}</p>
+            <p className="text-[10px] sm:text-sm text-muted-foreground break-all">
+              ID: {ticket.id}
+            </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1 sm:gap-2 w-full xs:w-auto">
           <Button
             variant={activeTab === "chat" ? "default" : "outline"}
             onClick={() => setActiveTab("chat")}
             size="sm"
-            className="gap-2"
+            className="flex-1 xs:flex-none gap-1 sm:gap-2 h-7 sm:h-9 text-[10px] sm:text-xs px-2 sm:px-3"
           >
-            <MessageSquare className="w-4 h-4" /> Conversa
+            <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden min-[380px]:inline">Conversa</span>
+            <span className="inline min-[380px]:hidden">Chat</span>
           </Button>
           <Button
             variant={activeTab === "logs" ? "default" : "outline"}
             onClick={() => setActiveTab("logs")}
             size="sm"
-            className="gap-2"
+            className="flex-1 xs:flex-none gap-1 sm:gap-2 h-7 sm:h-9 text-[10px] sm:text-xs px-2 sm:px-3"
           >
-            <History className="w-4 h-4" /> Histórico/Logs
+            <History className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden min-[380px]:inline">Histórico</span>
+            <span className="inline min-[380px]:hidden">Logs</span>
           </Button>
         </div>
       </div>
@@ -201,13 +245,13 @@ export default function AdminTicketDetailPage() {
             <div className="space-y-4">
               <Card className="bg-muted/30 border-dashed p-3">
                 <div className="flex items-center justify-between">
-                  <Label className="text-[11px] font-bold uppercase flex items-center gap-2">
-                    <Zap className="w-3 h-3 text-yellow-500" /> Respostas
-                    Rápidas (Macros)
+                  <Label className="text-[9px] sm:text-[11px] font-bold uppercase flex items-center gap-1 sm:gap-2">
+                    <Zap className="w-2 h-2 sm:w-3 sm:h-3 text-yellow-500" />{" "}
+                    Macros
                   </Label>
                   <Select onValueChange={(v) => handleSendMessage(v)}>
-                    <SelectTrigger className="w-[200px] h-8 text-[11px]">
-                      <SelectValue placeholder="Selecionar Macro..." />
+                    <SelectTrigger className="w-[120px] sm:w-[200px] h-6 sm:h-8 text-[9px] sm:text-[11px]">
+                      <SelectValue placeholder="Responder..." />
                     </SelectTrigger>
                     <SelectContent>
                       {macros.map((m) => (
@@ -224,6 +268,7 @@ export default function AdminTicketDetailPage() {
                 onSendMessage={handleSendMessage}
                 onBack={() => router.back()}
                 currentUser={{ id: user?.id || "" }}
+                isAdmin={true}
               />
             </div>
           ) : (
@@ -274,30 +319,40 @@ export default function AdminTicketDetailPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader className="pb-4">
-              <div className="flex flex-col items-center gap-3 mb-4">
-                {ticket.profiles?.avatar_url ? (
-                  <img
-                    src={ticket.profiles.avatar_url}
-                    alt={ticket.profiles?.full_name || "Usuário"}
-                    className="w-16 h-16 rounded-full object-cover shadow-sm border border-border"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center shadow-sm border border-border">
-                    <User className="w-8 h-8 text-muted-foreground" />
-                  </div>
-                )}
+              <div className="flex flex-col items-center gap-2 sm:gap-3 mb-4">
+                <Link
+                  href={`/perfil/${ticket.user_id}`}
+                  className="transition-transform hover:scale-105 active:scale-95"
+                >
+                  {ticket.profiles?.avatar_url ? (
+                    <img
+                      src={ticket.profiles.avatar_url}
+                      alt={ticket.profiles?.full_name || "Usuário"}
+                      className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover shadow-sm border border-border"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-muted flex items-center justify-center shadow-sm border border-border">
+                      <User className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground" />
+                    </div>
+                  )}
+                </Link>
                 <div className="text-center">
-                  <h3 className="font-bold text-sm">
-                    {ticket.profiles?.full_name || "Usuário Desconhecido"}
-                  </h3>
-                  <div className="flex items-center justify-center gap-1 mt-1.5">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground bg-muted border border-border/50 px-1.5 py-0.5 rounded-sm">
+                  <Link
+                    href={`/perfil/${ticket.user_id}`}
+                    className="hover:text-primary transition-colors"
+                  >
+                    <h3 className="font-bold text-[13px] sm:text-sm">
+                      {ticket.profiles?.full_name || "Usuário"}
+                    </h3>
+                  </Link>
+                  <div className="flex items-center justify-center gap-1 mt-1">
+                    <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-widest text-muted-foreground bg-muted border border-border/50 px-1.5 py-0.5 rounded-sm">
                       {ticket.profiles?.user_type === "professional"
-                        ? "Profissional"
-                        : "Cliente"}
+                        ? "Prof"
+                        : "Cli"}
                     </span>
                     {ticket.profiles?.is_pro && (
-                      <span className="text-[9px] font-bold uppercase tracking-widest bg-gradient-to-r from-amber-200 to-amber-500 text-amber-900 px-2 py-0.5 rounded-sm shadow-sm">
+                      <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-widest bg-gradient-to-r from-amber-200 to-amber-500 text-amber-900 px-1.5 py-0.5 rounded-sm shadow-sm">
                         PRO
                       </span>
                     )}
@@ -314,7 +369,7 @@ export default function AdminTicketDetailPage() {
                   Status Atual
                 </Label>
                 <div className="flex gap-2">
-                  <Badge className="font-bold">
+                  <Badge className="font-bold text-[9px] sm:text-[10px]">
                     {ticket.status.replace("_", " ")}
                   </Badge>
                 </div>

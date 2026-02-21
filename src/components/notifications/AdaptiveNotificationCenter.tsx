@@ -262,6 +262,35 @@ function FloatingNotificationContent({
     // Fechar o popover
     onClose();
 
+    const metadata = notification.metadata || {};
+    const titleLower = (notification.title || "").toLowerCase();
+
+    const isSupport =
+      notification.type === "support" ||
+      metadata.is_support === true ||
+      notification.action_url?.includes("/ajuda") ||
+      notification.action_url?.includes("/help") ||
+      notification.action_url?.includes("open=help") ||
+      titleLower.includes("suporte") ||
+      titleLower.includes("chamado");
+
+    if (isSupport) {
+      if (notification.action_url) {
+        try {
+          const url = new URL(notification.action_url, window.location.origin);
+          const convId = url.searchParams.get("conversation_id");
+          window.location.href = convId
+            ? `/ajuda?ticket_id=${convId}`
+            : "/ajuda?show=support";
+        } catch {
+          window.location.href = "/ajuda?show=support";
+        }
+      } else {
+        window.location.href = "/ajuda?show=support";
+      }
+      return;
+    }
+
     // Redirecionar para a página de notificações com destaque
     window.location.href = `/notificacoes?highlight=${notification.id}`;
   };

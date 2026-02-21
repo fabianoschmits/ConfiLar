@@ -64,7 +64,7 @@ export default function SupportModule({
     <div className="flex flex-col h-full overflow-hidden">
       {/* Dynamic Header based on view */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold flex items-center gap-2">
+        <h3 className="text-base sm:text-lg font-bold flex items-center gap-2">
           {view === "list" && "Meus Tickets de Suporte"}
           {view === "form" && "Novo Chamado"}
           {view === "chat" && "Conversa Suporte"}
