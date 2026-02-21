@@ -15,6 +15,7 @@ import {
   ShoppingCart,
   ShieldCheck,
   MessageSquare,
+  AlertTriangle,
 } from "lucide-react";
 
 const allNavItems = [
@@ -49,9 +50,9 @@ const allNavItems = [
     icon: FileText,
   },
   {
-    href: "/gestao-confi/dashboard/moderation",
-    label: "Moderação",
-    icon: Shield,
+    href: "/gestao-confi/dashboard/reports",
+    label: "Denúncias",
+    icon: AlertTriangle,
   },
   {
     href: "/gestao-confi/dashboard/tickets",

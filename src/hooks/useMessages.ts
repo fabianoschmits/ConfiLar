@@ -64,7 +64,7 @@ export interface Conversation {
   };
 }
 
-export function useMessages() {
+export function useMessages(activeConversationId?: string) {
   const { user, profile } = useAuthContext();
   const { addNotification } = useNotifications();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -181,9 +181,16 @@ export function useMessages() {
       );
 
       // Filtrar conversas vazias (sem nenhuma mensagem) para não poluir o chat
-      const nonEmptyConversations = conversationsWithMessages.filter(
-        (c) => c.last_message !== null,
-      );
+      // Mas permitir se for uma conversa muito recente (menos de 5 minutos)
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const nonEmptyConversations = conversationsWithMessages.filter((c) => {
+        // SEMPRE mostrar a conversa ativa se estiver selecionada, mesmo vazia
+        if (activeConversationId && c.id === activeConversationId) return true;
+
+        if (c.last_message !== null) return true;
+        // Se a conversa foi criada ou atualizada nos últimos 5 minutos, mostrar mesmo vazia
+        return c.updated_at > fiveMinutesAgo;
+      });
 
       setConversations(nonEmptyConversations);
     } catch (err) {
@@ -566,16 +573,27 @@ export function useMessages() {
             ad_id: adId,
             deleted_by_client: false,
             deleted_by_professional: false,
+            last_message_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
           })
           .select()
           .single();
 
         if (error) throw error;
 
+        const newConversation = data;
+
         // Recarregar conversas para incluir a nova
         await loadConversations();
 
-        return data.id;
+        // Enviar notificação de nova conversa
+        await sendNewConversationNotification({
+          ...newConversation,
+          client_id: clientId,
+          professional_id: professionalId,
+        } as any);
+
+        return newConversation.id;
       } catch (err) {
         console.error("❌ Erro ao criar/encontrar conversa:", err);
         return null;

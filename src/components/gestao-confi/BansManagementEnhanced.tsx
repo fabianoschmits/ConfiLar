@@ -21,6 +21,7 @@ import {
   User,
   MessageCircle,
   Flag,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Label } from "@/components/ui/label";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface Ban {
   id: string;
@@ -228,7 +231,7 @@ export function BansManagementEnhanced() {
   };
 
   const getStatusColor = (isActive: boolean) => {
-    return isActive ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800";
+    return isActive ? "destructive" : "success";
   };
 
   const getStatusText = (isActive: boolean) => {
@@ -238,11 +241,11 @@ export function BansManagementEnhanced() {
   const getBanTypeColor = (type: string) => {
     switch (type) {
       case "permanent":
-        return "bg-red-100 text-red-800";
+        return "destructive";
       case "temporary":
-        return "bg-yellow-100 text-yellow-800";
+        return "warning";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "secondary";
     }
   };
 
@@ -284,82 +287,114 @@ export function BansManagementEnhanced() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Gerenciamento de Banimentos
-        </h2>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold tracking-tight">
+            Gestão de Banimentos
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            Controle de usuários banidos e investigações em andamento.
+          </p>
+        </div>
         <Button
           variant="outline"
+          size="sm"
+          className="h-8 rounded-lg text-xs font-bold"
           onClick={() => {
             fetchBans();
             fetchInvestigations();
           }}
         >
-          <RefreshCw className="h-4 w-4 mr-2" />
+          <RefreshCw className="h-3.5 w-3.5 mr-2" />
           Atualizar
         </Button>
       </div>
 
       {/* Filtros */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="status-filter">Status</Label>
+      <Card className="border-none shadow-sm bg-muted/5">
+        <CardContent className="p-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex-1 min-w-[200px]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                <Input
+                  id="search"
+                  placeholder="Buscar por nome ou email..."
+                  value={filters.search}
+                  onChange={(e) =>
+                    setFilters({ ...filters, search: e.target.value })
+                  }
+                  className="pl-9 h-9 text-xs rounded-lg border-muted bg-background"
+                />
+              </div>
+            </div>
+
+            <div className="w-[180px]">
               <Select
                 value={filters.status}
                 onValueChange={(value) =>
                   setFilters({ ...filters, status: value })
                 }
               >
-                <SelectTrigger>
-                  <SelectValue />
+                <SelectTrigger className="h-9 text-xs rounded-lg bg-background">
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
                   <SelectItem value="active">Ativos</SelectItem>
-                  <SelectItem value="expired">Expirados</SelectItem>
                   <SelectItem value="revoked">Revogados</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="search">Buscar</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
-                <Input
-                  id="search"
-                  placeholder="Buscar por nome..."
-                  value={filters.search}
-                  onChange={(e) =>
-                    setFilters({ ...filters, search: e.target.value })
-                  }
-                  className="pl-10"
-                />
-              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-4"
+      >
+        <TabsList className="bg-muted/50 p-1 h-10 sm:h-12 rounded-xl">
           <TabsTrigger
             value="investigations"
-            className="flex items-center gap-2"
+            className="rounded-lg px-4 sm:px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm gap-2 text-xs sm:text-[11px] font-bold"
           >
-            <Shield className="h-4 w-4" />
-            Investigados ({filteredInvestigations.length})
+            <Shield className="h-3.5 w-3.5" />
+            Investigados
+            <Badge
+              variant="secondary"
+              className="ml-1 px-1 py-0 h-4 text-[9px] bg-muted/50"
+            >
+              {filteredInvestigations.length}
+            </Badge>
           </TabsTrigger>
-          <TabsTrigger value="bans" className="flex items-center gap-2">
-            <Ban className="h-4 w-4" />
-            Banidos ({filteredBans.length})
+          <TabsTrigger
+            value="bans"
+            className="rounded-lg px-4 sm:px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm gap-2 text-xs sm:text-[11px] font-bold"
+          >
+            <Ban className="h-3.5 w-3.5" />
+            Banidos Ativos
+            <Badge
+              variant="secondary"
+              className="ml-1 px-1 py-0 h-4 text-[9px] bg-muted/50"
+            >
+              {filteredBans.filter((b) => b.is_active).length}
+            </Badge>
           </TabsTrigger>
-          <TabsTrigger value="revoked" className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4" />
-            Revogados ({bans.filter((b) => !b.is_active).length})
+          <TabsTrigger
+            value="revoked"
+            className="rounded-lg px-4 sm:px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm gap-2 text-xs sm:text-[11px] font-bold"
+          >
+            <CheckCircle className="h-3.5 w-3.5" />
+            Histórico/Revogados
+            <Badge
+              variant="secondary"
+              className="ml-1 px-1 py-0 h-4 text-[9px] bg-muted/50"
+            >
+              {bans.filter((b) => !b.is_active).length}
+            </Badge>
           </TabsTrigger>
         </TabsList>
 
@@ -385,103 +420,115 @@ export function BansManagementEnhanced() {
                   {filteredInvestigations.map((investigation) => (
                     <Card
                       key={investigation.user.id}
-                      className="border-l-4 border-l-yellow-500"
+                      className="border-none shadow-sm overflow-hidden hover:border-primary/30 transition-all rounded-xl border border-border/50"
                     >
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <User className="h-4 w-4" />
-                              <span className="font-medium">
-                                {investigation.user.full_name}
-                              </span>
-                              <Badge variant="outline">
+                      <CardContent className="p-3 sm:p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              {investigation.user.avatar_url ? (
+                                <img
+                                  src={investigation.user.avatar_url}
+                                  className="w-8 h-8 rounded-full border border-border shadow-xs"
+                                />
+                              ) : (
+                                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground border border-border">
+                                  <User className="h-4 w-4" />
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <h3 className="font-bold text-sm truncate">
+                                  {investigation.user.full_name}
+                                </h3>
+                                <p className="text-[10px] text-muted-foreground truncate">
+                                  {investigation.user.email}
+                                </p>
+                              </div>
+                              <Badge
+                                variant="outline"
+                                className="text-[9px] px-1.5 py-0 h-4 ml-1"
+                              >
                                 {investigation.user.user_type}
                               </Badge>
-                              <Badge className="bg-yellow-100 text-yellow-800">
-                                Em Investigação
+                              <Badge className="text-[9px] px-1.5 py-0 h-4 bg-yellow-500/10 text-yellow-600 border-yellow-200">
+                                EM ANÁLISE
                               </Badge>
                             </div>
 
-                            <p className="text-sm text-gray-600 mb-2">
-                              {investigation.user.email}
-                            </p>
-
-                            <div className="grid grid-cols-3 gap-4 text-sm">
-                              <div>
-                                <span className="font-medium">
-                                  Total de Denúncias:
+                            <div className="flex gap-4 text-[11px] mt-2 mb-3 bg-muted/20 p-2 rounded-lg border border-border/30">
+                              <div className="flex flex-col">
+                                <span className="text-muted-foreground font-medium uppercase text-[9px] tracking-tight">
+                                  Total Denúncias
                                 </span>
-                                <span className="ml-2 text-red-600">
+                                <span className="font-black text-red-600">
                                   {investigation.total_reports}
                                 </span>
                               </div>
-                              <div>
-                                <span className="font-medium">Pendentes:</span>
-                                <span className="ml-2 text-yellow-600">
+                              <div className="flex flex-col">
+                                <span className="text-muted-foreground font-medium uppercase text-[9px] tracking-tight">
+                                  Pendentes
+                                </span>
+                                <span className="font-black text-yellow-600">
                                   {investigation.pending_reports}
                                 </span>
                               </div>
-                              <div>
-                                <span className="font-medium">Em Revisão:</span>
-                                <span className="ml-2 text-blue-600">
-                                  {investigation.reviewing_reports}
+                              <div className="flex flex-col">
+                                <span className="text-muted-foreground font-medium uppercase text-[9px] tracking-tight">
+                                  Última denúncia
+                                </span>
+                                <span className="font-bold">
+                                  {investigation.last_report_date
+                                    ? format(
+                                        new Date(
+                                          investigation.last_report_date,
+                                        ),
+                                        "dd/MM",
+                                      )
+                                    : "---"}
                                 </span>
                               </div>
                             </div>
 
-                            <div className="mt-3">
-                              <p className="text-sm font-medium mb-2">
-                                Resumo das Denúncias:
-                              </p>
-                              <div className="space-y-2">
-                                {investigation.reports
-                                  .slice(0, 3)
-                                  .map((report, idx) => (
-                                    <div
-                                      key={idx}
-                                      className="bg-gray-50 p-2 rounded text-xs"
-                                    >
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <Flag className="h-3 w-3" />
-                                        <span className="font-medium">
-                                          {report.type}
-                                        </span>
-                                        <Badge
-                                          className={
-                                            report.status === "pending"
-                                              ? "bg-yellow-100 text-yellow-800"
-                                              : "bg-blue-100 text-blue-800"
-                                          }
-                                        >
-                                          {report.status}
-                                        </Badge>
-                                      </div>
-                                      <p className="text-gray-600">
-                                        {report.description}
-                                      </p>
+                            <div className="space-y-1.5">
+                              {investigation.reports
+                                .slice(0, 2)
+                                .map((report, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="bg-muted/10 p-2 rounded-lg border border-border/20 text-xs flex flex-col gap-0.5"
+                                  >
+                                    <div className="flex items-center gap-1.5">
+                                      <Flag className="h-3 w-3 text-primary/60" />
+                                      <span className="font-bold text-[10px] uppercase">
+                                        {report.type}
+                                      </span>
+                                      <span className="text-[9px] text-muted-foreground uppercase ml-auto">
+                                        {format(
+                                          new Date(report.created_at),
+                                          "dd MMM HH:mm",
+                                          { locale: ptBR },
+                                        )}
+                                      </span>
                                     </div>
-                                  ))}
-                                {investigation.reports.length > 3 && (
-                                  <p className="text-xs text-gray-500">
-                                    +{investigation.reports.length - 3} mais
-                                    denúncias...
-                                  </p>
-                                )}
-                              </div>
+                                    <p className="text-muted-foreground italic text-[11px] line-clamp-1">
+                                      "{report.description}"
+                                    </p>
+                                  </div>
+                                ))}
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col gap-2">
                             <Button
-                              variant="outline"
+                              variant="destructive"
                               size="sm"
+                              className="h-8 rounded-lg text-[10px] font-bold uppercase tracking-wider"
                               onClick={() => {
                                 setSelectedUser(investigation);
                                 setShowBanModal(true);
                               }}
                             >
-                              <Ban className="h-4 w-4 mr-2" />
+                              <Ban className="h-3.5 w-3.5 mr-1.5" />
                               Banir
                             </Button>
                           </div>
@@ -511,116 +558,77 @@ export function BansManagementEnhanced() {
                   <p className="text-gray-500">Nenhum usuário banido</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="grid gap-3 sm:gap-4">
                   {filteredBans.map((ban) => (
-                    <div
+                    <Card
                       key={ban.id}
-                      className="border-l-4 border-l-red-500 bg-white dark:bg-gray-900 rounded-lg shadow cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors p-4"
-                      onClick={() => {
-                        console.log("Card clicked:", ban.id);
-                        handleBanClick(ban);
-                      }}
+                      className="overflow-hidden hover:border-primary/50 transition-all cursor-pointer group rounded-xl border-border/50"
+                      onClick={() => handleBanClick(ban)}
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <UserX className="h-4 w-4" />
-                            <span className="font-medium">
-                              {ban.profiles.full_name}
-                            </span>
-                            <Badge variant="outline">
-                              {ban.profiles.user_type}
-                            </Badge>
-                            <Badge className={getStatusColor(ban.is_active)}>
+                      <div className="flex items-center p-3 sm:p-4 gap-3 sm:gap-4">
+                        <div className="relative shrink-0">
+                          {ban.profiles?.avatar_url ? (
+                            <img
+                              src={ban.profiles.avatar_url}
+                              alt={ban.profiles.full_name}
+                              className="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover shadow-sm border border-border"
+                            />
+                          ) : (
+                            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground border border-border shadow-sm">
+                              <UserX className="w-4 h-4 sm:w-5 sm:h-5" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                            <Badge
+                              variant={getStatusColor(ban.is_active)}
+                              className="text-[8px] sm:text-[10px] uppercase font-bold px-1.5 h-3.5 sm:h-4"
+                            >
                               {getStatusText(ban.is_active)}
                             </Badge>
-                            <Badge className={getBanTypeColor(ban.ban_type)}>
-                              {ban.ban_type}
-                            </Badge>
-                          </div>
-
-                          <p className="text-sm text-gray-600 mb-2">
-                            {ban.profiles.email}
-                          </p>
-
-                          <div className="grid grid-cols-2 gap-4 text-sm mb-2">
-                            <div>
-                              <span className="font-medium">Motivo:</span>
-                              <span className="ml-2">{ban.reason}</span>
-                            </div>
-                            <div>
-                              <span className="font-medium">Banido em:</span>
-                              <span className="ml-2">
-                                {new Date(ban.created_at).toLocaleString()}
-                              </span>
-                            </div>
-                            {ban.expires_at && (
-                              <div>
-                                <span className="font-medium">Expira em:</span>
-                                <span className="ml-2">
-                                  {new Date(ban.expires_at).toLocaleString()}
-                                </span>
-                              </div>
-                            )}
-                            {ban.duration_days && (
-                              <div>
-                                <span className="font-medium">Duração:</span>
-                                <span className="ml-2">
-                                  {ban.duration_days} dias
-                                </span>
-                              </div>
-                            )}
-                          </div>
-
-                          {ban.admin_notes && (
-                            <div className="bg-gray-50 p-2 rounded text-xs">
-                              <span className="font-medium">
-                                Notas Administrativas:
-                              </span>
-                              <p className="text-gray-600">{ban.admin_notes}</p>
-                            </div>
-                          )}
-                        </div>
-
-                        <div
-                          className="flex items-center gap-2"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              console.log("Ver Detalhes clicked");
-                              handleBanClick(ban);
-                            }}
-                            className="text-blue-600 hover:text-blue-700"
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            Ver Detalhes
-                          </Button>
-                          {ban.is_active && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleUnbanClick(ban);
-                              }}
-                              className="text-green-600 border-green-200 hover:bg-green-50 hover:border-green-300"
+                            <Badge
+                              variant={getBanTypeColor(ban.ban_type)}
+                              className="text-[8px] sm:text-[10px] uppercase font-bold px-1.5 h-3.5 sm:h-4"
                             >
-                              <CheckCircle className="h-4 w-4 mr-2" />
-                              Desbanir
-                            </Button>
-                          )}
-                          {!ban.is_active && (
-                            <Badge className="bg-green-100 text-green-800">
-                              Desbanido
+                              {ban.ban_type === "permanent"
+                                ? "PERMANENTE"
+                                : "TEMPORÁRIO"}
+                            </Badge>
+                          </div>
+                          <h4 className="font-bold text-[13px] sm:text-sm truncate">
+                            {ban.profiles?.full_name}
+                          </h4>
+                          <div className="flex flex-col gap-0.5 mt-0.5">
+                            <p className="text-[10px] text-muted-foreground truncate">
+                              {ban.profiles?.email}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground line-clamp-1">
+                              <span className="font-medium">Motivo:</span>{" "}
+                              {ban.reason}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="hidden sm:flex flex-col items-end gap-1">
+                          {ban.expires_at ? (
+                            <div className="text-[10px] text-muted-foreground flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              Expira{" "}
+                              {format(new Date(ban.expires_at), "dd/MM/yyyy", {
+                                locale: ptBR,
+                              })}
+                            </div>
+                          ) : (
+                            <Badge variant="outline" className="text-[9px]">
+                              VITALÍCIO
                             </Badge>
                           )}
                         </div>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-all group-hover:translate-x-1" />
                       </div>
-                    </div>
+                    </Card>
                   ))}
                 </div>
               )}
@@ -628,71 +636,72 @@ export function BansManagementEnhanced() {
           </Card>
         </TabsContent>
 
-        {/* Aba de Revogados */}
         <TabsContent value="revoked">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5" />
-                Banimentos Revogados
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          <Card className="border-none shadow-none bg-transparent">
+            <CardContent className="p-0 space-y-4">
               {bans.filter((b) => !b.is_active).length === 0 ? (
-                <div className="text-center py-8">
-                  <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">Nenhum banimento revogado</p>
-                </div>
+                <Card className="border-dashed">
+                  <CardContent className="flex flex-col items-center justify-center py-12">
+                    <CheckCircle className="w-12 h-12 text-muted-foreground/30 mb-4" />
+                    <p className="text-muted-foreground text-sm font-medium">
+                      Nenhum banimento revogado no momento.
+                    </p>
+                  </CardContent>
+                </Card>
               ) : (
-                <div className="space-y-4">
+                <div className="grid gap-3 sm:gap-4">
                   {bans
                     .filter((b) => !b.is_active)
                     .map((ban) => (
                       <Card
                         key={ban.id}
-                        className="border-l-4 border-l-green-500"
+                        className="overflow-hidden hover:border-primary/50 transition-all cursor-pointer group rounded-xl border-border/50"
+                        onClick={() => handleBanClick(ban)}
                       >
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <User className="h-4 w-4" />
-                                <span className="font-medium">
-                                  {ban.profiles.full_name}
-                                </span>
-                                <Badge variant="outline">
-                                  {ban.profiles.user_type}
-                                </Badge>
-                                <Badge className="bg-green-100 text-green-800">
-                                  Revogado
-                                </Badge>
+                        <div className="flex items-center p-3 sm:p-4 gap-3 sm:gap-4">
+                          <div className="relative shrink-0">
+                            {ban.profiles?.avatar_url ? (
+                              <img
+                                src={ban.profiles.avatar_url}
+                                alt={ban.profiles.full_name}
+                                className="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover shadow-sm border border-border"
+                              />
+                            ) : (
+                              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground border border-border shadow-sm">
+                                <User className="w-4 h-4 sm:w-5 sm:h-5" />
                               </div>
-
-                              <p className="text-sm text-gray-600 mb-2">
-                                {ban.profiles.email}
-                              </p>
-
-                              <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                  <span className="font-medium">
-                                    Motivo Original:
-                                  </span>
-                                  <span className="ml-2">{ban.reason}</span>
-                                </div>
-                                <div>
-                                  <span className="font-medium">
-                                    Revogado em:
-                                  </span>
-                                  <span className="ml-2">
-                                    {new Date(
-                                      ban.updated_at || ban.created_at,
-                                    ).toLocaleString()}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
+                            )}
                           </div>
-                        </CardContent>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                              <Badge
+                                variant="success"
+                                className="text-[8px] sm:text-[10px] uppercase font-bold px-1.5 h-3.5 sm:h-4"
+                              >
+                                HISTÓRICO
+                              </Badge>
+                              <Badge
+                                variant="outline"
+                                className="text-[8px] sm:text-[10px] uppercase font-bold px-1.5 h-3.5 sm:h-4"
+                              >
+                                REVOGADO
+                              </Badge>
+                            </div>
+                            <h4 className="font-bold text-[13px] sm:text-sm truncate">
+                              {ban.profiles?.full_name}
+                            </h4>
+                            <p className="text-[10px] text-muted-foreground truncate">
+                              {ban.profiles?.email} • Revogado em{" "}
+                              {format(
+                                new Date(ban.updated_at || ban.created_at),
+                                "dd/MM/yy",
+                                { locale: ptBR },
+                              )}
+                            </p>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-all group-hover:translate-x-1" />
+                        </div>
                       </Card>
                     ))}
                 </div>

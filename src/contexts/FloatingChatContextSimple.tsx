@@ -135,6 +135,8 @@ export function FloatingChatProviderSimple({
             professional_id: professionalId,
             deleted_by_client: false,
             deleted_by_professional: false,
+            last_message_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
           })
           .select()
           .single();
@@ -151,6 +153,12 @@ export function FloatingChatProviderSimple({
         }
 
         console.log("✅ Nova conversa criada:", data.id);
+
+        // Disparar notificação de nova conversa (opcional, se NotificationProvider estiver disponível)
+        // Como o context não tem acesso direto ao hook useMessages de forma simples,
+        // a primeira mensagem enviada já disparará notificações via setupRealtime no hook useMessages.
+        // No entanto, para o toast/banner imediato no recebedor, o hook useMessages já trata isso via realtime se ele estiver montado.
+
         return data.id;
       } catch (err) {
         console.error("❌ Erro ao criar/encontrar conversa:", err);
@@ -224,8 +232,8 @@ export function FloatingChatProviderSimple({
           if (newConversationId) {
             console.log("✅ Conversa criada/encontrada:", newConversationId);
             setSelectedConversationId(newConversationId);
-            setTargetUserId(undefined);
-            setTargetUserName(undefined);
+            // Manter targetUserId e targetUserName como fallback até que a conversa carregue no UI
+            // Eles serão limpos ao fechar o chat ou selecionar outra conversa da lista
           } else {
             console.error("❌ Falha ao criar/encontrar conversa");
           }

@@ -58,7 +58,7 @@ export const adminNavItems = [
     description: "Gerenciar posts e conteúdo",
   },
   {
-    href: "/gestao-confi/dashboard/moderation",
+    href: "/gestao-confi/dashboard/reports",
     label: "Moderação",
     icon: Shield,
     description: "Denúncias e banimentos",

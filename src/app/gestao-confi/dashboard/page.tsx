@@ -415,19 +415,6 @@ export default function AdminDashboardPage() {
                 color="text-indigo-500"
               />
               <QuickLink
-                href="/gestao-confi/dashboard/moderation"
-                icon={Shield}
-                label="Moderação"
-                color="text-red-500"
-              />
-              <QuickLink
-                href="/gestao-confi/dashboard/tickets"
-                icon={MessageSquare}
-                label="Gestão de Tickets"
-                color="text-orange-500"
-                highlight
-              />
-              <QuickLink
                 href="/gestao-confi/dashboard/reports"
                 icon={AlertTriangle}
                 label="Denúncias"

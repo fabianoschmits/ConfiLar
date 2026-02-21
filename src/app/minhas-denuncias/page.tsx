@@ -1,367 +1,68 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Flag,
-  Clock,
-  CheckCircle,
-  XCircle,
-  Eye,
-  RefreshCw,
-  AlertTriangle,
-} from "lucide-react";
-import { supabase } from "@/lib/supabase";
-import { useAuthContext } from "@/contexts/AuthContext";
-import { DashboardSkeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
+import { Card } from "@/components/ui/card";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { Flag, Info } from "lucide-react";
 import { ClientOnly } from "@/components/ClientOnly";
-
-interface UserReport {
-  id: string;
-  type: "user" | "post" | "message" | "review" | "classified" | "other";
-  reason: string;
-  description: string;
-  status: "pending" | "reviewing" | "resolved" | "dismissed";
-  priority: "low" | "medium" | "high" | "urgent";
-  created_at: string;
-  updated_at: string;
-  admin_notes?: string;
-  resolution?: string;
-}
+import ReportsModule from "@/modules/reports/ReportsModule";
+import { useSearchParams } from "next/navigation";
 
 export default function MinhasDenunciasPage() {
-  const [reports, setReports] = useState<UserReport[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const { user } = useAuthContext();
-
-  const fetchUserReports = async () => {
-    if (!user?.id) return;
-
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("reports")
-        .select("*")
-        .eq("reporter_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Erro ao buscar denúncias:", error);
-        toast.error("Erro ao carregar suas denúncias");
-        return;
-      }
-
-      setReports(data || []);
-    } catch (error) {
-      console.error("Erro ao buscar denúncias:", error);
-      toast.error("Erro ao carregar suas denúncias");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (user?.id) {
-      fetchUserReports();
-    }
-  }, [user?.id]);
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "reviewing":
-        return "bg-blue-100 text-blue-800";
-      case "resolved":
-        return "bg-green-100 text-green-800";
-      case "dismissed":
-        return "bg-gray-100 text-gray-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "Pendente";
-      case "reviewing":
-        return "Em Revisão";
-      case "resolved":
-        return "Resolvida";
-      case "dismissed":
-        return "Dispensada";
-      default:
-        return status;
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "pending":
-        return <Clock className="h-4 w-4" />;
-      case "reviewing":
-        return <Eye className="h-4 w-4" />;
-      case "resolved":
-        return <CheckCircle className="h-4 w-4" />;
-      case "dismissed":
-        return <XCircle className="h-4 w-4" />;
-      default:
-        return <AlertTriangle className="h-4 w-4" />;
-    }
-  };
-
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case "user":
-        return "Usuário";
-      case "post":
-        return "Post";
-      case "message":
-        return "Mensagem";
-      case "review":
-        return "Avaliação";
-      case "classified":
-        return "Anúncio Classificado";
-      default:
-        return "Outros";
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "urgent":
-        return "bg-error-100 text-error-800 dark:bg-error-900/20 dark:text-error-400";
-      case "high":
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400";
-      case "medium":
-        return "bg-warning-100 text-warning-800 dark:bg-warning-900/20 dark:text-warning-400";
-      case "low":
-        return "bg-success-100 text-success-800 dark:bg-success-900/20 dark:text-success-400";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400";
-    }
-  };
-
-  const getPriorityLabel = (priority: string) => {
-    switch (priority) {
-      case "urgent":
-        return "Urgente";
-      case "high":
-        return "Alta";
-      case "medium":
-        return "Média";
-      case "low":
-        return "Baixa";
-      default:
-        return priority;
-    }
-  };
-
-  if (!user) {
-    return (
-      <ClientOnly>
-        <MainLayout requireAuth={true}>
-          <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
-            <Alert>
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                Você precisa estar logado para ver suas denúncias.
-              </AlertDescription>
-            </Alert>
-          </div>
-        </MainLayout>
-      </ClientOnly>
-    );
-  }
+  const searchParams = useSearchParams();
+  const reportId = searchParams.get("id");
 
   return (
     <ClientOnly>
       <MainLayout requireAuth={true}>
         <div className="min-h-screen bg-gray-50 dark:bg-black">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-4xl mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-8">
             {/* Header */}
-            <div className="flex items-center justify-between mb-8">
+            <div className="mb-8 flex items-center gap-3">
+              <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                <Flag className="h-8 w-8 text-red-600 dark:text-red-400" />
+              </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  <Flag className="h-8 w-8 text-blue-500" />
-                  Minhas Denúncias
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                  Central de Denúncias
                 </h1>
-                <p className="text-gray-600 mt-2">
-                  Acompanhe o status de suas denúncias enviadas
+                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+                  Acompanhe o status e as resoluções das suas denúncias.
                 </p>
               </div>
-              <Button
-                onClick={fetchUserReports}
-                disabled={isLoading}
-                variant="outline"
-              >
-                <RefreshCw
-                  className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
-                />
-                Atualizar
-              </Button>
             </div>
 
-            {/* Estatísticas */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Total</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {reports.length}
-                      </p>
-                    </div>
-                    <Flag className="h-8 w-8 text-blue-500" />
-                  </div>
-                </CardContent>
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <Card className="min-h-[500px] sm:min-h-[600px] p-3 sm:p-6 bg-background/60 backdrop-blur-md border-red-100 dark:border-red-900/20">
+                <ReportsModule initialReportId={reportId} />
               </Card>
 
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Pendentes
-                      </p>
-                      <p className="text-2xl font-bold text-yellow-600">
-                        {reports.filter((r) => r.status === "pending").length}
-                      </p>
-                    </div>
-                    <Clock className="h-8 w-8 text-yellow-500" />
+              {/* Tips Section */}
+              <div className="mt-8 grid sm:grid-cols-2 gap-4">
+                <Card className="p-4 bg-white dark:bg-gray-900 border-none shadow-sm flex items-start gap-3">
+                  <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <Info className="w-5 h-5 text-blue-600" />
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Resolvidas
-                      </p>
-                      <p className="text-2xl font-bold text-green-600">
-                        {reports.filter((r) => r.status === "resolved").length}
-                      </p>
-                    </div>
-                    <CheckCircle className="h-8 w-8 text-green-500" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Dispensadas
-                      </p>
-                      <p className="text-2xl font-bold text-gray-600">
-                        {reports.filter((r) => r.status === "dismissed").length}
-                      </p>
-                    </div>
-                    <XCircle className="h-8 w-8 text-gray-500" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Lista de Denúncias */}
-            <div className="space-y-4">
-              {reports.length === 0 ? (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <Flag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                      Nenhuma denúncia encontrada
-                    </h3>
-                    <p className="text-gray-500">
-                      Você ainda não enviou nenhuma denúncia.
+                  <div>
+                    <h4 className="font-bold text-sm">Transparência</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Nossa equipe analisa cada denúncia individualmente para
+                      garantir um ambiente seguro para todos.
                     </p>
-                  </CardContent>
+                  </div>
                 </Card>
-              ) : (
-                reports.map((report) => (
-                  <Card
-                    key={report.id}
-                    className="hover:shadow-md transition-shadow"
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="font-semibold text-lg">
-                              Denúncia de {getTypeLabel(report.type)}
-                            </h3>
-                            <Badge
-                              className={`${getStatusColor(report.status)} flex items-center gap-1`}
-                            >
-                              {getStatusIcon(report.status)}
-                              {getStatusLabel(report.status)}
-                            </Badge>
-                            <Badge
-                              className={`${getPriorityColor(report.priority)}`}
-                            >
-                              {getPriorityLabel(report.priority)}
-                            </Badge>
-                          </div>
-                          <p className="text-gray-600 mb-2">
-                            <strong>Motivo:</strong> {report.reason}
-                          </p>
-                          <p className="text-gray-700 mb-3">
-                            {report.description}
-                          </p>
-                          <div className="flex items-center gap-4 text-sm text-gray-500">
-                            <span>
-                              <strong>Criada:</strong>{" "}
-                              {new Date(report.created_at).toLocaleDateString(
-                                "pt-BR",
-                              )}
-                            </span>
-                            <span>
-                              <strong>Atualizada:</strong>{" "}
-                              {new Date(report.updated_at).toLocaleDateString(
-                                "pt-BR",
-                              )}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Notas do Admin */}
-                      {report.admin_notes && (
-                        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                          <h4 className="font-medium text-blue-900 mb-1">
-                            Nota do Administrador:
-                          </h4>
-                          <p className="text-blue-800 text-sm">
-                            {report.admin_notes}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Resolução */}
-                      {report.resolution && (
-                        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                          <h4 className="font-medium text-green-900 mb-1">
-                            Resolução:
-                          </h4>
-                          <p className="text-green-800 text-sm">
-                            {report.resolution}
-                          </p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))
-              )}
+                <Card className="p-4 bg-white dark:bg-gray-900 border-none shadow-sm flex items-start gap-3">
+                  <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                    <Flag className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm">Responsabilidade</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Use este canal com responsabilidade. Denúncias falsas
+                      prejudicam o sistema e outros usuários.
+                    </p>
+                  </div>
+                </Card>
+              </div>
             </div>
           </div>
         </div>

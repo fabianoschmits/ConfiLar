@@ -181,7 +181,13 @@ export function ReportDialog({
       toast.success(
         "Denúncia enviada com sucesso! Nossa equipe irá analisá-la.",
       );
+
       onOpenChange(false);
+
+      // Redirecionar para a central de denúncias para o usuário acompanhar
+      if (insertedReport) {
+        window.location.href = `/minhas-denuncias?id=${insertedReport.id}`;
+      }
     } catch (error) {
       console.error("Erro ao enviar denúncia:", error);
       toast.error("Erro ao enviar denúncia. Tente novamente.");

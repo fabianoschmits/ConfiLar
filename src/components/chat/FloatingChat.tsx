@@ -40,6 +40,7 @@ export function FloatingChat() {
     selectConversation,
     openChat,
     targetUserId,
+    targetUserName,
   } = useFloatingChat();
   const {
     conversations,
@@ -53,7 +54,7 @@ export function FloatingChat() {
     editMessage,
     getTotalUnreadCount,
     sendNewConversationNotification,
-  } = useMessages();
+  } = useMessages(selectedConversationId);
 
   const { favorites, isFavorite } = useFavorites();
   const { notifications } = useNotifications();
@@ -521,7 +522,12 @@ export function FloatingChat() {
 
   // Enviar mensagem
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !selectedConversation || !user?.id || sending)
+    if (
+      !newMessage.trim() ||
+      (!selectedConversation && !selectedConversationId) ||
+      !user?.id ||
+      sending
+    )
       return;
 
     try {
@@ -537,7 +543,7 @@ export function FloatingChat() {
 
       // Enviar mensagem
       const success = await sendMessage(
-        selectedConversation.id,
+        selectedConversation?.id || selectedConversationId!,
         messageContent,
       );
 
@@ -686,7 +692,7 @@ export function FloatingChat() {
                 />
               </div>
               <CardContent className="p-0 flex-1 min-h-0 flex flex-col overflow-hidden">
-                {!selectedConversation ? (
+                {!selectedConversationId ? (
                   /* Lista de Conversas */
                   <div className="p-4 h-full flex flex-col">
                     <div className="flex items-center justify-between mb-4">
@@ -985,79 +991,94 @@ export function FloatingChat() {
                       <div className="flex items-center justify-between">
                         <Link
                           href={`/perfil/${
-                            user.id === selectedConversation.client_id
-                              ? selectedConversation.professional.id
-                              : selectedConversation.client.id
+                            selectedConversation
+                              ? user.id === selectedConversation.client_id
+                                ? selectedConversation.professional.id
+                                : selectedConversation.client.id
+                              : targetUserId
                           }`}
                           className="flex items-center gap-3 flex-1"
                         >
                           <div className="relative">
                             <UserAvatar
                               src={
-                                user.id === selectedConversation.client_id
-                                  ? selectedConversation.professional.avatar_url
-                                  : selectedConversation.client.avatar_url
+                                selectedConversation
+                                  ? user.id === selectedConversation.client_id
+                                    ? selectedConversation.professional
+                                        .avatar_url
+                                    : selectedConversation.client.avatar_url
+                                  : undefined
                               }
                               alt={
-                                user.id === selectedConversation.client_id
+                                selectedConversation
+                                  ? user.id === selectedConversation.client_id
+                                    ? selectedConversation.professional
+                                        .full_name
+                                    : selectedConversation.client.full_name
+                                  : targetUserName || "Usuário"
+                              }
+                              fallback={(selectedConversation
+                                ? user.id === selectedConversation.client_id
                                   ? selectedConversation.professional.full_name
                                   : selectedConversation.client.full_name
-                              }
-                              fallback={
-                                user.id === selectedConversation.client_id
-                                  ? selectedConversation.professional.full_name
-                                      .charAt(0)
-                                      .toUpperCase()
-                                  : selectedConversation.client.full_name
-                                      .charAt(0)
-                                      .toUpperCase()
-                              }
+                                : targetUserName || "U"
+                              )
+                                .charAt(0)
+                                .toUpperCase()}
                               size="md"
                               className="w-10 h-10"
                             />
                           </div>
                           <div className="flex-1">
                             <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm">
-                              {user.id === selectedConversation.client_id
-                                ? selectedConversation.professional.full_name
-                                : selectedConversation.client.full_name}
+                              {selectedConversation
+                                ? user.id === selectedConversation.client_id
+                                  ? selectedConversation.professional.full_name
+                                  : selectedConversation.client.full_name
+                                : targetUserName || "Iniciando conversa..."}
                             </h4>
                             <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                              {user.id === selectedConversation.client_id
-                                ? selectedConversation.professional.user_type
-                                : selectedConversation.client.user_type}
+                              {selectedConversation
+                                ? user.id === selectedConversation.client_id
+                                  ? selectedConversation.professional.user_type
+                                  : selectedConversation.client.user_type
+                                : "Aguarde..."}
                             </p>
                           </div>
                         </Link>
 
                         {/* Botões de Ação - Canto Direito */}
                         <div className="flex items-center gap-0.5 ml-4">
-                          <RequestEvaluationButton
-                            targetUserId={
-                              user.id === selectedConversation.client_id
-                                ? selectedConversation.professional.id
-                                : selectedConversation.client.id
-                            }
-                            targetUserName={
-                              user.id === selectedConversation.client_id
-                                ? selectedConversation.professional.full_name
-                                : selectedConversation.client.full_name
-                            }
-                          />
-                          <ConversationMenu
-                            conversationId={selectedConversation.id}
-                            onDelete={async (conversationId) => {
-                              const success =
-                                await deleteConversation(conversationId);
-                              if (success) {
-                                goBackToConversations();
+                          {selectedConversation && (
+                            <RequestEvaluationButton
+                              targetUserId={
+                                user.id === selectedConversation.client_id
+                                  ? selectedConversation.professional.id
+                                  : selectedConversation.client.id
                               }
-                              return success;
-                            }}
-                            disabled={sending}
-                            conversationData={selectedConversation}
-                            messages={messages}
-                          />
+                              targetUserName={
+                                user.id === selectedConversation.client_id
+                                  ? selectedConversation.professional.full_name
+                                  : selectedConversation.client.full_name
+                              }
+                            />
+                          )}
+                          {selectedConversation && (
+                            <ConversationMenu
+                              conversationId={selectedConversation.id}
+                              onDelete={async (conversationId) => {
+                                const success =
+                                  await deleteConversation(conversationId);
+                                if (success) {
+                                  goBackToConversations();
+                                }
+                                return success;
+                              }}
+                              disabled={sending}
+                              conversationData={selectedConversation}
+                              messages={messages}
+                            />
+                          )}
                         </div>
                       </div>
                     </div>

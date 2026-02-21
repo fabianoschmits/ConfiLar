@@ -42,8 +42,8 @@ export function useReports() {
         .select(
           `
           *,
-          reporter:reporter_id(full_name),
-          reported_user:reported_user_id(full_name),
+          reporter:reporter_id(full_name, avatar_url),
+          reported_user:reported_user_id(full_name, avatar_url),
           classified_ad:reported_classified_id(title, description, user_name),
           reported_story:reported_story_id(image_url, user_id)
         `,
