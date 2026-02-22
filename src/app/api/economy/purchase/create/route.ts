@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/authenticatedRoute";
+import { createAdminSupabaseClient } from "@/lib/supabase";
 
 /**
  * POST /api/economy/purchase/create
@@ -22,12 +23,16 @@ export const POST = withAuth(
         return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
       }
 
-      // Criar compra para o usuário autenticado
-      const { data, error } = await supabaseAuth.rpc("create_points_purchase", {
-        p_user_id: user.id, // 🔒 Sempre ID autenticado
-        p_package_id: package_id,
-        p_payment_method: payment_method,
-      });
+      // Criar compra para o usuário autenticado (Admin Client para bypass REVOKE)
+      const supabaseAdmin = createAdminSupabaseClient();
+      const { data, error } = await supabaseAdmin.rpc(
+        "create_points_purchase",
+        {
+          p_user_id: user.id, // 🔒 Sempre ID autenticado
+          p_package_id: package_id,
+          p_payment_method: payment_method,
+        },
+      );
 
       if (error) {
         console.error("Erro ao criar compra:", error);

@@ -89,14 +89,22 @@ export function usePointsPurchases(userId?: string) {
 
   const createPurchaseMutation = useMutation({
     mutationFn: async (request: CreatePointsPurchaseRequest) => {
-      const { data, error } = await supabase.rpc("create_points_purchase", {
-        p_user_id: userId,
-        p_package_id: request.package_id,
-        p_payment_method: request.payment_method,
+      // Usar API Route segura em vez de RPC direta (REVOKE aplicado no banco)
+      const response = await fetch("/api/economy/purchase/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          package_id: request.package_id,
+          payment_method: request.payment_method,
+        }),
       });
 
-      if (error) throw error;
-      return data;
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Erro ao criar compra");
+      }
+      return result.purchase_id;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["points-purchases", userId] });

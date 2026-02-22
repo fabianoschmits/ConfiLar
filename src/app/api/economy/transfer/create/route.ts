@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/authenticatedRoute";
+import { createAdminSupabaseClient } from "@/lib/supabase";
 
 /**
  * POST /api/economy/transfer/create
@@ -36,8 +37,9 @@ export const POST = withAuth(
         );
       }
 
-      // Criar transferência do usuário autenticado
-      const { data, error } = await supabaseAuth.rpc("transfer_points", {
+      // Criar transferência do usuário autenticado (Admin Client para bypass REVOKE)
+      const supabaseAdmin = createAdminSupabaseClient();
+      const { data, error } = await supabaseAdmin.rpc("transfer_points", {
         p_from_user_id: user.id, // 🔒 Sempre ID autenticado
         p_to_user_id: to_user_id,
         p_points_amount: points_amount,
