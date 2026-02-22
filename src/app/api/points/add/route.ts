@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/authenticatedRoute";
 import { AddPointsRequest } from "@/types/points";
+import { createAdminSupabaseClient } from "@/lib/supabase";
 
 /**
  * POST /api/points/add
@@ -34,7 +35,8 @@ export const POST = withAuth(
       };
 
       // Adicionar pontos ao usuário autenticado (RPC agora segura e server-side)
-      const { data, error } = await supabaseAuth.rpc("add_points", {
+      const supabaseAdmin = createAdminSupabaseClient();
+      const { data, error } = await supabaseAdmin.rpc("add_points", {
         p_user_id: user.id,
         p_points: 0, // Lookup automático via p_source (action_type)
         p_source: body.action_type,
