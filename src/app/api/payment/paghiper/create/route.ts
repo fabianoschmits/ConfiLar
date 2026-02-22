@@ -33,18 +33,16 @@ export const POST = withAuth(
         .eq("id", package_id)
         .single();
 
-      if (!pack && !body.amount) {
+      if (!pack) {
         return NextResponse.json(
-          { error: "Pacote inválido ou valor não informado." },
+          { error: "Pacote inválido ou não encontrado." },
           { status: 400 },
         );
       }
 
       // Calculate values
-      const amountInCentavos = pack
-        ? Math.round(pack.price_brl * 100)
-        : Math.round(body.amount * 100);
-      const pointsAmount = pack ? pack.points : body.points;
+      const amountInCentavos = Math.round(pack.price_brl * 100);
+      const pointsAmount = pack.points;
       const phoneClean = customer.phone
         ? customer.phone.replace(/\D/g, "")
         : "";

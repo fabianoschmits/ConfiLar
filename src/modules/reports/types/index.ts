@@ -21,6 +21,8 @@ export interface Report {
   reported_user_id?: string;
   reported_post_id?: string;
   reported_message_id?: string;
+  reported_review_id?: string;
+  reported_comment_id?: string;
   reported_classified_id?: string;
   reported_story_id?: string;
   admin_notes?: string;
@@ -60,6 +62,22 @@ export interface Report {
     sender_id?: string;
     created_at?: string;
   };
+  reported_review?: {
+    id: string;
+    comment: string;
+    rating: number;
+    created_at: string;
+    [key: string]: any;
+  };
+  reported_comment?: {
+    id: string;
+    content: string;
+    created_at: string;
+    [key: string]: any;
+  };
+  // Compatibility aliases
+  review_details?: any;
+  classified_ad?: any;
 }
 
 export interface CreateReportDTO {

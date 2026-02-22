@@ -125,6 +125,7 @@ export function ReportDialog({
     try {
       const reportData = {
         type: type,
+        report_type: type, // Adicionado para consistência com o banco
         reason: "Denúncia de conteúdo",
         description: formData.description.trim(),
         priority: formData.priority,
@@ -134,7 +135,8 @@ export function ReportDialog({
         // IDs específicos de conteúdo
         ...(type === "post" && { reported_post_id: targetId }),
         ...(type === "message" && { reported_message_id: targetId }),
-        ...(type === "review" && { reported_message_id: targetId }),
+        ...(type === "review" && { reported_review_id: targetId }), // Corrigido: era reported_message_id
+        ...(type === "comment" && { reported_comment_id: targetId }), // Adicionado
         ...(type === "classified" && { reported_classified_id: targetId }),
         ...(type === "story" && { reported_story_id: targetId }),
       };

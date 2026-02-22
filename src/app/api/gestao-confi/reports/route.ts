@@ -39,6 +39,7 @@ export const GET = withAdminAuth(
           let classifiedAd = null;
           let conversationMessages = null;
           let reviewDetails = null;
+          let reportedComment = null;
 
           // Buscar informações do denunciante
           if (report.reporter_id) {
@@ -109,7 +110,7 @@ export const GET = withAdminAuth(
           }
 
           // Para denúncias de avaliação, buscar detalhes da avaliação
-          if (report.type === "review") {
+          if (report.reported_review_id) {
             const { data: reviewData } = await adminSupabase
               .from("reviews")
               .select(
@@ -123,10 +124,20 @@ export const GET = withAdminAuth(
               profiles!reviews_reviewer_id_fkey(full_name, avatar_url)
             `,
               )
-              .eq("id", report.reported_message_id)
+              .eq("id", report.reported_review_id)
               .single();
 
             reviewDetails = reviewData;
+          }
+
+          // Para denúncias de comentário
+          if (report.reported_comment_id) {
+            const { data: commentData } = await adminSupabase
+              .from("comments")
+              .select("*")
+              .eq("id", report.reported_comment_id)
+              .single();
+            reportedComment = commentData;
           }
 
           return {
@@ -137,6 +148,7 @@ export const GET = withAdminAuth(
             classified_ad: classifiedAd,
             conversation_messages: conversationMessages,
             review_details: reviewDetails,
+            reported_comment: reportedComment,
           };
         }),
       );

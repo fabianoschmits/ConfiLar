@@ -793,6 +793,9 @@ export interface Database {
           reported_post_id: string | null;
           reported_message_id: string | null;
           reported_classified_id: string | null;
+          reported_review_id: string | null;
+          reported_comment_id: string | null;
+          reported_story_id: string | null;
           admin_notes: string | null;
           resolution: string | null;
           created_at: string;

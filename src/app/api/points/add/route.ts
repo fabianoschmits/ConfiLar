@@ -25,23 +25,6 @@ export const POST = withAuth(
         );
       }
 
-      // Buscar valor de pontos da configuração
-      const { data: config, error: configError } = await supabaseAuth
-        .from("points_config")
-        .select("points_value")
-        .eq("action_key", body.action_type)
-        .eq("is_active", true)
-        .single();
-
-      if (configError || !config) {
-        return NextResponse.json(
-          { error: "Configuração de pontos não encontrada" },
-          { status: 400 },
-        );
-      }
-
-      const points = config.points_value;
-
       // Montar metadata com informações extras
       const metadata = {
         ...body.metadata,
@@ -50,22 +33,26 @@ export const POST = withAuth(
         related_user_id: body.related_user_id,
       };
 
-      // Adicionar pontos ao usuário autenticado
+      // Adicionar pontos ao usuário autenticado (RPC agora segura e server-side)
       const { data, error } = await supabaseAuth.rpc("add_points", {
-        p_user_id: user.id, // 🔒 Sempre ID autenticado
-        p_points: points,
+        p_user_id: user.id,
+        p_points: 0, // Ignorado pela nova RPC
         p_source: body.action_type,
         p_description: body.description,
         p_metadata: metadata,
       });
 
-      if (error) {
-        console.error("Erro ao adicionar pontos:", error);
+      if (error || !data || !data.success) {
+        console.error("Erro ao adicionar pontos:", error || data?.error);
         return NextResponse.json(
-          { error: "Erro ao adicionar pontos" },
+          {
+            error: error?.message || data?.error || "Erro ao adicionar pontos",
+          },
           { status: 500 },
         );
       }
+
+      const points = data.points_added;
 
       // Criar notificação se for um tipo de referral
       const referralTypes = [

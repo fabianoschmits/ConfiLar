@@ -109,6 +109,11 @@ interface Report {
       avatar_url?: string;
     };
   };
+  reported_comment?: {
+    id: string;
+    content: string;
+    created_at: string;
+  };
 }
 
 interface ReportStats {
@@ -1002,7 +1007,8 @@ export function ReportsManagement() {
                           </p>
                           <p className="text-sm font-medium">
                             Avaliador:{" "}
-                            {selectedReport.review_details.profiles.full_name}
+                            {selectedReport.review_details.profiles
+                              ?.full_name || "N/A"}
                           </p>
                         </div>
                         <div>
@@ -1020,6 +1026,23 @@ export function ReportsManagement() {
                           {selectedReport.review_details.comment}
                         </p>
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Detalhes do comentário */}
+                {selectedReport.reported_comment && (
+                  <div>
+                    <Label className="text-sm font-medium">
+                      💬 Comentário Denunciado
+                    </Label>
+                    <div className="bg-blue-50 p-4 rounded-lg mt-2">
+                      <p className="text-sm text-gray-600">
+                        {selectedReport.reported_comment.content}
+                      </p>
+                      <p className="text-[10px] text-gray-400 mt-2">
+                        ID: {selectedReport.reported_comment.id}
+                      </p>
                     </div>
                   </div>
                 )}

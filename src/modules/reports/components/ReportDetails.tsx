@@ -106,7 +106,9 @@ export function ReportDetails({
         {(report.reported_post ||
           report.reported_story ||
           report.reported_classified ||
-          report.reported_message) && (
+          report.reported_message ||
+          report.reported_comment ||
+          report.reported_review) && (
           <div className="p-3 bg-muted/20 border border-border/30 rounded-2xl space-y-2">
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1">
               Conteúdo Denunciado
@@ -133,13 +135,19 @@ export function ReportDetails({
                       ? "Postagem no Feed"
                       : report.type === "story"
                         ? "Story"
-                        : "Mensagem")}
+                        : report.type === "review"
+                          ? "Avaliação"
+                          : report.type === "comment"
+                            ? "Comentário"
+                            : "Mensagem")}
                 </p>
                 <p className="text-[11px] text-muted-foreground line-clamp-2 italic">
                   "
                   {report.reported_post?.content ||
                     report.reported_classified?.description ||
                     report.reported_message?.content ||
+                    report.reported_comment?.content ||
+                    report.reported_review?.comment ||
                     "Conteúdo visual"}
                   "
                 </p>

@@ -402,7 +402,7 @@ function AjudaContent() {
                 <ExternalLink className="w-4 h-4 text-muted-foreground ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
               </a>
               <a
-                href="https://instagram.com/confilar"
+                href="https://www.instagram.com/appconfilar"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-4 p-4 rounded-2xl bg-background border border-border/50 hover:border-primary/50 hover:bg-muted/30 transition-all group"
@@ -412,7 +412,9 @@ function AjudaContent() {
                 </div>
                 <div>
                   <h4 className="text-sm font-bold">Instagram</h4>
-                  <p className="text-[10px] text-muted-foreground">@confilar</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    @appconfilar
+                  </p>
                 </div>
                 <ExternalLink className="w-4 h-4 text-muted-foreground ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
               </a>

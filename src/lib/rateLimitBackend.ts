@@ -1,16 +1,11 @@
-/**
- * Rate Limiting para Backend (API Routes)
- * Sistema de controle de taxa de requisições no servidor
- */
+import { createClient } from "@supabase/supabase-js";
 
-interface RateLimitEntry {
-  count: number;
-  resetTime: number;
-  blockedUntil?: number;
-}
-
-// Armazenamento em memória (em produção, usar Redis)
-const rateLimitStore = new Map<string, RateLimitEntry>();
+// Inicializar cliente admin interno para rate limit
+// Nota: Em produção, estas envs devem estar configuradas no Vercel
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+  process.env.SUPABASE_SERVICE_ROLE_KEY || "", // Requer service role para bypass de RLS se necessário
+);
 
 interface RateLimitConfig {
   maxRequests: number;
@@ -84,70 +79,60 @@ export interface RateLimitResult {
 }
 
 /**
- * Verificar rate limit para uma chave específica
+ * Verificar rate limit para uma chave específica usando persistência no banco (Serverless Ready)
  */
-export function checkRateLimit(
+export async function checkRateLimit(
   key: string,
   config: RateLimitConfig,
-): RateLimitResult {
-  const now = Date.now();
-  let entry = rateLimitStore.get(key);
+): Promise<RateLimitResult> {
+  try {
+    const { data, error } = await supabaseAdmin.rpc(
+      "check_rate_limit_persistent",
+      {
+        p_key: key,
+        p_max_requests: config.maxRequests,
+        p_window_ms: config.windowMs,
+        p_block_ms: config.blockDurationMs,
+      },
+    );
 
-  // Verificar se está bloqueado
-  if (entry?.blockedUntil && entry.blockedUntil > now) {
+    if (error) {
+      console.error("❌ Erro no Rate Limit Persistent:", error);
+      // Fallback: permitir em caso de erro no banco para não bloquear o serviço
+      return {
+        allowed: true,
+        limit: config.maxRequests,
+        remaining: 1,
+        resetTime: Date.now() + config.windowMs,
+      };
+    }
+
+    if (data.allowed) {
+      return {
+        allowed: true,
+        limit: config.maxRequests,
+        remaining: data.remaining,
+        resetTime: data.reset_time * 1000,
+      };
+    }
+
     return {
       allowed: false,
       limit: config.maxRequests,
       remaining: 0,
-      resetTime: entry.resetTime,
-      blockedUntil: entry.blockedUntil,
-      message: config.message || "Requisições bloqueadas temporariamente",
+      resetTime: Date.now() + (data.retry_after || 0) * 1000,
+      blockedUntil: Date.now() + (data.retry_after || 0) * 1000,
+      message: config.message || "Limite de requisições excedido",
     };
-  }
-
-  // Se não existe entrada ou passou do tempo de reset, criar nova
-  if (!entry || entry.resetTime < now) {
-    entry = {
-      count: 1,
-      resetTime: now + config.windowMs,
-    };
-    rateLimitStore.set(key, entry);
-
+  } catch (err) {
+    console.error("❌ Erro fatal no Rate Limit:", err);
     return {
       allowed: true,
       limit: config.maxRequests,
-      remaining: config.maxRequests - 1,
-      resetTime: entry.resetTime,
+      remaining: 1,
+      resetTime: Date.now() + config.windowMs,
     };
   }
-
-  // Incrementar contador
-  entry.count++;
-
-  // Se excedeu o limite, bloquear
-  if (entry.count > config.maxRequests) {
-    entry.blockedUntil = now + config.blockDurationMs;
-    rateLimitStore.set(key, entry);
-
-    return {
-      allowed: false,
-      limit: config.maxRequests,
-      remaining: 0,
-      resetTime: entry.resetTime,
-      blockedUntil: entry.blockedUntil,
-      message: config.message || "Limite de requisições excedido",
-    };
-  }
-
-  // Atualizar entrada
-  rateLimitStore.set(key, entry);
-
-  return {
-    allowed: true,
-    limit: config.maxRequests,
-    remaining: config.maxRequests - entry.count,
-    resetTime: entry.resetTime,
-  };
 }
 
 /**
@@ -163,41 +148,8 @@ export function getRateLimitKey(
 }
 
 /**
- * Limpar entradas expiradas (cleanup automático)
- */
-export function cleanupExpiredEntries(): void {
-  const now = Date.now();
-  const keysToDelete: string[] = [];
-
-  rateLimitStore.forEach((entry, key) => {
-    // Remover se passou do tempo de reset e não está bloqueado
-    if (
-      entry.resetTime < now &&
-      (!entry.blockedUntil || entry.blockedUntil < now)
-    ) {
-      keysToDelete.push(key);
-    }
-  });
-
-  keysToDelete.forEach((key) => rateLimitStore.delete(key));
-}
-
-// Executar limpeza a cada 5 minutos
-if (typeof window === "undefined") {
-  // Apenas no servidor
-  setInterval(cleanupExpiredEntries, 5 * 60 * 1000);
-}
-
-/**
  * Resetar rate limit para uma chave específica (útil para testes)
  */
-export function resetRateLimit(key: string): void {
-  rateLimitStore.delete(key);
-}
-
-/**
- * Obter informações de rate limit sem incrementar contador
- */
-export function getRateLimitInfo(key: string): RateLimitEntry | null {
-  return rateLimitStore.get(key) || null;
+export async function resetRateLimit(key: string): Promise<void> {
+  await supabaseAdmin.from("rate_limits").delete().eq("key", key);
 }

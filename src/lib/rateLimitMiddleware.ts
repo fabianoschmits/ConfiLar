@@ -48,7 +48,7 @@ export function withRateLimit(
 
       // Verificar rate limit
       const config = RateLimitConfigs[limitType];
-      const result = checkRateLimit(key, config);
+      const result = await checkRateLimit(key, config);
 
       // Se bloqueado, retornar erro 429
       if (!result.allowed) {

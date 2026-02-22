@@ -13,7 +13,9 @@ export const reportService = {
                 reported_post:reported_post_id(*),
                 reported_story:reported_story_id(image_url),
                 reported_classified:reported_classified_id(*),
-                reported_message:reported_message_id(id, content, conversation_id, sender_id, created_at)
+                reported_message:reported_message_id(id, content, conversation_id, sender_id, created_at),
+                reported_review:reported_review_id(*),
+                reported_comment:reported_comment_id(*)
             `,
       )
       .eq("reporter_id", userId)
@@ -34,7 +36,9 @@ export const reportService = {
                 reported_post:reported_post_id(*),
                 reported_story:reported_story_id(image_url),
                 reported_classified:reported_classified_id(*),
-                reported_message:reported_message_id(id, content, conversation_id, sender_id, created_at)
+                reported_message:reported_message_id(id, content, conversation_id, sender_id, created_at),
+                reported_review:reported_review_id(*),
+                reported_comment:reported_comment_id(*)
             `,
       )
       .eq("id", reportId)
@@ -48,6 +52,7 @@ export const reportService = {
     const insertData: any = {
       reporter_id: userId,
       type: data.type,
+      report_type: data.type,
       reason: data.reason,
       description: data.description,
       priority: data.priority,
@@ -58,6 +63,8 @@ export const reportService = {
     // Specific content IDs
     if (data.type === "post") insertData.reported_post_id = data.targetId;
     if (data.type === "message") insertData.reported_message_id = data.targetId;
+    if (data.type === "review") insertData.reported_review_id = data.targetId;
+    if (data.type === "comment") insertData.reported_comment_id = data.targetId;
     if (data.type === "classified")
       insertData.reported_classified_id = data.targetId;
     if (data.type === "story") insertData.reported_story_id = data.targetId;
@@ -83,7 +90,9 @@ export const reportService = {
                 reported_post:reported_post_id(*),
                 reported_story:reported_story_id(image_url),
                 reported_classified:reported_classified_id(*),
-                reported_message:reported_message_id(id, content, conversation_id, sender_id, created_at)
+                reported_message:reported_message_id(id, content, conversation_id, sender_id, created_at),
+                reported_review:reported_review_id(*),
+                reported_comment:reported_comment_id(*)
             `,
       )
       .order("created_at", { ascending: false });
