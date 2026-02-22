@@ -269,16 +269,28 @@ export default function TransferirConfiPointsPage() {
                           <span className="text-sm text-gray-600 dark:text-gray-400">
                             {t("youWillSend")}:
                           </span>
-                          <span className="font-bold text-purple-600 dark:text-purple-400 text-lg">
+                          <span className="font-bold text-gray-900 dark:text-white text-base">
                             {pointsValue.toLocaleString()} {t("points")}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            {t("to")}:
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-red-500 dark:text-red-400">
+                            Taxa (25%):
                           </span>
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {searchedUser.full_name}
+                          <span className="font-semibold text-red-500 dark:text-red-400 text-sm">
+                            - {Math.floor(pointsValue * 0.25).toLocaleString()}{" "}
+                            {t("points")}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-800">
+                          <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                            {searchedUser.full_name} vai receber:
+                          </span>
+                          <span className="font-bold text-purple-600 dark:text-purple-400 text-lg">
+                            {(
+                              pointsValue - Math.floor(pointsValue * 0.25)
+                            ).toLocaleString()}{" "}
+                            {t("points")}
                           </span>
                         </div>
                       </div>
@@ -322,7 +334,7 @@ export default function TransferirConfiPointsPage() {
                         {t("minimum")}: {MIN_TRANSFER_POINTS.toLocaleString()}{" "}
                         {t("points")}
                       </li>
-                      <li>{t("noFeesForTransfers")}</li>
+                      <li>Imposto de 25% descontado do recebedor</li>
                       <li>Não é possível cancelar após enviar</li>
                     </ul>
                   </AlertDescription>

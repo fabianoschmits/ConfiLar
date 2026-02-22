@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { PREMIUM_PRICES } from "@/constants/premiumPrices";
 
 interface CreatePremiumPostData {
+  id?: string;
   title: string;
   description: string;
   images?: string[];
@@ -32,88 +33,34 @@ export function usePremiumPost({ onSuccess, onError }: UsePremiumPostProps) {
     mutationFn: async (postData: CreatePremiumPostData) => {
       if (!user) throw new Error("Usuário não autenticado");
 
-      // Verificar saldo do usuário
-      const { data: balance, error: balanceError } = await supabase
-        .from("user_points_balance")
-        .select("balance")
-        .eq("user_id", user.id)
-        .single();
-
-      if (balanceError) throw new Error("Erro ao verificar saldo");
-      if (!balance || balance.balance < postData.pointsToSpend) {
-        throw new Error(
-          `Saldo insuficiente. Necessário: ${postData.pointsToSpend} pontos para post premium`,
-        );
-      }
-
-      // Calcular data de expiração baseado na duração escolhida
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + postData.durationDays);
-
-      // Buscar país do perfil do usuário
-      let location_country = "BR"; // Default
-      try {
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("country")
-          .eq("id", user.id)
-          .single();
-
-        if (profileData?.country) {
-          location_country = profileData.country;
-        }
-      } catch (error) {
-        console.warn("Erro ao buscar país do perfil:", error);
-      }
-
-      // Criar post premium
-      const { data, error } = await supabase
-        .from("feed_posts")
-        .insert({
-          professional_id: user.id,
-          user_id: user.id,
+      // Usar API route segura
+      const response = await fetch("/api/posts/premium", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          postId: postData.id, // Only if updating/renewing
           title: postData.title,
           description: postData.description,
-          content: postData.description, // Usar description como content também
-          images: postData.images || [],
-          service_category_id: postData.service_category_id || null,
+          category: postData.service_category_id,
+          images: postData.images,
           location_city: postData.location_city,
           location_state: postData.location_state,
-          location_country: location_country,
-          likes_count: 0,
-          comments_count: 0,
-          is_active: true,
-          is_public: true,
-          is_featured: true, // Posts premium são destacados
-          is_premium: true, // Marcar como premium
-          premium_points_spent: postData.pointsToSpend,
-          premium_expires_at: expiresAt.toISOString(),
-          premium_highlight_color: "#FFD700",
-          tags: ["premium"],
-          metadata: {
-            type: "premium",
-            points_spent: postData.pointsToSpend,
-            duration_days: postData.durationDays,
-            created_at: new Date().toISOString(),
-            expires_at: expiresAt.toISOString(),
-          },
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Deduzir pontos
-      const { error: pointsError } = await supabase.rpc("add_points", {
-        p_user_id: user.id,
-        p_points: -postData.pointsToSpend,
-        p_source: "premium_post",
-        p_description: `Criou post premium (${postData.durationDays} dias - ${postData.pointsToSpend} pontos)`,
+          durationDays: postData.durationDays,
+          pointsToSpend: postData.pointsToSpend,
+        }),
       });
 
-      if (pointsError) throw new Error("Erro ao processar pontos");
+      const result = await response.json();
 
-      return data;
+      if (!response.ok) {
+        throw new Error(result.error || "Erro ao realizar post premium");
+      }
+
+      console.log("✅ Post premium realizado via API:", result);
+      return result;
     },
     onSuccess: () => {
       toast.success(`Post premium criado com sucesso!`);

@@ -103,6 +103,8 @@ export interface TimelineFilters {
     country?: string;
   };
   pinPostId?: string;
+  /** When true, only fetches real user posts (excludes welcome/favorite/recommendation auto-posts) */
+  onlyRealPosts?: boolean;
 }
 
 export interface TimelineStats {

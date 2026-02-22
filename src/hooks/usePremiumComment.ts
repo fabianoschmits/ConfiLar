@@ -26,46 +26,27 @@ export function usePremiumComment({
     mutationFn: async (content: string) => {
       if (!user) throw new Error("Usuário não autenticado");
 
-      // Verificar saldo do usuário
-      const { data: balance, error: balanceError } = await supabase
-        .from("user_points_balance")
-        .select("balance")
-        .eq("user_id", user.id)
-        .single();
-
-      if (balanceError) throw new Error("Erro ao verificar saldo");
-      if (!balance || balance.balance < PREMIUM_PRICES.COMMENT.POINTS) {
-        throw new Error(
-          `Saldo insuficiente. Necessário: ${PREMIUM_PRICES.COMMENT.POINTS} pontos para comentar`,
-        );
-      }
-
-      // Criar comentário premium
-      const { data, error } = await supabase
-        .from("comments")
-        .insert({
-          user_id: user.id,
-          post_id: postId,
+      // Usar a rota de API segura em vez de RPC direta
+      const response = await fetch("/api/points/premium-comment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          postId,
           content,
-          is_featured: true,
-          premium_points_spent: PREMIUM_PRICES.COMMENT.POINTS,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Deduzir pontos
-      const { error: pointsError } = await supabase.rpc("add_points", {
-        p_user_id: user.id,
-        p_points: -PREMIUM_PRICES.COMMENT.POINTS,
-        p_source: "premium_comment",
-        p_description: "Comentário premium em post",
+        }),
       });
 
-      if (pointsError) throw new Error("Erro ao processar pontos");
+      const result = await response.json();
 
-      return data;
+      if (!response.ok) {
+        throw new Error(result.error || "Erro ao realizar comentário premium");
+      }
+
+      console.log("✅ Comentário premium realizado via API:", result);
+      return result;
     },
     onSuccess: () => {
       toast.success(

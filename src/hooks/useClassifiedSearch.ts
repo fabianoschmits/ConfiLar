@@ -3,6 +3,8 @@
 import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { LocationFilter } from "./useLocationFilters";
 
 interface ClassifiedAd {
   id: string;
@@ -32,8 +34,7 @@ interface ClassifiedAd {
 
 interface ClassifiedFilters {
   searchTerm: string;
-  state: string;
-  city: string;
+  location: LocationFilter;
   category: string;
   adType: "all" | "offers" | "requests";
 }
@@ -46,15 +47,44 @@ interface ClassifiedStats {
 }
 
 export function useClassifiedSearch() {
+  const { profile } = useAuthContext();
   const [classifiedAds, setClassifiedAds] = useState<ClassifiedAd[]>([]);
   const [filteredAds, setFilteredAds] = useState<ClassifiedAd[]>([]);
   const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState<ClassifiedFilters>({
+    searchTerm: "",
+    location: { type: "all" },
+    category: "all",
+    adType: "all",
+  });
   const [stats, setStats] = useState<ClassifiedStats>({
     total: 0,
     offers: 0,
     requests: 0,
     categories: 0,
   });
+
+  // Carregar preferências salvas quando o perfil estiver disponível
+  useEffect(() => {
+    if (profile) {
+      const savedType =
+        (profile as any).classifieds_location_filter_type || "all";
+      const savedCity = (profile as any).classifieds_location_filter_city;
+      const savedState = (profile as any).classifieds_location_filter_state;
+      const savedCountry =
+        (profile as any).classifieds_location_filter_country || "Brasil";
+
+      setFilters((prev) => ({
+        ...prev,
+        location: {
+          type: savedType,
+          city: savedCity,
+          state: savedState,
+          country: savedCountry,
+        },
+      }));
+    }
+  }, [profile]);
 
   // Carregar todos os anúncios
   const loadClassifiedAds = useCallback(async () => {
@@ -696,18 +726,17 @@ export function useClassifiedSearch() {
       }
 
       // Filtrar por estado (aceita tanto sigla quanto nome completo)
-      if (filters.state) {
+      if (filters.location.state) {
         filtered = filtered.filter((ad) => {
           const adState = ad.location_state;
-          const filterState = filters.state;
+          const filterState = filters.location.state;
+          if (!filterState) return true;
 
           // Verificar se é uma sigla (2 caracteres) ou nome completo
           if (filterState.length === 2) {
-            // É uma sigla, comparar diretamente
             return adState === filterState;
           } else {
-            // É um nome completo, verificar se corresponde à sigla do anúncio
-            // Mapear nomes para siglas
+            // Mapeamento de nomes para siglas
             const stateMapping: { [key: string]: string } = {
               "Rio Grande do Sul": "RS",
               "São Paulo": "SP",
@@ -747,8 +776,10 @@ export function useClassifiedSearch() {
       }
 
       // Filtrar por cidade
-      if (filters.city) {
-        filtered = filtered.filter((ad) => ad.location_city === filters.city);
+      if (filters.location.city) {
+        filtered = filtered.filter(
+          (ad) => ad.location_city === filters.location.city,
+        );
       }
 
       // Filtrar por categoria
@@ -776,8 +807,7 @@ export function useClassifiedSearch() {
         original: classifiedAds.length,
         filtered: filtered.length,
         searchTerm: filters.searchTerm,
-        state: filters.state,
-        city: filters.city,
+        location: filters.location,
         category: filters.category,
         adType: filters.adType,
       });
@@ -786,11 +816,11 @@ export function useClassifiedSearch() {
     [classifiedAds],
   );
 
-  // Executar busca com filtros
+  // Executar busca com filtros (legado/compatibilidade)
   const executeSearch = useCallback(
-    (filters: ClassifiedFilters) => {
-      console.log("🔍 executeSearch chamado com filtros:", filters);
-      applyFilters(filters);
+    (newFilters: ClassifiedFilters) => {
+      console.log("🔍 executeSearch chamado com filtros:", newFilters);
+      applyFilters(newFilters);
     },
     [applyFilters],
   );
@@ -800,25 +830,64 @@ export function useClassifiedSearch() {
     loadClassifiedAds();
   }, [loadClassifiedAds]);
 
-  // Aplicar filtros quando os dados mudarem
+  // Aplicar filtros quando mudarem ou quando os anúncios forem carregados
   useEffect(() => {
-    if (classifiedAds.length > 0) {
-      // Aplicar filtros padrão (todos os anúncios)
-      applyFilters({
-        searchTerm: "",
-        state: "",
-        city: "",
-        category: "all",
-        adType: "all",
-      });
-    }
-  }, [classifiedAds, applyFilters]);
+    applyFilters(filters);
+  }, [filters, applyFilters, classifiedAds]);
+
+  // Função para mudar a localização e persistir
+  const setLocationFilter = useCallback(
+    async (newLocation: LocationFilter) => {
+      console.log("📍 mudando localização de classificados:", newLocation);
+      setFilters((prev) => ({ ...prev, location: newLocation }));
+
+      // Persistir no perfil
+      if (profile?.id) {
+        try {
+          await supabase
+            .from("profiles")
+            .update({
+              classifieds_location_filter_type: newLocation.type,
+              classifieds_location_filter_city: newLocation.city || null,
+              classifieds_location_filter_state: newLocation.state || null,
+              classifieds_location_filter_country:
+                newLocation.country || "Brasil",
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", profile.id);
+        } catch (error) {
+          console.error("Erro ao salvar filtro de classificados:", error);
+        }
+      }
+    },
+    [profile?.id],
+  );
+
+  const setSearchQuery = useCallback((query: string) => {
+    setFilters((prev) => ({ ...prev, searchTerm: query }));
+  }, []);
+
+  const setCategoryFilter = useCallback((category: string) => {
+    setFilters((prev) => ({ ...prev, category }));
+  }, []);
+
+  const setAdTypeFilter = useCallback(
+    (adType: "all" | "offers" | "requests") => {
+      setFilters((prev) => ({ ...prev, adType }));
+    },
+    [],
+  );
 
   return {
     classifiedAds,
     filteredAds,
     loading,
     stats,
+    filters,
+    setLocationFilter,
+    setSearchQuery,
+    setCategoryFilter,
+    setAdTypeFilter,
     executeSearch,
     loadClassifiedAds,
   };

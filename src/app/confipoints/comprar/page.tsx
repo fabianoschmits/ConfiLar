@@ -693,7 +693,7 @@ export default function ComprarPontosPage() {
                 <li>• R$ 1,00 = 100 ConfiPoints</li>
                 <li>• Pontos não expiram</li>
                 <li>• Pagamento seguro via PIX</li>
-                <li>• Transferências sem taxas</li>
+                <li>• Transferências (taxa de 25%)</li>
                 <li>• Bônus de até 25%</li>
               </ul>
             </details>

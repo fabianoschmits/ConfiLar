@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { withRateLimit } from "@/lib/rateLimitMiddleware";
 
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/points/leaderboard
  *

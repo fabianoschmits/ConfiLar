@@ -55,13 +55,7 @@ export const POST = withAuth(
       // Buscar detalhes da transferência criada
       const { data: transfer, error: fetchError } = await supabaseAuth
         .from("points_transfers")
-        .select(
-          `
-        *,
-        from_user:profiles!points_transfers_from_user_id_fkey(id, full_name, avatar_url),
-        to_user:profiles!points_transfers_to_user_id_fkey(id, full_name, avatar_url)
-      `,
-        )
+        .select("*")
         .eq("id", data)
         .single();
 
@@ -69,12 +63,28 @@ export const POST = withAuth(
         console.error("Erro ao buscar transferência:", fetchError);
       }
 
+      // Buscar nomes dos usuários envolvidos manualmente
+      let fromUserName = "Usuário";
+      let toUserName = "Usuário";
+
+      try {
+        const { data: profiles } = await supabaseAuth
+          .from("profiles")
+          .select("id, full_name")
+          .in("id", [user.id, to_user_id]);
+
+        if (profiles && profiles.length > 0) {
+          const fromUser = profiles.find((p) => p.id === user.id);
+          const toUser = profiles.find((p) => p.id === to_user_id);
+          if (fromUser) fromUserName = fromUser.full_name || "Usuário";
+          if (toUser) toUserName = toUser.full_name || "Usuário";
+        }
+      } catch (err) {
+        console.warn("Aviso: não foi possível buscar os nomes dos perfis", err);
+      }
+
       // Criar notificações para ambos os usuários
       if (transfer) {
-        const fromUserName =
-          (transfer.from_user as any)?.full_name || "Usuário";
-        const toUserName = (transfer.to_user as any)?.full_name || "Usuário";
-
         // Notificação para quem RECEBEU a transferência
         try {
           const { data: notification } = await supabaseAuth
@@ -83,7 +93,7 @@ export const POST = withAuth(
               user_id: to_user_id,
               type: "achievement",
               title: "💰 Transferência Recebida!",
-              message: `${fromUserName} transferiu ${points_amount.toLocaleString("pt-BR")} ConfiPoints para você${message ? `: "${message}"` : ""}`,
+              message: `${fromUserName} enviou ${transfer.net_amount.toLocaleString("pt-BR")} ConfiPoints para você${message ? `: "${message}"` : ""}`,
               action_url: "/confipoints/dashboard",
               priority: "high",
               metadata: {
@@ -105,7 +115,7 @@ export const POST = withAuth(
             await NotificationService.sendPushNotification(
               to_user_id,
               "💰 Transferência Recebida!",
-              `${fromUserName} transferiu ${points_amount.toLocaleString("pt-BR")} ConfiPoints para você`,
+              `${fromUserName} enviou ${transfer.net_amount.toLocaleString("pt-BR")} ConfiPoints para você`,
             );
           } catch (pushError) {
             console.warn("⚠️ Erro ao enviar push notification:", pushError);
@@ -127,7 +137,7 @@ export const POST = withAuth(
             user_id: user.id,
             type: "info",
             title: "✅ Transferência Enviada!",
-            message: `Você transferiu ${points_amount.toLocaleString("pt-BR")} ConfiPoints para ${toUserName}`,
+            message: `Você enviou ${points_amount.toLocaleString("pt-BR")} ConfiPoints para ${toUserName}`,
             action_url: "/confipoints/dashboard",
             priority: "normal",
             metadata: {

@@ -149,40 +149,17 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         .from("feed_posts")
         .select(selectFields)
         .eq("is_active", true)
-        .eq("is_public", true)
-        .order("created_at", { ascending: false })
-        .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
+        .eq("is_public", true);
 
       // Aplicar filtros de localização
-      // IMPORTANTE: Para filtro 'local' com cidade e estado, precisamos fazer queries separadas
-      // porque o .or() no Supabase substitui todos os filtros anteriores
-      // Então vamos fazer isso ANTES da query principal e depois usar os resultados
-
-      // --- UNIFIED LOCATION & SEARCH FILTERING ---
-      if (filters.location_filter?.type === "all") {
-        console.log(
-          "🌍 Filtro: Todos os Locais - nenhuma restrição de geo aplicada",
-        );
-      } else if (
-        filters.location_filter &&
-        (filters.location_filter.type === "custom" ||
-          filters.location_filter.type === "local" ||
-          filters.location_filter.type === "state")
-      ) {
+      if (filters.location_filter && filters.location_filter.type !== "all") {
         const loc = filters.location_filter;
-        let countryCode = loc.country;
-        if (loc.country === "Brasil" || loc.country === "Brazil")
-          countryCode = "BR";
-        else if (
-          loc.country === "United States" ||
-          loc.country === "Estados Unidos"
-        )
-          countryCode = "US";
 
-        if (countryCode) {
-          postsQuery = postsQuery.or(
-            `location_country.eq.${countryCode},location_country.is.null`,
-          );
+        // Versão Robusta: Se tiver cidade ou estado, o match desses campos é prioridade.
+        // O país passa a ser um filtro secundário para evitar esconder posts por divergência de código (ex: US vs BR)
+
+        if (loc.city) {
+          postsQuery = postsQuery.ilike("location_city", `%${loc.city}%`);
         }
 
         if (loc.state) {
@@ -200,11 +177,25 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           }
         }
 
-        if (loc.city) {
-          postsQuery = postsQuery.ilike("location_city", `%${loc.city}%`);
+        // Country filter - aplicado apenas se city/state não foram aplicados ou como um filtro adicional
+        // Se já filtramos por cidade ou estado, o filtro de país é menos prioritário
+        if (!loc.city && !loc.state && loc.country) {
+          let countryCode = loc.country;
+          if (loc.country === "Brasil" || loc.country === "Brazil")
+            countryCode = "BR";
+          else if (
+            loc.country === "United States" ||
+            loc.country === "Estados Unidos"
+          )
+            countryCode = "US";
+
+          postsQuery = postsQuery.or(
+            `location_country.eq.${countryCode},location_country.is.null`,
+          );
         }
       }
 
+      // Search filters
       if (filters.search && filters.search.trim()) {
         const searchTerm = filters.search.trim();
 
@@ -250,15 +241,19 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         postsQuery = postsQuery.neq("id", pinPostId);
       }
 
-      // --- EXECUTE QUERY (Override legacy execution) ---
-      postsQuery = postsQuery
+      // Quando só queremos posts reais, excluir posts automáticos (welcome, favorite)
+      // Agora incluímos recomendações e reviews como posts reais pois são valiosos
+      if (filters.onlyRealPosts) {
+        postsQuery = postsQuery.or(
+          "metadata->>type.is.null,metadata->>type.eq.premium,metadata->>type.eq.recommendation,metadata->>type.eq.review",
+        );
+      }
+
+      // --- EXECUTE QUERY FINAL ---
+      const { data: unifiedPosts, error: unifiedError } = await postsQuery
         .order("is_featured", { ascending: false })
         .order("created_at", { ascending: false })
         .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
-
-      const unifiedResult = await postsQuery;
-      let unifiedPosts = unifiedResult.data || [];
-      let unifiedError = unifiedResult.error;
 
       // Use these results and SKIP legacy logic by setting a flag or early exit if possible.
       // But we can't early return inside hook easily.
@@ -304,6 +299,45 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         ])
         .order("created_at", { ascending: false })
         .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
+
+      // Aplicar filtros de localização nas atividades também
+      if (filters.location_filter && filters.location_filter.type !== "all") {
+        const loc = filters.location_filter;
+
+        // Atividades normalmente são vinculadas aos perfis, então filtramos pelo local do perfil
+        // Mas como a tabela user_activity_log não tem location_city nativo,
+        // precisamos confiar no metadata ou no join com profiles.
+        // O select de profiles já é feito, mas o filtro de top-level no Supabase (PostgREST)
+        // para colunas de tabelas joinadas requer sintaxe especial: .filter('user.location_city', 'ilike', ...)
+
+        if (loc.state) {
+          try {
+            const stateData = await normalizeStateForQuery(loc.state);
+            if (stateData) {
+              activitiesQuery = activitiesQuery.or(
+                `user.location_state.eq.${stateData.sigla},user.location_state.ilike.%${stateData.nome}%`,
+              );
+            } else {
+              activitiesQuery = activitiesQuery.ilike(
+                "user.location_state",
+                `%${loc.state}%`,
+              );
+            }
+          } catch (e) {
+            activitiesQuery = activitiesQuery.ilike(
+              "user.location_state",
+              `%${loc.state}%`,
+            );
+          }
+        }
+
+        if (loc.city) {
+          activitiesQuery = activitiesQuery.ilike(
+            "user.location_city",
+            `%${loc.city}%`,
+          );
+        }
+      }
 
       // Aplicar filtro de busca nas atividades também
       if (filters.search && filters.search.trim()) {
@@ -614,6 +648,48 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
             : null
           : null;
 
+        // Detecção automática de país para Brasil
+        let finalCountry = location_country || "BR";
+
+        // Se tiver estado brasileiro (2 letras ou nome na lista), forçar BR
+        if (newPost.location_state) {
+          const isBRState =
+            newPost.location_state.length === 2 ||
+            [
+              "Acre",
+              "Alagoas",
+              "Amapá",
+              "Amazonas",
+              "Bahia",
+              "Ceará",
+              "Distrito Federal",
+              "Espírito Santo",
+              "Goiás",
+              "Maranhão",
+              "Mato Grosso",
+              "Mato Grosso do Sul",
+              "Minas Gerais",
+              "Pará",
+              "Paraíba",
+              "Paraná",
+              "Pernambuco",
+              "Piauí",
+              "Rio de Janeiro",
+              "Rio Grande do Norte",
+              "Rio Grande do Sul",
+              "Rondônia",
+              "Roraima",
+              "Santa Catarina",
+              "São Paulo",
+              "Sergipe",
+              "Tocantins",
+            ].includes(newPost.location_state);
+
+          if (isBRState) {
+            finalCountry = "BR";
+          }
+        }
+
         const postData = {
           professional_id: newPost.user_id,
           user_id: newPost.user_id,
@@ -624,7 +700,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           service_category_id: newPost.service_category_id || null,
           location_state: newPost.location_state || null,
           location_city: cityValue,
-          location_country: location_country || "BR", // Default para BR se não encontrar
+          location_country: finalCountry,
           likes_count: 0,
           comments_count: 0,
           is_active: true,
@@ -1110,231 +1186,77 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       > & { pointsToSpend: number; durationDays: number },
     ) => {
       try {
-        // Detectar vídeos do YouTube ANTES de remover o link
-        const youtubeVideos = detectYouTubeUrls(
-          newPost.description?.trim() || "",
-        );
-        const firstVideo = youtubeVideos.length > 0 ? youtubeVideos[0] : null;
+        console.log("👑 [addPremiumPost] Criando post premium via API");
 
-        // Remover URLs do YouTube da descrição antes de salvar
-        const cleanedDescription = removeYouTubeUrls(
-          newPost.description?.trim() || "",
-        );
-
-        // Gerar título automaticamente a partir da descrição limpa (primeiros 100 caracteres)
-        const title =
-          cleanedDescription.slice(0, 100) || newPost.title || "Post Premium";
-
-        // Verificar saldo do usuário
-        const { data: balanceData, error: balanceError } = await supabase
-          .from("user_points_balance")
-          .select("balance, total_spent")
-          .eq("user_id", newPost.user_id)
-          .single();
-
-        if (balanceError || !balanceData) {
-          throw new Error("Erro ao verificar saldo do usuário");
-        }
-
-        if (balanceData.balance < newPost.pointsToSpend) {
-          throw new Error(
-            `Saldo insuficiente para criar post premium.Necessário: ${newPost.pointsToSpend} pontos`,
-          );
-        }
-
-        // Calcular data de expiração baseado na duração escolhida
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + newPost.durationDays);
-
-        // Preparar metadata com informações do vídeo (se houver) e dados premium
-        const metadata: any = {
-          type: "premium",
-          points_spent: newPost.pointsToSpend,
-          duration_days: newPost.durationDays,
-          created_at: new Date().toISOString(),
-          expires_at: expiresAt.toISOString(),
-        };
-
-        // Adicionar informações do vídeo do YouTube ao metadata se houver
-        if (firstVideo) {
-          metadata.youtube_video_id = firstVideo.id;
-          metadata.youtube_video_url = firstVideo.url;
-        }
-
-        // Criar post premium diretamente na tabela
-        // IMPORTANTE: Se location_city for string vazia ou apenas espaços, salvar como null
-        // Mas se location_city tiver valor (mesmo que seja uma string), salvar o valor
-        // Isso evita que apareça "null" na interface quando uma cidade foi realmente selecionada
-        const cityValuePremium = newPost.location_city
-          ? newPost.location_city.trim()
-            ? newPost.location_city.trim()
-            : null
-          : null;
-
-        const postData = {
-          professional_id: newPost.user_id,
-          user_id: newPost.user_id,
-          title: title,
-          description: cleanedDescription,
-          content: cleanedDescription, // Usar description limpa como content
-          images: Array.isArray(newPost.images) ? newPost.images : [],
-          service_category_id: newPost.service_category_id || null,
-          location_state: newPost.location_state || null,
-          location_city: cityValuePremium,
-          location_country: newPost.location_country || "BR",
-          likes_count: 0,
-          comments_count: 0,
-          is_active: true,
-          is_public: true,
-          is_featured: true, // Posts premium são destacados
-          is_premium: true, // Marcar como premium
-          premium_points_spent: newPost.pointsToSpend,
-          premium_expires_at: expiresAt.toISOString(),
-          premium_highlight_color: "#FFD700",
-          tags: ["premium"],
-          metadata: metadata,
-        };
-
-        console.log("📝 [addPremiumPost] Dados do post premium:", postData);
-        console.log("📝 [addPremiumPost] Location city recebido:", {
-          original: newPost.location_city,
-          originalType: typeof newPost.location_city,
-          trimmed: newPost.location_city?.trim(),
-          final: postData.location_city,
-          finalType: typeof postData.location_city,
-        });
-
-        const { data, error } = await supabase
-          .from("feed_posts")
-          .insert(postData)
-          .select()
-          .single();
-
-        if (error) {
-          console.error("❌ [addPremiumPost] Erro do Supabase:", error);
-          throw error;
-        }
-
-        console.log(
-          "✅ [addPremiumPost] Post PREMIUM criado com sucesso:",
-          data.id,
-        );
-
-        // DEBITAR PONTOS DO USUÁRIO usando add_points (registra a transação)
-        const { error: pointsError } = await supabase.rpc("add_points", {
-          p_user_id: newPost.user_id,
-          p_points: -newPost.pointsToSpend,
-          p_source: "premium_post",
-          p_description: `Criou post premium(${newPost.durationDays} dia${newPost.durationDays > 1 ? "s" : ""} - ${newPost.pointsToSpend} pontos)`,
-          p_metadata: {
-            post_id: data.id,
-            duration_days: newPost.durationDays,
-            post_title: newPost.title,
+        // Chamar API Route segura para post premium
+        const response = await fetch("/api/posts/premium", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
+          credentials: "include",
+          body: JSON.stringify({
+            action: "create",
+            title: newPost.title,
+            description: newPost.description,
+            images: newPost.images,
+            location_city: newPost.location_city,
+            location_state: newPost.location_state,
+            service_category_id: newPost.service_category_id,
+            pointsToSpend: newPost.pointsToSpend,
+            durationDays: newPost.durationDays,
+          }),
         });
 
-        if (pointsError) {
-          console.error(
-            "❌ [addPremiumPost] Erro ao debitar pontos:",
-            pointsError,
-          );
-          // Rollback: deletar o post criado
-          await supabase.from("feed_posts").delete().eq("id", data.id);
-          throw new Error("Erro ao debitar pontos. Post não foi criado.");
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "Erro ao criar post premium");
         }
 
-        console.log(
-          "✅ [addPremiumPost] Pontos debitados com sucesso e transação registrada",
-        );
-
-        // Atualizar estatísticas de pontos no perfil
-        const { data: currentProfile, error: profileSelectError } =
-          await supabase
-            .from("profiles")
-            .select("total_points_spent")
-            .eq("id", newPost.user_id)
-            .single();
-
-        if (!profileSelectError && currentProfile) {
-          const { error: profileError } = await supabase
-            .from("profiles")
-            .update({
-              total_points_spent:
-                (currentProfile.total_points_spent || 0) +
-                newPost.pointsToSpend,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", newPost.user_id);
-
-          if (profileError) {
-            console.warn(
-              "⚠️ [addPremiumPost] Erro ao atualizar estatísticas do perfil (não crítico):",
-              profileError,
-            );
-          }
-        }
-
-        console.log("✅ [addPremiumPost] Pontos debitados com sucesso");
+        const data = result.post;
 
         // Atualizar cache local
         const timelinePost = {
           id: data.id,
           type: "post" as const,
-          created_at: data.created_at || new Date().toISOString(),
-          user_id: newPost.user_id,
+          created_at: data.created_at,
+          user_id: data.professional_id,
           user_name: newPost.user_name,
           user_avatar: newPost.user_avatar,
           user_type: newPost.user_type,
-          title: title,
-          description: cleanedDescription,
-          images: newPost.images || [],
-          service_category_id: newPost.service_category_id,
-          location_state: newPost.location_state,
-          location_city: newPost.location_city,
+          title: data.title,
+          description: data.description || "",
+          images: data.images || [],
+          service_category_id: data.service_category_id,
+          location_state: data.location_state,
+          location_city: data.location_city,
+          location_country: data.location_country,
           likes_count: 0,
           comments_count: 0,
           is_liked: false,
-          is_featured: true, // Posts premium são destacados
-          is_premium: true, // Marcar como premium
-          premium_points_spent: newPost.pointsToSpend,
-          premium_expires_at: expiresAt.toISOString(),
-          premium_highlight_color: "#FFD700",
-          tags: ["premium"],
-          metadata: metadata, // Usar o metadata que já inclui o vídeo (se houver)
+          is_featured: true,
+          is_premium: true,
+          premium_points_spent: data.premium_points_spent,
+          premium_expires_at: data.premium_expires_at,
+          premium_highlight_color: data.premium_highlight_color,
+          tags: data.tags || ["premium"],
+          metadata: data.metadata,
         } as UnifiedTimelineItem;
 
-        // Adicionar ao cache local e ordenar corretamente (premium no topo)
+        // Inserir no cache
         queryClient.setQueryData(queryKey, (oldData: any) => {
           if (!oldData)
             return { pages: [[timelinePost]], pageParams: [undefined] };
 
-          // Adicionar o post premium à primeira página
           const firstPage = [timelinePost, ...oldData.pages[0]];
 
-          // Ordenar a primeira página: posts premium/featured primeiro, depois por data
-          const sortedFirstPage = firstPage.sort((a, b) => {
-            const aIsPost = a.type === "post";
-            const bIsPost = b.type === "post";
-
-            // Verificar se premium expirou
-            const aPremiumExpired =
-              aIsPost && a.premium_expires_at
-                ? new Date(a.premium_expires_at) < new Date()
-                : false;
-            const bPremiumExpired =
-              bIsPost && b.premium_expires_at
-                ? new Date(b.premium_expires_at) < new Date()
-                : false;
-
-            // Só considerar featured se não tiver expirado
-            const aIsFeatured = (a.is_featured || false) && !aPremiumExpired;
-            const bIsFeatured = (b.is_featured || false) && !bPremiumExpired;
-
-            // Priorizar posts destacados que não expiraram
+          // Reordenar (premium no topo)
+          firstPage.sort((a, b) => {
+            const aIsFeatured = a.is_featured || false;
+            const bIsFeatured = b.is_featured || false;
             if (aIsFeatured && !bIsFeatured) return -1;
             if (!aIsFeatured && bIsFeatured) return 1;
-
-            // Se ambos são destacados ou ambos não são, ordenar por data
             return (
               new Date(b.created_at).getTime() -
               new Date(a.created_at).getTime()
@@ -1343,33 +1265,21 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
 
           return {
             ...oldData,
-            pages: [sortedFirstPage, ...oldData.pages.slice(1)],
+            pages: [firstPage, ...oldData.pages.slice(1)],
           };
         });
 
-        // Invalidar queries relacionadas para atualizar a timeline
-        // Usar um pequeno delay para garantir que o cache local seja atualizado primeiro
+        // Invalidações
         setTimeout(() => {
           queryClient.invalidateQueries({ queryKey: ["unified-timeline"] });
           queryClient.invalidateQueries({
-            queryKey: ["user-posts", newPost.user_id],
-          });
-          queryClient.invalidateQueries({
             queryKey: ["user-points", newPost.user_id],
           });
-        }, 100);
-
-        console.log("✅ [addPremiumPost] Post premium criado com sucesso!", {
-          id: timelinePost.id,
-          title: timelinePost.title,
-          is_featured: (timelinePost as any).is_featured,
-          tags: (timelinePost as any).tags,
-        });
+        }, 500);
 
         return timelinePost;
       } catch (error) {
-        console.error("❌ [addPremiumPost] Erro ao criar post premium:", error);
-        // Re-throw para que o componente possa tratar o erro
+        console.error("❌ [addPremiumPost] Erro:", error);
         throw error;
       }
     },
@@ -1382,94 +1292,30 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       try {
         console.log("👑 [renewPremiumPost] Renovando post premium:", postId);
 
-        // Buscar o post atual
-        const { data: currentPost, error: fetchError } = await supabase
-          .from("feed_posts")
-          .select("*")
-          .eq("id", postId)
-          .single();
-
-        if (fetchError || !currentPost) {
-          throw new Error("Post não encontrado");
-        }
-
-        // Verificar saldo do usuário
-        const { data: balanceData, error: balanceError } = await supabase
-          .from("user_points_balance")
-          .select("balance, total_spent")
-          .eq("user_id", currentPost.user_id)
-          .single();
-
-        if (balanceError || !balanceData) {
-          throw new Error("Erro ao verificar saldo do usuário");
-        }
-
-        if (balanceData.balance < pointsToSpend) {
-          throw new Error(
-            `Saldo insuficiente para renovar post premium.Necessário: ${pointsToSpend} pontos`,
-          );
-        }
-
-        // Calcular nova data de expiração
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + durationDays);
-
-        // Atualizar post para premium novamente
-        const { data, error } = await supabase
-          .from("feed_posts")
-          .update({
-            is_premium: true,
-            is_featured: true,
-            premium_points_spent: pointsToSpend,
-            premium_expires_at: expiresAt.toISOString(),
-            premium_highlight_color: "#FFD700",
-            tags: ["premium"],
-            metadata: {
-              ...(currentPost.metadata || {}),
-              type: "premium",
-              points_spent: pointsToSpend,
-              duration_days: durationDays,
-              expires_at: expiresAt.toISOString(),
-              renewed_at: new Date().toISOString(),
-            },
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", postId)
-          .select()
-          .single();
-
-        if (error) {
-          console.error("❌ [renewPremiumPost] Erro do Supabase:", error);
-          throw error;
-        }
-
-        console.log(
-          "✅ [renewPremiumPost] Post premium renovado com sucesso:",
-          data.id,
-        );
-
-        // Debitar pontos
-        const { error: pointsError } = await supabase.rpc("add_points", {
-          p_user_id: currentPost.user_id,
-          p_points: -pointsToSpend,
-          p_source: "premium_post_renewal",
-          p_description: `Renovou post premium(${durationDays} dia${durationDays > 1 ? "s" : ""} - ${pointsToSpend} pontos)`,
-          p_metadata: {
-            post_id: postId,
-            duration_days: durationDays,
-            post_title: currentPost.title,
+        const response = await fetch("/api/posts/premium", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
+          credentials: "include",
+          body: JSON.stringify({
+            action: "renew",
+            postId,
+            pointsToSpend,
+            durationDays,
+          }),
         });
 
-        if (pointsError) {
-          console.error(
-            "❌ [renewPremiumPost] Erro ao debitar pontos:",
-            pointsError,
-          );
-          throw new Error(
-            "Erro ao debitar pontos. Renovação não foi concluída.",
-          );
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "Erro ao renovar post premium");
         }
+
+        // Invalidações
+        queryClient.invalidateQueries({ queryKey: ["unified-timeline"] });
+
+        return result.post;
 
         // Buscar dados completos do post renovado com relacionamentos
         const { data: fullPostData, error: fullPostError } = await supabase
@@ -1589,12 +1435,20 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
 
         // Invalidar queries para atualizar a timeline
         queryClient.invalidateQueries({ queryKey: ["unified-timeline"] });
-        queryClient.invalidateQueries({
-          queryKey: ["user-posts", currentPost.user_id],
-        });
-        queryClient.invalidateQueries({
-          queryKey: ["user-points", currentPost.user_id],
-        });
+        if (fullPostData) {
+          queryClient.invalidateQueries({
+            queryKey: [
+              "user-posts",
+              fullPostData.user_id || fullPostData.professional_id,
+            ],
+          });
+          queryClient.invalidateQueries({
+            queryKey: [
+              "user-points",
+              fullPostData.user_id || fullPostData.professional_id,
+            ],
+          });
+        }
 
         console.log("✅ [renewPremiumPost] Post premium renovado com sucesso!");
         return data;

@@ -136,6 +136,7 @@ export default function FeedPage() {
     search: searchQuery,
     location_filter: locationFilter,
     pinPostId: highlightPostId || undefined,
+    onlyRealPosts: activeTab === "posts",
   });
 
   const [editingPost, setEditingPost] = useState<any>(null);

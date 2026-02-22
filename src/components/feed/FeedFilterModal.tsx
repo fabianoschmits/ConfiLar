@@ -128,7 +128,29 @@ export function FeedFilterModal({
             </button>
 
             <button
-              onClick={() => setSelectedType("custom")}
+              onClick={() => {
+                setSelectedType("custom");
+                // Preenchimento automático com códigos para os comboboxes
+                setSelectedCountry("BR"); // Use "BR" instead of "Brasil"
+                if (profile?.location_state) {
+                  const est = estados.find(
+                    (e) =>
+                      e.nome === profile.location_state ||
+                      e.sigla === profile.location_state,
+                  );
+                  if (est) {
+                    setSelectedState(est.nome);
+                    setStateSigla(est.sigla);
+                    loadCidades(est.sigla);
+                  } else {
+                    setSelectedState(profile.location_state);
+                    setStateSigla(profile.location_state);
+                  }
+                }
+                if (profile?.location_city) {
+                  setSelectedCity(profile.location_city);
+                }
+              }}
               className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
                 selectedType === "custom" || selectedType === "local"
                   ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300"

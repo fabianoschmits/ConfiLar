@@ -25,71 +25,46 @@ export const POST = withAuth(
         );
       }
 
-      // Buscar item
-      const { data: item, error: itemError } = await supabaseAuth
-        .from("points_store_items")
-        .select("*")
-        .eq("id", item_id)
-        .eq("is_active", true)
-        .single();
+      // Utilizar a RPC segura e atômica para efetuar a compra
+      const { data: purchaseId, error: rpcError } = await supabaseAuth.rpc(
+        "purchase_store_item",
+        {
+          p_user_id: user.id, // 🔒 Sempre ID autenticado
+          p_item_id: item_id,
+        },
+      );
 
-      if (itemError || !item) {
+      if (rpcError) {
+        console.error("Erro ao comprar item na loja (RPC):", rpcError);
         return NextResponse.json(
-          { error: "Item não encontrado" },
-          { status: 404 },
-        );
-      }
-
-      // Verificar saldo do usuário autenticado
-      const { data: profile } = await supabaseAuth
-        .from("profiles")
-        .select("points_balance")
-        .eq("id", user.id) // 🔒 Sempre ID autenticado
-        .single();
-
-      if (!profile || profile.points_balance < item.points_price) {
-        return NextResponse.json(
-          { error: "Saldo insuficiente" },
+          {
+            error:
+              rpcError.message ||
+              "Erro ao processar compra. Verifique seu saldo.",
+          },
           { status: 400 },
         );
       }
 
-      // Criar compra na loja para o usuário autenticado
+      // Buscar os detalhes da compra recém-criada para retornar ao cliente
       const { data: purchase, error: purchaseError } = await supabaseAuth
         .from("points_store_purchases")
-        .insert({
-          user_id: user.id, // 🔒 Sempre ID autenticado
-          item_id: item_id,
-          points_spent: item.points_price,
-          expires_at: item.duration_days
-            ? new Date(
-                Date.now() + item.duration_days * 24 * 60 * 60 * 1000,
-              ).toISOString()
-            : null,
-        })
         .select(
           `
         *,
         item:points_store_items(*)
       `,
         )
+        .eq("id", purchaseId)
         .single();
 
       if (purchaseError) {
-        console.error("Erro ao criar compra na loja:", purchaseError);
-        return NextResponse.json(
-          { error: "Erro ao processar compra" },
-          { status: 500 },
+        console.error(
+          "Erro ao buscar detalhes da compra efetuada:",
+          purchaseError,
         );
+        // Mesmo falhando o fetch, a compra funcionou no banco
       }
-
-      // Remover pontos do usuário autenticado (usar deduct_points ao invés de add_points negativo)
-      await supabaseAuth.rpc("deduct_points", {
-        p_user_id: user.id, // 🔒 Sempre ID autenticado
-        p_points: item.points_price,
-        p_source: "store_purchase",
-        p_description: `Comprou: ${item.name}`,
-      });
 
       return NextResponse.json({
         success: true,

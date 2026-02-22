@@ -6,14 +6,11 @@ import { supabase } from "@/lib/supabase";
 import {
   PointsPackage,
   PointsPurchase,
-  PointsWithdrawal,
   PointsTransfer,
   StoreItem,
   StorePurchase,
   CreatePointsPurchaseRequest,
-  CreateWithdrawalRequest,
   CreateTransferRequest,
-  calculateWithdrawal,
   calculateTransfer,
 } from "@/types/economy";
 
@@ -38,7 +35,10 @@ export function usePointsPackages() {
       if (error) throw error;
       return data as PointsPackage[];
     },
-    staleTime: 1000 * 30, // 30 segundos
+    enabled: true,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: true,
   });
 
   return {
@@ -82,6 +82,7 @@ export function usePointsPurchases(userId?: string) {
     },
     enabled: !!userId,
     staleTime: 0, // Sempre considerar stale para permitir atualizações imediatas
+    gcTime: 0,
     refetchOnWindowFocus: true, // Refetch quando a janela ganha foco
     refetchOnMount: true, // Refetch quando o componente monta
   });
@@ -120,81 +121,7 @@ export function usePointsPurchases(userId?: string) {
   };
 }
 
-// ============================================
-// HOOK PARA SAQUES DE PONTOS
-// ============================================
-
-export function usePointsWithdrawals(userId?: string) {
-  const queryClient = useQueryClient();
-  const [withdrawalCalc, setWithdrawalCalc] = useState<ReturnType<
-    typeof calculateWithdrawal
-  > | null>(null);
-
-  const {
-    data: withdrawals,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["points-withdrawals", userId],
-    queryFn: async () => {
-      if (!userId) return [];
-
-      const { data, error } = await supabase
-        .from("points_withdrawals")
-        .select("*")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-      return data as PointsWithdrawal[];
-    },
-    enabled: !!userId,
-    staleTime: 1000 * 60 * 2, // 2 minutos
-  });
-
-  const createWithdrawalMutation = useMutation({
-    mutationFn: async (request: CreateWithdrawalRequest) => {
-      const { data, error } = await supabase.rpc("create_withdrawal", {
-        p_user_id: userId,
-        p_points_amount: request.points_amount,
-        p_pix_key: request.pix_key,
-        p_pix_key_type: request.pix_key_type,
-      });
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["points-withdrawals", userId],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["user-points-balance", userId],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["user-points-history", userId],
-      });
-    },
-  });
-
-  const calculateWithdrawalAmount = useCallback((pointsAmount: number) => {
-    const calc = calculateWithdrawal(pointsAmount, 10);
-    setWithdrawalCalc(calc);
-    return calc;
-  }, []);
-
-  return {
-    withdrawals: withdrawals || [],
-    loading: isLoading,
-    error,
-    createWithdrawal: createWithdrawalMutation.mutateAsync,
-    isCreating: createWithdrawalMutation.isPending,
-    calculateWithdrawalAmount,
-    withdrawalCalc,
-  };
-}
-
+// Remoção dos hooks de saque
 // ============================================
 // HOOK PARA TRANSFERÊNCIAS DE PONTOS
 // ============================================
@@ -286,21 +213,35 @@ export function usePointsTransfers(userId?: string) {
       }
     },
     enabled: !!userId,
-    staleTime: 1000 * 60 * 2, // 2 minutos
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: true,
     retry: false, // Não tentar novamente se falhar
   });
 
   const createTransferMutation = useMutation({
     mutationFn: async (request: CreateTransferRequest) => {
-      const { data, error } = await supabase.rpc("transfer_points", {
-        p_from_user_id: userId,
-        p_to_user_id: request.to_user_id,
-        p_points_amount: request.points_amount,
-        p_message: request.message,
+      // Usar a rota de API segura em vez de RPC direta
+      const response = await fetch("/api/economy/transfer/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          to_user_id: request.to_user_id,
+          points_amount: request.points_amount,
+          message: request.message,
+        }),
       });
 
-      if (error) throw error;
-      return data;
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Erro ao realizar transferência");
+      }
+
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["points-transfers", userId] });
@@ -314,7 +255,7 @@ export function usePointsTransfers(userId?: string) {
   });
 
   const calculateTransferAmount = useCallback((pointsAmount: number) => {
-    const calc = calculateTransfer(pointsAmount, 5, 10);
+    const calc = calculateTransfer(pointsAmount, 25, 0);
     setTransferCalc(calc);
     return calc;
   }, []);
@@ -443,7 +384,7 @@ export function useSystemConfig() {
 
       return configObj;
     },
-    staleTime: 1000 * 60 * 30, // 30 minutos
+    staleTime: 1000 * 60 * 5, // 5 minutos
   });
 
   return {
@@ -451,8 +392,6 @@ export function useSystemConfig() {
     loading: isLoading,
     error,
     conversionRate: configs?.conversion_rate,
-    withdrawalFee: configs?.withdrawal_fee,
-    withdrawalLimits: configs?.withdrawal_limits,
     transferFee: configs?.transfer_fee,
     transferLimits: configs?.transfer_limits,
   };

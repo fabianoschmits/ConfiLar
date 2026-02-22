@@ -36,23 +36,24 @@ export const POST = withAuth(
       // Adicionar pontos ao usuário autenticado (RPC agora segura e server-side)
       const { data, error } = await supabaseAuth.rpc("add_points", {
         p_user_id: user.id,
-        p_points: 0, // Ignorado pela nova RPC
+        p_points: 0, // Lookup automático via p_source (action_type)
         p_source: body.action_type,
         p_description: body.description,
         p_metadata: metadata,
       });
 
       if (error || !data || !data.success) {
-        console.error("Erro ao adicionar pontos:", error || data?.error);
+        console.error("Erro ao adicionar pontos:", error || data?.message);
         return NextResponse.json(
           {
-            error: error?.message || data?.error || "Erro ao adicionar pontos",
+            error:
+              error?.message || data?.message || "Erro ao adicionar pontos",
           },
           { status: 500 },
         );
       }
 
-      const points = data.points_added;
+      const pointsAdded = data.points_added;
 
       // Criar notificação se for um tipo de referral
       const referralTypes = [
@@ -88,23 +89,23 @@ export const POST = withAuth(
           > = {
             referral_signup: {
               title: "👥 Nova Indicação!",
-              message: `${referredUserName} se cadastrou usando seu código de indicação! Você ganhou ${points.toLocaleString("pt-BR")} ConfiPoints`,
+              message: `${referredUserName} se cadastrou usando seu código de indicação! Você ganhou ${pointsAdded.toLocaleString("pt-BR")} ConfiPoints`,
             },
             referral_profile_completed: {
               title: "✅ Perfil Completado!",
-              message: `${referredUserName} completou o perfil! Você ganhou ${points.toLocaleString("pt-BR")} ConfiPoints`,
+              message: `${referredUserName} completou o perfil! Você ganhou ${pointsAdded.toLocaleString("pt-BR")} ConfiPoints`,
             },
             referral_first_post: {
               title: "📝 Primeiro Post!",
-              message: `${referredUserName} fez o primeiro post! Você ganhou ${points.toLocaleString("pt-BR")} ConfiPoints`,
+              message: `${referredUserName} fez o primeiro post! Você ganhou ${pointsAdded.toLocaleString("pt-BR")} ConfiPoints`,
             },
             referral_first_review: {
               title: "⭐ Primeira Avaliação!",
-              message: `${referredUserName} fez a primeira avaliação! Você ganhou ${points.toLocaleString("pt-BR")} ConfiPoints`,
+              message: `${referredUserName} fez a primeira avaliação! Você ganhou ${pointsAdded.toLocaleString("pt-BR")} ConfiPoints`,
             },
             referral_active_30_days: {
               title: "🔥 30 Dias Ativo!",
-              message: `${referredUserName} completou 30 dias ativo! Você ganhou ${points.toLocaleString("pt-BR")} ConfiPoints`,
+              message: `${referredUserName} completou 30 dias ativo! Você ganhou ${pointsAdded.toLocaleString("pt-BR")} ConfiPoints`,
             },
           };
 
@@ -121,7 +122,7 @@ export const POST = withAuth(
               priority: "high",
               metadata: {
                 referral_type: body.action_type,
-                points_received: points,
+                points_received: pointsAdded,
                 referred_user_id:
                   body.related_user_id || metadata.related_user_id,
                 referred_user_name: referredUserName,
@@ -162,8 +163,9 @@ export const POST = withAuth(
 
       return NextResponse.json({
         success: true,
-        points_added: data,
-        message: "Pontos adicionados com sucesso",
+        points_added: pointsAdded,
+        new_balance: data.new_balance,
+        message: data.message || "Pontos adicionados com sucesso",
       });
     } catch (error) {
       console.error("Erro na API de adicionar pontos:", error);

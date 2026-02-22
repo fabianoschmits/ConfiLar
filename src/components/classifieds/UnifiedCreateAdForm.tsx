@@ -179,7 +179,7 @@ export function UnifiedCreateAdForm({
     price: initialData?.price ? initialData.price.toString() : "",
     images: initialData?.images || ([] as string[]),
     isPremium: initialData?.isPremium || false,
-    pointsToSpend: PREMIUM_PRICES.POST_1_DAY.POINTS as number,
+    pointsToSpend: PREMIUM_PRICES.AD_1_DAY.POINTS as number,
     durationDays: 1 as number,
     useCreditType: undefined as "1d" | "7d" | undefined,
   });
@@ -292,25 +292,25 @@ export function UnifiedCreateAdForm({
 
   const premiumOptions = [
     {
-      points: PREMIUM_PRICES.POST_1_DAY.POINTS,
+      points: PREMIUM_PRICES.AD_1_DAY.POINTS,
       label: "1 Dia",
       days: 1,
       color: "#10B981",
     },
     {
-      points: PREMIUM_PRICES.POST_7_DAYS.POINTS,
+      points: PREMIUM_PRICES.AD_7_DAYS.POINTS,
       label: "7 Dias",
       days: 7,
       color: "#FFD700",
     },
     {
-      points: PREMIUM_PRICES.POST_14_DAYS.POINTS,
+      points: PREMIUM_PRICES.AD_14_DAYS.POINTS,
       label: "14 Dias",
       days: 14,
       color: "#FF6B6B",
     },
     {
-      points: PREMIUM_PRICES.POST_30_DAYS.POINTS,
+      points: PREMIUM_PRICES.AD_30_DAYS.POINTS,
       label: "30 Dias",
       days: 30,
       color: "#9B59B6",

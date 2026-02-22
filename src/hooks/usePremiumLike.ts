@@ -26,45 +26,26 @@ export function usePremiumLike({
     mutationFn: async () => {
       if (!user) throw new Error("Usuário não autenticado");
 
-      // Verificar saldo do usuário
-      const { data: balance, error: balanceError } = await supabase
-        .from("user_points_balance")
-        .select("balance")
-        .eq("user_id", user.id)
-        .single();
-
-      if (balanceError) throw new Error("Erro ao verificar saldo");
-      if (!balance || balance.balance < PREMIUM_PRICES.LIKE.POINTS) {
-        throw new Error(
-          `Saldo insuficiente. Necessário: ${PREMIUM_PRICES.LIKE.POINTS} pontos para curtir`,
-        );
-      }
-
-      // Criar curtida premium
-      const { data, error } = await supabase
-        .from("feed_posts_likes")
-        .insert({
-          user_id: user.id,
-          post_id: postId,
-          is_featured: true,
-          premium_points_spent: PREMIUM_PRICES.LIKE.POINTS,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Deduzir pontos do usuário que curtiu
-      const { error: pointsError } = await supabase.rpc("add_points", {
-        p_user_id: user.id,
-        p_points: -PREMIUM_PRICES.LIKE.POINTS,
-        p_source: "premium_like",
-        p_description: "Curtida premium em post",
+      // Usar a rota de API segura em vez de RPC direta
+      const response = await fetch("/api/points/premium-like", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          postId,
+        }),
       });
 
-      if (pointsError) throw new Error("Erro ao processar pontos");
+      const result = await response.json();
 
-      return data;
+      if (!response.ok) {
+        throw new Error(result.error || "Erro ao realizar curtida premium");
+      }
+
+      console.log("✅ Curtida premium realizada via API:", result);
+      return result;
     },
     onSuccess: () => {
       toast.success(

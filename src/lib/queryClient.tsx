@@ -95,15 +95,7 @@ export function QueryProvider({ children }: QueryProviderProps) {
           // Verificar se cache não expirou
           if (cached.timestamp && now - cached.timestamp < maxAge) {
             // Filtrar apenas queries importantes antes de hidratar
-            const persistableKeys = [
-              "profiles",
-              "user-points",
-              "user-points-balance",
-              "points-transfers",
-              "user-points-history",
-              "classifieds",
-              "stories",
-            ];
+            const persistableKeys = ["profiles", "classifieds", "stories"];
 
             // Filtrar queries para persistir apenas as importantes
             if (cached.clientState.queries) {
@@ -190,15 +182,7 @@ export function QueryProvider({ children }: QueryProviderProps) {
     const saveCache = async () => {
       try {
         const PERSIST_KEY = "REACT_QUERY_OFFLINE_CACHE";
-        const persistableKeys = [
-          "profiles",
-          "user-points",
-          "user-points-balance",
-          "points-transfers",
-          "user-points-history",
-          "classifieds",
-          "stories",
-        ];
+        const persistableKeys = ["profiles", "classifieds", "stories"];
 
         // Dehidratar apenas queries importantes
         const dehydratedState = dehydrate(queryClient, {

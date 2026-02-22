@@ -48,11 +48,15 @@ export function ResponsiveModal({
 
         <DialogPrimitive.Content
           className={cn(
-            "fixed z-[201] flex flex-col bg-background shadow-2xl transition-all duration-300",
+            "fixed z-[201] flex flex-col bg-background shadow-2xl",
             // Mobile (Bottom Sheet)
             "bottom-0 left-0 right-0 rounded-t-3xl w-full",
+            "data-[state=open]:animate-in data-[state=closed]:animate-out",
+            "data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full",
+            "duration-500 ease-in-out",
             // Desktop (Centered)
             "md:bottom-auto md:left-1/2 md:top-1/2 md:right-auto md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:max-w-2xl md:max-h-[85vh]",
+            "md:data-[state=open]:zoom-in-95 md:data-[state=closed]:zoom-out-95 md:data-[state=open]:slide-in-from-bottom-0 md:data-[state=closed]:slide-out-to-bottom-0",
             // Background & Effects (Onboarding Style)
             "bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 overflow-hidden",
             // Height logic

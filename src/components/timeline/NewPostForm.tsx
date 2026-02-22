@@ -608,6 +608,8 @@ export function NewPostForm({
                       if (estado) {
                         setSelectedState(estado.nome);
                         loadCidades(estado.sigla);
+                        // Garantir que o país mude para Brasil ao selecionar um estado brasileiro
+                        setSelectedCountry("BR");
                       }
                     }
                     setSelectedCity("");

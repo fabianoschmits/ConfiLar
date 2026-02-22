@@ -36,71 +36,36 @@ export function usePremiumAd({ onSuccess, onError }: UsePremiumAdProps) {
     mutationFn: async (adData: CreatePremiumAdData) => {
       if (!user) throw new Error("Usuário não autenticado");
 
-      // Verificar saldo do usuário
-      const { data: balance, error: balanceError } = await supabase
-        .from("user_points_balance")
-        .select("balance")
-        .eq("user_id", user.id)
-        .single();
-
-      if (balanceError) throw new Error("Erro ao verificar saldo");
-      if (!balance || balance.balance < adData.pointsToSpend) {
-        throw new Error(
-          `Saldo insuficiente. Necessário: ${adData.pointsToSpend.toLocaleString("pt-BR")} pontos para anúncio premium`,
-        );
-      }
-
-      // Calcular data de expiração baseado na duração escolhida
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + adData.durationDays);
-
-      // Buscar nome do usuário do perfil
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name, user_type")
-        .eq("id", user.id)
-        .single();
-
-      // Criar anúncio premium na tabela classified_ads
-      const { data, error } = await supabase
-        .from("classified_ads")
-        .insert({
-          user_id: user.id,
-          user_name: profile?.full_name || "Usuário",
-          user_type: profile?.user_type || "client",
+      // Usar a nova API Route segura para criar anúncio premium
+      const response = await fetch("/api/classifieds/premium", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
           title: adData.title,
           description: adData.description,
-          category: adData.service_type, // category é o nome da coluna na tabela
+          category: adData.service_type,
           location_city: adData.location_city,
           location_state: adData.location_state,
           ad_type: adData.ad_type,
           price_range: adData.price_range,
           contact_phone: adData.contact_phone,
           contact_email: adData.contact_email,
-          images: adData.images || [],
-          is_active: true,
-          is_premium: true,
-          is_featured: true,
-          premium_points_spent: adData.pointsToSpend,
-          premium_expires_at: expiresAt.toISOString(),
-          premium_highlight_color: "#FFD700",
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Deduzir pontos
-      const { error: pointsError } = await supabase.rpc("add_points", {
-        p_user_id: user.id,
-        p_points: -adData.pointsToSpend,
-        p_source: "premium_ad",
-        p_description: `Criou anúncio premium (${adData.durationDays} dia${adData.durationDays > 1 ? "s" : ""} - ${adData.pointsToSpend.toLocaleString("pt-BR")} pontos)`,
+          images: adData.images,
+          pointsToSpend: adData.pointsToSpend,
+          durationDays: adData.durationDays,
+        }),
       });
 
-      if (pointsError) throw new Error("Erro ao processar pontos");
+      const result = await response.json();
 
-      return data;
+      if (!response.ok) {
+        throw new Error(result.error || "Erro ao criar anúncio premium");
+      }
+
+      return result.ad;
     },
     onSuccess: (data, variables) => {
       toast.success(
@@ -142,73 +107,27 @@ export function usePremiumAd({ onSuccess, onError }: UsePremiumAdProps) {
     }) => {
       if (!user) throw new Error("Usuário não autenticado");
 
-      // Buscar o anúncio atual
-      const { data: currentAd, error: fetchError } = await supabase
-        .from("classified_ads")
-        .select("*")
-        .eq("id", adId)
-        .single();
-
-      if (fetchError || !currentAd) {
-        throw new Error("Anúncio não encontrado");
-      }
-
-      // Verificar se o usuário é o dono do anúncio
-      if (currentAd.user_id !== user.id) {
-        throw new Error("Você não tem permissão para renovar este anúncio");
-      }
-
-      // Verificar saldo do usuário
-      const { data: balance, error: balanceError } = await supabase
-        .from("user_points_balance")
-        .select("balance")
-        .eq("user_id", user.id)
-        .single();
-
-      if (balanceError) throw new Error("Erro ao verificar saldo");
-      if (!balance || balance.balance < pointsToSpend) {
-        throw new Error(
-          `Saldo insuficiente. Necessário: ${pointsToSpend.toLocaleString("pt-BR")} pontos para renovar anúncio premium`,
-        );
-      }
-
-      // Calcular nova data de expiração
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + durationDays);
-
-      // Atualizar anúncio para premium novamente
-      const { data, error } = await supabase
-        .from("classified_ads")
-        .update({
-          is_premium: true,
-          is_featured: true,
-          premium_points_spent: pointsToSpend,
-          premium_expires_at: expiresAt.toISOString(),
-          premium_highlight_color: "#FFD700",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", adId)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Deduzir pontos
-      const { error: pointsError } = await supabase.rpc("add_points", {
-        p_user_id: user.id,
-        p_points: -pointsToSpend,
-        p_source: "premium_ad_renewal",
-        p_description: `Renovou anúncio premium (${durationDays} dia${durationDays > 1 ? "s" : ""} - ${pointsToSpend.toLocaleString("pt-BR")} pontos)`,
-        p_metadata: {
-          ad_id: adId,
-          duration_days: durationDays,
-          ad_title: currentAd.title,
+      // Usar a nova API Route segura para renovar anúncio premium
+      const response = await fetch("/api/classifieds/premium/renew", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
+        credentials: "include",
+        body: JSON.stringify({
+          adId,
+          pointsToSpend,
+          durationDays,
+        }),
       });
 
-      if (pointsError) throw new Error("Erro ao processar pontos");
+      const result = await response.json();
 
-      return data;
+      if (!response.ok) {
+        throw new Error(result.error || "Erro ao renovar anúncio premium");
+      }
+
+      return result.ad;
     },
     onSuccess: (data, variables) => {
       toast.success(

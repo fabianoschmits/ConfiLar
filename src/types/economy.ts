@@ -10,13 +10,6 @@ export type PaymentStatus =
   | "rejected"
   | "cancelled"
   | "refunded";
-export type WithdrawalStatus =
-  | "pending"
-  | "processing"
-  | "approved"
-  | "rejected"
-  | "completed"
-  | "cancelled";
 export type TransferStatus = "completed" | "cancelled" | "reversed";
 export type PixKeyType = "cpf" | "cnpj" | "email" | "phone" | "random";
 export type StoreItemCategory =
@@ -78,44 +71,7 @@ export interface PointsPurchaseWithPackage extends PointsPurchase {
   package?: PointsPackage;
 }
 
-// ============================================
-// SAQUES DE PONTOS
-// ============================================
-
-export interface PointsWithdrawal {
-  id: string;
-  user_id: string;
-  points_amount: number;
-  brl_amount: number;
-  fee_percentage: number;
-  fee_amount: number;
-  net_amount: number;
-  pix_key: string;
-  pix_key_type?: PixKeyType;
-  status: WithdrawalStatus;
-  admin_notes?: string;
-  processed_by?: string;
-  rejection_reason?: string;
-  metadata?: Record<string, any>;
-  created_at: string;
-  processed_at?: string;
-  completed_at?: string;
-}
-
-export interface CreateWithdrawalRequest {
-  points_amount: number;
-  pix_key: string;
-  pix_key_type: PixKeyType;
-}
-
-export interface WithdrawalCalculation {
-  points_amount: number;
-  brl_amount: number;
-  fee_percentage: number;
-  fee_amount: number;
-  net_amount: number;
-}
-
+// Função removida para saques
 // ============================================
 // TRANSFERÊNCIAS DE PONTOS
 // ============================================
@@ -243,13 +199,11 @@ export interface TransferLimitsConfig {
 export interface EconomyDashboard {
   packages: PointsPackage[];
   recent_purchases: PointsPurchaseWithPackage[];
-  recent_withdrawals: PointsWithdrawal[];
   recent_transfers: PointsTransferWithUsers[];
   store_items: StoreItem[];
   my_store_purchases: StorePurchaseWithItem[];
   statistics: {
     total_purchased: number;
-    total_withdrawn: number;
     total_transferred_out: number;
     total_transferred_in: number;
     total_spent_store: number;
@@ -258,8 +212,6 @@ export interface EconomyDashboard {
 
 export interface AdminEconomyStats {
   total_revenue: number;
-  total_withdrawals: number;
-  pending_withdrawals: number;
   active_users: number;
   total_transactions: number;
   revenue_by_month: {
@@ -271,15 +223,12 @@ export interface AdminEconomyStats {
     full_name: string;
     total_spent: number;
   }[];
-  pending_withdrawals_list: PointsWithdrawal[];
 }
 
 // ============================================
 // CONSTANTES
 // ============================================
 
-export const MIN_WITHDRAWAL_POINTS = 10000; // Mínimo 10.000 pontos (R$ 100,00)
-export const WITHDRAWAL_FEE_PERCENTAGE = 5; // Taxa de 5% sobre saques
 export const MIN_TRANSFER_POINTS = 100; // Mínimo 100 pontos para transferir
 
 // ============================================
@@ -293,27 +242,10 @@ export function formatBRL(value: number): string {
   }).format(value);
 }
 
-export function calculateWithdrawal(
-  pointsAmount: number,
-  feePercentage: number = 10,
-): WithdrawalCalculation {
-  const brlAmount = pointsAmount * 0.01;
-  const feeAmount = brlAmount * (feePercentage / 100);
-  const netAmount = brlAmount - feeAmount;
-
-  return {
-    points_amount: pointsAmount,
-    brl_amount: brlAmount,
-    fee_percentage: feePercentage,
-    fee_amount: feeAmount,
-    net_amount: netAmount,
-  };
-}
-
 export function calculateTransfer(
   pointsAmount: number,
-  feePercentage: number = 5,
-  minimumFee: number = 10,
+  feePercentage: number = 25,
+  minimumFee: number = 0,
 ): TransferCalculation {
   const calculatedFee = Math.floor(pointsAmount * (feePercentage / 100));
   const feeAmount = Math.max(calculatedFee, minimumFee);
@@ -347,30 +279,6 @@ export function getPaymentStatusLabel(status: PaymentStatus): string {
     rejected: "Rejeitado",
     cancelled: "Cancelado",
     refunded: "Reembolsado",
-  };
-  return labels[status] || status;
-}
-
-export function getWithdrawalStatusColor(status: WithdrawalStatus): string {
-  const colors: Record<WithdrawalStatus, string> = {
-    pending: "yellow",
-    processing: "blue",
-    approved: "green",
-    rejected: "red",
-    completed: "green",
-    cancelled: "gray",
-  };
-  return colors[status] || "gray";
-}
-
-export function getWithdrawalStatusLabel(status: WithdrawalStatus): string {
-  const labels: Record<WithdrawalStatus, string> = {
-    pending: "Pendente",
-    processing: "Processando",
-    approved: "Aprovado",
-    rejected: "Rejeitado",
-    completed: "Concluído",
-    cancelled: "Cancelado",
   };
   return labels[status] || status;
 }

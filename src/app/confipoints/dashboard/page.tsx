@@ -117,14 +117,16 @@ export default function ConfiPointsDashboardPage() {
     return {
       id: `transfer-${transfer.id}`,
       type: isSent ? "transfer_sent" : "transfer_received",
-      amount: isSent ? -transfer.points_amount : transfer.points_amount,
+      amount: isSent
+        ? -Math.abs(transfer.points_amount)
+        : Math.abs(transfer.net_amount),
       description: isSent
         ? t("transferredPoints", {
-            amount: transfer.points_amount.toLocaleString(),
+            amount: Math.abs(transfer.points_amount).toLocaleString(),
             user: otherUser?.full_name || tCommon("user"),
           })
         : t("receivedTransfer", {
-            amount: transfer.points_amount.toLocaleString(),
+            amount: Math.abs(transfer.net_amount).toLocaleString(),
             user: otherUser?.full_name || tCommon("user"),
           }),
       date: transfer.created_at,
@@ -263,7 +265,21 @@ export default function ConfiPointsDashboardPage() {
   // Remover duplicatas baseado no ID ou metadata
   const allTransactions = [...transferTransactions, ...pointTransactions]
     .filter((tx, index, self) => {
-      // Para transferências, verificar se já existe uma com mesmo transfer_id
+      // Ignora a transação auxiliar (points_transactions) se já houver registro rico na tabela de transferências
+      if (!tx.id?.startsWith("transfer-")) {
+        const isTransferRelated =
+          tx.source === "transfer_sent" ||
+          tx.source === "transfer_received" ||
+          tx.source === "transfer";
+
+        // Remove transação genérica completamente para evitar duplo registro,
+        // já que a points_transfers gerará os cards confiáveis principais.
+        if (isTransferRelated) {
+          return false;
+        }
+      }
+
+      // Para transferências originadas do histórico detalhado
       if (tx.id?.startsWith("transfer-")) {
         const transferId =
           tx.metadata?.transfer_id || tx.id.replace("transfer-", "");
@@ -546,6 +562,11 @@ export default function ConfiPointsDashboardPage() {
                                       { addSuffix: true, locale: ptBR },
                                     )}
                                   </p>
+                                  {transaction.metadata?.message && (
+                                    <p className="text-[10px] text-purple-600 dark:text-purple-400 italic line-clamp-1">
+                                      "{transaction.metadata.message}"
+                                    </p>
+                                  )}
                                 </div>
                               </div>
                               <div
@@ -771,7 +792,7 @@ export default function ConfiPointsDashboardPage() {
                     </CardHeader>
                     <CardContent>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                        Envie pontos para outros usuários sem taxas.
+                        Envie pontos para outros usuários (taxa de 25%).
                       </p>
                       <Link href="/confipoints/transferir">
                         <Button className="w-full" variant="outline">
@@ -1063,32 +1084,40 @@ export default function ConfiPointsDashboardPage() {
                                       return desc;
                                     })()}
                                   </p>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                      {formatDistanceToNow(
-                                        new Date(transaction.date),
-                                        {
-                                          addSuffix: true,
-                                          locale: ptBR,
-                                        },
-                                      )}
-                                    </p>
-                                    <Badge
-                                      variant={
-                                        transaction.status === "completed"
-                                          ? "default"
-                                          : "outline"
-                                      }
-                                      className="text-xs"
-                                    >
-                                      {transaction.status === "completed"
-                                        ? "Concluído"
-                                        : transaction.status === "pending"
-                                          ? "Pendente"
-                                          : transaction.status === "processing"
-                                            ? "Processando"
-                                            : transaction.status}
-                                    </Badge>
+                                  <div className="flex flex-col mt-1">
+                                    <div className="flex items-center gap-2">
+                                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        {formatDistanceToNow(
+                                          new Date(transaction.date),
+                                          {
+                                            addSuffix: true,
+                                            locale: ptBR,
+                                          },
+                                        )}
+                                      </p>
+                                      <Badge
+                                        variant={
+                                          transaction.status === "completed"
+                                            ? "default"
+                                            : "outline"
+                                        }
+                                        className="text-xs"
+                                      >
+                                        {transaction.status === "completed"
+                                          ? "Concluído"
+                                          : transaction.status === "pending"
+                                            ? "Pendente"
+                                            : transaction.status ===
+                                                "processing"
+                                              ? "Processando"
+                                              : transaction.status}
+                                      </Badge>
+                                    </div>
+                                    {transaction.metadata?.message && (
+                                      <p className="text-xs text-purple-600 dark:text-purple-400 mt-1 italic">
+                                        "{transaction.metadata.message}"
+                                      </p>
+                                    )}
                                   </div>
                                 </div>
                               </div>

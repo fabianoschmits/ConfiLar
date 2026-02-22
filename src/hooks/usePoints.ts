@@ -81,7 +81,9 @@ export function usePoints(userId?: string) {
       return mappedData;
     },
     enabled: !!userId,
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 0, // Sempre obsoleto (força recarregamento)
+    gcTime: 0, // Não manter no cache após desmontar
+    refetchOnWindowFocus: true, // Recarregar ao focar a janela
   });
 
   // Buscar estatísticas completas
@@ -116,7 +118,9 @@ export function usePoints(userId?: string) {
       return data;
     },
     enabled: !!userId,
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: true,
     retry: false, // Não tentar novamente em caso de erro
   });
 
@@ -139,34 +143,30 @@ export function usePoints(userId?: string) {
   // Função para adicionar pontos
   const addPointsMutation = useMutation({
     mutationFn: async (request: AddPointsRequest) => {
-      // Buscar valor de pontos da configuração
-      const { data: config } = await supabase
-        .from("points_config")
-        .select("points_value")
-        .eq("action_key", request.action_type)
-        .eq("is_active", true)
-        .single();
-
-      const points = config?.points_value || 0;
-
-      // Montar metadata com informações extras
-      const metadata = {
-        ...request.metadata,
-        referral_id: request.referral_id,
-        post_id: request.post_id,
-        related_user_id: request.related_user_id,
-      };
-
-      const { data, error } = await supabase.rpc("add_points", {
-        p_user_id: userId,
-        p_points: points,
-        p_source: request.action_type,
-        p_description: request.description,
-        p_metadata: metadata,
+      // Usar API route protegida (requer autenticação)
+      const response = await fetch("/api/points/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          action_type: request.action_type,
+          description: request.description,
+          metadata: request.metadata,
+          referral_id: request.referral_id,
+          post_id: request.post_id,
+          related_user_id: request.related_user_id,
+        }),
       });
 
-      if (error) throw error;
-      return data;
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Erro ao adicionar pontos");
+      }
+
+      return result.points_added;
     },
     onSuccess: () => {
       // Invalidar cache de pontos
@@ -320,7 +320,9 @@ export function usePointsHistory(
       return data || [];
     },
     enabled: !!userId,
-    staleTime: 1000 * 60 * 2, // 2 minutos
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: true,
     retry: 3, // Tentar 3 vezes antes de falhar
   });
 
