@@ -370,7 +370,9 @@ export default function AdminTicketDetailPage() {
                 </Label>
                 <div className="flex gap-2">
                   <Badge className="font-bold text-[9px] sm:text-[10px]">
-                    {ticket.status.replace("_", " ")}
+                    {ticket.status === "fechado"
+                      ? "Arquivado"
+                      : ticket.status.replace("_", " ")}
                   </Badge>
                 </div>
               </div>
@@ -465,7 +467,7 @@ export default function AdminTicketDetailPage() {
                     </SelectItem>
                     <SelectItem value="reaberto">Reaberto</SelectItem>
                     <SelectItem value="resolvido">Resolvido</SelectItem>
-                    <SelectItem value="fechado">Fechado</SelectItem>
+                    <SelectItem value="fechado">Arquivado</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

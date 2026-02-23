@@ -18,7 +18,7 @@ const statusMap: Record<string, { label: string; variant: any }> = {
   em_andamento: { label: "Em Andamento", variant: "default" },
   aguardando_usuario: { label: "Aguardando Vc", variant: "secondary" },
   resolvido: { label: "Resolvido", variant: "success" },
-  fechado: { label: "Fechado", variant: "outline" },
+  fechado: { label: "Resolvido", variant: "success" },
 };
 
 const priorityMap: Record<string, { label: string; icon: any; color: string }> =

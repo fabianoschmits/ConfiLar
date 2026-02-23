@@ -34,14 +34,13 @@ import {
   Trash2,
   Send,
 } from "lucide-react";
+import { PostCard } from "@/components/timeline/PostCard";
+import { ClassifiedsCard } from "@/components/classifieds/ClassifiedsCard";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { BanUserModal } from "@/components/gestao-confi/BanUserModal";
 import { AdminReportedChatModal } from "@/components/gestao-confi/AdminReportedChatModal";
-import { PremiumPostCard } from "@/components/timeline/PremiumPostCard";
-import { ClassifiedsCard } from "@/components/classifieds/ClassifiedsCard";
-import type { TimelinePost } from "@/types/timeline";
 
 const FEEDBACK_TEMPLATES = [
   {
@@ -64,27 +63,6 @@ const FEEDBACK_TEMPLATES = [
     message: "Sua denúncia resultou no banimento do usuário envolvido.",
   },
 ];
-
-const mapReportToTimelinePost = (report: Report): TimelinePost | null => {
-  if (!report.reported_post) return null;
-  return {
-    id: report.reported_post_id,
-    type: "post",
-    created_at: report.reported_post.created_at || new Date().toISOString(),
-    user_id: report.reported_user_id || "",
-    user_name: report.reported_user?.full_name || "Usuário Denunciado",
-    user_avatar: report.reported_user?.avatar_url,
-    title: report.reported_post.title || "",
-    description: report.reported_post.content || "", // fallback content to description
-    images: report.reported_post.images || [],
-    likes_count: report.reported_post.likes_count || 0,
-    comments_count: report.reported_post.comments_count || 0,
-    is_liked: false,
-    is_featured: report.reported_post.is_featured || false,
-    is_premium: report.reported_post.is_premium || false,
-    tags: report.reported_post.tags || [],
-  } as TimelinePost;
-};
 
 const mapReportToClassifiedAd = (report: Report): any => {
   if (!report.reported_classified) return null;
@@ -116,9 +94,18 @@ export default function AdminReportDetailPage() {
   const [status, setStatus] = useState<ReportStatus>("pending");
   const [isBanModalOpen, setIsBanModalOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const [feedbackHistory, setFeedbackHistory] = useState<any[]>([]);
 
   useEffect(() => {
     loadReport();
+
+    // Atualizar dados quando a janela ganhar foco
+    const handleFocus = () => {
+      loadReport();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
   }, [reportId]);
 
   const loadReport = async () => {
@@ -128,6 +115,9 @@ export default function AdminReportDetailPage() {
       setReport(data);
       setResolution(data.resolution || "");
       setStatus(data.status);
+
+      const history = await reportService.getReportFeedbackHistory(reportId);
+      setFeedbackHistory(history);
     } catch (error) {
       console.error(error);
       toast.error("Erro ao carregar detalhes da denúncia");
@@ -148,12 +138,8 @@ export default function AdminReportDetailPage() {
         newResolution || resolution,
       );
 
-      // Se for resolvido e houver uma mensagem de resolução (feedback), enviar notificação
-      if (
-        newStatus === "resolved" &&
-        (newResolution || resolution) &&
-        report?.reporter_id
-      ) {
+      // Enviar notificação se houver uma mensagem de resolução/feedback
+      if ((newResolution || resolution) && report?.reporter_id) {
         try {
           await NotificationService.createNotification({
             user_id: report.reporter_id,
@@ -173,6 +159,10 @@ export default function AdminReportDetailPage() {
 
       toast.success("Status atualizado com sucesso");
       loadReport();
+      // Recarregar o histórico após o envio de mensagem
+      const history = await reportService.getReportFeedbackHistory(reportId);
+      setFeedbackHistory(history);
+      setResolution(""); // Limpar o campo após o envio
     } catch (error) {
       console.error(error);
       toast.error("Erro ao atualizar denúncia");
@@ -499,10 +489,18 @@ export default function AdminReportDetailPage() {
           <CardContent className="p-4 sm:p-5">
             {report.type === "post" && report.reported_post ? (
               <div className="max-w-lg mx-auto flex flex-col gap-4">
-                <PremiumPostCard
-                  post={mapReportToTimelinePost(report)!}
-                  showComments={false}
-                  onShare={() => {}}
+                <PostCard
+                  post={{
+                    ...report.reported_post,
+                    user: report.reported_user || {
+                      id: report.reported_user_id,
+                      full_name: "Usuário Denunciado",
+                      avatar_url: report.reported_user?.avatar_url,
+                    },
+                  }}
+                  onLike={() => {}}
+                  onEdit={() => {}}
+                  onDelete={() => {}}
                 />
                 {preview.link && (
                   <Link href={preview.link} className="self-center">
@@ -623,14 +621,63 @@ export default function AdminReportDetailPage() {
             >
               Mensagem de Resolução
             </Label>
-            <Textarea
-              id="resolution"
-              placeholder="Descreva o que foi feito ou o motivo da decisão..."
-              value={resolution}
-              onChange={(e) => setResolution(e.target.value)}
-              className="min-h-[100px] resize-none rounded-2xl border-muted bg-muted/20 focus:bg-background transition-colors p-3 text-[13px]"
-            />
+            <div className="flex gap-2">
+              <Textarea
+                id="resolution"
+                placeholder="Descreva o que foi feito ou o motivo da decisão..."
+                value={resolution}
+                onChange={(e) => setResolution(e.target.value)}
+                className="flex-1 min-h-[100px] resize-none rounded-2xl border-muted bg-muted/20 focus:bg-background transition-colors p-3 text-[13px]"
+              />
+              <Button
+                onClick={() => handleUpdate(report.status, resolution)}
+                disabled={isUpdating || !resolution.trim()}
+                className="self-end rounded-xl h-10 px-4 gap-2 bg-primary text-primary-foreground font-bold shadow-sm"
+                title="Apenas enviar mensagem sem mudar status"
+              >
+                <Send className="w-4 h-4" />
+                Enviar Mensagem
+              </Button>
+            </div>
           </div>
+
+          {/* Histórico de Mensagens */}
+          {feedbackHistory.length > 0 && (
+            <div className="mt-8 pt-8 border-t border-border/50 space-y-4">
+              <div className="flex items-center gap-2 px-1">
+                <MessageSquare className="w-3.5 h-3.5 text-primary" />
+                <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  Histórico de Mensagens enviadas ao Denunciante
+                </h4>
+              </div>
+
+              <div className="space-y-3">
+                {feedbackHistory.map((msg, idx) => (
+                  <div
+                    key={msg.id || idx}
+                    className="bg-muted/30 border border-border/50 rounded-2xl p-3 animate-in fade-in slide-in-from-left-2 duration-300"
+                  >
+                    <div className="flex justify-between items-start gap-4 mb-2">
+                      <Badge
+                        variant="outline"
+                        className="text-[9px] h-4 px-1.5 font-bold uppercase tracking-wider bg-background/50"
+                      >
+                        Feedback
+                      </Badge>
+                      <span className="text-[9px] text-muted-foreground font-medium">
+                        {format(new Date(msg.created_at), "dd/MM/yyyy HH:mm", {
+                          locale: ptBR,
+                        })}
+                      </span>
+                    </div>
+                    <p className="text-[12px] text-foreground leading-relaxed italic">
+                      "{msg.message}"
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

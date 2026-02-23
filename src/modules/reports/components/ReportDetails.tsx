@@ -27,14 +27,34 @@ const statusMap: Record<string, { label: string; variant: any; icon: any }> = {
   pending: { label: "Pendente", variant: "warning", icon: Clock },
   reviewing: { label: "Em Análise", variant: "default", icon: Clock },
   resolved: { label: "Resolvido", variant: "success", icon: CheckCircle2 },
-  dismissed: { label: "Descartado", variant: "outline", icon: AlertTriangle },
+  dismissed: { label: "Resolvido", variant: "success", icon: CheckCircle2 },
 };
+
+import { reportService } from "../services/reportService";
 
 export function ReportDetails({
   report,
   onBack,
   currentUser,
 }: ReportDetailsProps) {
+  const [feedbackHistory, setFeedbackHistory] = React.useState<any[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = React.useState(true);
+
+  React.useEffect(() => {
+    loadHistory();
+  }, [report.id]);
+
+  const loadHistory = async () => {
+    try {
+      const history = await reportService.getReportFeedbackHistory(report.id);
+      setFeedbackHistory(history);
+    } catch (error) {
+      console.error("Erro ao carregar histórico de feedback:", error);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
   const status = statusMap[report.status] || {
     label: report.status,
     variant: "outline",
@@ -125,6 +145,7 @@ export function ReportDetails({
                       report.reported_classified?.images?.[0]
                     }
                     className="w-full h-full object-cover"
+                    alt="Preview"
                   />
                 </div>
               )}
@@ -156,8 +177,43 @@ export function ReportDetails({
           </div>
         )}
 
-        {/* Admin Response / Resolution */}
-        {report.status === "pending" ? (
+        {/* Admin Response / Resolution History */}
+        {feedbackHistory.length > 0 ? (
+          <div className="space-y-6">
+            <div className="flex items-center justify-center">
+              <div className="bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 text-[10px] text-primary uppercase font-bold tracking-wider">
+                Respostas da Moderação
+              </div>
+            </div>
+
+            {feedbackHistory.map((msg, idx) => (
+              <div
+                key={msg.id || idx}
+                className="flex justify-end items-end gap-2 animate-in slide-in-from-right-4 duration-300"
+              >
+                <div className="max-w-[85%] flex flex-col items-end text-right">
+                  <div className="bg-primary text-primary-foreground px-4 py-2.5 rounded-2xl rounded-br-sm text-[13px] leading-relaxed shadow-sm">
+                    {msg.message}
+                  </div>
+                  <div className="flex items-center gap-1 mt-1 px-1">
+                    <span className="text-[9px] font-medium text-muted-foreground">
+                      {format(new Date(msg.created_at), "dd/MM HH:mm", {
+                        locale: ptBR,
+                      })}
+                    </span>
+                    <span className="text-[10px] font-semibold text-muted-foreground">
+                      Suporte ConfiLar
+                    </span>
+                    <ShieldCheck className="w-3 h-3 text-primary" />
+                  </div>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 shadow-sm">
+                  <ShieldCheck className="w-4 h-4 text-primary" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : report.status === "pending" ? (
           <div className="flex justify-center py-8">
             <div className="flex flex-col items-center gap-3 text-center max-w-[250px]">
               <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-full">
@@ -178,7 +234,7 @@ export function ReportDetails({
               <div className="bg-primary text-primary-foreground px-4 py-2.5 rounded-2xl rounded-br-sm text-[13px] leading-relaxed shadow-sm">
                 {report.resolution ||
                   (report.status === "dismissed"
-                    ? "Denúncia analisada e descartada pela moderação."
+                    ? "Denúncia analisada e encerrada pela moderação."
                     : "Denúncia resolvida com sucesso.")}
                 {report.admin_notes && (
                   <p className="mt-2 pt-2 border-t border-primary-foreground/20 text-[11px] opacity-90">
@@ -199,7 +255,7 @@ export function ReportDetails({
           </div>
         )}
 
-        {report.status === "resolved" && (
+        {(report.status === "resolved" || report.status === "dismissed") && (
           <div className="flex justify-center pt-4">
             <div className="bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-xl p-4 text-center space-y-2">
               <CheckCircle2 className="w-6 h-6 text-green-600 mx-auto" />

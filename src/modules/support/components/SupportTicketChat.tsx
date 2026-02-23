@@ -107,10 +107,16 @@ export function SupportTicketChat({
             </h4>
             <div className="flex items-center gap-2">
               <Badge
-                variant={ticket.status === "fechado" ? "outline" : "default"}
+                variant={
+                  ticket.status === "resolvido" || ticket.status === "fechado"
+                    ? "success"
+                    : "default"
+                }
                 className="text-[8px] sm:text-[9px] font-bold h-3.5 sm:h-4 px-1.5"
               >
-                {ticket.status.replace("_", " ")}
+                {ticket.status === "fechado"
+                  ? "Resolvido"
+                  : ticket.status.replace("_", " ")}
               </Badge>
               <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-widest leading-none">
                 #{ticket.id.slice(0, 8)}

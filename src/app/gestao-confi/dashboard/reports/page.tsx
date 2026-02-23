@@ -38,6 +38,14 @@ export default function AdminReportsPage() {
 
   useEffect(() => {
     loadReports();
+
+    // Atualizar dados quando a janela ganhar foco (re-entrar na aba)
+    const handleFocus = () => {
+      loadReports();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
   }, []);
 
   const loadReports = async () => {
@@ -64,7 +72,9 @@ export default function AdminReportsPage() {
         .includes(search.toLowerCase());
 
     const matchesStatus =
-      statusFilter === "all" || report.status === statusFilter;
+      statusFilter === "all"
+        ? report.status !== "dismissed"
+        : report.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
@@ -90,7 +100,7 @@ export default function AdminReportsPage() {
   };
 
   const counts = {
-    all: reports.length,
+    all: reports.filter((r) => r.status !== "dismissed").length,
     pending: reports.filter((r) => r.status === "pending").length,
     reviewing: reports.filter((r) => r.status === "reviewing").length,
     resolved: reports.filter((r) => r.status === "resolved").length,

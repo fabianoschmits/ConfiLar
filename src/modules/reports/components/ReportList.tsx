@@ -26,7 +26,7 @@ const statusMap: Record<string, { label: string; variant: any }> = {
   pending: { label: "Pendente", variant: "warning" },
   reviewing: { label: "Em Análise", variant: "default" },
   resolved: { label: "Resolvido", variant: "success" },
-  dismissed: { label: "Descartado", variant: "outline" },
+  dismissed: { label: "Resolvido", variant: "success" },
 };
 
 const typeIconMap: Record<string, any> = {

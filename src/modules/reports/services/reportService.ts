@@ -126,4 +126,15 @@ export const reportService = {
 
     if (error) throw error;
   },
+
+  async getReportFeedbackHistory(reportId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from("notifications")
+      .select("*")
+      .contains("metadata", { report_id: reportId })
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
 };

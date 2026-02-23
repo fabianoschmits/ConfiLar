@@ -53,17 +53,22 @@ export default function AdminTicketsPage() {
       ticket.profiles?.full_name?.toLowerCase().includes(search.toLowerCase());
 
     const matchesStatus =
-      statusFilter === "all" || ticket.status === statusFilter;
+      statusFilter === "all"
+        ? ticket.status !== "fechado"
+        : ticket.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
 
-  const statusStyles: Record<string, { variant: any; icon: any }> = {
+  const statusStyles: Record<
+    string,
+    { variant: any; icon: any; label?: string }
+  > = {
     aberto: { variant: "warning", icon: AlertCircle },
     em_andamento: { variant: "default", icon: Clock },
     aguardando_usuario: { variant: "secondary", icon: UserIcon },
     resolvido: { variant: "success", icon: CheckCircle2 },
-    fechado: { variant: "outline", icon: CheckCircle2 },
+    fechado: { variant: "outline", icon: CheckCircle2, label: "Arquivado" },
     reaberto: { variant: "destructive", icon: AlertCircle },
   };
 
@@ -143,7 +148,19 @@ export default function AdminTicketsPage() {
             onClick={() => setStatusFilter(status)}
             className="capitalize text-[10px] sm:text-[11px] h-7 sm:h-8 px-2 sm:px-3"
           >
-            {status === "all" ? "Todos" : status.replace("_", " ")}
+            {status === "all"
+              ? "Todos"
+              : status === "fechado"
+                ? "Arquivados"
+                : status.replace("_", " ")}
+            <Badge
+              variant="secondary"
+              className="text-[9px] px-1 py-0 h-4 bg-muted text-muted-foreground ml-1.5"
+            >
+              {status === "all"
+                ? tickets.filter((t) => t.status !== "fechado").length
+                : tickets.filter((t) => t.status === status).length}
+            </Badge>
           </Button>
         ))}
       </div>
@@ -197,7 +214,9 @@ export default function AdminTicketsPage() {
                         variant={style.variant}
                         className="text-[8px] sm:text-[10px] uppercase font-bold px-1.5 h-3.5 sm:h-4"
                       >
-                        {ticket.status.replace("_", " ")}
+                        {ticket.status === "fechado"
+                          ? "Arquivado"
+                          : ticket.status.replace("_", " ")}
                       </Badge>
                       <span className="text-[8px] sm:text-[10px] text-muted-foreground uppercase font-medium">
                         {ticket.category}
