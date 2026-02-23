@@ -10,6 +10,13 @@ export type ReportType =
 export type ReportStatus = "pending" | "reviewing" | "resolved" | "dismissed";
 export type ReportPriority = "low" | "medium" | "high" | "urgent";
 
+export interface ReportRating {
+  report_id: string;
+  rating: number;
+  feedback: string | null;
+  rated_at: string;
+}
+
 export interface Report {
   id: string;
   type: ReportType;
@@ -29,6 +36,7 @@ export interface Report {
   resolution?: string;
   created_at: string;
   updated_at: string;
+  rating?: ReportRating; // Joined rating
 
   // Joins / Related Data
   reporter?: {

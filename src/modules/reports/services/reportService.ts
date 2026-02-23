@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { Report, CreateReportDTO } from "../types";
+import { Report, CreateReportDTO, ReportRating } from "../types";
 
 export const reportService = {
   async getUserReports(userId: string): Promise<Report[]> {
@@ -136,5 +136,28 @@ export const reportService = {
 
     if (error) throw error;
     return data || [];
+  },
+
+  async submitRating(reportId: string, rating: number, feedback?: string) {
+    const { error } = await supabase.from("report_ratings").insert({
+      report_id: reportId,
+      rating,
+      feedback,
+    });
+    if (error) {
+      if ((error as any).code === "23505") return;
+      throw error;
+    }
+  },
+
+  async getReportRating(reportId: string): Promise<ReportRating | null> {
+    const { data, error } = await supabase
+      .from("report_ratings")
+      .select("*")
+      .eq("report_id", reportId)
+      .single();
+
+    if (error && error.code !== "PGRST116") throw error;
+    return data;
   },
 };

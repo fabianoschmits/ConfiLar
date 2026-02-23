@@ -15,7 +15,11 @@ import {
   AlertTriangle,
   User,
   ShieldCheck,
+  Star,
+  Loader2,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 interface ReportDetailsProps {
   report: Report;
@@ -39,6 +43,11 @@ export function ReportDetails({
 }: ReportDetailsProps) {
   const [feedbackHistory, setFeedbackHistory] = React.useState<any[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = React.useState(true);
+  const [rating, setRating] = React.useState(0);
+  const [feedback, setFeedback] = React.useState("");
+  const [isRatingSubmitted, setIsRatingSubmitted] = React.useState(false);
+  const [isSubmittingRating, setIsSubmittingRating] = React.useState(false);
+  const [existingRating, setExistingRating] = React.useState<any>(null);
 
   React.useEffect(() => {
     loadHistory();
@@ -46,12 +55,34 @@ export function ReportDetails({
 
   const loadHistory = async () => {
     try {
-      const history = await reportService.getReportFeedbackHistory(report.id);
+      const [history, ratingData] = await Promise.all([
+        reportService.getReportFeedbackHistory(report.id),
+        reportService.getReportRating(report.id),
+      ]);
       setFeedbackHistory(history);
+      if (ratingData) {
+        setExistingRating(ratingData);
+        setIsRatingSubmitted(true);
+      }
     } catch (error) {
       console.error("Erro ao carregar histórico de feedback:", error);
     } finally {
       setIsLoadingHistory(false);
+    }
+  };
+
+  const handleSubmitRating = async () => {
+    if (rating === 0) return;
+    setIsSubmittingRating(true);
+    try {
+      await reportService.submitRating(report.id, rating, feedback);
+      setIsRatingSubmitted(true);
+      toast.success("Obrigado pelo seu feedback!");
+    } catch (error) {
+      console.error("Erro ao enviar avaliação:", error);
+      toast.error("Erro ao enviar avaliação. Tente novamente.");
+    } finally {
+      setIsSubmittingRating(false);
     }
   };
 
@@ -256,13 +287,96 @@ export function ReportDetails({
         )}
 
         {(report.status === "resolved" || report.status === "dismissed") && (
-          <div className="flex justify-center pt-4">
-            <div className="bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-xl p-4 text-center space-y-2">
-              <CheckCircle2 className="w-6 h-6 text-green-600 mx-auto" />
-              <p className="text-[11px] font-medium text-green-800 dark:text-green-300">
-                Agradecemos sua colaboração para manter o ConfiLar seguro!
-              </p>
+          <div className="space-y-4">
+            <div className="flex justify-center pt-4">
+              <div className="bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-xl p-4 text-center space-y-2 w-full">
+                <CheckCircle2 className="w-6 h-6 text-green-600 mx-auto" />
+                <p className="text-[11px] font-medium text-green-800 dark:text-green-300">
+                  Agradecemos sua colaboração para manter o ConfiLar seguro!
+                </p>
+              </div>
             </div>
+
+            {/* Rating Section */}
+            {!isRatingSubmitted ? (
+              <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 sm:p-6 text-center space-y-3 sm:space-y-4 my-4 animate-in slide-in-from-bottom-4">
+                <div className="p-2 bg-primary/10 rounded-full w-fit mx-auto">
+                  <Star className="w-5 h-5 text-primary fill-primary" />
+                </div>
+                <div>
+                  <h5 className="font-bold text-sm">
+                    O que achou da resolução?
+                  </h5>
+                  <p className="text-xs text-muted-foreground">
+                    Sua avaliação nos ajuda a melhorar.
+                  </p>
+                </div>
+                <div className="flex justify-center gap-1">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setRating(s)}
+                      className="transition-transform active:scale-90"
+                    >
+                      <Star
+                        className={`w-6 h-6 sm:w-7 sm:h-7 transition-colors ${
+                          rating >= s
+                            ? "text-yellow-400 fill-yellow-400"
+                            : "text-muted-foreground/20 stroke-muted-foreground/40"
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+                {rating > 0 && (
+                  <div className="space-y-3 animate-in fade-in zoom-in-95">
+                    <Input
+                      placeholder="Conte-nos mais (opcional)..."
+                      value={feedback}
+                      onChange={(e) => setFeedback(e.target.value)}
+                      className="text-xs h-9 bg-background"
+                    />
+                    <Button
+                      size="sm"
+                      className="w-full text-xs gap-2"
+                      onClick={handleSubmitRating}
+                      disabled={isSubmittingRating}
+                    >
+                      {isSubmittingRating ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        "Enviar Avaliação"
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="bg-muted/30 border border-border/50 rounded-2xl p-4 text-center space-y-2">
+                <div className="flex justify-center gap-0.5">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star
+                      key={s}
+                      className={`w-4 h-4 ${
+                        (existingRating?.rating || rating) >= s
+                          ? "text-yellow-400 fill-yellow-400"
+                          : "text-muted-foreground/20"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <p className="text-[11px] text-muted-foreground italic truncate px-4">
+                  "
+                  {existingRating?.feedback ||
+                    feedback ||
+                    "Sem comentário adicional"}
+                  "
+                </p>
+                <p className="text-[10px] font-bold text-primary uppercase tracking-widest">
+                  Avaliação Enviada
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -12,6 +12,7 @@ import {
   MessageSquare,
   ExternalLink,
   Calendar,
+  AlertCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
@@ -81,8 +82,14 @@ export default function SupportRatingsPage() {
         ) : (
           ratings.map((rating) => (
             <Card
-              key={rating.ticket_id}
-              className="overflow-hidden hover:border-primary/50 transition-all group"
+              key={
+                rating.type === "ticket" ? rating.ticket_id : rating.report_id
+              }
+              className={`overflow-hidden hover:border-primary/50 transition-all group ${
+                rating.type === "report"
+                  ? "border-l-4 border-l-red-500/50"
+                  : "border-l-4 border-l-primary/50"
+              }`}
             >
               <CardContent className="p-5 flex flex-col md:flex-row gap-6 items-start">
                 {/* User Info */}
@@ -157,10 +164,26 @@ export default function SupportRatingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <MessageSquare className="w-3.5 h-3.5 text-primary" />
-                      <span className="text-[11px] font-medium text-foreground truncate max-w-[200px] md:max-w-md">
-                        Ticket: {rating.support_tickets?.subject}
-                      </span>
+                      {rating.type === "ticket" ? (
+                        <MessageSquare className="w-3.5 h-3.5 text-primary" />
+                      ) : (
+                        <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                      )}
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className={`text-[8px] font-bold uppercase tracking-tight py-0 h-3.5 ${
+                            rating.type === "ticket"
+                              ? "bg-primary/5 text-primary border-primary/20"
+                              : "bg-red-500/5 text-red-500 border-red-500/20"
+                          }`}
+                        >
+                          {rating.type === "ticket" ? "Ticket" : "Denúncia"}
+                        </Badge>
+                        <span className="text-[11px] font-medium text-foreground truncate max-w-[200px] md:max-w-md">
+                          {rating.display_title}
+                        </span>
+                      </div>
                     </div>
                     <Button
                       variant="ghost"
@@ -168,11 +191,14 @@ export default function SupportRatingsPage() {
                       className="h-8 text-[11px] gap-2 hover:text-primary"
                       onClick={() =>
                         router.push(
-                          `/gestao-confi/dashboard/tickets/${rating.ticket_id}`,
+                          rating.type === "ticket"
+                            ? `/gestao-confi/dashboard/tickets/${rating.ticket_id}`
+                            : `/gestao-confi/dashboard/reports/${rating.report_id}`,
                         )
                       }
                     >
-                      Ver Ticket <ExternalLink className="w-3 h-3" />
+                      Ver {rating.type === "ticket" ? "Ticket" : "Denúncia"}{" "}
+                      <ExternalLink className="w-3 h-3" />
                     </Button>
                   </div>
                 </div>

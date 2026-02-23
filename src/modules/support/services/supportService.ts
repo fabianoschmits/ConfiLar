@@ -472,9 +472,17 @@ export const supportService = {
     const { data: tickets } = await supabase
       .from("support_tickets")
       .select("*");
-    const { data: ratings } = await supabase
+    const { data: ticketRatings } = await supabase
       .from("support_ticket_ratings")
       .select("rating");
+    const { data: reportRatings } = await supabase
+      .from("report_ratings")
+      .select("rating");
+
+    const allRatings = [
+      ...(ticketRatings?.map((r) => r.rating) || []),
+      ...(reportRatings?.map((r) => r.rating) || []),
+    ];
 
     const total = tickets?.length || 0;
     const resolved =
@@ -490,8 +498,8 @@ export const supportService = {
       ).length || 0;
 
     const avgRating =
-      ratings && ratings.length > 0
-        ? ratings.reduce((acc, curr) => acc + curr.rating, 0) / ratings.length
+      allRatings.length > 0
+        ? allRatings.reduce((acc, curr) => acc + curr, 0) / allRatings.length
         : 0;
 
     // Calculate average response time
@@ -527,26 +535,42 @@ export const supportService = {
   },
 
   async getDetailedRatings() {
-    const { data: ratings, error } = await supabase
-      .from("support_ticket_ratings")
-      .select(
-        `
-        *,
-        support_tickets (
-          subject,
-          user_id
-        )
-      `,
-      )
-      .order("rated_at", { ascending: false });
+    const [ticketRatingsRes, reportRatingsRes] = await Promise.all([
+      supabase
+        .from("support_ticket_ratings")
+        .select("*, support_tickets(subject, user_id)")
+        .order("rated_at", { ascending: false }),
+      supabase
+        .from("report_ratings")
+        .select("*, reports(reason, reporter_id)")
+        .order("rated_at", { ascending: false }),
+    ]);
 
-    if (error) throw error;
-    if (!ratings || ratings.length === 0) return [];
+    if (ticketRatingsRes.error) throw ticketRatingsRes.error;
+    if (reportRatingsRes.error) throw reportRatingsRes.error;
+
+    const ticketRatings = (ticketRatingsRes.data || []).map((r: any) => ({
+      ...r,
+      type: "ticket",
+      display_title: r.support_tickets?.subject,
+      user_id_to_fetch: r.support_tickets?.user_id,
+    }));
+
+    const reportRatings = (reportRatingsRes.data || []).map((r: any) => ({
+      ...r,
+      type: "report",
+      display_title: r.reports?.reason || "Denúncia",
+      user_id_to_fetch: r.reports?.reporter_id,
+    }));
+
+    const ratings = [...ticketRatings, ...reportRatings].sort(
+      (a, b) => new Date(b.rated_at).getTime() - new Date(a.rated_at).getTime(),
+    );
+
+    if (ratings.length === 0) return [];
 
     const userIds = Array.from(
-      new Set(
-        ratings.map((r: any) => r.support_tickets?.user_id).filter(Boolean),
-      ),
+      new Set(ratings.map((r) => r.user_id_to_fetch).filter(Boolean)),
     );
 
     if (userIds.length === 0) return ratings;
@@ -560,7 +584,7 @@ export const supportService = {
 
     return ratings.map((r: any) => ({
       ...r,
-      profiles: profileMap.get(r.support_tickets?.user_id) || {
+      profiles: profileMap.get(r.user_id_to_fetch) || {
         full_name: "Usuário Desconhecido",
         avatar_url: "",
       },
