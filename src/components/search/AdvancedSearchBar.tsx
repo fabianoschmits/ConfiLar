@@ -365,19 +365,22 @@ export function AdvancedSearchBar({
       {getFilterChips().length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
           {getFilterChips().map((chip) => (
-            <Badge
+            <div
               key={chip.key}
-              variant="secondary"
-              className="px-3 py-1 bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer"
+              className="flex items-center gap-1.5 text-blue-900 dark:text-blue-100 text-xs sm:text-[13px] font-bold tracking-wide"
             >
-              {chip.label}
+              <span>{chip.label}</span>
               <button
-                onClick={() => removeFilter(chip.key as keyof SearchFilters)}
-                className="ml-2 hover:text-red-600"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  removeFilter(chip.key as keyof SearchFilters);
+                }}
+                className="text-blue-900/40 hover:text-red-500 dark:text-blue-100/40 dark:hover:text-red-400 transition-colors ml-1"
               >
-                <X className="h-3 w-3" />
+                <X className="h-3.5 w-3.5" />
               </button>
-            </Badge>
+            </div>
           ))}
           <Button
             variant="ghost"

@@ -446,12 +446,12 @@ export default function BuscarPage() {
           <div className="bg-gray-100 dark:bg-gray-900 py-3 mb-6 rounded-xl px-4">
             <div className="flex justify-center w-full">
               {/* Abas */}
-              <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto w-full sm:w-auto self-start md:self-center scrollbar-hide">
+              <div className="flex items-center justify-center gap-1 sm:gap-2 overflow-x-auto w-full sm:w-auto scrollbar-hide">
                 <button
                   onClick={() => setActiveTab("all")}
                   className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                     activeTab === "all"
-                      ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
+                      ? "bg-white dark:bg-gray-700 text-[#00b0b0] dark:text-[#00b0b0] shadow-sm"
                       : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                   }`}
                 >
@@ -469,7 +469,7 @@ export default function BuscarPage() {
                   onClick={() => setActiveTab("clients")}
                   className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                     activeTab === "clients"
-                      ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
+                      ? "bg-white dark:bg-gray-700 text-[#00b0b0] dark:text-[#00b0b0] shadow-sm"
                       : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                   }`}
                 >
@@ -490,7 +490,7 @@ export default function BuscarPage() {
                   onClick={() => setActiveTab("professionals")}
                   className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                     activeTab === "professionals"
-                      ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
+                      ? "bg-white dark:bg-gray-700 text-[#00b0b0] dark:text-[#00b0b0] shadow-sm"
                       : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                   }`}
                 >
@@ -526,7 +526,7 @@ export default function BuscarPage() {
               </h2>
 
               {/* Controles de Visualização */}
-              <div className="flex border border-gray-200 dark:border-gray-800 rounded-lg shrink-0">
+              <div className="hidden sm:flex border border-gray-200 dark:border-gray-800 rounded-lg shrink-0">
                 <Button
                   variant={viewMode === "grid" ? "default" : "ghost"}
                   size="sm"

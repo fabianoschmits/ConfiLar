@@ -123,7 +123,7 @@ export function SmartSearchBar({
 
   // Gerar sugestões baseadas na query
   useEffect(() => {
-    if (debouncedQuery.length < 2) {
+    if (!debouncedQuery || debouncedQuery.length < 2) {
       setSuggestions([]);
       return;
     }
@@ -423,7 +423,7 @@ export function SmartSearchBar({
           )}
           <Button
             onClick={handleSearch}
-            className="h-10 px-3 sm:px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] shrink-0"
+            className="h-10 px-3 sm:px-6 bg-[#00b0b0] hover:bg-[#009090] text-white font-bold rounded-lg shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] shrink-0"
           >
             <Search className="h-4 w-4 sm:hidden" />
             <span className="hidden sm:inline">Buscar</span>
@@ -435,19 +435,22 @@ export function SmartSearchBar({
       {getFilterChips().length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5 px-1">
           {getFilterChips().map((chip) => (
-            <Badge
+            <div
               key={chip.key}
-              variant="secondary"
-              className="px-2 py-0.5 bg-blue-100/50 text-blue-800 hover:bg-blue-200/50 cursor-pointer text-xs dark:bg-blue-900/30 dark:text-blue-300"
+              className="flex items-center gap-1.5 text-blue-900 dark:text-blue-100 text-xs sm:text-[13px] font-bold tracking-wide"
             >
-              {chip.label}
+              <span>{chip.label}</span>
               <button
-                onClick={() => removeFilter(chip.key as keyof SearchFilters)}
-                className="ml-1 hover:text-red-500 transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  removeFilter(chip.key as keyof SearchFilters);
+                }}
+                className="text-blue-900/40 hover:text-red-500 dark:text-blue-100/40 dark:hover:text-red-400 transition-colors ml-1"
               >
-                <X className="h-3 w-3" />
+                <X className="h-3.5 w-3.5" />
               </button>
-            </Badge>
+            </div>
           ))}
           <Button
             variant="ghost"
@@ -499,7 +502,7 @@ export function SmartSearchBar({
               Cancelar
             </Button>
             <Button
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              className="flex-1 bg-[#00b0b0] hover:bg-[#009090] text-white"
               onClick={() => {
                 const newFilters = { ...modalFilters, searchTerm: query };
                 setFilters(newFilters);

@@ -112,6 +112,7 @@ import { ClassifiedsListSkeleton } from "@/components/ui/skeleton";
 import { ClassifiedsCard } from "@/components/classifieds/ClassifiedsCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ClientOnly } from "@/components/ClientOnly";
+import { SmartSearchBar } from "@/components/search/SmartSearchBar";
 
 import { RenewPremiumAdForm } from "@/components/classifieds/RenewPremiumAdForm";
 import { PremiumTimeRemaining } from "@/components/classifieds/PremiumTimeRemaining";
@@ -667,147 +668,119 @@ export default function ClassificadosPage() {
             {/* Estatísticas Compactas */}
             {/* Estatísticas - Card Compacto */}
 
-            {/* Barra de Busca com Filtros de Localização */}
-            <div className="mb-6 flex gap-2">
-              <div className="relative flex-1">
-                <Input
-                  placeholder="Buscar ofertas ou pedidos..."
-                  value={filters.searchTerm}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-10 h-10 w-full"
-                />
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                {filters.searchTerm && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-
-                {/* Sugestões de serviços */}
-                {filters.searchTerm.length > 1 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-                    {services
-                      .filter((service) =>
-                        service.name
-                          .toLowerCase()
-                          .includes(filters.searchTerm.toLowerCase()),
-                      )
-                      .slice(0, 8)
-                      .map((service) => (
-                        <button
-                          key={service.name}
-                          onClick={() => {
-                            setSearchQuery(service.name);
-                          }}
-                          className="w-full px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 last:border-b-0 text-sm dark:text-gray-300"
-                        >
-                          <span className="text-sm">{service.icon}</span>
-                          <div>
-                            <div className="font-medium text-gray-900 dark:text-white">
-                              {service.name}
-                            </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              {service.description}
-                            </div>
-                          </div>
-                        </button>
-                      ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Botão de filtro de localização (Estilo Feed Social) */}
-              <Button
-                id="ad-filters"
-                variant="outline"
-                onClick={() => setIsFilterModalOpen(true)}
-                className={`h-10 px-3 flex items-center gap-2 ${
-                  filters.location.type !== "all"
-                    ? "bg-primary-50 dark:bg-primary-900/30 border-primary-300 dark:border-primary-600 text-primary-700 dark:text-primary-400"
-                    : "border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400"
-                }`}
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                <span className="hidden sm:inline">
-                  {filters.location.type === "all"
-                    ? "Todas localizações"
-                    : filters.location.city ||
-                      filters.location.state ||
-                      "Filtros"}
-                </span>
-              </Button>
+            {/* Barra de Busca Marketplace */}
+            <div className="mb-8">
+              <SmartSearchBar
+                onSearch={(query, newFilters) => {
+                  updateFilters({
+                    searchTerm: query,
+                    category: newFilters.service,
+                  });
+                  setLocationFilter({
+                    type:
+                      newFilters.state && newFilters.city
+                        ? "custom"
+                        : newFilters.state
+                          ? "state"
+                          : "all",
+                    state: newFilters.state,
+                    city: newFilters.city,
+                  });
+                }}
+                onFiltersChange={(newFilters) => {
+                  updateFilters({
+                    searchTerm: newFilters.searchTerm,
+                    category: newFilters.service,
+                  });
+                  setLocationFilter({
+                    type:
+                      newFilters.state && newFilters.city
+                        ? "custom"
+                        : newFilters.state
+                          ? "state"
+                          : "all",
+                    state: newFilters.state,
+                    city: newFilters.city,
+                  });
+                }}
+                initialFilters={{
+                  searchTerm: filters.searchTerm,
+                  state: filters.location.state || "",
+                  city: filters.location.city || "",
+                  service: filters.category,
+                  rating: "all",
+                  availability: "all",
+                  userType: "all",
+                }}
+                showAdvancedFilters={true}
+              />
             </div>
 
-            {/* Modal de Filtro de Localização */}
-            <FeedFilterModal
-              isOpen={isFilterModalOpen}
-              onClose={() => setIsFilterModalOpen(false)}
-              currentFilter={filters.location}
-              onApply={(locationFilter) => {
-                setLocationFilter(locationFilter);
-                setIsFilterModalOpen(false);
-              }}
-            />
-            {/* Sistema de Abas */}
-            <div className="mb-6">
-              <div className="border-b border-gray-200 dark:border-gray-700">
-                <nav className="-mb-px flex space-x-8">
+            {/* Abas de Filtro por Tipo de Anúncio */}
+            <div className="bg-gray-100 dark:bg-gray-900 py-3 mb-6 rounded-xl px-4">
+              <div className="flex justify-center w-full">
+                {/* Abas */}
+                <div className="flex items-center justify-center gap-1 sm:gap-2 overflow-x-auto w-full sm:w-auto scrollbar-hide">
                   <button
                     onClick={() => setActiveTab("all")}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                    className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                       activeTab === "all"
-                        ? "border-gray-500 dark:border-gray-400 text-gray-900 dark:text-white"
-                        : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
+                        ? "bg-white dark:bg-gray-700 text-[#00b0b0] dark:text-[#00b0b0] shadow-sm"
+                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <Grid3X3 className="h-4 w-4" />
-                      Todos ({stats.total})
-                    </div>
+                    <Grid3X3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="text-xs sm:text-sm">Todos</span>
+                    <Badge
+                      variant="secondary"
+                      className="ml-0.5 sm:ml-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0"
+                    >
+                      {stats.total}
+                    </Badge>
                   </button>
+
                   <button
                     onClick={() => setActiveTab("offers")}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                    className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                       activeTab === "offers"
-                        ? "border-primary-500 dark:border-primary-400 text-primary-700 dark:text-primary-400"
-                        : "border-transparent text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:border-primary-300 dark:hover:border-primary-600"
+                        ? "bg-white dark:bg-gray-700 text-[#00b0b0] dark:text-[#00b0b0] shadow-sm"
+                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <HandHeart className="h-4 w-4" />
-                      {t("offers")} ({stats.offers})
-                    </div>
+                    <HandHeart className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="text-xs sm:text-sm">{t("offers")}</span>
+                    <Badge
+                      variant="secondary"
+                      className="ml-0.5 sm:ml-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0"
+                    >
+                      {stats.offers}
+                    </Badge>
                   </button>
+
                   <button
                     onClick={() => setActiveTab("requests")}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                    className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                       activeTab === "requests"
-                        ? "border-success-500 dark:border-success-400 text-success-700 dark:text-success-400"
-                        : "border-transparent text-gray-500 dark:text-gray-400 hover:text-success-600 dark:hover:text-success-400 hover:border-success-300 dark:hover:border-success-600"
+                        ? "bg-white dark:bg-gray-700 text-[#00b0b0] dark:text-[#00b0b0] shadow-sm"
+                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <ShoppingCart className="h-4 w-4" />
-                      {t("requests")} ({stats.requests})
-                    </div>
+                    <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="text-xs sm:text-sm">{t("requests")}</span>
+                    <Badge
+                      variant="secondary"
+                      className="ml-0.5 sm:ml-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0"
+                    >
+                      {stats.requests}
+                    </Badge>
                   </button>
-                </nav>
+                </div>
               </div>
             </div>
 
             {/* Controles de Visualização e Botão Novo Anúncio */}
             <div className="flex justify-between items-center mb-6 gap-1 sm:gap-4">
               <div className="flex items-center gap-1 sm:gap-4">
-                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                  {filteredAds.length}{" "}
-                  {filteredAds.length !== 1
-                    ? t("resultadosPlural")
-                    : t("resultados")}
-                </span>
-
                 {/* Seletor de itens por página - Mobile e Desktop */}
                 {!loading && filteredAds.length > 0 && (
                   <div className="flex items-center gap-1 sm:gap-2">
@@ -835,7 +808,9 @@ export default function ClassificadosPage() {
                     </Select>
                   </div>
                 )}
+              </div>
 
+              <div className="flex items-center gap-1 sm:gap-4">
                 {/* Botões Grid/List - Apenas Desktop */}
                 <div className="hidden sm:flex border border-gray-200 dark:border-gray-700 rounded-lg">
                   <Button
@@ -855,9 +830,6 @@ export default function ClassificadosPage() {
                     <List className="h-4 w-4" />
                   </Button>
                 </div>
-              </div>
-
-              <div className="flex items-center gap-1 sm:gap-4">
                 {user && (
                   <>
                     <Button
