@@ -43,7 +43,6 @@ interface SmartSearchBarProps {
 
 interface SearchFilters {
   searchTerm: string;
-  country: string;
   state: string;
   city: string;
   service: string;
@@ -57,7 +56,6 @@ export function SmartSearchBar({
   onFiltersChange,
   initialFilters = {
     searchTerm: "",
-    country: "",
     state: "",
     city: "",
     service: "all",
@@ -86,17 +84,15 @@ export function SmartSearchBar({
   const handleOpenFilters = () => {
     let initialModalState = { ...filters };
 
-    // Auto-fill country, state and city from profile if not already set
-    if (!initialModalState.country && profile?.country) {
-      initialModalState.country = profile.country;
-    }
-
+    // Auto-fill state and city from profile if not already set
     if (!initialModalState.state && profile?.location_state) {
       // Find the state by name or sigla
+      const stateToFind = profile.location_state;
       const est = estados.find(
         (e) =>
-          e.nome === profile.location_state ||
-          e.sigla === profile.location_state,
+          e.nome === stateToFind ||
+          e.sigla === stateToFind ||
+          e.sigla === stateToFind.toUpperCase(),
       );
 
       if (est) {
@@ -271,7 +267,6 @@ export function SmartSearchBar({
   const clearFilters = () => {
     const clearedFilters = {
       searchTerm: "",
-      country: "",
       state: "",
       city: "",
       service: "all",
@@ -296,13 +291,6 @@ export function SmartSearchBar({
   const getFilterChips = () => {
     const chips: { key: string; label: string; value: string }[] = [];
 
-    if (filters.country) {
-      chips.push({
-        key: "country",
-        label: `País: ${filters.country}`,
-        value: filters.country,
-      });
-    }
     if (filters.state) {
       chips.push({
         key: "state",
@@ -490,7 +478,6 @@ export function SmartSearchBar({
               onClick={() => {
                 const cleared = {
                   ...modalFilters,
-                  country: "",
                   state: "",
                   city: "",
                   service: "all",
@@ -534,33 +521,7 @@ export function SmartSearchBar({
               Localização
             </h4>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
-                  País
-                </label>
-                <select
-                  value={modalFilters.country}
-                  onChange={(e) =>
-                    setModalFilters((prev) => ({
-                      ...prev,
-                      country: e.target.value,
-                      state: "",
-                      city: "",
-                    }))
-                  }
-                  className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
-                >
-                  <option value="">Todos os países</option>
-                  <option value="Brasil">Brasil</option>
-                  <option value="Angola">Angola</option>
-                  <option value="Cabo Verde">Cabo Verde</option>
-                  <option value="Estados Unidos">Estados Unidos</option>
-                  <option value="Moçambique">Moçambique</option>
-                  <option value="Portugal">Portugal</option>
-                </select>
-              </div>
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
                   Estado

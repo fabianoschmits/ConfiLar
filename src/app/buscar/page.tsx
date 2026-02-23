@@ -96,7 +96,6 @@ export default function BuscarPage() {
   // Estados para filtros
   const [filters, setFilters] = useState({
     searchTerm: "",
-    country: "",
     state: "",
     city: "",
     service: "all",
@@ -149,7 +148,6 @@ export default function BuscarPage() {
   const clearFilters = () => {
     setFilters({
       searchTerm: "",
-      country: "",
       state: "",
       city: "",
       service: "all",
@@ -161,7 +159,6 @@ export default function BuscarPage() {
     // Limpar filtros do hook de busca avançada
     updateFilters({
       searchTerm: "",
-      country: "",
       state: "",
       city: "",
       userType: "all",
@@ -393,7 +390,6 @@ export default function BuscarPage() {
               onSearch={(query, newFilters) => {
                 updateFilters({
                   searchTerm: query,
-                  country: newFilters.country,
                   state: newFilters.state,
                   city: newFilters.city,
                   category: newFilters.service,
@@ -403,7 +399,6 @@ export default function BuscarPage() {
                 setFilters((prev) => ({
                   ...prev,
                   searchTerm: query,
-                  country: newFilters.country,
                   state: newFilters.state,
                   city: newFilters.city,
                   service: newFilters.service,
@@ -417,7 +412,6 @@ export default function BuscarPage() {
               onFiltersChange={(newFilters) => {
                 updateFilters({
                   searchTerm: newFilters.searchTerm,
-                  country: newFilters.country,
                   state: newFilters.state,
                   city: newFilters.city,
                   category: newFilters.service,
@@ -427,7 +421,6 @@ export default function BuscarPage() {
                 setFilters((prev) => ({
                   ...prev,
                   searchTerm: newFilters.searchTerm,
-                  country: newFilters.country,
                   state: newFilters.state,
                   city: newFilters.city,
                   service: newFilters.service,
@@ -438,7 +431,6 @@ export default function BuscarPage() {
               }}
               initialFilters={{
                 searchTerm: filters.searchTerm,
-                country: filters.country,
                 state: filters.state,
                 city: filters.city,
                 service: filters.service,

@@ -6,7 +6,6 @@ import { supabase } from "@/lib/supabase";
 import { normalizeSearchTerm, expandSearchTerm } from "@/lib/searchUtils";
 export interface SearchFilters {
   searchTerm: string;
-  country: string;
   category: string;
   state: string;
   city: string;
@@ -25,7 +24,6 @@ export interface SearchFilters {
 
 const DEFAULT_FILTERS: SearchFilters = {
   searchTerm: "",
-  country: "",
   category: "all",
   state: "",
   city: "",
@@ -72,9 +70,6 @@ export const useAdvancedSearch = () => {
       // Se userType for "all" ou não especificado, não filtrar por tipo
 
       // 2. Filtros de Localização (SQL)
-      if (currentFilters.country) {
-        query = query.eq("country", currentFilters.country);
-      }
       if (currentFilters.state) {
         query = query.eq("location_state", currentFilters.state);
       }
