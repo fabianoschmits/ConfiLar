@@ -469,33 +469,45 @@ export const supportService = {
 
   async getAdvancedMetrics() {
     // This would ideally be a database function or view for performance
-    const { data: tickets } = await supabase
-      .from("support_tickets")
-      .select("*");
-    const { data: ticketRatings } = await supabase
-      .from("support_ticket_ratings")
-      .select("rating");
-    const { data: reportRatings } = await supabase
-      .from("report_ratings")
-      .select("rating");
+    const [ticketsRes, reportsRes, ticketRatingsRes, reportRatingsRes] =
+      await Promise.all([
+        supabase.from("support_tickets").select("*"),
+        supabase.from("reports").select("id, status, type"), // Correct column is 'type'
+        supabase.from("support_ticket_ratings").select("rating"),
+        supabase.from("report_ratings").select("rating"),
+      ]);
+
+    const tickets = ticketsRes.data || [];
+    const reports = reportsRes.data || [];
+    const ticketRatings = ticketRatingsRes.data || [];
+    const reportRatings = reportRatingsRes.data || [];
 
     const allRatings = [
-      ...(ticketRatings?.map((r) => r.rating) || []),
-      ...(reportRatings?.map((r) => r.rating) || []),
+      ...ticketRatings.map((r) => r.rating),
+      ...reportRatings.map((r) => r.rating),
     ];
 
-    const total = tickets?.length || 0;
-    const resolved =
-      tickets?.filter((t) => t.status === "resolvido").length || 0;
-    const closed = tickets?.filter((t) => t.status === "fechado").length || 0;
-    const overdue =
-      tickets?.filter(
-        (t) =>
-          t.sla_deadline &&
-          new Date(t.sla_deadline) < new Date() &&
-          t.status !== "resolvido" &&
-          t.status !== "fechado",
-      ).length || 0;
+    const totalTickets = tickets.length;
+    const totalReports = reports.length;
+
+    // Status in support_tickets are in Portuguese
+    const resolvedTickets = tickets.filter(
+      (t) => t.status === "resolvido",
+    ).length;
+    const closedTickets = tickets.filter((t) => t.status === "fechado").length;
+
+    // Status in reports are in English ("resolved")
+    const resolvedReports = reports.filter(
+      (r: any) => r.status === "resolved" || r.status === "resolvido",
+    ).length;
+
+    const overdue = tickets.filter(
+      (t) =>
+        t.sla_deadline &&
+        new Date(t.sla_deadline) < new Date() &&
+        t.status !== "resolvido" &&
+        t.status !== "fechado",
+    ).length;
 
     const avgRating =
       allRatings.length > 0
@@ -503,33 +515,63 @@ export const supportService = {
         : 0;
 
     // Calculate average response time
-    const ticketsWithResp =
-      tickets?.filter((t) => t.first_response_at && t.created_at) || [];
+    const ticketsWithResp = tickets.filter(
+      (t) => t.first_response_at && t.created_at,
+    );
     const avgRespTimeMs =
       ticketsWithResp.length > 0
         ? ticketsWithResp.reduce((acc, t) => {
             const diff =
-              new Date(t.first_response_at).getTime() -
+              new Date(t.first_response_at!).getTime() -
               new Date(t.created_at).getTime();
             return acc + diff;
           }, 0) / ticketsWithResp.length
         : 0;
 
-    // Group by category
-    const categories: Record<string, number> = {};
-    tickets?.forEach((t) => {
-      categories[t.category] = (categories[t.category] || 0) + 1;
+    // Mapping for user-friendly categories
+    const reportTypeMap: Record<string, string> = {
+      user: "Usuário",
+      post: "Publicação",
+      message: "Mensagem",
+      review: "Avaliação",
+      classified: "Classificado",
+      comment: "Comentário",
+      story: "Story",
+      other: "Outros",
+    };
+
+    // Group by category (Unified)
+    const categoryStats: Record<string, { tickets: number; reports: number }> =
+      {};
+    tickets.forEach((t) => {
+      const cat = t.category || "Suporte";
+      if (!categoryStats[cat]) categoryStats[cat] = { tickets: 0, reports: 0 };
+      categoryStats[cat].tickets++;
+    });
+    reports.forEach((r: any) => {
+      const typeLabel = reportTypeMap[r.type] || r.type || "Geral";
+      if (!categoryStats[typeLabel])
+        categoryStats[typeLabel] = { tickets: 0, reports: 0 };
+      categoryStats[typeLabel].reports++;
     });
 
     return {
-      total_tickets: total,
-      resolved_tickets: resolved,
-      closed_tickets: closed,
+      total_tickets: totalTickets,
+      total_reports: totalReports,
+      total_interactions: totalTickets + totalReports,
+      resolved_tickets: resolvedTickets,
+      closed_tickets: closedTickets,
+      resolved_reports: resolvedReports,
       overdue_tickets: overdue,
       avg_rating: avgRating,
       avg_response_time_hours: avgRespTimeMs / (1000 * 60 * 60),
-      tickets_per_category: Object.entries(categories).map(
-        ([category, count]) => ({ category, count }),
+      category_distribution: Object.entries(categoryStats).map(
+        ([category, counts]) => ({
+          category,
+          tickets: counts.tickets,
+          reports: counts.reports,
+          total: counts.tickets + counts.reports,
+        }),
       ),
     };
   },

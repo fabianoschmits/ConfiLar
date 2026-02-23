@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { normalizeSearchTerm, expandSearchTerm } from "@/lib/searchUtils";
 export interface SearchFilters {
   searchTerm: string;
+  country: string;
   category: string;
   state: string;
   city: string;
@@ -13,7 +14,7 @@ export interface SearchFilters {
   minRating: number;
   maxRating: number;
   verifiedOnly: boolean;
-  availableOnly: boolean;
+  availability: string;
   sortBy: string;
   sortOrder: string;
   priceRange: [number, number];
@@ -24,6 +25,7 @@ export interface SearchFilters {
 
 const DEFAULT_FILTERS: SearchFilters = {
   searchTerm: "",
+  country: "",
   category: "all",
   state: "",
   city: "",
@@ -31,7 +33,7 @@ const DEFAULT_FILTERS: SearchFilters = {
   minRating: 0,
   maxRating: 5,
   verifiedOnly: false,
-  availableOnly: false,
+  availability: "all",
   sortBy: "rating",
   sortOrder: "desc",
   priceRange: [0, 1000],
@@ -70,6 +72,9 @@ export const useAdvancedSearch = () => {
       // Se userType for "all" ou não especificado, não filtrar por tipo
 
       // 2. Filtros de Localização (SQL)
+      if (currentFilters.country) {
+        query = query.eq("country", currentFilters.country);
+      }
       if (currentFilters.state) {
         query = query.eq("location_state", currentFilters.state);
       }
@@ -180,9 +185,14 @@ export const useAdvancedSearch = () => {
         filtered = filtered.filter((user) => user.is_verified);
       }
 
-      // Filtro por usuários disponíveis
-      if (currentFilters.availableOnly) {
-        filtered = filtered.filter((user) => user.is_available !== false);
+      // Filtro por turno de trabalho (Disponibilidade)
+      if (
+        currentFilters.availability &&
+        currentFilters.availability !== "all"
+      ) {
+        filtered = filtered.filter(
+          (user) => user.turno_trabalho === currentFilters.availability,
+        );
       }
 
       // Filtro por anos de experiência

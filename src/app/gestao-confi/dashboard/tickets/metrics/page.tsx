@@ -96,17 +96,31 @@ export default function TicketMetricsPage() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card className="bg-primary/5 border-primary/20">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">
-                  Total de Tickets
+                  Tickets
                 </p>
                 <h3 className="text-3xl font-bold">{metrics?.total_tickets}</h3>
               </div>
               <TrendingUp className="w-8 h-8 text-primary/40" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-primary/5 border-primary/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">
+                  Denúncias
+                </p>
+                <h3 className="text-3xl font-bold">{metrics?.total_reports}</h3>
+              </div>
+              <AlertCircle className="w-8 h-8 text-primary/40" />
             </div>
           </CardContent>
         </Card>
@@ -116,13 +130,13 @@ export default function TicketMetricsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">
-                  Fora do Prazo (SLA)
+                  SLA (Tickets)
                 </p>
                 <h3 className="text-3xl font-bold text-red-500">
                   {metrics?.overdue_tickets}
                 </h3>
               </div>
-              <AlertCircle className="w-8 h-8 text-red-500/40" />
+              <Clock className="w-8 h-8 text-red-500/40" />
             </div>
           </CardContent>
         </Card>
@@ -132,13 +146,13 @@ export default function TicketMetricsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">
-                  Tempo Médio Resp.
+                  Resp. Média
                 </p>
                 <h3 className="text-3xl font-bold text-amber-500">
                   {metrics?.avg_response_time_hours.toFixed(1)}h
                 </h3>
               </div>
-              <Clock className="w-8 h-8 text-amber-500/40" />
+              <TrendingUp className="w-8 h-8 text-amber-500/40" />
             </div>
           </CardContent>
         </Card>
@@ -151,14 +165,14 @@ export default function TicketMetricsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">
-                  Média de Avaliação
+                  Média Geral
                 </p>
                 <div className="flex items-baseline gap-2">
                   <h3 className="text-3xl font-bold text-success">
                     {metrics?.avg_rating.toFixed(1)}
                   </h3>
                   <span className="text-[10px] text-success font-medium group-hover:underline">
-                    Ver detalhes →
+                    Ver →
                   </span>
                 </div>
               </div>
@@ -169,38 +183,52 @@ export default function TicketMetricsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Tickets per Category */}
+        {/* Category Distribution */}
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-bold uppercase">
-              Distribuição por Categoria
+              Atendimentos por Categoria
             </CardTitle>
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={metrics?.tickets_per_category}>
+              <BarChart data={metrics?.category_distribution}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="category" fontSize={10} />
                 <YAxis fontSize={10} />
                 <Tooltip />
-                <Bar dataKey="count" fill="#00b0b0" radius={[4, 4, 0, 0]} />
+                <Bar
+                  dataKey="tickets"
+                  name="Tickets"
+                  fill="#00b0b0"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="reports"
+                  name="Denúncias"
+                  fill="#8884d8"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        {/* Status Distribution */}
+        {/* Total Interactions Distribution */}
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-bold uppercase">
-              Status dos Chamados
+              Composição da Demanda
             </CardTitle>
           </CardHeader>
           <CardContent className="h-[300px] flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={ticketsByStatus}
+                  data={[
+                    { name: "Tickets", value: metrics?.total_tickets },
+                    { name: "Denúncias", value: metrics?.total_reports },
+                  ]}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
@@ -208,19 +236,15 @@ export default function TicketMetricsPage() {
                   paddingAngle={5}
                   dataKey="value"
                 >
-                  {ticketsByStatus.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
+                  <Cell fill="#00b0b0" />
+                  <Cell fill="#8884d8" />
                 </Pie>
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute flex flex-col items-center justify-center">
               <span className="text-2xl font-bold">
-                {metrics?.total_tickets}
+                {metrics?.total_interactions}
               </span>
               <span className="text-[10px] text-muted-foreground uppercase">
                 Total

@@ -89,12 +89,14 @@ export default function BuscarPage() {
   >("all");
   const loadedProfilesRef = useRef<Set<string>>(new Set());
   const isLoadingRef = useRef(false);
+  const resultsTopRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(9);
 
   // Estados para filtros
   const [filters, setFilters] = useState({
     searchTerm: "",
+    country: "",
     state: "",
     city: "",
     service: "all",
@@ -147,6 +149,7 @@ export default function BuscarPage() {
   const clearFilters = () => {
     setFilters({
       searchTerm: "",
+      country: "",
       state: "",
       city: "",
       service: "all",
@@ -158,6 +161,7 @@ export default function BuscarPage() {
     // Limpar filtros do hook de busca avançada
     updateFilters({
       searchTerm: "",
+      country: "",
       state: "",
       city: "",
       userType: "all",
@@ -389,14 +393,17 @@ export default function BuscarPage() {
               onSearch={(query, newFilters) => {
                 updateFilters({
                   searchTerm: query,
+                  country: newFilters.country,
                   state: newFilters.state,
                   city: newFilters.city,
                   category: newFilters.service,
                   userType: newFilters.userType,
+                  availability: newFilters.availability,
                 });
                 setFilters((prev) => ({
                   ...prev,
                   searchTerm: query,
+                  country: newFilters.country,
                   state: newFilters.state,
                   city: newFilters.city,
                   service: newFilters.service,
@@ -410,14 +417,17 @@ export default function BuscarPage() {
               onFiltersChange={(newFilters) => {
                 updateFilters({
                   searchTerm: newFilters.searchTerm,
+                  country: newFilters.country,
                   state: newFilters.state,
                   city: newFilters.city,
                   category: newFilters.service,
                   userType: newFilters.userType,
+                  availability: newFilters.availability,
                 });
                 setFilters((prev) => ({
                   ...prev,
                   searchTerm: newFilters.searchTerm,
+                  country: newFilters.country,
                   state: newFilters.state,
                   city: newFilters.city,
                   service: newFilters.service,
@@ -428,6 +438,7 @@ export default function BuscarPage() {
               }}
               initialFilters={{
                 searchTerm: filters.searchTerm,
+                country: filters.country,
                 state: filters.state,
                 city: filters.city,
                 service: filters.service,
@@ -439,101 +450,79 @@ export default function BuscarPage() {
             />
           </div>
 
-          {/* Controles de Visualização */}
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                {allFilteredProfiles.length}{" "}
-                {allFilteredProfiles.length !== 1
-                  ? t("resultadosPlural")
-                  : t("resultados")}
-              </span>
-            </div>
-
-            <div className="flex border border-gray-200 rounded-lg">
-              <Button
-                variant={viewMode === "grid" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode("grid")}
-                className="rounded-r-none"
-              >
-                <Grid3X3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode("list")}
-                className="rounded-l-none"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Abas de Filtro por Tipo de Usuário */}
-          <div className="mb-6">
-            <div className="flex items-center gap-1 sm:gap-2 p-1 bg-gray-100 dark:bg-gray-900 rounded-lg overflow-x-auto">
-              <button
-                onClick={() => setActiveTab("all")}
-                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
-                  activeTab === "all"
-                    ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                }`}
-              >
-                <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="text-xs sm:text-sm">{t("all")}</span>
-                <Badge
-                  variant="secondary"
-                  className="ml-0.5 sm:ml-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0"
+          {/* Abas de Filtro por Tipo de Usuário e Controles de Visualização */}
+          <div className="bg-gray-100 dark:bg-gray-900 py-3 mb-6 rounded-xl px-4">
+            <div className="flex justify-center w-full">
+              {/* Abas */}
+              <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto w-full sm:w-auto self-start md:self-center scrollbar-hide">
+                <button
+                  onClick={() => setActiveTab("all")}
+                  className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
+                    activeTab === "all"
+                      ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  }`}
                 >
-                  {allFilteredProfiles.length}
-                </Badge>
-              </button>
+                  <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="text-xs sm:text-sm">{t("all")}</span>
+                  <Badge
+                    variant="secondary"
+                    className="ml-0.5 sm:ml-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0"
+                  >
+                    {allFilteredProfiles.length}
+                  </Badge>
+                </button>
 
-              <button
-                onClick={() => setActiveTab("clients")}
-                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
-                  activeTab === "clients"
-                    ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                }`}
-              >
-                <User className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="text-xs sm:text-sm">{t("clients")}</span>
-                <Badge
-                  variant="secondary"
-                  className="ml-0.5 sm:ml-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0"
+                <button
+                  onClick={() => setActiveTab("clients")}
+                  className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
+                    activeTab === "clients"
+                      ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  }`}
                 >
-                  {filteredUsers.filter((p) => p.user_type === "client").length}
-                </Badge>
-              </button>
+                  <User className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="text-xs sm:text-sm">{t("clients")}</span>
+                  <Badge
+                    variant="secondary"
+                    className="ml-0.5 sm:ml-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0"
+                  >
+                    {
+                      filteredUsers.filter((p) => p.user_type === "client")
+                        .length
+                    }
+                  </Badge>
+                </button>
 
-              <button
-                onClick={() => setActiveTab("professionals")}
-                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
-                  activeTab === "professionals"
-                    ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                }`}
-              >
-                <UserCheck className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="text-xs sm:text-sm">{t("professionals")}</span>
-                <Badge
-                  variant="secondary"
-                  className="ml-0.5 sm:ml-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0"
+                <button
+                  onClick={() => setActiveTab("professionals")}
+                  className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
+                    activeTab === "professionals"
+                      ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  }`}
                 >
-                  {
-                    filteredUsers.filter((p) => p.user_type === "professional")
-                      .length
-                  }
-                </Badge>
-              </button>
+                  <UserCheck className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="text-xs sm:text-sm">
+                    {t("professionals")}
+                  </span>
+                  <Badge
+                    variant="secondary"
+                    className="ml-0.5 sm:ml-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0"
+                  >
+                    {
+                      filteredUsers.filter(
+                        (p) => p.user_type === "professional",
+                      ).length
+                    }
+                  </Badge>
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Resultados */}
-          <div className="mb-8">
+          <div className="mb-8" ref={resultsTopRef}>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                 {activeTab === "all"
@@ -543,6 +532,26 @@ export default function BuscarPage() {
                     : t("professionals")}{" "}
                 ({displayProfiles.length})
               </h2>
+
+              {/* Controles de Visualização */}
+              <div className="flex border border-gray-200 dark:border-gray-800 rounded-lg shrink-0">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                  className="rounded-r-none dark:hover:bg-gray-800"
+                >
+                  <Grid3X3 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                  className="rounded-l-none dark:hover:bg-gray-800"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
 
             {loading ? (
@@ -710,9 +719,13 @@ export default function BuscarPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.max(prev - 1, 1))
-                  }
+                  onClick={() => {
+                    setCurrentPage((prev) => Math.max(prev - 1, 1));
+                    resultsTopRef.current?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }}
                   disabled={currentPage === 1}
                   className="px-3"
                 >
@@ -751,7 +764,13 @@ export default function BuscarPage() {
                           currentPage === pageNumber ? "default" : "outline"
                         }
                         size="sm"
-                        onClick={() => setCurrentPage(pageNumber)}
+                        onClick={() => {
+                          setCurrentPage(pageNumber);
+                          resultsTopRef.current?.scrollIntoView({
+                            behavior: "smooth",
+                            block: "start",
+                          });
+                        }}
                         className={`px-3 ${
                           currentPage === pageNumber
                             ? "bg-primary-600 text-white hover:bg-primary-700"
@@ -768,9 +787,13 @@ export default function BuscarPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                  }
+                  onClick={() => {
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+                    resultsTopRef.current?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }}
                   disabled={currentPage === totalPages}
                   className="px-3"
                 >

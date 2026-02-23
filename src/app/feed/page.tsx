@@ -363,8 +363,34 @@ export default function FeedPage() {
       >
         <NewPostForm
           onSubmit={async (data) => {
-            /* ... implementation ... */
-            setShowNewPost(false);
+            setIsPosting(true);
+            setPostStatus("sending");
+            try {
+              await addPost({
+                ...data,
+                type: "post",
+                user_id: profile?.id || "",
+                user_name: profile?.full_name || "",
+                user_avatar: profile?.avatar_url || "",
+                user_type: profile?.user_type || "client",
+                service_category_id: data.service,
+                description: data.description || "",
+                title: data.description?.slice(0, 100) || "",
+                images: data.images || [],
+              });
+              setPostStatus("sent");
+              toast.success("Post publicado com sucesso!");
+              setTimeout(() => {
+                setShowNewPost(false);
+                setPostStatus("idle");
+              }, 1500);
+            } catch (error) {
+              console.error("Erro ao criar post:", error);
+              toast.error("Erro ao criar post. Tente novamente.");
+              setPostStatus("idle");
+            } finally {
+              setIsPosting(false);
+            }
           }}
           onCancel={() => setShowNewPost(false)}
           isLoading={isPosting}
@@ -379,8 +405,34 @@ export default function FeedPage() {
       >
         <PremiumPostForm
           onSubmit={async (data) => {
-            /* ... implementation ... */
-            setShowPremiumPost(false);
+            setIsPosting(true);
+            setPostStatus("sending");
+            try {
+              await addPremiumPost({
+                ...data,
+                type: "post",
+                user_id: profile?.id || "",
+                user_name: profile?.full_name || "",
+                user_avatar: profile?.avatar_url || "",
+                user_type: profile?.user_type || "client",
+                service_category_id: data.service,
+                title: data.title || "",
+                description: data.description || "",
+                images: data.images || [],
+              });
+              setPostStatus("sent");
+              toast.success("Post premium publicado com sucesso!");
+              setTimeout(() => {
+                setShowPremiumPost(false);
+                setPostStatus("idle");
+              }, 1500);
+            } catch (error) {
+              console.error("Erro ao criar post premium:", error);
+              toast.error("Erro ao criar post premium. Tente novamente.");
+              setPostStatus("idle");
+            } finally {
+              setIsPosting(false);
+            }
           }}
           onCancel={() => setShowPremiumPost(false)}
           isLoading={false}

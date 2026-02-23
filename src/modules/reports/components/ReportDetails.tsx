@@ -55,14 +55,22 @@ export function ReportDetails({
 
   const loadHistory = async () => {
     try {
-      const [history, ratingData] = await Promise.all([
-        reportService.getReportFeedbackHistory(report.id),
-        reportService.getReportRating(report.id),
-      ]);
+      // Carregar histórico (não deve falhar se o rating falhar)
+      const history = await reportService.getReportFeedbackHistory(report.id);
       setFeedbackHistory(history);
-      if (ratingData) {
-        setExistingRating(ratingData);
-        setIsRatingSubmitted(true);
+
+      // Carregar rating existente separadamente
+      try {
+        const ratingData = await reportService.getReportRating(report.id);
+        if (ratingData) {
+          setExistingRating(ratingData);
+          setIsRatingSubmitted(true);
+        }
+      } catch (ratingError) {
+        console.warn(
+          "Nenhuma avaliação encontrada ou erro ao carregar:",
+          ratingError,
+        );
       }
     } catch (error) {
       console.error("Erro ao carregar histórico de feedback:", error);

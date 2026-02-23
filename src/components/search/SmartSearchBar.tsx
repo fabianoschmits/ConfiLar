@@ -9,6 +9,7 @@ import {
   Star,
   Users,
   Briefcase,
+  SlidersHorizontal,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -19,8 +20,10 @@ import {
   EstadoCombobox,
   CidadeCombobox,
 } from "@/components/ui/LocationComboboxes";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { services } from "@/data/services";
 import { normalizeSearchTerm, SYNONYM_MAP } from "@/lib/searchUtils";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 interface SearchSuggestion {
   id: string;
@@ -40,6 +43,7 @@ interface SmartSearchBarProps {
 
 interface SearchFilters {
   searchTerm: string;
+  country: string;
   state: string;
   city: string;
   service: string;
@@ -53,6 +57,7 @@ export function SmartSearchBar({
   onFiltersChange,
   initialFilters = {
     searchTerm: "",
+    country: "",
     state: "",
     city: "",
     service: "all",
@@ -68,11 +73,47 @@ export function SmartSearchBar({
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>(initialFilters);
+  const [modalFilters, setModalFilters] =
+    useState<SearchFilters>(initialFilters);
   const [showFilters, setShowFilters] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const { estados, cidades, loadCidades } = useIBGE();
+  const { profile } = useAuthContext();
+
+  // Helper function to auto-fill location
+  const handleOpenFilters = () => {
+    let initialModalState = { ...filters };
+
+    // Auto-fill country, state and city from profile if not already set
+    if (!initialModalState.country && profile?.country) {
+      initialModalState.country = profile.country;
+    }
+
+    if (!initialModalState.state && profile?.location_state) {
+      // Find the state by name or sigla
+      const est = estados.find(
+        (e) =>
+          e.nome === profile.location_state ||
+          e.sigla === profile.location_state,
+      );
+
+      if (est) {
+        initialModalState.state = est.nome;
+
+        // Also pre-fill city if state is found
+        if (!initialModalState.city && profile?.location_city) {
+          initialModalState.city = profile.location_city;
+        }
+
+        loadCidades(est.sigla);
+      }
+    }
+
+    setModalFilters(initialModalState);
+    setShowFilters(true);
+  };
 
   // Debounce para sugestões
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -230,6 +271,7 @@ export function SmartSearchBar({
   const clearFilters = () => {
     const clearedFilters = {
       searchTerm: "",
+      country: "",
       state: "",
       city: "",
       service: "all",
@@ -252,8 +294,15 @@ export function SmartSearchBar({
   };
 
   const getFilterChips = () => {
-    const chips = [];
+    const chips: { key: string; label: string; value: string }[] = [];
 
+    if (filters.country) {
+      chips.push({
+        key: "country",
+        label: `País: ${filters.country}`,
+        value: filters.country,
+      });
+    }
     if (filters.state) {
       chips.push({
         key: "state",
@@ -283,9 +332,27 @@ export function SmartSearchBar({
       });
     }
     if (filters.availability !== "all") {
+      let label = "Disponibilidade";
+      switch (filters.availability) {
+        case "manha":
+          label = "Manhã";
+          break;
+        case "tarde":
+          label = "Tarde";
+          break;
+        case "noite":
+          label = "Noite";
+          break;
+        case "integral":
+          label = "Integral";
+          break;
+        case "flexivel":
+          label = "Flexível";
+          break;
+      }
       chips.push({
         key: "availability",
-        label: `Disponível`,
+        label: `Turno: ${label}`,
         value: filters.availability,
       });
     }
@@ -303,9 +370,9 @@ export function SmartSearchBar({
   return (
     <div className={`relative ${className}`}>
       {/* Barra de busca principal - Estilo Marketplace */}
-      <div className="flex flex-col md:flex-row gap-2 bg-white dark:bg-gray-900 p-2 rounded-xl shadow-md border border-gray-200 dark:border-gray-800">
-        {/* Campo 1: O Que Pesquisar (Serviços) */}
-        <div className="flex-1 md:flex-none md:w-64 lg:w-80 relative">
+      <div className="flex flex-row items-center gap-2 bg-white dark:bg-gray-900 p-2 rounded-xl shadow-md border border-gray-200 dark:border-gray-800">
+        {/* Campo Único: Busca (Serviços, Profissionais, Localização indireta) */}
+        <div className="flex-1 relative min-w-0">
           <div className="flex items-center px-3 h-10">
             <Search className="text-gray-400 dark:text-gray-500 h-5 w-5 mr-3 shrink-0" />
             <Input
@@ -315,7 +382,7 @@ export function SmartSearchBar({
               onKeyDown={handleKeyPress}
               onFocus={() => setShowSuggestions(true)}
               placeholder="Encontre serviços ou profissionais..."
-              className="border-none focus-visible:ring-0 bg-transparent p-0 text-base h-full placeholder:text-gray-400"
+              className="border-none focus-visible:ring-0 bg-transparent p-0 text-base h-full placeholder:text-gray-400 w-full"
             />
             {query && (
               <button
@@ -354,83 +421,43 @@ export function SmartSearchBar({
             )}
         </div>
 
-        {/* Divisor Visual (Desktop) */}
-        <div className="hidden md:block w-[1px] bg-gray-200 dark:bg-gray-800 my-2"></div>
-
-        {/* Campo 2: Onde Pesquisar (Localização) */}
-        <div className="w-full md:w-auto md:max-w-xs lg:max-w-sm relative">
-          <div className="flex flex-col md:flex-row md:items-center gap-2 px-3 py-2 md:py-0 md:h-10">
-            <MapPin className="hidden md:block text-gray-400 dark:text-gray-500 h-5 w-5 mr-2 shrink-0" />
-            <div className="flex flex-col md:flex-row flex-1 gap-2">
-              <div className="flex-1 min-w-0">
-                <EstadoCombobox
-                  value={filters.state}
-                  onValueChange={(val) => {
-                    const newFilters = { ...filters, state: val, city: "" };
-                    setFilters(newFilters);
-                    loadCidades(val);
-                    onFiltersChange(newFilters);
-                  }}
-                  className="w-full"
-                />
-              </div>
-              {filters.state && (
-                <div className="flex-1 min-w-0">
-                  <CidadeCombobox
-                    estadoSigla={filters.state}
-                    value={filters.city}
-                    onValueChange={(val) => {
-                      const newFilters = { ...filters, city: val };
-                      setFilters(newFilters);
-                      onFiltersChange(newFilters);
-                    }}
-                    className="w-full"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Divisor Visual (Desktop) */}
-        <div className="hidden md:block w-[1px] bg-gray-200 dark:bg-gray-800 my-2"></div>
-
-        {/* Botão de Busca e Filtros */}
+        {/* Botão de Busca e Filtros Avançados */}
         <div className="flex items-center gap-2 px-1">
           {showAdvancedFilters && (
             <Button
               variant="outline"
-              size="icon"
-              onClick={() => setShowFilters(!showFilters)}
-              className={`h-10 w-10 shrink-0 border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 ${showFilters ? "bg-blue-50 border-blue-200 text-blue-600" : "text-gray-600 dark:text-gray-400"}`}
+              onClick={handleOpenFilters}
+              className={`h-10 px-3 flex items-center gap-2 shrink-0 border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400`}
             >
-              <Filter className="h-5 w-5" />
+              <SlidersHorizontal className="h-4 w-4" />
+              <span className="hidden sm:inline">Filtros</span>
             </Button>
           )}
           <Button
             onClick={handleSearch}
-            className="h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] shrink-0"
+            className="h-10 px-3 sm:px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] shrink-0"
           >
-            Buscar
+            <Search className="h-4 w-4 sm:hidden" />
+            <span className="hidden sm:inline">Buscar</span>
           </Button>
         </div>
       </div>
 
       {/* Filtros visuais com chips */}
       {getFilterChips().length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1.5">
+        <div className="mt-2 flex flex-wrap gap-1.5 px-1">
           {getFilterChips().map((chip) => (
             <Badge
               key={chip.key}
               variant="secondary"
-              className="px-2 py-0.5 bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer text-xs"
+              className="px-2 py-0.5 bg-blue-100/50 text-blue-800 hover:bg-blue-200/50 cursor-pointer text-xs dark:bg-blue-900/30 dark:text-blue-300"
             >
               {chip.label}
               <button
                 onClick={() => removeFilter(chip.key as keyof SearchFilters)}
-                className="ml-1 hover:text-red-600"
+                className="ml-1 hover:text-red-500 transition-colors"
               >
-                <X className="h-2.5 w-2.5" />
+                <X className="h-3 w-3" />
               </button>
             </Badge>
           ))}
@@ -438,171 +465,240 @@ export function SmartSearchBar({
             variant="ghost"
             size="sm"
             onClick={clearFilters}
-            className="text-gray-500 hover:text-gray-700 text-xs h-6 px-2"
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 text-xs h-6 px-2"
           >
-            Limpar
+            Limpar todos
           </Button>
         </div>
       )}
 
-      {/* Filtros avançados - Escondidos por padrão */}
-      {showFilters && showAdvancedFilters && (
-        <Card className="mt-3 p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
-              <Filter className="h-3 w-3" />
-              Filtros Avançados
-            </h3>
+      {/* Modal de Filtros Avançados */}
+      <ResponsiveModal
+        isOpen={showFilters}
+        onOpenChange={setShowFilters}
+        title={
+          <div className="flex items-center gap-2 text-lg">
+            <Filter className="h-5 w-5 text-primary-500" />
+            Filtros Avançados
+          </div>
+        }
+        description="Refine sua busca para encontrar os melhores profissionais e clientes."
+        footer={
+          <>
             <Button
               variant="ghost"
-              size="sm"
-              onClick={() => setShowFilters(false)}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 h-6 w-6 p-0"
+              onClick={() => {
+                const cleared = {
+                  ...modalFilters,
+                  country: "",
+                  state: "",
+                  city: "",
+                  service: "all",
+                  rating: "all",
+                  availability: "all",
+                  userType: "all",
+                };
+                setModalFilters(cleared);
+              }}
+              className="text-gray-500"
             >
-              <X className="h-3 w-3" />
+              Limpar Tudo
             </Button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {/* Estado */}
-            <div>
-              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
-                Estado
-              </label>
-              <EstadoCombobox
-                value={filters.state}
-                onValueChange={(newState) => {
-                  setFilters((prev) => ({
-                    ...prev,
-                    state: newState,
-                    city: "",
-                  }));
-                }}
-                placeholder="Digite ou selecione o estado"
-                className="w-full"
-              />
-            </div>
-
-            {/* Cidade */}
-            <div>
-              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
-                Cidade
-              </label>
-              <CidadeCombobox
-                value={filters.city}
-                onValueChange={(newCity) =>
-                  setFilters((prev) => ({ ...prev, city: newCity }))
-                }
-                estadoSigla={filters.state}
-                placeholder="Digite ou selecione a cidade"
-                className="w-full"
-              />
-            </div>
-
-            {/* Serviço */}
-            <div>
-              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
-                Serviço
-              </label>
-              <select
-                value={filters.service}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, service: e.target.value }))
-                }
-                className="w-full p-1.5 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">Todos os serviços</option>
-                {services.map((service) => (
-                  <option key={service.name} value={service.name}>
-                    {service.icon} {service.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Avaliação */}
-            <div>
-              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
-                Avaliação mínima
-              </label>
-              <select
-                value={filters.rating}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, rating: e.target.value }))
-                }
-                className="w-full p-1.5 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">Qualquer avaliação</option>
-                <option value="4">4+ estrelas</option>
-                <option value="3">3+ estrelas</option>
-                <option value="2">2+ estrelas</option>
-              </select>
-            </div>
-
-            {/* Disponibilidade */}
-            <div>
-              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
-                Disponibilidade
-              </label>
-              <select
-                value={filters.availability}
-                onChange={(e) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    availability: e.target.value,
-                  }))
-                }
-                className="w-full p-1.5 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">Todos</option>
-                <option value="available">Disponível agora</option>
-                <option value="this_week">Esta semana</option>
-                <option value="this_month">Este mês</option>
-              </select>
-            </div>
-
-            {/* Tipo de usuário */}
-            <div>
-              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
-                Tipo
-              </label>
-              <select
-                value={filters.userType}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, userType: e.target.value }))
-                }
-                className="w-full p-1.5 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">Todos</option>
-                <option value="professional">Profissionais</option>
-                <option value="client">Clientes</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Botões de ação */}
-          <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
             <Button
               variant="outline"
-              size="sm"
-              onClick={clearFilters}
-              className="text-gray-600 dark:text-gray-400 text-xs h-7 px-2"
+              className="flex-1"
+              onClick={() => setShowFilters(false)}
             >
-              Limpar
+              Cancelar
             </Button>
             <Button
-              size="sm"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
               onClick={() => {
-                handleSearch();
+                const newFilters = { ...modalFilters, searchTerm: query };
+                setFilters(newFilters);
+                onSearch(query, newFilters);
+                onFiltersChange(newFilters);
                 setShowFilters(false);
               }}
-              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-xs h-7 px-3"
             >
-              Aplicar
+              Mostrar Resultados
             </Button>
+          </>
+        }
+      >
+        <div className="space-y-6 pb-4 pt-2">
+          {/* Sessão Localização */}
+          <div>
+            <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white mb-4">
+              <MapPin className="h-4 w-4 text-primary-500" />
+              Localização
+            </h4>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                  País
+                </label>
+                <select
+                  value={modalFilters.country}
+                  onChange={(e) =>
+                    setModalFilters((prev) => ({
+                      ...prev,
+                      country: e.target.value,
+                      state: "",
+                      city: "",
+                    }))
+                  }
+                  className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
+                >
+                  <option value="">Todos os países</option>
+                  <option value="Brasil">Brasil</option>
+                  <option value="Angola">Angola</option>
+                  <option value="Cabo Verde">Cabo Verde</option>
+                  <option value="Estados Unidos">Estados Unidos</option>
+                  <option value="Moçambique">Moçambique</option>
+                  <option value="Portugal">Portugal</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                  Estado
+                </label>
+                <EstadoCombobox
+                  value={modalFilters.state}
+                  onValueChange={(newState) => {
+                    setModalFilters((prev) => ({
+                      ...prev,
+                      state: newState,
+                      city: "",
+                    }));
+                  }}
+                  placeholder="Todos"
+                  className="w-full"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                  Cidade
+                </label>
+                <CidadeCombobox
+                  value={modalFilters.city}
+                  onValueChange={(newCity) =>
+                    setModalFilters((prev) => ({ ...prev, city: newCity }))
+                  }
+                  estadoSigla={modalFilters.state}
+                  placeholder="Todas"
+                  className="w-full"
+                />
+              </div>
+            </div>
           </div>
-        </Card>
-      )}
+
+          <div className="h-px bg-gray-200 dark:bg-gray-800" />
+
+          {/* Sessão Serviço */}
+          <div>
+            <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white mb-4">
+              <Briefcase className="h-4 w-4 text-primary-500" />
+              Especialidade
+            </h4>
+            <select
+              value={modalFilters.service}
+              onChange={(e) =>
+                setModalFilters((prev) => ({
+                  ...prev,
+                  service: e.target.value,
+                }))
+              }
+              className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
+            >
+              <option value="all">Todos os serviços</option>
+              {services.map((service) => (
+                <option key={service.name} value={service.name}>
+                  {service.icon} {service.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="h-px bg-gray-200 dark:bg-gray-800" />
+
+          {/* Sessão Perfil */}
+          <div>
+            <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white mb-4">
+              <Star className="h-4 w-4 text-primary-500" />
+              Perfil
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                  Avaliação mínima
+                </label>
+                <select
+                  value={modalFilters.rating}
+                  onChange={(e) =>
+                    setModalFilters((prev) => ({
+                      ...prev,
+                      rating: e.target.value,
+                    }))
+                  }
+                  className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
+                >
+                  <option value="all">Qualquer</option>
+                  <option value="4">4+ estrelas ⭐</option>
+                  <option value="3">3+ estrelas ⭐</option>
+                  <option value="2">2+ estrelas ⭐</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                  Disponibilidade
+                </label>
+                <select
+                  value={modalFilters.availability}
+                  onChange={(e) =>
+                    setModalFilters((prev) => ({
+                      ...prev,
+                      availability: e.target.value,
+                    }))
+                  }
+                  className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
+                >
+                  <option value="all">Qualquer</option>
+                  <option value="manha">Manhã</option>
+                  <option value="tarde">Tarde</option>
+                  <option value="noite">Noite</option>
+                  <option value="integral">Integral</option>
+                  <option value="flexivel">Flexível</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                  Tipo de Usuário
+                </label>
+                <select
+                  value={modalFilters.userType}
+                  onChange={(e) =>
+                    setModalFilters((prev) => ({
+                      ...prev,
+                      userType: e.target.value,
+                    }))
+                  }
+                  className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
+                >
+                  <option value="all">Todos</option>
+                  <option value="professional">Profissionais</option>
+                  <option value="client">Clientes</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ResponsiveModal>
     </div>
   );
 }

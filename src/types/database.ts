@@ -938,6 +938,7 @@ export interface Profile {
   is_active: boolean;
   // Font size preference (75-150, default 100 = 100%)
   font_size_preference?: number;
+  turno_trabalho?: "manha" | "tarde" | "noite" | "integral" | "flexivel" | null;
 }
 
 export type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];

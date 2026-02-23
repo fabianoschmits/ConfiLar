@@ -206,6 +206,26 @@ export function ProfessionalDataForm({
             </Popover>
           </div>
         </div>
+
+        <div className="space-y-2">
+          <Label>Turno de Trabalho (Disponibilidade)</Label>
+          <Select
+            value={watchedValues.turno_trabalho}
+            onValueChange={(val) => setValue("turno_trabalho", val as any)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione seu turno de trabalho" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="manha">Manhã</SelectItem>
+              <SelectItem value="tarde">Tarde</SelectItem>
+              <SelectItem value="noite">Noite</SelectItem>
+              <SelectItem value="integral">Integral</SelectItem>
+              <SelectItem value="flexivel">Flexível</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="space-y-2">
           <Label>Bio Profissional</Label>
           <Textarea {...register("referencia_profissional")} rows={3} />
