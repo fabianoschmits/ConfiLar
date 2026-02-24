@@ -158,63 +158,7 @@ export function LocationComboboxesMultiCountry({
 
   return (
     <div className={cn("grid grid-cols-1 gap-2 sm:gap-3", className)}>
-      {/* País */}
-      <Popover open={countryOpen} onOpenChange={setCountryOpen} modal={modal}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={countryOpen}
-            className={cn(
-              "w-full justify-between",
-              "!bg-white dark:!bg-gray-900",
-              "hover:!bg-white dark:hover:!bg-gray-900",
-              "focus:!bg-white dark:focus:!bg-gray-900",
-              "focus-visible:!bg-white dark:focus-visible:!bg-gray-900",
-              "active:!bg-white dark:active:!bg-gray-900",
-            )}
-          >
-            {selectedCountry ? (
-              <span className="flex items-center gap-2">
-                <span>{selectedCountry.flag}</span>
-                <span>{selectedCountry.name}</span>
-              </span>
-            ) : (
-              t("selectCountry")
-            )}
-            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[200px] sm:w-[250px] p-0" align="start">
-          <Command>
-            <CommandInput placeholder={t("selectCountry")} />
-            <CommandList>
-              <CommandEmpty>Nenhum país encontrado.</CommandEmpty>
-              <CommandGroup>
-                {COUNTRIES.map((c) => (
-                  <CommandItem
-                    key={c.code}
-                    value={c.code}
-                    onSelect={(currentValue) => {
-                      handleCountryChange(c.code);
-                      setCountryOpen(false);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        country === c.code ? "opacity-100" : "opacity-0",
-                      )}
-                    />
-                    <span className="mr-2">{c.flag}</span>
-                    <span className="truncate">{c.name}</span>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+      {/* País removido - fixo em BR */}
 
       {/* Estado */}
       <Popover open={stateOpen} onOpenChange={setStateOpen} modal={modal}>

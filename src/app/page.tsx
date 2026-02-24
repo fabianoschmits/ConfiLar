@@ -42,7 +42,6 @@ import { useHomeStats, formatStatNumber } from "@/hooks/useHomeStats";
 import { LandingPageSkeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/lib/supabase";
 import { BrandLogo } from "@/components/common/BrandLogo";
-import { LanguageSelector } from "@/components/ui/LanguageSelector";
 import { useTranslations } from "next-intl";
 import { services } from "@/data/services";
 
@@ -143,7 +142,6 @@ function HomeContent() {
               </nav>
 
               <div className="hidden md:flex items-center gap-3">
-                <LanguageSelector />
                 <Button
                   variant="ghost"
                   asChild
@@ -257,11 +255,6 @@ function HomeContent() {
                       <Instagram className="h-4 w-4 text-gray-500" />
                       <span className="text-sm">Instagram</span>
                     </a>
-                  </div>
-
-                  {/* Idioma */}
-                  <div className="px-3 py-2">
-                    <LanguageSelector />
                   </div>
 
                   {/* Autenticação */}

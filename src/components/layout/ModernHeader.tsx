@@ -19,7 +19,6 @@ import { useMessages } from "@/hooks/useMessages";
 import { AvailabilityToggleCompact } from "@/components/ui/AvailabilityToggle";
 import { useAvailability } from "@/hooks/useAvailability";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { LanguageSelector } from "@/components/ui/LanguageSelector";
 import { FontSizeControl } from "@/components/ui/FontSizeControl";
 import { soundManager } from "@/lib/soundManager";
 import { useTranslations } from "next-intl";
@@ -469,11 +468,8 @@ export function ModernHeader({
                             </div>
                           </div>
                         </Link>
-                        {/* Toggle de Disponibilidade e Idioma - juntos */}
                         <div className="flex flex-col items-end gap-1.5 flex-shrink-0 ml-2">
                           <AvailabilityToggleCompact />
-                          {/* Seletor de Idioma - apenas ícone */}
-                          <LanguageSelector iconOnly={true} compact={true} />
                         </div>
                       </div>
 

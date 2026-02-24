@@ -94,9 +94,7 @@ export function UnifiedCreateAdForm({
   const { estados, loadCidades } = useIBGE();
 
   // Initial State from Profile
-  const [selectedCountry, setSelectedCountry] = useState<string>(
-    initialData?.location_country || profile?.country || contextCountry || "BR",
-  );
+  const [selectedCountry] = useState<string>("BR");
   const [selectedState, setSelectedState] = useState<string>(
     initialData?.location_state || profile?.location_state || "",
   );
@@ -205,7 +203,7 @@ export function UnifiedCreateAdForm({
             useCreditType: draft.useCreditType,
           });
           // Restaurar localização
-          if (draft.selectedCountry) setSelectedCountry(draft.selectedCountry);
+          // Restaurar localização (país fixo em BR)
           if (draft.selectedState) setSelectedState(draft.selectedState);
           if (draft.selectedStateSigla)
             setSelectedStateSigla(draft.selectedStateSigla);
@@ -590,10 +588,7 @@ export function UnifiedCreateAdForm({
           {showLocation && (
             <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 animate-in slide-in-from-top-2">
               <LocationComboboxesMultiCountry
-                country={selectedCountry}
                 stateCode={selectedStateSigla}
-                city={selectedCity}
-                onCountryChange={setSelectedCountry}
                 onStateChange={(state) => {
                   setSelectedStateSigla(state);
                   // Need to set full name logic if needed, but sticking to sigla for submission is usually verified in NewPostForm

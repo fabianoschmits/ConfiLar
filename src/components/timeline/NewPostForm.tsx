@@ -71,9 +71,7 @@ export function NewPostForm({
   const textareaWrapperRef = useRef<HTMLDivElement>(null);
   const descriptionRef = useRef<any>(null);
   const [showLocation, setShowLocation] = useState(false);
-  const [selectedCountry, setSelectedCountry] = useState<string>(
-    (profile as any)?.country || contextCountry || "BR",
-  );
+  const [selectedCountry] = useState<string>("BR");
   const [selectedState, setSelectedState] = useState<string>(
     profile?.location_state || "",
   );
@@ -112,8 +110,7 @@ export function NewPostForm({
           pointsToSpend: draft.pointsToSpend,
           durationDays: draft.durationDays,
         });
-        // Restaurar localização
-        if (draft.selectedCountry) setSelectedCountry(draft.selectedCountry);
+        // Restaurar localização (país fixo em BR)
         if (draft.selectedState) setSelectedState(draft.selectedState);
         if (draft.selectedStateSigla)
           setSelectedStateSigla(draft.selectedStateSigla);
@@ -561,12 +558,6 @@ export function NewPostForm({
                   country={selectedCountry}
                   stateCode={selectedStateSigla}
                   city={selectedCity}
-                  onCountryChange={(newCountry) => {
-                    setSelectedCountry(newCountry);
-                    setSelectedState("");
-                    setSelectedStateSigla("");
-                    setSelectedCity("");
-                  }}
                   onStateChange={async (stateCode) => {
                     console.log("🏛️ Estado selecionado no NewPostForm:", {
                       stateCode,
@@ -608,8 +599,6 @@ export function NewPostForm({
                       if (estado) {
                         setSelectedState(estado.nome);
                         loadCidades(estado.sigla);
-                        // Garantir que o país mude para Brasil ao selecionar um estado brasileiro
-                        setSelectedCountry("BR");
                       }
                     }
                     setSelectedCity("");

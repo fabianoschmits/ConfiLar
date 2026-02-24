@@ -319,7 +319,6 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
       values.address_number,
       zipCodeNumbers && zipCodeNumbers.length >= 8,
       values.user_type,
-      values.locale,
     ];
 
     return requiredFields.every(Boolean);
@@ -348,7 +347,6 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
         return true;
       case 5:
         return !!(
-          values.country &&
           values.location_state &&
           values.location_city &&
           values.neighborhood &&
@@ -908,12 +906,8 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
                       {currentStep === 5 && (
                         <div className="space-y-4">
                           <LocationComboboxesMultiCountry
-                            country={watchedValues.country}
                             stateCode={watchedValues.location_state}
                             city={watchedValues.location_city}
-                            onCountryChange={(c) =>
-                              setValue("country", c as any)
-                            }
                             onStateChange={(s) => setValue("location_state", s)}
                             onCityChange={(ci) => setValue("location_city", ci)}
                           />

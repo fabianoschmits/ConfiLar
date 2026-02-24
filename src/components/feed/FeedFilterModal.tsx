@@ -29,9 +29,7 @@ export function FeedFilterModal({
   const [selectedType, setSelectedType] = useState<LocationFilter["type"]>(
     currentFilter.type,
   );
-  const [selectedCountry, setSelectedCountry] = useState<string>(
-    currentFilter.country || "Brasil",
-  );
+  const [selectedCountry] = useState<string>("BR");
   const [selectedState, setSelectedState] = useState(currentFilter.state || "");
   const [selectedCity, setSelectedCity] = useState(currentFilter.city || "");
 
@@ -41,7 +39,7 @@ export function FeedFilterModal({
   useEffect(() => {
     if (isOpen) {
       setSelectedType(currentFilter.type);
-      setSelectedCountry(currentFilter.country || "Brasil");
+      setSelectedType(currentFilter.type);
       setSelectedState(currentFilter.state || "");
       setSelectedCity(currentFilter.city || "");
 
@@ -80,7 +78,6 @@ export function FeedFilterModal({
             variant="ghost"
             onClick={() => {
               setSelectedType("state");
-              setSelectedCountry("Brasil");
               setSelectedState("");
               setSelectedCity("");
               setStateSigla("");
@@ -131,7 +128,7 @@ export function FeedFilterModal({
               onClick={() => {
                 setSelectedType("custom");
                 // Preenchimento automático com códigos para os comboboxes
-                setSelectedCountry("BR"); // Use "BR" instead of "Brasil"
+                // Preenchimento automático com códigos para os comboboxes
                 if (profile?.location_state) {
                   const est = estados.find(
                     (e) =>
@@ -201,10 +198,7 @@ export function FeedFilterModal({
         {(selectedType === "custom" || selectedType === "local") && (
           <div className="pt-2 border-t border-gray-100 dark:border-gray-800 animate-in fade-in slide-in-from-top-2">
             <LocationComboboxesMultiCountry
-              country={selectedCountry}
               stateCode={stateSigla}
-              city={selectedCity}
-              onCountryChange={setSelectedCountry}
               onStateChange={(code) => {
                 setStateSigla(code);
                 const est = estados.find((e) => e.sigla === code);

@@ -140,11 +140,6 @@ export function AddressForm({ onSuccess }: { onSuccess?: () => void }) {
               stateCode={watchedValues.location_state}
               city={watchedValues.location_city}
               modal={true}
-              onCountryChange={(country) => {
-                setValue("country", country);
-                setValue("location_state", "");
-                setValue("location_city", "");
-              }}
               onStateChange={(state) => {
                 setValue("location_state", state);
                 setValue("location_city", "");

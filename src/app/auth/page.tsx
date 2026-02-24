@@ -11,7 +11,6 @@ import { LightModeLayout } from "@/components/layout/LightModeLayout";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useReferralTracking } from "@/hooks/useReferralTracking";
 import { BrandLogo } from "@/components/common/BrandLogo";
-import { LanguageSelector } from "@/components/ui/LanguageSelector";
 import { useTranslations } from "next-intl";
 
 export default function AuthPage() {
@@ -98,7 +97,6 @@ export default function AuthPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <LanguageSelector />
               <Button
                 onClick={handleBackToHome}
                 variant="ghost"
