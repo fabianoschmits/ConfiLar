@@ -41,7 +41,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const { data: profiles } = await supabase
       .from("profiles")
       .select("id, updated_at")
-      .eq("allow_ai_indexing", true);
+      .eq("user_type", "professional")
+      .eq("is_active", true)
+      .eq("is_approved", true);
 
     const profileRoutes: MetadataRoute.Sitemap = (profiles || []).map(
       (profile) => ({

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +13,7 @@
             background-color: #f8fafc;
             line-height: 1.6;
         }
+
         .container {
             max-width: 600px;
             margin: 0 auto;
@@ -20,36 +22,43 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
+
         .header {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            background: linear-gradient(135deg, #00b0b0 0%, #008c8c 100%);
             padding: 40px 30px;
             text-align: center;
             color: white;
         }
+
         .logo {
             font-size: 32px;
             font-weight: bold;
             margin-bottom: 10px;
         }
+
         .tagline {
             font-size: 16px;
             opacity: 0.9;
         }
+
         .content {
             padding: 40px 30px;
         }
+
         .title {
             font-size: 24px;
             color: #1f2937;
             margin-bottom: 20px;
             text-align: center;
         }
+
         .message {
             font-size: 16px;
             color: #4b5563;
             margin-bottom: 30px;
             text-align: center;
         }
+
         .message-card {
             background-color: #f9fafb;
             border: 2px solid #e5e7eb;
@@ -57,16 +66,18 @@
             padding: 30px;
             margin: 30px 0;
         }
+
         .sender-info {
             display: flex;
             align-items: center;
             margin-bottom: 20px;
         }
+
         .sender-avatar {
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            background: linear-gradient(135deg, #00b0b0 0%, #008c8c 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -75,34 +86,39 @@
             font-weight: bold;
             margin-right: 15px;
         }
+
         .sender-details h3 {
             margin: 0;
             color: #1f2937;
             font-size: 18px;
         }
+
         .sender-details p {
             margin: 5px 0 0 0;
             color: #6b7280;
             font-size: 14px;
         }
+
         .message-preview {
             background-color: #ffffff;
             border-radius: 8px;
             padding: 20px;
-            border-left: 4px solid #3b82f6;
+            border-left: 4px solid #00b0b0;
             font-style: italic;
             color: #374151;
             margin: 20px 0;
         }
+
         .message-time {
             text-align: right;
             color: #9ca3af;
             font-size: 14px;
             margin-top: 10px;
         }
+
         .button {
             display: inline-block;
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            background: linear-gradient(135deg, #00b0b0 0%, #008c8c 100%);
             color: white;
             text-decoration: none;
             padding: 16px 32px;
@@ -113,49 +129,62 @@
             margin: 20px 0;
             transition: transform 0.2s;
         }
+
         .button:hover {
             transform: translateY(-2px);
         }
+
         .button-container {
             text-align: center;
             margin: 30px 0;
         }
+
         .footer {
             background-color: #f9fafb;
             padding: 30px;
             text-align: center;
             border-top: 1px solid #e5e7eb;
         }
+
         .footer p {
             color: #6b7280;
             font-size: 14px;
             margin: 5px 0;
         }
+
         .social-links {
             margin: 20px 0;
         }
+
         .social-links a {
-            color: #3b82f6;
+            color: #00b0b0;
             text-decoration: none;
             margin: 0 10px;
             font-size: 14px;
         }
+
         .divider {
             height: 1px;
             background-color: #e5e7eb;
             margin: 20px 0;
         }
+
         @media (max-width: 600px) {
             .container {
                 margin: 10px;
                 border-radius: 8px;
             }
-            .header, .content, .footer {
+
+            .header,
+            .content,
+            .footer {
                 padding: 20px;
             }
+
             .title {
                 font-size: 20px;
             }
+
             .button {
                 padding: 14px 28px;
                 font-size: 14px;
@@ -163,6 +192,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- Header -->
@@ -176,7 +206,7 @@
             <h1 class="title">Você tem uma nova mensagem!</h1>
             <p class="message">
                 Olá {{userName}}! 👋<br><br>
-                Você recebeu uma nova mensagem no ConfiLar. 
+                Você recebeu uma nova mensagem no ConfiLar.
                 Veja os detalhes abaixo:
             </p>
 
@@ -207,7 +237,7 @@
             </div>
 
             <p class="message">
-                <strong>💡 Dica:</strong> Responda rapidamente às mensagens para manter 
+                <strong>💡 Dica:</strong> Responda rapidamente às mensagens para manter
                 uma boa comunicação com seus clientes e profissionais.
             </p>
         </div>
@@ -219,12 +249,13 @@
                 <a href="#">💬 Suporte</a>
                 <a href="#">📋 Central de Ajuda</a>
             </div>
-            
+
             <div class="divider"></div>
-            
+
             <p><strong>ConfiLar</strong> - Conectando você aos melhores profissionais</p>
             <p>Este email foi enviado automaticamente. Não responda a esta mensagem.</p>
         </div>
     </div>
 </body>
+
 </html>
