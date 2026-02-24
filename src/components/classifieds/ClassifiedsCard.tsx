@@ -242,6 +242,16 @@ export function ClassifiedsCard({
               </Badge>
             )}
 
+            {/* Category Badge */}
+            {ad.category && (
+              <Badge
+                variant="outline"
+                className="text-[10px] font-medium px-2 py-0.5 rounded-full border-[#00b0b0]/40 text-[#00b0b0] dark:border-[#00b0b0]/30 dark:text-[#00b0b0] gap-1"
+              >
+                {ad.category}
+              </Badge>
+            )}
+
             {/* Premium Badge */}
             {isActivePremium && (
               <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm gap-1">

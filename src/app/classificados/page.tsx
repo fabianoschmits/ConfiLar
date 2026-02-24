@@ -676,6 +676,13 @@ export default function ClassificadosPage() {
                     searchTerm: query,
                     category: newFilters.service,
                   });
+                  setAdTypeFilter(
+                    newFilters.adType === "oferecer"
+                      ? "offers"
+                      : newFilters.adType === "solicitar"
+                        ? "requests"
+                        : "all",
+                  );
                   setLocationFilter({
                     type:
                       newFilters.state && newFilters.city
@@ -692,6 +699,13 @@ export default function ClassificadosPage() {
                     searchTerm: newFilters.searchTerm,
                     category: newFilters.service,
                   });
+                  setAdTypeFilter(
+                    newFilters.adType === "oferecer"
+                      ? "offers"
+                      : newFilters.adType === "solicitar"
+                        ? "requests"
+                        : "all",
+                  );
                   setLocationFilter({
                     type:
                       newFilters.state && newFilters.city
@@ -711,8 +725,10 @@ export default function ClassificadosPage() {
                   rating: "all",
                   availability: "all",
                   userType: "all",
+                  adType: filters.adType || "all",
                 }}
                 showAdvancedFilters={true}
+                mode="classifieds"
               />
             </div>
 

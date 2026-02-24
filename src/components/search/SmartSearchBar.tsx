@@ -39,6 +39,7 @@ interface SmartSearchBarProps {
   placeholder?: string;
   className?: string;
   showAdvancedFilters?: boolean;
+  mode?: "search" | "classifieds";
 }
 
 interface SearchFilters {
@@ -49,6 +50,7 @@ interface SearchFilters {
   rating: string;
   availability: string;
   userType: string;
+  adType: string;
 }
 
 export function SmartSearchBar({
@@ -62,11 +64,14 @@ export function SmartSearchBar({
     rating: "all",
     availability: "all",
     userType: "all",
+    adType: "all",
   },
   placeholder = "Buscar profissionais, serviços...",
   className = "",
   showAdvancedFilters = true,
+  mode = "search",
 }: SmartSearchBarProps) {
+  const isClassifieds = mode === "classifieds";
   const [query, setQuery] = useState(initialFilters.searchTerm);
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -273,6 +278,7 @@ export function SmartSearchBar({
       rating: "all",
       availability: "all",
       userType: "all",
+      adType: "all",
     };
     setFilters(clearedFilters);
     setQuery("");
@@ -280,9 +286,15 @@ export function SmartSearchBar({
   };
 
   const removeFilter = (filterKey: keyof SearchFilters) => {
+    const isAllDefault =
+      filterKey === "service" ||
+      filterKey === "rating" ||
+      filterKey === "availability" ||
+      filterKey === "userType" ||
+      filterKey === "adType";
     const newFilters = {
       ...filters,
-      [filterKey]: filterKey === "service" ? "all" : "",
+      [filterKey]: isAllDefault ? "all" : "",
     };
     setFilters(newFilters);
     onFiltersChange(newFilters);
@@ -344,11 +356,20 @@ export function SmartSearchBar({
         value: filters.availability,
       });
     }
-    if (filters.userType !== "all") {
+    if (!isClassifieds && filters.userType !== "all") {
       chips.push({
         key: "userType",
         label: `Tipo: ${filters.userType}`,
         value: filters.userType,
+      });
+    }
+    if (filters.adType !== "all" && filters.adType) {
+      const adTypeLabel =
+        filters.adType === "oferecer" ? "Oferta" : "Solicitação";
+      chips.push({
+        key: "adType",
+        label: `Tipo: ${adTypeLabel}`,
+        value: filters.adType,
       });
     }
 
@@ -487,22 +508,23 @@ export function SmartSearchBar({
                   rating: "all",
                   availability: "all",
                   userType: "all",
+                  adType: "all",
                 };
                 setModalFilters(cleared);
               }}
-              className="text-gray-500"
+              className="text-gray-500 hidden sm:inline-flex"
             >
               Limpar Tudo
             </Button>
             <Button
               variant="outline"
-              className="flex-1"
+              className="flex-1 sm:flex-none"
               onClick={() => setShowFilters(false)}
             >
               Cancelar
             </Button>
             <Button
-              className="flex-1 bg-[#00b0b0] hover:bg-[#009090] text-white"
+              className="flex-1 bg-[#00b0b0] hover:bg-[#009090] text-white whitespace-nowrap"
               onClick={() => {
                 const newFilters = { ...modalFilters, searchTerm: query };
                 setFilters(newFilters);
@@ -511,7 +533,8 @@ export function SmartSearchBar({
                 setShowFilters(false);
               }}
             >
-              Mostrar Resultados
+              <span className="sm:hidden">Aplicar</span>
+              <span className="hidden sm:inline">Mostrar Resultados</span>
             </Button>
           </>
         }
@@ -589,78 +612,107 @@ export function SmartSearchBar({
 
           <div className="h-px bg-gray-200 dark:bg-gray-800" />
 
-          {/* Sessão Perfil */}
-          <div>
-            <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white mb-4">
-              <Star className="h-4 w-4 text-primary-500" />
-              Perfil
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
-                  Avaliação mínima
-                </label>
-                <select
-                  value={modalFilters.rating}
-                  onChange={(e) =>
-                    setModalFilters((prev) => ({
-                      ...prev,
-                      rating: e.target.value,
-                    }))
-                  }
-                  className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
-                >
-                  <option value="all">Qualquer</option>
-                  <option value="4">4+ estrelas ⭐</option>
-                  <option value="3">3+ estrelas ⭐</option>
-                  <option value="2">2+ estrelas ⭐</option>
-                </select>
-              </div>
+          {/* Sessão Perfil - Apenas no modo busca de pessoas */}
+          {!isClassifieds && (
+            <div>
+              <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white mb-4">
+                <Star className="h-4 w-4 text-primary-500" />
+                Perfil
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                    Avaliação mínima
+                  </label>
+                  <select
+                    value={modalFilters.rating}
+                    onChange={(e) =>
+                      setModalFilters((prev) => ({
+                        ...prev,
+                        rating: e.target.value,
+                      }))
+                    }
+                    className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
+                  >
+                    <option value="all">Qualquer</option>
+                    <option value="4">4+ estrelas ⭐</option>
+                    <option value="3">3+ estrelas ⭐</option>
+                    <option value="2">2+ estrelas ⭐</option>
+                  </select>
+                </div>
 
-              <div>
-                <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
-                  Disponibilidade
-                </label>
-                <select
-                  value={modalFilters.availability}
-                  onChange={(e) =>
-                    setModalFilters((prev) => ({
-                      ...prev,
-                      availability: e.target.value,
-                    }))
-                  }
-                  className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
-                >
-                  <option value="all">Qualquer</option>
-                  <option value="manha">Manhã</option>
-                  <option value="tarde">Tarde</option>
-                  <option value="noite">Noite</option>
-                  <option value="integral">Integral</option>
-                  <option value="flexivel">Flexível</option>
-                </select>
-              </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                    Disponibilidade
+                  </label>
+                  <select
+                    value={modalFilters.availability}
+                    onChange={(e) =>
+                      setModalFilters((prev) => ({
+                        ...prev,
+                        availability: e.target.value,
+                      }))
+                    }
+                    className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
+                  >
+                    <option value="all">Qualquer</option>
+                    <option value="manha">Manhã</option>
+                    <option value="tarde">Tarde</option>
+                    <option value="noite">Noite</option>
+                    <option value="integral">Integral</option>
+                    <option value="flexivel">Flexível</option>
+                  </select>
+                </div>
 
+                <div>
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                    Tipo de Usuário
+                  </label>
+                  <select
+                    value={modalFilters.userType}
+                    onChange={(e) =>
+                      setModalFilters((prev) => ({
+                        ...prev,
+                        userType: e.target.value,
+                      }))
+                    }
+                    className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
+                  >
+                    <option value="all">Todos</option>
+                    <option value="professional">Profissionais</option>
+                    <option value="client">Clientes</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Sessão Tipo de Anúncio - Apenas no modo classificados */}
+          {isClassifieds && (
+            <>
+              <div className="h-px bg-gray-200 dark:bg-gray-800" />
               <div>
-                <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
-                  Tipo de Usuário
-                </label>
+                <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white mb-4">
+                  <Filter className="h-4 w-4 text-primary-500" />
+                  Tipo de Anúncio
+                </h4>
                 <select
-                  value={modalFilters.userType}
+                  value={modalFilters.adType || "all"}
                   onChange={(e) =>
                     setModalFilters((prev) => ({
                       ...prev,
-                      userType: e.target.value,
+                      adType: e.target.value,
                     }))
                   }
                   className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
                 >
                   <option value="all">Todos</option>
-                  <option value="professional">Profissionais</option>
-                  <option value="client">Clientes</option>
+                  <option value="oferecer">Ofertas de serviços</option>
+                  <option value="solicitar">Solicitações de serviços</option>
                 </select>
               </div>
-            </div>
-          </div>
+            </>
+          )}
         </div>
       </ResponsiveModal>
     </div>

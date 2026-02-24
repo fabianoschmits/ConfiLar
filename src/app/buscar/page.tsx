@@ -333,57 +333,6 @@ export default function BuscarPage() {
     <MainLayout requireAuth={false}>
       <div className="min-h-screen bg-gray-50 dark:bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          {/* Estatísticas - Card Compacto */}
-          <Card className="mb-8 hover:shadow-xl transition-all duration-300">
-            <CardContent className="py-2 px-3 sm:py-3 sm:px-4">
-              <div className="flex flex-row items-center justify-around gap-1 sm:gap-2">
-                {/* Total de Usuários */}
-                <div className="flex flex-col items-center min-w-0 flex-1">
-                  <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                    {t("stats.total")}
-                  </p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white dark:text-white">
-                    {stats?.totalUsers || 0}
-                  </p>
-                </div>
-
-                {/* Profissionais */}
-                <div className="flex flex-col items-center min-w-0 flex-1">
-                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                    {t("stats.professionals")}
-                  </p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white dark:text-white">
-                    {stats?.professionalsCount || 0}
-                  </p>
-                </div>
-
-                {/* Clientes */}
-                <div className="flex flex-col items-center min-w-0 flex-1">
-                  <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                    {t("stats.clients")}
-                  </p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white dark:text-white">
-                    {stats?.clientsCount || 0}
-                  </p>
-                </div>
-
-                {/* Resultados Filtrados */}
-                <div className="flex flex-col items-center min-w-0 flex-1">
-                  <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                    Resultados
-                  </p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white dark:text-white">
-                    {stats?.filteredCount || 0}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Barra de Busca Marketplace */}
           <div className="mb-8">
             <SmartSearchBar
@@ -437,6 +386,7 @@ export default function BuscarPage() {
                 rating: filters.rating,
                 availability: filters.availability,
                 userType: filters.userType,
+                adType: "all",
               }}
               showAdvancedFilters={true}
             />
