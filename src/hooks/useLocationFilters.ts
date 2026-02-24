@@ -34,10 +34,7 @@ export interface LocationFilterOptions {
 export function useLocationFilters() {
   const { profile, user } = useAuthContext();
   const [currentFilter, setCurrentFilter] = useState<LocationFilter>({
-    type: "state",
-    city: profile?.location_city,
-    state: profile?.location_state,
-    country: getCountryName(profile?.country),
+    type: "all",
   });
 
   const [filterOptions, setFilterOptions] = useState<LocationFilterOptions>({
@@ -126,59 +123,18 @@ export function useLocationFilters() {
             state: normalizedState,
             country: countryName,
           });
-        } else if (profile?.location_city && profile?.location_state) {
-          // Normalizar estado do perfil: converter sigla para nome completo se necessário
-          let normalizedState = profile.location_state;
-          if (normalizedState && normalizedState.length === 2) {
-            // É uma sigla, converter para nome completo
-            try {
-              const estado = await getEstadoBySigla(normalizedState);
-              if (estado) {
-                normalizedState = estado.nome;
-              }
-            } catch (error) {
-              console.error("Erro ao normalizar estado do perfil:", error);
-            }
-          }
-
-          // Se não houver preferência salva, usar estado do perfil como padrão
+        } else {
+          // Se não houver preferência salva, usar "all" como padrão
           setCurrentFilter({
-            type: "state",
-            city: profile.location_city,
-            state: normalizedState,
-            country: getCountryName((profile as any)?.country),
+            type: "all",
           });
         }
       } catch (error) {
         console.error("Erro ao carregar preferências:", error);
-        // Fallback para cidade do perfil
-        if (profile?.location_city && profile?.location_state) {
-          // Normalizar estado: converter sigla para nome completo se necessário
-          // IMPORTANTE: Apenas para Brasil
-          const profileCountry = (profile as any)?.country || "BR";
-          let normalizedState = profile.location_state;
-          if (
-            normalizedState &&
-            profileCountry === "BR" &&
-            normalizedState.length === 2
-          ) {
-            try {
-              const estado = await getEstadoBySigla(normalizedState);
-              if (estado) {
-                normalizedState = estado.nome;
-              }
-            } catch (error) {
-              console.error("Erro ao normalizar estado no fallback:", error);
-            }
-          }
-
-          setCurrentFilter({
-            type: "state",
-            city: profile.location_city,
-            state: normalizedState,
-            country: getCountryName(profileCountry),
-          });
-        }
+        // Fallback default para "all"
+        setCurrentFilter({
+          type: "all",
+        });
       }
     };
 

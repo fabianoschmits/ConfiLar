@@ -67,22 +67,30 @@ export function useClassifiedSearch() {
   // Carregar preferências salvas quando o perfil estiver disponível
   useEffect(() => {
     if (profile) {
-      const savedType =
-        (profile as any).classifieds_location_filter_type || "all";
-      const savedCity = (profile as any).classifieds_location_filter_city;
-      const savedState = (profile as any).classifieds_location_filter_state;
-      const savedCountry =
-        (profile as any).classifieds_location_filter_country || "Brasil";
+      const savedType = (profile as any).classifieds_location_filter_type;
 
-      setFilters((prev) => ({
-        ...prev,
-        location: {
-          type: savedType,
-          city: savedCity,
-          state: savedState,
-          country: savedCountry,
-        },
-      }));
+      if (savedType) {
+        const savedCity = (profile as any).classifieds_location_filter_city;
+        const savedState = (profile as any).classifieds_location_filter_state;
+        const savedCountry =
+          (profile as any).classifieds_location_filter_country || "Brasil";
+
+        setFilters((prev) => ({
+          ...prev,
+          location: {
+            type: savedType,
+            city: savedCity,
+            state: savedState,
+            country: savedCountry,
+          },
+        }));
+      } else {
+        // Padrão se não houver nada salvo
+        setFilters((prev) => ({
+          ...prev,
+          location: { type: "all" },
+        }));
+      }
     }
   }, [profile]);
 

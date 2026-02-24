@@ -19,22 +19,25 @@ export function useFeedSearch() {
   // Initialize state
   const [searchQuery, setSearchQuery] = useState("");
   const [locationFilter, setLocationFilter] = useState<LocationFilter>({
-    type: "state", // Default to state
-    city: undefined,
-    state: undefined,
-    country: "Brasil",
+    type: "all",
   });
   const [isDebouncing, setIsDebouncing] = useState(false);
 
   // Initialize from profile or URL on mount
   useEffect(() => {
     if (profile) {
-      setLocationFilter({
-        type: (profile as any).feed_location_filter_type || "state",
-        city: (profile as any).feed_location_filter_city || undefined,
-        state: (profile as any).feed_location_filter_state || undefined,
-        country: (profile as any).feed_location_filter_country || "Brasil",
-      });
+      const savedType = (profile as any).feed_location_filter_type;
+      if (savedType) {
+        setLocationFilter({
+          type: savedType,
+          city: (profile as any).feed_location_filter_city || undefined,
+          state: (profile as any).feed_location_filter_state || undefined,
+          country: (profile as any).feed_location_filter_country || "Brasil",
+        });
+      } else {
+        // Padrão se não houver nada salvo
+        setLocationFilter({ type: "all" });
+      }
     }
   }, [profile]);
 
