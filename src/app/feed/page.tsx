@@ -31,6 +31,7 @@ import { PostCard } from "@/components/timeline/PostCard";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
+import { PullToRefresh } from "@/components/ui/PullToRefresh";
 
 export default function FeedPage() {
   const t = useTranslations("feed");
@@ -313,8 +314,14 @@ export default function FeedPage() {
         <div
           id="feed-container"
           ref={containerRef}
-          className="max-w-2xl mx-auto pb-20"
+          className="max-w-2xl mx-auto pb-20 relative"
         >
+          <PullToRefresh
+            isPulling={isPulling}
+            isRefreshing={isRefreshing}
+            pullDistance={pullDistance}
+            shouldRefresh={pullDistance >= 80}
+          />
           {isLoading ? (
             <div className="space-y-4">
               <InstagramPostSkeleton />

@@ -3,7 +3,7 @@
 // Desabilitar SSG para esta página
 export const dynamic = "force-dynamic";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -113,6 +113,8 @@ import { ClassifiedsCard } from "@/components/classifieds/ClassifiedsCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ClientOnly } from "@/components/ClientOnly";
 import { SmartSearchBar } from "@/components/search/SmartSearchBar";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
+import { PullToRefresh } from "@/components/ui/PullToRefresh";
 
 import { RenewPremiumAdForm } from "@/components/classifieds/RenewPremiumAdForm";
 import { PremiumTimeRemaining } from "@/components/classifieds/PremiumTimeRemaining";
@@ -154,6 +156,8 @@ export default function ClassificadosPage() {
   const [deletingAdId, setDeletingAdId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletingAdIsOwner, setDeletingAdIsOwner] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const resultsTopRef = useRef<HTMLDivElement>(null);
 
   // Hook para busca de classificados
   const {
@@ -169,7 +173,12 @@ export default function ClassificadosPage() {
     loadClassifiedAds,
   } = useClassifiedSearch();
 
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const { containerRef, isPulling, isRefreshing, pullDistance } =
+    usePullToRefresh({
+      onRefresh: async () => {
+        await loadClassifiedAds();
+      },
+    });
 
   // Estados do formulário de criação
   const [formData, setFormData] = useState({
@@ -657,7 +666,15 @@ export default function ClassificadosPage() {
   // Função para mudar página
   const goToPage = (page: number) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => {
+      if (resultsTopRef.current) {
+        const top =
+          resultsTopRef.current.getBoundingClientRect().top +
+          window.scrollY -
+          80;
+        window.scrollTo({ top, behavior: "smooth" });
+      }
+    }, 50);
   };
 
   return (
@@ -1553,137 +1570,157 @@ export default function ClassificadosPage() {
               </div>
             </div>
 
-            {/* Lista de Anúncios */}
-            {loading ? (
-              <ClassifiedsListSkeleton viewMode={viewMode} />
-            ) : paginatedAds.length === 0 ? (
-              <EmptyState
-                icon={<Search className="h-12 w-12 text-gray-400" />}
-                title={t("noResults")}
-                description={
-                  filters.searchTerm ||
-                  filters.location.state ||
-                  filters.location.city ||
-                  filters.category !== "all"
-                    ? t("noResultsDescription")
-                    : t("noAdsDescription")
-                }
-                action={
-                  filters.searchTerm ||
-                  filters.location.state ||
-                  filters.location.city ||
-                  filters.category !== "all"
-                    ? {
-                        label: t("clearFilters"),
-                        onClick: clearFilters,
-                      }
-                    : undefined
-                }
+            {/* Grid de Anúncios */}
+            <div
+              ref={(el) => {
+                // @ts-ignore
+                resultsTopRef.current = el;
+                // @ts-ignore
+                containerRef.current = el;
+              }}
+              className="relative min-h-[400px]"
+            >
+              <PullToRefresh
+                isPulling={isPulling}
+                isRefreshing={isRefreshing}
+                pullDistance={pullDistance}
+                shouldRefresh={pullDistance >= 80}
               />
-            ) : (
-              <div
-                className={`grid gap-5 sm:gap-6 ${viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}
-              >
-                {paginatedAds.map((ad, index) => (
-                  <div key={ad.id} id={`ad-${ad.id}`}>
-                    <ClassifiedsCard
-                      ad={ad}
-                      onEdit={handleEditAd}
-                      onDelete={handleDeleteClick}
-                      onRenewPremium={(adId) => {
-                        setRenewingAdId(adId);
-                        setShowRenewPremiumDialog(true);
-                      }}
-                      isDeleting={isDeleting && deletingAdId === ad.id}
-                      isHighlighted={ad.id === highlightAdId}
-                      onShare={(ad) => {
-                        setAdToShare(ad);
-                        setShareModalOpen(true);
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
 
-            {/* Paginação */}
-            {!loading && totalPages > 1 && (
-              <div className="flex items-center justify-center mt-8 space-x-1">
-                {/* Botão Anterior */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => goToPage(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="px-3"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-
-                {/* Números das páginas */}
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (pageNumber) => {
-                    const shouldShow =
-                      pageNumber === 1 ||
-                      pageNumber === totalPages ||
-                      (pageNumber >= currentPage - 2 &&
-                        pageNumber <= currentPage + 2);
-
-                    if (!shouldShow) {
-                      if (
-                        pageNumber === currentPage - 3 ||
-                        pageNumber === currentPage + 3
-                      ) {
-                        return (
-                          <span key={pageNumber} className="px-2 text-gray-500">
-                            ...
-                          </span>
-                        );
-                      }
-                      return null;
-                    }
-
-                    return (
-                      <Button
-                        key={pageNumber}
-                        variant={
-                          currentPage === pageNumber ? "default" : "outline"
+              {loading ? (
+                <ClassifiedsListSkeleton viewMode={viewMode} />
+              ) : paginatedAds.length === 0 ? (
+                <EmptyState
+                  icon={<Search className="h-12 w-12 text-gray-400" />}
+                  title={t("noResults")}
+                  description={
+                    filters.searchTerm ||
+                    filters.location.state ||
+                    filters.location.city ||
+                    filters.category !== "all"
+                      ? t("noResultsDescription")
+                      : t("noAdsDescription")
+                  }
+                  action={
+                    filters.searchTerm ||
+                    filters.location.state ||
+                    filters.location.city ||
+                    filters.category !== "all"
+                      ? {
+                          label: t("clearFilters"),
+                          onClick: clearFilters,
                         }
-                        size="sm"
-                        onClick={() => goToPage(pageNumber)}
-                        className={`px-3 ${
-                          currentPage === pageNumber
-                            ? "bg-blue-600 text-white hover:bg-blue-700"
-                            : ""
-                        }`}
-                      >
-                        {pageNumber}
-                      </Button>
-                    );
-                  },
-                )}
-
-                {/* Botão Próximo */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => goToPage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="px-3"
+                      : undefined
+                  }
+                />
+              ) : (
+                <div
+                  className={`grid gap-5 sm:gap-6 ${viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}
                 >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
+                  {paginatedAds.map((ad, index) => (
+                    <div key={ad.id} id={`ad-${ad.id}`}>
+                      <ClassifiedsCard
+                        ad={ad}
+                        onEdit={handleEditAd}
+                        onDelete={handleDeleteClick}
+                        onRenewPremium={(adId) => {
+                          setRenewingAdId(adId);
+                          setShowRenewPremiumDialog(true);
+                        }}
+                        isDeleting={isDeleting && deletingAdId === ad.id}
+                        isHighlighted={ad.id === highlightAdId}
+                        onShare={(ad) => {
+                          setAdToShare(ad);
+                          setShareModalOpen(true);
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
 
-            {/* Info da paginação */}
-            {!loading && filteredAds.length > 0 && (
-              <div className="text-center mt-4 text-sm text-gray-600">
-                {t("mostrando")} {startIndex + 1} a{" "}
-                {Math.min(endIndex, filteredAds.length)} {t("de")}{" "}
-                {filteredAds.length} {t("resultadosPlural")}
-              </div>
-            )}
+              {/* Paginação */}
+              {!loading && totalPages > 1 && (
+                <div className="flex items-center justify-center mt-8 space-x-1">
+                  {/* Botão Anterior */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+
+                  {/* Números das páginas */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (pageNumber) => {
+                      const shouldShow =
+                        pageNumber === 1 ||
+                        pageNumber === totalPages ||
+                        (pageNumber >= currentPage - 2 &&
+                          pageNumber <= currentPage + 2);
+
+                      if (!shouldShow) {
+                        if (
+                          pageNumber === currentPage - 3 ||
+                          pageNumber === currentPage + 3
+                        ) {
+                          return (
+                            <span
+                              key={pageNumber}
+                              className="px-2 text-gray-500"
+                            >
+                              ...
+                            </span>
+                          );
+                        }
+                        return null;
+                      }
+
+                      return (
+                        <Button
+                          key={pageNumber}
+                          variant={
+                            currentPage === pageNumber ? "default" : "outline"
+                          }
+                          size="sm"
+                          onClick={() => goToPage(pageNumber)}
+                          className={`px-3 ${
+                            currentPage === pageNumber
+                              ? "bg-blue-600 text-white hover:bg-blue-700"
+                              : ""
+                          }`}
+                        >
+                          {pageNumber}
+                        </Button>
+                      );
+                    },
+                  )}
+
+                  {/* Botão Próximo */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-3"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
+              {/* Info da paginação */}
+              {!loading && filteredAds.length > 0 && (
+                <div className="text-center mt-4 text-sm text-gray-600">
+                  {t("mostrando")} {startIndex + 1} a{" "}
+                  {Math.min(endIndex, filteredAds.length)} {t("de")}{" "}
+                  {filteredAds.length} {t("resultadosPlural")}
+                </div>
+              )}
+            </div>
 
             {/* Modais de controle */}
             <AlertDialog

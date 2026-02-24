@@ -71,6 +71,8 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { GuestBlurOverlay } from "@/components/auth/GuestBlurOverlay";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
+import { PullToRefresh } from "@/components/ui/PullToRefresh";
 
 export default function BuscarPage() {
   const router = useRouter();
@@ -113,6 +115,13 @@ export default function BuscarPage() {
   // Hook para busca avançada
   const { filteredUsers, loading, stats, executeSearch, updateFilters } =
     useAdvancedSearch();
+
+  const { containerRef, isPulling, isRefreshing, pullDistance } =
+    usePullToRefresh({
+      onRefresh: async () => {
+        await executeSearch();
+      },
+    });
 
   // Executar busca inicial para carregar todos os usuários
   useEffect(() => {
@@ -464,7 +473,21 @@ export default function BuscarPage() {
           </div>
 
           {/* Resultados */}
-          <div className="mb-8" ref={resultsTopRef}>
+          <div
+            className="mb-8 relative"
+            ref={(el) => {
+              // @ts-ignore
+              resultsTopRef.current = el;
+              // @ts-ignore
+              containerRef.current = el;
+            }}
+          >
+            <PullToRefresh
+              isPulling={isPulling}
+              isRefreshing={isRefreshing}
+              pullDistance={pullDistance}
+              shouldRefresh={pullDistance >= 80}
+            />
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                 {activeTab === "all"
@@ -663,10 +686,15 @@ export default function BuscarPage() {
                   size="sm"
                   onClick={() => {
                     setCurrentPage((prev) => Math.max(prev - 1, 1));
-                    resultsTopRef.current?.scrollIntoView({
-                      behavior: "smooth",
-                      block: "start",
-                    });
+                    setTimeout(() => {
+                      if (resultsTopRef.current) {
+                        const top =
+                          resultsTopRef.current.getBoundingClientRect().top +
+                          window.scrollY -
+                          80;
+                        window.scrollTo({ top, behavior: "smooth" });
+                      }
+                    }, 50);
                   }}
                   disabled={currentPage === 1}
                   className="px-3"
@@ -708,10 +736,16 @@ export default function BuscarPage() {
                         size="sm"
                         onClick={() => {
                           setCurrentPage(pageNumber);
-                          resultsTopRef.current?.scrollIntoView({
-                            behavior: "smooth",
-                            block: "start",
-                          });
+                          setTimeout(() => {
+                            if (resultsTopRef.current) {
+                              const top =
+                                resultsTopRef.current.getBoundingClientRect()
+                                  .top +
+                                window.scrollY -
+                                80;
+                              window.scrollTo({ top, behavior: "smooth" });
+                            }
+                          }, 50);
                         }}
                         className={`px-3 ${
                           currentPage === pageNumber
@@ -731,10 +765,15 @@ export default function BuscarPage() {
                   size="sm"
                   onClick={() => {
                     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-                    resultsTopRef.current?.scrollIntoView({
-                      behavior: "smooth",
-                      block: "start",
-                    });
+                    setTimeout(() => {
+                      if (resultsTopRef.current) {
+                        const top =
+                          resultsTopRef.current.getBoundingClientRect().top +
+                          window.scrollY -
+                          80;
+                        window.scrollTo({ top, behavior: "smooth" });
+                      }
+                    }, 50);
                   }}
                   disabled={currentPage === totalPages}
                   className="px-3"
