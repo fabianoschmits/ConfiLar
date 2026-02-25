@@ -24,8 +24,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { LoadingButton } from "@/components/ui/LoadingButton";
-import { ImagePlus, X, Upload } from "lucide-react";
+import { X, Camera } from "lucide-react";
 import Image from "next/image";
+import { UnifiedUpload } from "@/components/ui/UnifiedUpload";
 import { Database } from "@/types/database";
 import { toast } from "sonner";
 import { usePortfolio } from "@/hooks/usePortfolio";
@@ -68,9 +69,10 @@ export function PortfolioDialog({
   projectToEdit,
   onSuccess,
 }: PortfolioDialogProps) {
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Mantemos o imagePreview apenas para mostrar a imagem existente do banco
+  const [existingImage, setExistingImage] = useState<string | null>(null);
   const { addProject, updateProject, uploadImages } = usePortfolio();
 
   const form = useForm<ProjectFormValues>({
@@ -120,7 +122,8 @@ export function PortfolioDialog({
           category: projectToEdit.category || "",
           tags_string: projectToEdit.tags?.join(", ") || "",
         });
-        setImagePreview(projectToEdit.image_url);
+        setExistingImage(projectToEdit.image_url);
+        setSelectedFiles([]);
       } else {
         form.reset({
           title: "",
@@ -128,39 +131,23 @@ export function PortfolioDialog({
           category: "",
           tags_string: "",
         });
-        setImagePreview(null);
-        setSelectedImage(null);
+        setExistingImage(null);
+        setSelectedFiles([]);
       }
     }
   }, [open, projectToEdit, form]);
-
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("A imagem deve ter no máximo 5MB");
-        return;
-      }
-      setSelectedImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const onSubmit = async (data: ProjectFormValues) => {
     try {
       setIsSubmitting(true);
 
-      let imageUrl = projectToEdit?.image_url || null;
+      let imageUrl = existingImage;
 
-      // Upload da imagem se houver nova
-      if (selectedImage) {
-        // Usar um ID temporário se for criação nova, ou o ID do projeto se for edição
+      // Upload das imagens se houverem novas
+      if (selectedFiles.length > 0) {
         const tempId = projectToEdit?.id || "temp-new-project";
-        const urls = await uploadImages([selectedImage], tempId);
+        const urls = await uploadImages(selectedFiles, tempId);
+        // Por enquanto, a tabela suporta apenas uma imagem, então pegamos a primeira
         imageUrl = urls[0];
       }
 
@@ -235,64 +222,39 @@ export function PortfolioDialog({
           className="space-y-6"
         >
           {/* Upload de Imagem */}
-          <div className="space-y-2">
-            <FormLabel>Imagem do Projeto</FormLabel>
-            <div className="flex items-center justify-center w-full">
-              {imagePreview ? (
-                <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm group">
-                  <Image
-                    src={imagePreview}
-                    alt="Preview"
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none" />
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setImagePreview(null);
-                        setSelectedImage(null);
-                      }}
-                      className="p-1 text-white drop-shadow-md opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
-                      title="Remover"
-                    >
-                      <X className="h-5 w-5" strokeWidth={3} />
-                    </button>
-                  </div>
+          <div className="space-y-4">
+            <FormLabel>Imagens do Projeto</FormLabel>
+
+            {existingImage && selectedFiles.length === 0 && (
+              <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm group mb-4">
+                <Image
+                  src={existingImage}
+                  alt="Imagem atual"
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <p className="text-white text-sm font-medium">
+                    Suba novas fotos para trocar
+                  </p>
                 </div>
-              ) : (
-                <label className="group flex flex-col items-center justify-center w-full min-h-[12rem] border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl cursor-pointer hover:border-primary-500 dark:hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/5 transition-all bg-white dark:bg-gray-950">
-                  <div className="flex flex-col items-center justify-center p-6 pb-2">
-                    <div className="p-4 rounded-full bg-gray-50 dark:bg-gray-900 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 transition-all duration-300">
-                      <ImagePlus className="w-10 h-10 text-gray-400 group-hover:text-primary-500 transition-colors" />
-                    </div>
-                    <div className="mt-4 text-center">
-                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        Clique para enviar imagem
-                      </p>
-                      <p className="mt-1 text-xs text-gray-500">
-                        PNG, JPG ou WEBP (Max. 5MB)
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 mb-6">
-                    <span className="inline-flex items-center px-4 py-2 rounded-lg bg-primary-600 text-white text-xs font-bold shadow-lg shadow-primary-500/30 hover:bg-primary-700 transition-all active:scale-95">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Selecionar Arquivo
-                    </span>
-                  </div>
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleImageSelect}
-                  />
-                </label>
-              )}
-            </div>
+              </div>
+            )}
+
+            <UnifiedUpload
+              selectedFiles={selectedFiles}
+              onFilesSelected={(files) =>
+                setSelectedFiles((prev) => [...prev, ...files])
+              }
+              onRemoveFile={(index) =>
+                setSelectedFiles((prev) => prev.filter((_, i) => i !== index))
+              }
+              maxFiles={5}
+              title="Adicionar fotos ao projeto"
+              description="Mostre seu trabalho com fotos de qualidade"
+              subDescription="PNG, JPG ou WEBP (Max. 5MB por arquivo)"
+              isLoading={isSubmitting}
+            />
           </div>
 
           <FormField

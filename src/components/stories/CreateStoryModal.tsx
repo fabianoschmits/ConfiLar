@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { X, Camera, Upload, Loader2 } from "lucide-react";
+import { X, Camera, Loader2, Upload } from "lucide-react";
+import { UnifiedUpload } from "@/components/ui/UnifiedUpload";
 import { useStories } from "@/hooks/useStories";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
@@ -22,59 +23,31 @@ export function CreateStoryModal({
 }: CreateStoryModalProps) {
   const { user } = useAuthContext();
   const { createStory, isCreating } = useStories();
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validar tipo de arquivo - APENAS imagens, SEM vídeos
-    if (!file.type.startsWith("image/")) {
-      toast.error("Por favor, selecione uma imagem (foto)");
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-      return;
+  const handleFilesSelected = (files: File[]) => {
+    const file = files[0];
+    if (file) {
+      setSelectedFiles([file]);
+      setPreviewUrl(URL.createObjectURL(file));
     }
+  };
 
-    // Validar tamanho (máximo 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("A imagem deve ter no máximo 10MB");
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-      return;
-    }
-
-    // Armazenar o arquivo e criar preview (aceita qualquer resolução/orientação)
-    setSelectedFile(file);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setSelectedImage(e.target?.result as string);
-    };
-    reader.onerror = () => {
-      toast.error("Erro ao carregar a imagem");
-    };
-    reader.readAsDataURL(file);
+  const removeFile = () => {
+    setSelectedFiles([]);
+    setPreviewUrl(null);
   };
 
   const handleUpload = async () => {
-    if (!selectedImage || !selectedFile || !user?.id) {
-      console.error("❌ Erro: dados incompletos", {
-        hasImage: !!selectedImage,
-        hasFile: !!selectedFile,
-        hasUserId: !!user?.id,
-      });
-      toast.error(
-        "Erro: dados incompletos. Por favor, selecione a foto novamente.",
-      );
+    if (!previewUrl || selectedFiles.length === 0 || !user?.id) {
+      toast.error("Por favor, selecione a foto novamente.");
       return;
     }
 
-    const file = selectedFile;
+    const file = selectedFiles[0];
 
     console.log("📤 Iniciando upload do story...", {
       fileName: file.name,
@@ -120,11 +93,8 @@ export function CreateStoryModal({
       console.log("✅ Story criado:", storyData);
 
       toast.success("Story publicado com sucesso!");
-      setSelectedImage(null);
-      setSelectedFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      setSelectedFiles([]);
+      setPreviewUrl(null);
       onStoryCreated?.();
       onClose();
     } catch (error: any) {
@@ -146,57 +116,29 @@ export function CreateStoryModal({
       title="Criar Story"
     >
       <div className="space-y-4">
-        {!selectedImage ? (
-          <div className="space-y-4">
-            <label
-              htmlFor="story-upload"
-              className="group flex flex-col items-center justify-center p-12 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-primary-500 dark:hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/5 transition-all cursor-pointer bg-white dark:bg-gray-950"
-            >
-              <div className="p-4 rounded-full bg-gray-50 dark:bg-gray-900 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 transition-all duration-300">
-                <Camera className="h-10 w-10 text-gray-400 group-hover:text-primary-500 transition-colors" />
-              </div>
-              <div className="mt-4 text-center">
-                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Clique para selecionar uma foto
-                </p>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">
-                  PNG, JPG ou WEBP até 10MB
-                </p>
-              </div>
-              <div className="mt-6">
-                <span className="inline-flex items-center px-6 py-3 rounded-xl bg-brand text-white text-sm font-bold shadow-lg shadow-brand/20 hover:bg-brand/90 transition-all active:scale-95">
-                  <Upload className="w-5 h-5 mr-2" />
-                  Selecionar Foto
-                </span>
-              </div>
-            </label>
-
-            <input
-              id="story-upload"
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/jpg,image/png,image/webp"
-              onChange={handleImageSelect}
-              className="hidden"
-            />
-          </div>
+        {!previewUrl ? (
+          <UnifiedUpload
+            selectedFiles={selectedFiles}
+            onFilesSelected={handleFilesSelected}
+            onRemoveFile={removeFile}
+            multiple={false}
+            maxFiles={1}
+            title="Compartilhe seu momento"
+            description="Selecione uma foto para o seu story"
+            subDescription="PNG, JPG ou WEBP até 10MB"
+            isLoading={isUploading}
+          />
         ) : (
           <div className="space-y-4">
             {/* Preview */}
             <div className="relative group w-full max-h-[600px] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
               <img
-                src={selectedImage}
+                src={previewUrl}
                 alt="Preview"
                 className="max-w-full max-h-full object-contain"
               />
               <button
-                onClick={() => {
-                  setSelectedImage(null);
-                  setSelectedFile(null);
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = "";
-                  }
-                }}
+                onClick={removeFile}
                 className="absolute top-1 right-1 p-1 text-white drop-shadow-md opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
                 type="button"
               >

@@ -7,9 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
   ShieldCheck,
-  UploadCloud,
   FileText,
-  X,
   AlertCircle,
   CheckCircle2,
   Clock,
@@ -22,6 +20,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { UnifiedUpload } from "@/components/ui/UnifiedUpload";
 import { updateReferralMilestone } from "@/hooks/useReferralTracking";
 
 interface VerificationHistoryItem {
@@ -93,13 +92,6 @@ export function IdentityVerificationForm() {
       console.error("Erro ao buscar status de verificação:", error);
     } finally {
       setFetchingStatus(false);
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const files = Array.from(e.target.files);
-      setSelectedFiles((prev) => [...prev, ...files]);
     }
   };
 
@@ -309,65 +301,19 @@ export function IdentityVerificationForm() {
           )}
 
           <div className="space-y-4">
-            <div className="border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl p-8 text-center bg-gray-50/50 dark:bg-gray-900/30">
-              <input
-                type="file"
-                id="document-upload"
-                multiple
-                className="hidden"
-                onChange={handleFileChange}
-                accept="image/*,.pdf"
-              />
-              <label
-                htmlFor="document-upload"
-                className="cursor-pointer group flex flex-col items-center"
-              >
-                <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-2xl shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform ring-1 ring-gray-100 dark:ring-gray-700">
-                  <UploadCloud className="w-8 h-8 text-blue-500" />
-                </div>
-                <p className="text-base font-bold text-gray-900 dark:text-white">
-                  Clique para enviar seus documentos
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  Envie foto do seu RG/CNH (frente e verso)
-                </p>
-                <p className="text-xs text-gray-400 mt-2">
-                  JPG, PNG ou PDF até 5MB
-                </p>
-              </label>
-            </div>
-
-            {selectedFiles.length > 0 && (
-              <div className="space-y-3">
-                <h5 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-blue-500" />
-                  Arquivos selecionados ({selectedFiles.length})
-                </h5>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {selectedFiles.map((file, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm"
-                    >
-                      <div className="flex items-center gap-3 truncate">
-                        <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                          <FileText className="w-4 h-4 text-blue-500" />
-                        </div>
-                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">
-                          {file.name}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => removeFile(index)}
-                        className="p-1 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full text-gray-400 hover:text-red-500 transition-colors"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <UnifiedUpload
+              selectedFiles={selectedFiles}
+              onFilesSelected={(files) =>
+                setSelectedFiles((prev) => [...prev, ...files])
+              }
+              onRemoveFile={removeFile}
+              maxFiles={10}
+              accept="image/*,.pdf"
+              title="Clique para enviar seus documentos"
+              description="Envie foto do seu RG/CNH (frente e verso)"
+              subDescription="JPG, PNG ou PDF até 5MB"
+              isLoading={loading}
+            />
 
             <div className="pt-4">
               <LoadingButton

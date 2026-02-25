@@ -61,6 +61,7 @@ import {
   updateReferralMilestone,
   createReferral,
 } from "@/hooks/useReferralTracking";
+import { UnifiedUpload } from "@/components/ui/UnifiedUpload";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { ValidationUtils } from "@/lib/validation";
 import { useLocale } from "@/contexts/LocaleContext";
@@ -876,28 +877,44 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
                               />
                             </div>
                           )}
-                          <div className="grid grid-cols-2 gap-4">
-                            <Button
-                              variant="outline"
-                              type="button"
-                              onClick={() =>
-                                document.getElementById("file-up")?.click()
+                          <div className="space-y-4">
+                            <UnifiedUpload
+                              selectedFiles={
+                                selectedAvatar?.type === "upload" &&
+                                selectedAvatar.value instanceof File
+                                  ? [selectedAvatar.value]
+                                  : []
                               }
-                            >
-                              <Upload className="w-4 h-4 mr-2" /> Foto
-                            </Button>
-                            <input
-                              type="file"
-                              id="file-up"
-                              className="hidden"
-                              onChange={handleFileUpload}
+                              onFilesSelected={(files) => {
+                                const file = files[0];
+                                if (file) {
+                                  setSelectedAvatar({
+                                    type: "upload",
+                                    value: file,
+                                    preview: URL.createObjectURL(file),
+                                  });
+                                }
+                              }}
+                              onRemoveFile={() => setSelectedAvatar(null)}
+                              multiple={false}
+                              maxFiles={1}
+                              title="Sua melhor foto"
+                              description="Clique ou arraste"
+                              subDescription="Imagem de perfil"
+                              compressOptions={{
+                                maxSizeMB: 0.5,
+                                maxWidthOrHeight: 512,
+                              }}
                             />
+
                             <Button
                               variant="outline"
                               type="button"
+                              className="w-full"
                               onClick={generateRandomAvatar}
                             >
-                              <RefreshCw className="w-4 h-4 mr-2" /> Avatar
+                              <RefreshCw className="w-4 h-4 mr-2" /> Gerar
+                              Avatar Aleatório
                             </Button>
                           </div>
                         </div>

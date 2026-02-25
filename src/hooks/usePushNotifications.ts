@@ -176,9 +176,7 @@ export function usePushNotifications() {
       await navigator.serviceWorker.ready;
 
       // Verificar se VAPID key está configurada
-      const vapidPublicKey =
-        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
-        "BHFq3qgyqedilKnplJxWlfdducWsnU8CnG_80ZcWvngwFOL_NPv-gQF25VV6nLr4wTueXcZBBawN5BU5_BQSs25M";
+      const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
       if (!vapidPublicKey) {
         setError("Chave VAPID não configurada. Contate o administrador.");
         return false;

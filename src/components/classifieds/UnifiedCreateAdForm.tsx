@@ -17,7 +17,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { ImageUploadFeed } from "@/components/ui/ImageUploadFeed";
+import { UnifiedUpload } from "@/components/ui/UnifiedUpload";
+import { useImageCompression } from "@/hooks/useImageCompression";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { Combobox } from "@/components/ui/Combobox";
 import { LocationComboboxesMultiCountry } from "@/components/ui/LocationComboboxesMultiCountry";
@@ -29,6 +30,7 @@ import { useLocale } from "@/contexts/LocaleContext";
 import { useIBGE } from "@/hooks/useIBGE";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 interface AdDraft {
   title: string;
@@ -182,6 +184,12 @@ export function UnifiedCreateAdForm({
     useCreditType: undefined as "1d" | "7d" | undefined,
   });
 
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>(
+    initialData?.images || [],
+  );
+  const { compressImage } = useImageCompression();
+
   // Restaurar draft do localStorage ao montar
   useEffect(() => {
     if (!initialData) {
@@ -334,13 +342,47 @@ export function UnifiedCreateAdForm({
       ? parseFloat(formData.price.replace(/[^\d,]/g, "").replace(",", "."))
       : undefined;
 
+    let finalImages = [...existingImages];
+
+    // Upload novas imagens se houverem
+    if (selectedFiles.length > 0) {
+      try {
+        const uploadedUrls: string[] = [];
+        for (let i = 0; i < selectedFiles.length; i++) {
+          const file = selectedFiles[i];
+          const fileExt = file.name.split(".").pop();
+          const fileName = `classifieds/${profile?.id || "anon"}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from("feed-images")
+            .upload(fileName, file, {
+              cacheControl: "3600",
+              upsert: false,
+            });
+
+          if (uploadError) throw uploadError;
+
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from("feed-images").getPublicUrl(fileName);
+
+          uploadedUrls.push(publicUrl);
+        }
+        finalImages = [...finalImages, ...uploadedUrls];
+      } catch (error) {
+        console.error("Erro ao fazer upload das imagens:", error);
+        toast.error("Erro ao fazer upload das imagens. Tente novamente.");
+        return;
+      }
+    }
+
     await onSubmit({
       title: formData.title,
       description: formData.description,
       category: formData.category,
       ad_type: formData.ad_type,
       price: parsedPrice,
-      images: formData.images,
+      images: finalImages,
       isPremium: formData.isPremium,
       pointsToSpend: formData.useCreditType
         ? 0
@@ -454,10 +496,11 @@ export function UnifiedCreateAdForm({
           <button
             type="button"
             onClick={() => toggleType("offer")}
-            className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${formData.ad_type === "offer"
+            className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
+              formData.ad_type === "offer"
                 ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400"
                 : "border-gray-200 dark:border-gray-800 hover:border-emerald-200 dark:hover:border-emerald-800 text-gray-600"
-              }`}
+            }`}
           >
             <Briefcase className="h-6 w-6 mb-2" />
             <span className="font-semibold text-sm">Oferecer</span>
@@ -466,10 +509,11 @@ export function UnifiedCreateAdForm({
           <button
             type="button"
             onClick={() => toggleType("request")}
-            className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${formData.ad_type === "request"
+            className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
+              formData.ad_type === "request"
                 ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400"
                 : "border-gray-200 dark:border-gray-800 hover:border-blue-200 dark:hover:border-blue-800 text-gray-600"
-              }`}
+            }`}
           >
             <ShoppingBag className="h-6 w-6 mb-2" />
             <span className="font-semibold text-sm">Solicitar</span>
@@ -551,18 +595,59 @@ export function UnifiedCreateAdForm({
         </div>
 
         {/* IMAGES */}
-        <div className="space-y-2">
+        <div className="space-y-4">
           <Label className="text-sm font-medium">Fotos</Label>
-          <ImageUploadFeed
-            currentImages={formData.images}
-            onImagesUpload={(images) =>
-              setFormData((prev) => ({ ...prev, images }))
+
+          <UnifiedUpload
+            selectedFiles={selectedFiles}
+            onFilesSelected={(files) =>
+              setSelectedFiles((prev) => [...prev, ...files])
             }
-            maxImages={5}
-            className="rounded-xl overflow-hidden border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-primary-500 dark:hover:border-primary-500 transition-colors"
+            onRemoveFile={(index) =>
+              setSelectedFiles((prev) => prev.filter((_, i) => i !== index))
+            }
+            maxFiles={5 - existingImages.length}
+            title="Adicionar Fotos"
+            description="Mostre os detalhes do seu anúncio"
+            subDescription="Arraste ou clique para selecionar (até 5 fotos)"
+            isLoading={isLoading}
           />
+
+          {existingImages.length > 0 && (
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold text-gray-500 uppercase">
+                Fotos Existentes
+              </Label>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                {existingImages.map((url, index) => (
+                  <div
+                    key={index}
+                    className="relative aspect-square rounded-lg overflow-hidden group border border-gray-100 dark:border-gray-800"
+                  >
+                    <img
+                      src={url}
+                      alt={`Imagem ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExistingImages((prev) =>
+                          prev.filter((_, i) => i !== index),
+                        )
+                      }
+                      className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <p className="text-xs text-gray-400">
-            Adicione até 5 fotos para ilustrar seu anúncio.
+            Adicione fotos reais para aumentar a confiança dos interessados.
           </p>
         </div>
 
@@ -662,10 +747,11 @@ export function UnifiedCreateAdForm({
                       disabled={!isFreeCredit && currentBalance < opt.points}
                       className={`
                                     relative p-3 rounded-lg border-2 text-left transition-all
-                                    ${formData.durationDays === opt.days
-                          ? "border-[#00b0b0] bg-white dark:bg-gray-800 shadow-[0_0_10px_rgba(0,176,176,0.1)]"
-                          : "border-transparent bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800"
-                        }
+                                    ${
+                                      formData.durationDays === opt.days
+                                        ? "border-[#00b0b0] bg-white dark:bg-gray-800 shadow-[0_0_10px_rgba(0,176,176,0.1)]"
+                                        : "border-transparent bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800"
+                                    }
                                     ${!isFreeCredit && currentBalance < opt.points ? "opacity-50 cursor-not-allowed" : ""}
                                 `}
                     >

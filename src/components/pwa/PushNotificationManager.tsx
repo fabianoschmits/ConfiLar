@@ -119,9 +119,7 @@ export function PushNotificationManager({
       const readyRegistration = await navigator.serviceWorker.ready;
 
       // VAPID public key
-      const vapidPublicKey =
-        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
-        "BHFq3qgyqedilKnplJxWlfdducWsnU8CnG_80ZcWvngwFOL_NPv-gQF25VV6nLr4wTueXcZBBawN5BU5_BQSs25M";
+      const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
       const subscription = await readyRegistration.pushManager.subscribe({
         userVisibleOnly: true,

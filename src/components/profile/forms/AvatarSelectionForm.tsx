@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Camera, Upload, RefreshCw, Save, Sparkles } from "lucide-react";
+import { Camera, RefreshCw, Save, Sparkles, User } from "lucide-react";
+import { UnifiedUpload } from "@/components/ui/UnifiedUpload";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -13,8 +14,7 @@ export function AvatarSelectionForm({ onSuccess }: { onSuccess?: () => void }) {
   const { user, profile, refreshAuth } = useAuthContext();
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [activeTab, setActiveTab] = useState<"upload" | "dicebear">("upload");
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -57,15 +57,21 @@ export function AvatarSelectionForm({ onSuccess }: { onSuccess?: () => void }) {
     const seed = Math.random().toString(36).substring(7);
     const url = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
     setPreview(url);
-    setSelectedFile(null);
+    setSelectedFiles([]);
   };
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      setPreview(URL.createObjectURL(file));
-    }
+  const [preview, setPreview] = useState<string | null>(null);
+
+  const handleFilesSelected = (files: File[]) => {
+    // Para avatar, pegamos apenas o último selecionado
+    const latestFile = files[files.length - 1];
+    setSelectedFiles([latestFile]);
+    setPreview(URL.createObjectURL(latestFile));
+  };
+
+  const removeFile = () => {
+    setSelectedFiles([]);
+    setPreview(profile?.avatar_url || null);
   };
 
   const { updateProfile, isUpdating: isProfileUpdating } = useProfileUpdate();
@@ -75,9 +81,10 @@ export function AvatarSelectionForm({ onSuccess }: { onSuccess?: () => void }) {
     setIsLoading(true);
     try {
       let avatarUrl = preview;
-      if (selectedFile) {
+      if (selectedFiles.length > 0) {
+        const file = selectedFiles[0];
         const fileName = `${user.id}/${Date.now()}.png`;
-        await supabase.storage.from("avatars").upload(fileName, selectedFile);
+        await supabase.storage.from("avatars").upload(fileName, file);
         avatarUrl = supabase.storage.from("avatars").getPublicUrl(fileName)
           .data.publicUrl;
       }
@@ -108,11 +115,11 @@ export function AvatarSelectionForm({ onSuccess }: { onSuccess?: () => void }) {
         className="space-y-6"
       >
         <div className="flex flex-col items-center gap-4">
-          <div className="w-32 h-32 rounded-full border-4 border-purple-100 overflow-hidden bg-gray-50">
+          <div className="w-32 h-32 rounded-full border-4 border-purple-100 overflow-hidden bg-gray-50 flex items-center justify-center">
             {preview ? (
               <img src={preview} className="w-full h-full object-cover" />
             ) : (
-              <Camera className="w-full h-full p-8 text-gray-300" />
+              <User className="w-16 h-16 text-gray-300" />
             )}
           </div>
         </div>
@@ -120,24 +127,30 @@ export function AvatarSelectionForm({ onSuccess }: { onSuccess?: () => void }) {
         <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="upload">
-              <Upload className="w-4 h-4 mr-2" /> Foto
+              <Camera className="w-4 h-4 mr-2" /> Foto
             </TabsTrigger>
             <TabsTrigger value="dicebear">
               <RefreshCw className="w-4 h-4 mr-2" /> Avatar
             </TabsTrigger>
           </TabsList>
+
           <TabsContent value="upload" className="pt-4">
-            <label className="flex flex-col items-center p-8 border-2 border-dashed rounded-xl cursor-pointer hover:bg-gray-50">
-              <Upload className="w-8 h-8 text-gray-400 mb-2" />
-              <span className="text-sm">Clique para subir foto</span>
-              <input
-                type="file"
-                className="hidden"
-                onChange={handleFile}
-                accept="image/*"
-              />
-            </label>
+            <UnifiedUpload
+              selectedFiles={selectedFiles}
+              onFilesSelected={handleFilesSelected}
+              onRemoveFile={removeFile}
+              multiple={false}
+              maxFiles={1}
+              title="Mudar Foto de Perfil"
+              description="Escolha uma foto bem iluminada"
+              subDescription="JPG, PNG ou WEBP até 1MB"
+              compressOptions={{
+                maxSizeMB: 0.3,
+                maxWidthOrHeight: 512,
+              }}
+            />
           </TabsContent>
+
           <TabsContent value="dicebear" className="pt-4">
             <Button
               type="button"

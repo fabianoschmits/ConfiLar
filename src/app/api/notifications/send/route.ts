@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withAdminAuth } from "@/lib/authenticatedRoute";
+import { withAuth } from "@/lib/authenticatedRoute";
 import { createAdminSupabaseClient } from "@/lib/supabase";
 import webpush from "web-push";
 
@@ -27,11 +27,11 @@ if (vapidKeys.publicKey && vapidKeys.privateKey) {
  * Envia uma notificação push para um usuário específico.
  *
  * Segurança:
- * - ✅ Requer autenticação de admin (withAdminAuth)
- * - ✅ Apenas administradores podem enviar notificações push
- * - ✅ Previne spam e notificações falsas
+ * - ✅ Requer autenticação (withAuth)
+ * - ✅ Admins podem enviar para qualquer um
+ * - ✅ Usuários comuns podem enviar se estiverem autenticados (validação simplificada para agora)
  */
-export const POST = withAdminAuth(
+export const POST = withAuth(
   async (request: NextRequest, supabaseAuth, user) => {
     try {
       const { userId, title, body, data, icon, badge } = await request.json();
@@ -50,19 +50,26 @@ export const POST = withAdminAuth(
         return NextResponse.json({ error: "userId inválido" }, { status: 400 });
       }
 
-      // Usar admin client (após validar que é admin)
+      // Usar admin client para buscar subscription (independente de quem enviou)
       const adminSupabase = createAdminSupabaseClient();
 
-      // Buscar subscription do usuário
+      // Buscar subscription do destinatário
       const { data: subscription, error: subError } = await adminSupabase
         .from("push_subscriptions")
         .select("*")
         .eq("user_id", userId)
-        .single();
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
       if (subError || !subscription) {
+        // Se for admin pedindo teste, avisar que não tem sub
+        console.warn(`⚠️ Subscription não encontrada para usuário ${userId}`);
         return NextResponse.json(
-          { error: "Subscription não encontrada para este usuário" },
+          {
+            error:
+              "O destinatário não possui inscrição ativa para notificações push",
+          },
           { status: 404 },
         );
       }
@@ -75,7 +82,7 @@ export const POST = withAdminAuth(
         badge: badge || "/icon-96x96.png",
         data: data || {},
         tag: "confilar-notification",
-        requireInteraction: false,
+        requireInteraction: false, // Pode ser configurado dinamicamente
         silent: false,
       });
 
@@ -90,13 +97,14 @@ export const POST = withAdminAuth(
 
       await webpush.sendNotification(pushSubscription, payload);
 
-      console.log(
-        `✅ Notificação push enviada para usuário ${userId} por admin ${user.id}`,
-      );
+      console.log(`✅ Notificação push enviada de ${user.id} para ${userId}`);
 
       return NextResponse.json({ success: true });
     } catch (error) {
       console.error("Erro ao enviar notificação push:", error);
+
+      // Se a subscription expirou ou é inválida, podemos removê-la aqui se quisermos
+
       return NextResponse.json(
         {
           error:
