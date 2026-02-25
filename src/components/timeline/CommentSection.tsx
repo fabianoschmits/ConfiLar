@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -257,21 +258,28 @@ export function CommentSection({
           className={`${isReply ? "px-3 pt-1 pb-0 border-l-2 border-blue-200 bg-blue-50/30" : "px-3 pt-1 pb-0"}`}
         >
           <div className="flex items-start space-x-3">
-            <Avatar className="w-9 h-9">
-              <AvatarImage
-                src={comment.user.avatar_url}
-                alt={`Avatar de ${comment.user.full_name}`}
-              />
-              <AvatarFallback>
-                {comment.user.full_name.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <Link href={`/perfil/${comment.user.id}`}>
+              <Avatar className="w-9 h-9 hover:opacity-80 transition-opacity cursor-pointer">
+                <AvatarImage
+                  src={comment.user.avatar_url}
+                  alt={`Avatar de ${comment.user.full_name}`}
+                />
+                <AvatarFallback>
+                  {comment.user.full_name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2 mb-1">
-                <span className="font-semibold text-base dark:text-white">
-                  {comment.user.full_name}
-                </span>
+                <Link
+                  href={`/perfil/${comment.user.id}`}
+                  className="hover:underline"
+                >
+                  <span className="font-semibold text-base dark:text-white">
+                    {comment.user.full_name}
+                  </span>
+                </Link>
                 <span className="text-xs text-gray-500 dark:text-gray-400">
                   {comment.user.user_type === "professional"
                     ? "Profissional"

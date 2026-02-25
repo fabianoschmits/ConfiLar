@@ -342,6 +342,24 @@ export function useComments(options: UseCommentsOptions) {
         },
       );
 
+      // Atualizar cache da timeline otimisticamente (para refletir +1 comentário)
+      queryClient.setQueriesData(
+        { queryKey: ["unified-timeline"] },
+        (oldData: any) => {
+          if (!oldData || !oldData.pages) return oldData;
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page: any[]) =>
+              page.map((item: any) =>
+                item.type === "post" && item.id === filters.post_id
+                  ? { ...item, comments_count: (item.comments_count || 0) + 1 }
+                  : item,
+              ),
+            ),
+          };
+        },
+      );
+
       return { previousComments };
     },
     onError: (err, variables, context) => {
@@ -642,6 +660,31 @@ export function useComments(options: UseCommentsOptions) {
 
       if (error) throw error;
       return { success: true };
+    },
+    onMutate: async () => {
+      // Atualizar cache da timeline otimisticamente (para refletir -1 comentário)
+      queryClient.setQueriesData(
+        { queryKey: ["unified-timeline"] },
+        (oldData: any) => {
+          if (!oldData || !oldData.pages) return oldData;
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page: any[]) =>
+              page.map((item: any) =>
+                item.type === "post" && item.id === filters.post_id
+                  ? {
+                      ...item,
+                      comments_count: Math.max(
+                        0,
+                        (item.comments_count || 0) - 1,
+                      ),
+                    }
+                  : item,
+              ),
+            ),
+          };
+        },
+      );
     },
     onSuccess: () => {
       // Invalidar cache de comentários

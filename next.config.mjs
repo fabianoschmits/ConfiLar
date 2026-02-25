@@ -48,6 +48,12 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'randomuser.me',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
   // Headers de segurança
@@ -91,7 +97,7 @@ const nextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://vercel.live",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "img-src 'self' data: https: blob: https://api.dicebear.com https://img.youtube.com https://i.ytimg.com https://images.unsplash.com",
+              "img-src 'self' data: https: blob: https://api.dicebear.com https://img.youtube.com https://i.ytimg.com https://images.unsplash.com https://randomuser.me",
               "font-src 'self' https://fonts.gstatic.com data:",
               "connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co https://api.dicebear.com https://servicodados.ibge.gov.br https://*.ibge.gov.br https://img.youtube.com https://i.ytimg.com",
               "frame-src 'self' https://*.supabase.co https://vercel.live https://www.youtube.com https://youtube.com",
