@@ -98,15 +98,15 @@ export function RenewPremiumAdForm({
 
   return (
     <div className="space-y-4">
-      <Card className="border-warning-300 dark:border-warning-600 bg-warning-50/50 dark:bg-warning-900/10">
+      <Card className="border-[#00b0b0]/20 dark:border-[#00b0b0]/40 bg-[#00b0b0]/5 dark:bg-[#00b0b0]/10">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <Crown className="h-5 w-5 text-yellow-600 dark:text-yellow-500 mt-0.5" />
+            <Crown className="h-5 w-5 text-[#00b0b0] mt-0.5" />
             <div className="flex-1">
-              <h3 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-1">
+              <h3 className="font-semibold text-[#008080] dark:text-[#00b0b0] mb-1">
                 Renovar Anúncio Premium
               </h3>
-              <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
                 💡 Seu anúncio "{adTitle}" será renovado com destaque premium.
                 Escolha a duração desejada.
               </p>
@@ -115,7 +115,7 @@ export function RenewPremiumAdForm({
               variant="ghost"
               size="sm"
               onClick={onCancel}
-              className="h-6 w-6 p-0 text-yellow-600 dark:text-yellow-400 hover:text-yellow-700 dark:hover:text-yellow-300"
+              className="h-6 w-6 p-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -133,11 +133,10 @@ export function RenewPremiumAdForm({
             {premiumOptions.map((option) => (
               <Card
                 key={option.points}
-                className={`cursor-pointer transition-all ${
-                  formData.pointsToSpend === option.points
-                    ? "ring-2 ring-warning-500 bg-warning-50 dark:bg-warning-900/20 border-warning-300 dark:border-warning-600"
+                className={`cursor-pointer transition-all ${formData.pointsToSpend === option.points
+                    ? "ring-2 ring-[#00b0b0] bg-[#00b0b0]/5 dark:bg-[#00b0b0]/10 border-[#00b0b0]/30 dark:border-[#00b0b0]/50 shadow-[0_0_15px_rgba(0,176,176,0.1)]"
                     : "hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-700"
-                } ${!canAfford && option.points > (balance?.balance || 0) ? "opacity-50 cursor-not-allowed" : ""}`}
+                  } ${!canAfford && option.points > (balance?.balance || 0) ? "opacity-50 cursor-not-allowed" : ""}`}
                 onClick={() => {
                   if (canAfford || option.points <= (balance?.balance || 0)) {
                     setFormData((prev) => ({
@@ -170,7 +169,7 @@ export function RenewPremiumAdForm({
                     {option.description}
                   </p>
                   <div className="flex items-center gap-1 text-sm font-medium text-gray-900 dark:text-gray-100">
-                    <Coins className="h-4 w-4 text-yellow-600 dark:text-yellow-500" />
+                    <Coins className="h-4 w-4 text-[#00b0b0]" />
                     <span>{option.points.toLocaleString("pt-BR")} pontos</span>
                   </div>
                   {option.points > (balance?.balance || 0) && (
@@ -196,7 +195,7 @@ export function RenewPremiumAdForm({
           </div>
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600 dark:text-gray-400">Custo:</span>
-            <span className="font-semibold text-yellow-600 dark:text-yellow-500">
+            <span className="font-semibold text-[#008080] dark:text-[#00b0b0]">
               -{formData.pointsToSpend.toLocaleString("pt-BR")} pontos
             </span>
           </div>
@@ -205,11 +204,10 @@ export function RenewPremiumAdForm({
               Saldo após:
             </span>
             <span
-              className={`font-bold ${
-                (balance?.balance || 0) - formData.pointsToSpend >= 0
+              className={`font-bold ${(balance?.balance || 0) - formData.pointsToSpend >= 0
                   ? "text-green-600 dark:text-green-500"
                   : "text-red-600 dark:text-red-500"
-              }`}
+                }`}
             >
               {(
                 (balance?.balance || 0) - formData.pointsToSpend
@@ -235,7 +233,7 @@ export function RenewPremiumAdForm({
             disabled={!canAfford || isProcessing}
             isLoading={isProcessing}
             loadingText="Renovando..."
-            className="flex-1 bg-warning-600 hover:bg-warning-700 text-white"
+            className="flex-1 bg-[#00b0b0] hover:bg-[#008a8a] text-white shadow-[0_4px_14px_rgba(0,176,176,0.3)] transition-all"
           >
             <Crown className="h-4 w-4 mr-2" />
             Renovar Premium

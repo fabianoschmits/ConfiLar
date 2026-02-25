@@ -454,11 +454,10 @@ export function UnifiedCreateAdForm({
           <button
             type="button"
             onClick={() => toggleType("offer")}
-            className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
-              formData.ad_type === "offer"
+            className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${formData.ad_type === "offer"
                 ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400"
                 : "border-gray-200 dark:border-gray-800 hover:border-emerald-200 dark:hover:border-emerald-800 text-gray-600"
-            }`}
+              }`}
           >
             <Briefcase className="h-6 w-6 mb-2" />
             <span className="font-semibold text-sm">Oferecer</span>
@@ -467,11 +466,10 @@ export function UnifiedCreateAdForm({
           <button
             type="button"
             onClick={() => toggleType("request")}
-            className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
-              formData.ad_type === "request"
+            className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${formData.ad_type === "request"
                 ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400"
                 : "border-gray-200 dark:border-gray-800 hover:border-blue-200 dark:hover:border-blue-800 text-gray-600"
-            }`}
+              }`}
           >
             <ShoppingBag className="h-6 w-6 mb-2" />
             <span className="font-semibold text-sm">Solicitar</span>
@@ -602,11 +600,11 @@ export function UnifiedCreateAdForm({
         </div>
 
         {/* PREMIUM SECTION */}
-        <div className="p-4 rounded-xl border border-yellow-200 dark:border-yellow-900 bg-yellow-50/50 dark:bg-yellow-900/10 space-y-4">
+        <div className="p-4 rounded-xl border border-[#00b0b0]/20 dark:border-[#00b0b0]/40 bg-[#00b0b0]/5 dark:bg-[#00b0b0]/10 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/50">
-                <Crown className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+              <div className="p-2 rounded-lg bg-[#00b0b0]/10 dark:bg-[#00b0b0]/20">
+                <Crown className="h-5 w-5 text-[#00b0b0]" />
               </div>
               <div>
                 <h4 className="font-semibold text-gray-900 dark:text-white">
@@ -664,11 +662,10 @@ export function UnifiedCreateAdForm({
                       disabled={!isFreeCredit && currentBalance < opt.points}
                       className={`
                                     relative p-3 rounded-lg border-2 text-left transition-all
-                                    ${
-                                      formData.durationDays === opt.days
-                                        ? "border-yellow-500 bg-white dark:bg-gray-800 shadow-sm"
-                                        : "border-transparent bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800"
-                                    }
+                                    ${formData.durationDays === opt.days
+                          ? "border-[#00b0b0] bg-white dark:bg-gray-800 shadow-[0_0_10px_rgba(0,176,176,0.1)]"
+                          : "border-transparent bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800"
+                        }
                                     ${!isFreeCredit && currentBalance < opt.points ? "opacity-50 cursor-not-allowed" : ""}
                                 `}
                     >

@@ -21,7 +21,7 @@ const badgeVariants = cva(
         error:
           "border-transparent bg-error-100 dark:bg-error-900/30 text-error-800 dark:text-error-200 hover:bg-error-200 dark:hover:bg-error-900/50",
         premium:
-          "border-transparent bg-gradient-to-r from-warning-400 to-warning-500 text-white hover:from-warning-500 hover:to-warning-600",
+          "border-transparent bg-gradient-to-r from-[#008080] to-[#00b0b0] text-white hover:from-[#006666] hover:to-[#009999] shadow-[0_2px_10px_-3px_rgba(0,176,176,0.5)]",
       },
     },
     defaultVariants: {
@@ -32,8 +32,8 @@ const badgeVariants = cva(
 
 export interface BadgeProps
   extends
-    React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof badgeVariants> {}
+  React.HTMLAttributes<HTMLDivElement>,
+  VariantProps<typeof badgeVariants> { }
 
 function Badge({ className, variant, ...props }: BadgeProps) {
   return (

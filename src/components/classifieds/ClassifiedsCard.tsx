@@ -151,7 +151,7 @@ export function ClassifiedsCard({
         isHighlighted
           ? "border-blue-400 dark:border-blue-700 z-10 shadow-sm"
           : isActivePremium
-            ? "ring-2 ring-warning-400 dark:ring-warning-500 border-warning-200 dark:border-warning-800 bg-gradient-to-r from-warning-50/30 to-transparent dark:from-warning-900/10 dark:to-transparent shadow-[0_15px_30px_-15px_rgba(251,191,36,0.6)] dark:shadow-[0_15px_30px_-15px_rgba(251,191,36,0.3)] premium-border-shine"
+            ? "ring-2 ring-[#00b0b0]/50 dark:ring-[#00b0b0]/40 border-[#00b0b0]/30 dark:border-[#00b0b0]/20 bg-gradient-to-br from-[#00b0b0]/5 to-transparent dark:from-[#00b0b0]/10 dark:to-transparent shadow-[0_15px_40px_-15px_rgba(0,176,176,0.4)] dark:shadow-[0_15px_40px_-15px_rgba(0,176,176,0.2)] premium-border-shine"
             : "border-gray-200 dark:border-gray-800",
         "hover:shadow-lg",
       )}
@@ -254,7 +254,7 @@ export function ClassifiedsCard({
 
             {/* Premium Badge */}
             {isActivePremium && (
-              <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm gap-1">
+              <Badge className="bg-gradient-to-r from-[#008080] to-[#00b0b0] text-white border-0 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-[0_2px_10px_-3px_rgba(0,176,176,0.5)] gap-1">
                 <Crown className="h-3 w-3" />
                 Premium
               </Badge>
