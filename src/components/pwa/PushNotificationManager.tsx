@@ -13,26 +13,37 @@ import { Badge } from "@/components/ui/badge";
 import { Bell, BellOff, Settings, CheckCircle, XCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useUnifiedAuth";
 
-interface NotificationPermission {
-  granted: boolean;
-  denied: boolean;
-  default: boolean;
+interface PushNotificationManagerProps {
+  onClose?: () => void;
+  showDismissed?: boolean;
 }
 
-export function PushNotificationManager() {
+export function PushNotificationManager({
+  onClose,
+  showDismissed = false,
+}: PushNotificationManagerProps) {
   const { user } = useAuth();
-  const [permission, setPermission] = useState<NotificationPermission>({
+  const [subscription, setSubscription] = useState<PushSubscription | null>(
+    null,
+  );
+  const [permission, setPermission] = useState<{
+    granted: boolean;
+    denied: boolean;
+    default: boolean;
+  }>({
     granted: false,
     denied: false,
     default: false,
   });
   const [isSupported, setIsSupported] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [subscription, setSubscription] = useState<PushSubscription | null>(
-    null,
-  );
+  const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
+    // Verificar se foi dispensado anteriormente
+    const dismissed = localStorage.getItem("push-prompt-dismissed") === "true";
+    setIsDismissed(dismissed);
+
     checkNotificationSupport();
     checkPermission();
     checkSubscription();
@@ -205,6 +216,12 @@ export function PushNotificationManager() {
     return outputArray;
   };
 
+  const handleDismiss = () => {
+    localStorage.setItem("push-prompt-dismissed", "true");
+    setIsDismissed(true);
+    if (onClose) onClose();
+  };
+
   if (!isSupported) {
     return (
       <Card>
@@ -221,9 +238,12 @@ export function PushNotificationManager() {
     );
   }
 
+  if (isDismissed && !showDismissed) return null;
+  if (permission.granted && subscription && !showDismissed) return null;
+
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="relative">
         <CardTitle className="flex items-center gap-2">
           <Bell className="w-5 h-5" />
           Notificações Push
@@ -231,6 +251,14 @@ export function PushNotificationManager() {
         <CardDescription>
           Receba notificações sobre mensagens, avaliações e atualizações.
         </CardDescription>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute top-2 right-2 h-7 w-7 p-0"
+          onClick={handleDismiss}
+        >
+          <XCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+        </Button>
       </CardHeader>
 
       <CardContent className="space-y-4">

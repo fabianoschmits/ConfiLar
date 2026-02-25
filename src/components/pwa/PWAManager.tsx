@@ -3,7 +3,6 @@
 import { PWAInstallPrompt } from "./PWAInstallPrompt";
 import { PWAUpdateNotification } from "./PWAUpdateNotification";
 import { PWAStatus } from "./PWAStatus";
-import { PushNotificationManager } from "./PushNotificationManager";
 
 /**
  * PWAManager - Componente principal que gerencia todos os aspectos do PWA
@@ -23,13 +22,6 @@ export function PWAManager() {
 
       {/* Notificação de atualização */}
       <PWAUpdateNotification />
-
-      {/* Gerenciador de notificações push - Proativo */}
-      <div className="fixed bottom-24 right-4 z-50 max-w-xs scale-90 origin-bottom-right opacity-90 hover:opacity-100 transition-opacity pointer-events-none">
-        <div className="pointer-events-auto">
-          <PushNotificationManager />
-        </div>
-      </div>
     </>
   );
 }

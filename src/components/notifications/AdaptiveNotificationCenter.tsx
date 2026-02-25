@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useNotifications } from "./NotificationProviderSimple";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { PushNotificationManager } from "../pwa/PushNotificationManager";
 import { useNotificationSound } from "@/hooks/useNotificationSound";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -545,10 +546,9 @@ function FloatingNotificationContent({
                       disabled={!isSupported || isLoading}
                       className={`
                         w-full px-4 py-2 text-sm font-medium rounded-md transition-colors
-                        ${
-                          isSubscribed
-                            ? "bg-red-100 text-red-700 border border-red-300 hover:bg-red-200"
-                            : "bg-blue-600 text-white hover:bg-blue-700"
+                        ${isSubscribed
+                          ? "bg-red-100 text-red-700 border border-red-300 hover:bg-red-200"
+                          : "bg-blue-600 text-white hover:bg-blue-700"
                         }
                         ${!isSupported || isLoading ? "opacity-50 cursor-not-allowed" : ""}
                       `}
@@ -665,21 +665,19 @@ function FloatingNotificationContent({
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setFilter("all")}
-                className={`px-2 py-0.5 text-[10px] transition-colors ${
-                  filter === "all"
+                className={`px-2 py-0.5 text-[10px] transition-colors ${filter === "all"
                     ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
                     : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
-                }`}
+                  }`}
               >
                 Todas
               </button>
               <button
                 onClick={() => setFilter("unread")}
-                className={`px-2 py-0.5 text-[10px] transition-colors ${
-                  filter === "unread"
+                className={`px-2 py-0.5 text-[10px] transition-colors ${filter === "unread"
                     ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
                     : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
-                }`}
+                  }`}
               >
                 Não lidas
               </button>
@@ -696,6 +694,13 @@ function FloatingNotificationContent({
               {filteredNotifications.length !== 1 ? "ões" : ""}
             </span>
           </div>
+        </div>
+      )}
+
+      {/* Notificações Push - Sugestão Proativa dentro do menu */}
+      {!isSubscribed && (
+        <div className="p-2 border-b border-gray-100 dark:border-gray-700">
+          <PushNotificationManager />
         </div>
       )}
 
