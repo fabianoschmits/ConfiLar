@@ -97,37 +97,60 @@ export function PushNotificationManager() {
   const subscribeToPush = async () => {
     if (!isSupported || !user) return;
 
+    setIsLoading(true);
     try {
       const registration = await navigator.serviceWorker.getRegistration();
-      if (!registration) return;
+      if (!registration) {
+        // Registrar se não existir
+        await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+      }
 
-      // VAPID public key (você deve gerar suas próprias chaves)
+      const readyRegistration = await navigator.serviceWorker.ready;
+
+      // VAPID public key
       const vapidPublicKey =
         process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
-        "BEl62iUYgUivxIkv69yViEuiBIa40HI8F2jWqH3Q3Y4";
+        "BHFq3qgyqedilKnplJxWlfdducWsnU8CnG_80ZcWvngwFOL_NPv-gQF25VV6nLr4wTueXcZBBawN5BU5_BQSs25M";
 
-      const subscription = await registration.pushManager.subscribe({
+      const subscription = await readyRegistration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
       });
 
       setSubscription(subscription);
 
-      // Enviar subscription para o servidor
-      await fetch("/api/notifications/subscribe", {
+      // Enviar subscription para o servidor via rota segura
+      const response = await fetch("/api/notifications/subscribe", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          subscription,
-          userId: user.id,
+          subscription: {
+            endpoint: subscription.endpoint,
+            keys: {
+              p256dh: btoa(
+                String.fromCharCode(
+                  ...new Uint8Array(subscription.getKey("p256dh")!),
+                ),
+              ),
+              auth: btoa(
+                String.fromCharCode(
+                  ...new Uint8Array(subscription.getKey("auth")!),
+                ),
+              ),
+            },
+          },
         }),
       });
+
+      if (!response.ok) throw new Error("Erro ao salvar inscrição");
 
       console.log("✅ Inscrito em notificações push com sucesso!");
     } catch (error) {
       console.error("❌ Erro ao inscrever em push:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 

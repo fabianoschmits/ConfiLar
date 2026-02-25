@@ -10,11 +10,15 @@ const vapidKeys = {
 };
 
 if (vapidKeys.publicKey && vapidKeys.privateKey) {
-  webpush.setVapidDetails(
-    "mailto:no-reply@appconfilar.com.br",
-    vapidKeys.publicKey,
-    vapidKeys.privateKey,
-  );
+  try {
+    webpush.setVapidDetails(
+      "mailto:no-reply@appconfilar.com.br",
+      vapidKeys.publicKey,
+      vapidKeys.privateKey,
+    );
+  } catch (error) {
+    console.error("Erro ao configurar VAPID no send route:", error);
+  }
 }
 
 /**

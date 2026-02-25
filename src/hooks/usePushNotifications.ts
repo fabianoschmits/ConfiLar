@@ -176,7 +176,9 @@ export function usePushNotifications() {
       await navigator.serviceWorker.ready;
 
       // Verificar se VAPID key está configurada
-      const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      const vapidPublicKey =
+        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
+        "BHFq3qgyqedilKnplJxWlfdducWsnU8CnG_80ZcWvngwFOL_NPv-gQF25VV6nLr4wTueXcZBBawN5BU5_BQSs25M";
       if (!vapidPublicKey) {
         setError("Chave VAPID não configurada. Contate o administrador.");
         return false;
@@ -193,33 +195,36 @@ export function usePushNotifications() {
 
       console.log("Subscription criada:", subscription.endpoint);
 
-      // Converter subscription para formato que podemos enviar
-      const subscriptionData: PushSubscriptionData = {
-        endpoint: subscription.endpoint,
-        p256dh: btoa(
-          String.fromCharCode(
-            ...new Uint8Array(subscription.getKey("p256dh")!),
-          ),
-        ),
-        auth: btoa(
-          String.fromCharCode(...new Uint8Array(subscription.getKey("auth")!)),
-        ),
-      };
+      // Enviar para o servidor via API route para maior segurança e padronização
+      const response = await fetch("/api/notifications/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          subscription: {
+            endpoint: subscription.endpoint,
+            keys: {
+              p256dh: btoa(
+                String.fromCharCode(
+                  ...new Uint8Array(subscription.getKey("p256dh")!),
+                ),
+              ),
+              auth: btoa(
+                String.fromCharCode(
+                  ...new Uint8Array(subscription.getKey("auth")!),
+                ),
+              ),
+            },
+          },
+        }),
+      });
 
-      // Enviar para o servidor
-      const { error: serverError } = await supabase
-        .from("push_subscriptions")
-        .upsert({
-          user_id: user.id,
-          endpoint: subscriptionData.endpoint,
-          p256dh: subscriptionData.p256dh,
-          auth: subscriptionData.auth,
-        });
-
-      if (serverError) {
-        console.error("Erro ao salvar subscription:", serverError);
-        setError("Erro ao salvar configuração de notificações");
-        return false;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || "Erro ao salvar subscription no servidor",
+        );
       }
 
       setIsSubscribed(true);
