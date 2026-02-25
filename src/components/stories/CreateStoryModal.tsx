@@ -164,8 +164,8 @@ export function CreateStoryModal({
                 </p>
               </div>
               <div className="mt-6">
-                <span className="inline-flex items-center px-4 py-2 rounded-lg bg-primary-600 text-white text-xs font-bold shadow-lg shadow-primary-500/30 hover:bg-primary-700 transition-all active:scale-95">
-                  <Upload className="w-4 h-4 mr-2" />
+                <span className="inline-flex items-center px-6 py-3 rounded-xl bg-brand text-white text-sm font-bold shadow-lg shadow-brand/20 hover:bg-brand/90 transition-all active:scale-95">
+                  <Upload className="w-5 h-5 mr-2" />
                   Selecionar Foto
                 </span>
               </div>
@@ -209,7 +209,7 @@ export function CreateStoryModal({
               <button
                 onClick={handleUpload}
                 disabled={isUploading || isCreating}
-                className="flex-1 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold shadow-lg shadow-primary-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="flex-1 px-6 py-3 bg-brand hover:bg-brand/90 text-white rounded-xl font-bold shadow-lg shadow-brand/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 flex items-center justify-center gap-2"
               >
                 {isUploading || isCreating ? (
                   <>

@@ -32,6 +32,8 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
 import { PullToRefresh } from "@/components/ui/PullToRefresh";
+import { cn } from "@/lib/utils";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 export default function FeedPage() {
   const t = useTranslations("feed");
@@ -304,17 +306,71 @@ export default function FeedPage() {
           </div>
         </header>
 
-        {/* Stories Section Simplified for brevity in reconstruction */}
-        <div className="bg-gray-50 dark:bg-black border-b border-gray-200 dark:border-gray-900">
-          <div className="max-w-2xl mx-auto px-4 py-3">
-            {/* ... rendering displayStories ... */}
+        {/* Stories Section */}
+        <div className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-900 overflow-hidden">
+          <div className="max-w-2xl mx-auto py-4">
+            <div className="flex gap-4 overflow-x-auto px-4 pb-2 scrollbar-none no-scrollbar">
+              {displayStories.map((group, index) => (
+                <div
+                  key={group.id}
+                  className="flex flex-col items-center gap-1 min-w-[72px] cursor-pointer"
+                  onClick={() => {
+                    if (group.id === "my-story" && group.stories.length === 0) {
+                      setShowCreateStory(true);
+                    } else {
+                      setSelectedStoryGroupIndex(index);
+                      setSelectedStoryIndex(0);
+                      setShowStoryViewer(true);
+                    }
+                  }}
+                >
+                  <div className="relative p-[2.5px]">
+                    {/* Story border ring */}
+                    <div
+                      className={cn(
+                        "absolute inset-0 rounded-full",
+                        group.hasNew
+                          ? "p-[2.5px] bg-gradient-to-tr from-brand via-blue-400 to-blue-500"
+                          : group.stories.length > 0
+                            ? "border-2 border-gray-300 dark:border-gray-700"
+                            : "border-2 border-dashed border-gray-300 dark:border-gray-800",
+                      )}
+                    />
+
+                    {/* Avatar background to separate from ring */}
+                    <div className="relative bg-white dark:bg-black p-[2px] rounded-full">
+                      <div className="relative w-14 h-14">
+                        <UserAvatar
+                          src={group.userAvatar}
+                          alt={group.userName}
+                          size="lg"
+                          showReferralBadge={false}
+                          className="w-full h-full object-cover"
+                        />
+
+                        {/* Plus button for your own story if empty */}
+                        {group.id === "my-story" &&
+                          group.stories.length === 0 && (
+                            <div className="absolute bottom-0 right-0 bg-brand text-white rounded-full p-0.5 border-2 border-white dark:border-black">
+                              <Plus className="h-3.5 w-3.5" />
+                            </div>
+                          )}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-medium text-gray-700 dark:text-gray-300 truncate w-16 text-center">
+                    {group.id === "my-story" ? "Seu story" : group.userName}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
         <div
           id="feed-container"
           ref={containerRef}
-          className="max-w-2xl mx-auto pb-20 relative"
+          className="max-w-2xl mx-auto pb-20 relative pt-6"
         >
           <PullToRefresh
             isPulling={isPulling}

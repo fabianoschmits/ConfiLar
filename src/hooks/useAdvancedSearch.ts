@@ -57,6 +57,9 @@ export const useAdvancedSearch = () => {
 
       let query = supabase.from("profiles").select("*", { count: "exact" });
 
+      // 0. Filtrar perfis ocultos (Admin/Testes)
+      query = query.eq("is_hidden", false);
+
       // 1. Regras de Visibilidade Base (Marketplace)
       // Mostrar tanto profissionais quanto clientes, dependendo do filtro userType
       if (currentFilters.userType && currentFilters.userType !== "all") {

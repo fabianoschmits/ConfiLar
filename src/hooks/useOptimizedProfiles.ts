@@ -99,6 +99,9 @@ export function useProfiles(
         { count: "exact" },
       );
 
+      // Filtrar perfis ocultos
+      query = query.eq("is_hidden", false);
+
       // Aplicar filtros
       if (filters.user_type) {
         query = query.eq("user_type", filters.user_type);

@@ -361,22 +361,22 @@ export function ModernHeader({
                 </Button>
               )}
 
-              {/* Logo */}
+              {/* Logo - Mobile only */}
               <Link
                 href={isLoggedIn ? "/home" : "/"}
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-2 sm:hidden"
               >
                 <div className="h-12 flex items-center justify-center">
-                  {/* Mobile: 30% menor */}
-                  <div className="block sm:hidden">
-                    <BrandLogo width={84} height={22} />
-                  </div>
-                  {/* Desktop/tablet: padrão */}
-                  <div className="hidden sm:block">
-                    <BrandLogo width={120} height={32} />
-                  </div>
+                  <BrandLogo width={84} height={22} />
                 </div>
               </Link>
+
+              {/* Dynamic Page Title - Desktop only */}
+              <div className="hidden sm:block">
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                  {getPageTitle()}
+                </h1>
+              </div>
             </div>
 
             {/* Spacer — pushes icons to the right on all screen sizes */}

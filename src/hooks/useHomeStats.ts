@@ -31,7 +31,8 @@ export function useHomeStats(): HomeStats {
             .from("profiles")
             .select("id", { count: "exact", head: true })
             .eq("user_type", "professional")
-            .eq("is_verified", true);
+            .eq("is_verified", true)
+            .eq("is_hidden", false);
 
         // Se houver erro ou count for null, usar fallback baixo
         const finalProfessionalsCount = professionalsError
