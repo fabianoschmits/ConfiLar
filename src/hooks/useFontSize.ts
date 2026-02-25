@@ -11,8 +11,10 @@ import { toast } from "sonner";
 export function useFontSize() {
   const { user, profile, updateProfile } = useAuthContext();
 
-  // Get current font size from profile or default to 100
-  const fontSize = profile?.font_size_preference ?? 100;
+  // Get current font size from profile or default based on device
+  const defaultFontSize =
+    typeof window !== "undefined" && window.innerWidth < 768 ? 85 : 100;
+  const fontSize = profile?.font_size_preference ?? defaultFontSize;
 
   /**
    * Apply font size to document root
