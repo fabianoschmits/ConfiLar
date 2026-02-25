@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useReactionUsers } from "@/hooks/useReactions";
@@ -16,6 +16,17 @@ interface LikesModalProps {
 export function LikesModal({ isOpen, onClose, postId }: LikesModalProps) {
   const { reactionUsers, isLoading } = useReactionUsers(postId);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -28,7 +39,7 @@ export function LikesModal({ isOpen, onClose, postId }: LikesModalProps) {
 
       {/* Modal Content */}
       <div
-        className="relative w-full max-w-md max-h-[80vh] flex flex-col bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden"
+        className="relative w-full max-w-md max-h-[80vh] flex flex-col bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-300 ease-out"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

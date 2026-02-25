@@ -816,8 +816,20 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
   );
 
   const editPost = useCallback(
-    async (postId: string, updatedPost: any) => {
+    async (
+      postId: string,
+      updatedPost: {
+        title?: string;
+        description?: string;
+        images?: string[];
+        service_category_id?: string;
+        location_state?: string | null;
+        location_city?: string | null;
+        location_country?: string | null;
+      },
+    ) => {
       try {
+        console.log("📝 Editando post:", postId, updatedPost);
         // Buscar post atual para manter metadata existente e dados premium
         const { data: currentPost } = await supabase
           .from("feed_posts")
@@ -864,6 +876,19 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           metadata: metadata,
           updated_at: new Date().toISOString(),
         };
+
+        if (updatedPost.service_category_id !== undefined) {
+          updateData.service_category_id = updatedPost.service_category_id;
+        }
+        if (updatedPost.location_state !== undefined) {
+          updateData.location_state = updatedPost.location_state;
+        }
+        if (updatedPost.location_city !== undefined) {
+          updateData.location_city = updatedPost.location_city;
+        }
+        if (updatedPost.location_country !== undefined) {
+          updateData.location_country = updatedPost.location_country;
+        }
 
         // Se o post é premium, preservar todos os dados premium (não resetar)
         if (currentPost?.is_premium) {
@@ -920,6 +945,18 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
                       data.premium_highlight_color ??
                       item.premium_highlight_color,
                     tags: data.tags || item.tags,
+                    service_category_id:
+                      updatedPost.service_category_id !== undefined
+                        ? updatedPost.service_category_id
+                        : item.service_category_id,
+                    location_state:
+                      updatedPost.location_state !== undefined
+                        ? updatedPost.location_state
+                        : item.location_state,
+                    location_city:
+                      updatedPost.location_city !== undefined
+                        ? updatedPost.location_city
+                        : item.location_city,
                   };
                 }
                 return item;

@@ -513,54 +513,88 @@ export default function FeedPage() {
           post={{
             id: editingPost.id,
             description: editingPost.description || "",
-            images: editingPost.images || "",
+            images: editingPost.images || [],
             service: editingPost.service_category_id || "",
+            location_state: editingPost.location_state || null,
+            location_city: editingPost.location_city || null,
+            location_country: editingPost.location_country || null,
+            is_premium: editingPost.is_premium || false,
           }}
           onSave={async (postId, updatedPost) => {
             await editPost(postId, {
               title: updatedPost.description.slice(0, 100),
               description: updatedPost.description,
               images: updatedPost.images,
+              service_category_id: updatedPost.service,
+              location_state: updatedPost.location_state,
+              location_city: updatedPost.location_city,
+              location_country: updatedPost.location_country,
             });
             setShowEditModal(false);
             setEditingPost(null);
             await refetch();
           }}
+          onMakePremium={async (pointsToSpend, durationDays) => {
+            try {
+              await renewPremiumPost(
+                editingPost.id,
+                pointsToSpend,
+                durationDays,
+              );
+              setShowEditModal(false);
+              setEditingPost(null);
+              await refetch();
+            } catch (error) {
+              console.error("Failed to upgrade post:", error);
+            }
+          }}
         />
       )}
 
-      {renewingPostId && (
-        <ResponsiveModal
-          isOpen={showRenewPremiumModal}
-          onOpenChange={(open) => {
-            if (!open) {
-              setShowRenewPremiumModal(false);
-              setRenewingPostId(null);
-            }
-          }}
-          title={t("renewPremium")}
-        >
-          <PremiumPostForm
-            isRenewal={true}
-            onSubmit={async (data) => {
-              await renewPremiumPost(
-                renewingPostId,
-                data.pointsToSpend,
-                data.durationDays,
-              );
-              setShowRenewPremiumModal(false);
-              setRenewingPostId(null);
-              refetch();
-            }}
-            onCancel={() => {
-              setShowRenewPremiumModal(false);
-              setRenewingPostId(null);
-            }}
-            isLoading={isPosting}
-            postStatus={postStatus}
-          />
-        </ResponsiveModal>
-      )}
+      {renewingPostId &&
+        (() => {
+          const renewingPost = filteredItems.find(
+            (p) => p.id === renewingPostId,
+          );
+          const isActuallyRenewal = renewingPost
+            ? renewingPost.is_premium
+            : false;
+
+          return (
+            <ResponsiveModal
+              isOpen={showRenewPremiumModal}
+              onOpenChange={(open) => {
+                if (!open) {
+                  setShowRenewPremiumModal(false);
+                  setRenewingPostId(null);
+                }
+              }}
+              title={
+                isActuallyRenewal ? t("renewPremium") : "Tornar Post Premium"
+              }
+            >
+              <PremiumPostForm
+                isRenewal={isActuallyRenewal}
+                onSubmit={async (data) => {
+                  await renewPremiumPost(
+                    renewingPostId,
+                    data.pointsToSpend,
+                    data.durationDays,
+                  );
+                  setShowRenewPremiumModal(false);
+                  setRenewingPostId(null);
+                  refetch();
+                }}
+                onCancel={() => {
+                  setShowRenewPremiumModal(false);
+                  setRenewingPostId(null);
+                }}
+                isLoading={isPosting}
+                postStatus={postStatus}
+              />
+            </ResponsiveModal>
+          );
+        })()}
 
       <ScrollToTop showAfter={400} />
     </MainLayout>

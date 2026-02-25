@@ -312,11 +312,10 @@ export function PostCard({
           <div className="flex items-center gap-2">
             {serviceCategory && (
               <Badge
-                variant="outline"
-                className="text-[10px] font-medium px-1.5 py-0.5 rounded-full border-success-200 dark:border-success-800 text-success-700 dark:text-success-400 bg-success-50 dark:bg-success-900/30 flex items-center gap-1"
+                variant="secondary"
+                className="text-[10px] font-medium px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border-none items-center"
               >
-                <span>{serviceCategory.icon}</span>
-                <span>{serviceCategory.name}</span>
+                {serviceCategory.name}
               </Badge>
             )}
             {isActivePremium && (
@@ -496,19 +495,29 @@ export function PostCard({
               <div className="space-y-3 max-h-64 overflow-y-auto">
                 {comments.slice(0, 10).map((comment: any) => (
                   <div key={comment.id} className="flex gap-2">
-                    <Avatar className="w-6 h-6">
-                      <AvatarImage src={comment.user?.avatar_url} />
-                      <AvatarFallback className="text-xs">
-                        {comment.user?.full_name?.charAt(0) || "U"}
-                      </AvatarFallback>
-                    </Avatar>
+                    <Link
+                      href={`/perfil/${comment.user?.id || comment.user_id}`}
+                      className="block shrink-0"
+                    >
+                      <Avatar className="w-6 h-6 hover:opacity-80 transition-opacity cursor-pointer">
+                        <AvatarImage src={comment.user?.avatar_url} />
+                        <AvatarFallback className="text-xs">
+                          {comment.user?.full_name?.charAt(0) || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Link>
                     <div className="flex-1">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
                           <p className="text-sm">
-                            <span className="font-semibold text-gray-900 dark:text-white">
-                              {comment.user?.full_name || "Usuário"}
-                            </span>{" "}
+                            <Link
+                              href={`/perfil/${comment.user?.id || comment.user_id}`}
+                              className="hover:underline"
+                            >
+                              <span className="font-semibold text-gray-900 dark:text-white">
+                                {comment.user?.full_name || "Usuário"}
+                              </span>
+                            </Link>{" "}
                             {editingComment === comment.id ? (
                               <div className="mt-2 space-y-2">
                                 <MentionInput

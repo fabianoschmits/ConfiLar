@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
@@ -59,6 +59,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ResponsiveModal } from "@/components/ui/responsive-modal";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface AdminStats {
   total_users_with_points: number;
@@ -120,8 +121,10 @@ export function ConfiPointsAdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [filterUserId, setFilterUserId] = useState<string>("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [activeMainTab, setActiveMainTab] = useState("overview"); // Aba principal
   const [activeTab, setActiveTab] = useState("overview"); // Aba de transações (dentro da aba de transações)
+  const [allTransPage, setAllTransPage] = useState(0);
   const [showManageDialog, setShowManageDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [manageAction, setManageAction] = useState<"add" | "remove">("add");
@@ -151,16 +154,16 @@ export function ConfiPointsAdminDashboard() {
     ]);
   };
 
-  // Buscar TODAS as transações para a aba detalhada (sem paginação inicial)
+  // Buscar transações paginadas para a aba detalhada
   const { data: allTransactionsData, isLoading: allTransactionsLoading } =
     useQuery({
-      queryKey: ["admin-confipoints-all-transactions"],
+      queryKey: ["admin-confipoints-all-transactions", allTransPage],
       queryFn: async () => {
         return createQueryWithTimeout(async () => {
           try {
             const params: any = {
-              p_limit: 1000, // Limite reduzido para melhor performance
-              p_offset: 0,
+              p_limit: itemsPerPage,
+              p_offset: allTransPage * itemsPerPage,
             };
 
             const { data, error } = await supabase.rpc(
@@ -169,41 +172,25 @@ export function ConfiPointsAdminDashboard() {
             );
 
             if (error) {
-              // Log simplificado em produção
               if (process.env.NODE_ENV === "development") {
-                console.error("Erro ao buscar todas as transações:", error);
+                console.error("Erro ao buscar transações:", error);
               } else {
-                console.error(
-                  "Erro ao buscar todas as transações:",
-                  error.message,
-                );
+                console.error("Erro ao buscar transações:", error.message);
               }
               return [];
             }
 
-            // Se retornar um objeto único, converter para array
             if (data && !Array.isArray(data)) {
               return [data];
             }
 
-            // Ordenar por data (mais recente primeiro)
-            const sortedData = (data || []).sort(
-              (a: AdminTransaction, b: AdminTransaction) => {
-                return (
-                  new Date(b.created_at).getTime() -
-                  new Date(a.created_at).getTime()
-                );
-              },
-            );
-
-            return sortedData;
+            return data || [];
           } catch (error: any) {
-            // Log simplificado em produção
             if (process.env.NODE_ENV === "development") {
-              console.error("Erro ao buscar todas as transações:", error);
+              console.error("Erro ao buscar transações:", error);
             } else {
               console.error(
-                "Erro ao buscar todas as transações:",
+                "Erro ao buscar transações:",
                 error?.message || "Erro desconhecido",
               );
             }
@@ -254,13 +241,23 @@ export function ConfiPointsAdminDashboard() {
     refetchOnWindowFocus: false,
   });
 
+  // Reseta a página de usuários quando o filtro de busca muda
+  useEffect(() => {
+    setUsersPage(0);
+  }, [debouncedSearchTerm]);
+
   // Buscar usuários
   const {
     data: usersData,
     isLoading: usersLoading,
     refetch: refetchUsers,
   } = useQuery<AdminUser[]>({
-    queryKey: ["admin-confipoints-users", usersPage, usersOrderBy],
+    queryKey: [
+      "admin-confipoints-users",
+      usersPage,
+      usersOrderBy,
+      debouncedSearchTerm,
+    ],
     queryFn: async () => {
       return createQueryWithTimeout(async () => {
         // Validar order_by antes de enviar
@@ -272,6 +269,7 @@ export function ConfiPointsAdminDashboard() {
           p_limit: itemsPerPage,
           p_offset: usersPage * itemsPerPage,
           p_order_by: validOrderBy,
+          p_search: debouncedSearchTerm || null,
         };
 
         const { data, error } = await supabase.rpc(
@@ -507,18 +505,7 @@ export function ConfiPointsAdminDashboard() {
     refetchOnWindowFocus: false,
   });
 
-  // Filtrar usuários por termo de busca
-  const filteredUsers = useMemo(() => {
-    if (!usersData) return [];
-    if (!searchTerm) return usersData;
-
-    const term = searchTerm.toLowerCase();
-    return usersData.filter(
-      (user) =>
-        user.full_name?.toLowerCase().includes(term) ||
-        user.email?.toLowerCase().includes(term),
-    );
-  }, [usersData, searchTerm]);
+  const displayUsers = usersData || [];
 
   // Agrupar transações por categoria
   const groupedTransactions = useMemo(() => {
@@ -970,7 +957,7 @@ export function ConfiPointsAdminDashboard() {
             <CardContent>
               {usersLoading ? (
                 <div className="text-center py-8">Carregando usuários...</div>
-              ) : filteredUsers.length === 0 ? (
+              ) : displayUsers.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   Nenhum usuário encontrado
                 </div>
@@ -1004,7 +991,7 @@ export function ConfiPointsAdminDashboard() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredUsers.map((user) => (
+                        {displayUsers.map((user) => (
                           <TableRow key={user.user_id}>
                             <TableCell>
                               <div className="flex items-center gap-2 sm:gap-3">
@@ -1086,8 +1073,7 @@ export function ConfiPointsAdminDashboard() {
                   </div>
                   <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-3">
                     <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 text-center sm:text-left">
-                      Mostrando {filteredUsers.length} de{" "}
-                      {usersData?.length || 0} usuários
+                      Mostrando {displayUsers.length} usuários nesta página
                     </div>
                     <div className="flex gap-2">
                       <Button
@@ -1103,7 +1089,7 @@ export function ConfiPointsAdminDashboard() {
                         variant="outline"
                         size="sm"
                         onClick={() => setUsersPage(usersPage + 1)}
-                        disabled={filteredUsers.length < itemsPerPage}
+                        disabled={displayUsers.length < itemsPerPage}
                         className="text-xs"
                       >
                         Próxima
@@ -1538,6 +1524,39 @@ export function ConfiPointsAdminDashboard() {
                       );
                     })
                   )}
+                  {/* Paginação da aba Detalhado */}
+                  {!allTransactionsLoading && (
+                    <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-3">
+                      <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 text-center sm:text-left">
+                        Página {allTransPage + 1} · Mostrando{" "}
+                        {(allTransactionsData || []).length} transações
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            setAllTransPage((p) => Math.max(0, p - 1))
+                          }
+                          disabled={allTransPage === 0}
+                          className="text-xs"
+                        >
+                          Anterior
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setAllTransPage((p) => p + 1)}
+                          disabled={
+                            (allTransactionsData || []).length < itemsPerPage
+                          }
+                          className="text-xs"
+                        >
+                          Próxima
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </TabsContent>
               </Tabs>
             </CardContent>
@@ -1667,13 +1686,13 @@ export function ConfiPointsAdminDashboard() {
                       <div className="p-4 text-center text-gray-500">
                         Carregando usuários...
                       </div>
-                    ) : filteredUsers.length === 0 ? (
+                    ) : displayUsers.length === 0 ? (
                       <div className="p-4 text-center text-gray-500">
                         Nenhum usuário encontrado
                       </div>
                     ) : (
                       <div className="divide-y">
-                        {filteredUsers.map((user) => (
+                        {displayUsers.map((user) => (
                           <div
                             key={user.user_id}
                             className="p-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors flex items-center justify-between"

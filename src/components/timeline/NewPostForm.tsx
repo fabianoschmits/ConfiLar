@@ -26,6 +26,8 @@ import { useIBGE } from "@/hooks/useIBGE";
 import { getEstadoBySigla, getEstadoByNome } from "@/lib/ibge";
 import { useLocale } from "@/contexts/LocaleContext";
 import { LocationService } from "@/lib/location/LocationService";
+import { Badge } from "@/components/ui/badge";
+import { getServiceById } from "@/data/services";
 
 interface PostDraft {
   description: string;
@@ -500,13 +502,25 @@ export function NewPostForm({
               Serviço{" "}
               <span className="text-gray-500 font-normal">(opcional)</span>
             </label>
-            <ServiceAutocomplete
-              value={post.service}
-              onChange={(v) => setPost((prev) => ({ ...prev, service: v }))}
-              placeholder="Selecione um serviço..."
-              disabled={isLoading}
-              className="mt-2"
-            />
+            <div className="flex flex-col gap-2 mt-2">
+              <ServiceAutocomplete
+                value={post.service}
+                onChange={(v) => setPost((prev) => ({ ...prev, service: v }))}
+                placeholder="Selecione um serviço..."
+                disabled={isLoading}
+              />
+              {post.service && getServiceById(post.service) && (
+                <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
+                  <span className="text-xs text-gray-500">Tag do post:</span>
+                  <Badge
+                    variant="secondary"
+                    className="text-[10px] font-medium px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border-none w-fit"
+                  >
+                    {getServiceById(post.service)?.name}
+                  </Badge>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* LOCALIZAÇÃO - Botão para mostrar/esconder */}

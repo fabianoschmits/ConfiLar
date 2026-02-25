@@ -10,9 +10,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, Zap, Crown, Coins } from "lucide-react";
 import { ImageUploadFeed } from "@/components/ui/ImageUploadFeed";
+import { ServiceAutocomplete } from "@/components/ui/ServiceAutocomplete";
 import { usePoints } from "@/hooks/usePoints";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { PREMIUM_PRICES } from "@/constants/premiumPrices";
+import { getServiceById } from "@/data/services";
 
 interface PremiumPostFormProps {
   onSubmit: (postData: {
@@ -309,6 +311,35 @@ export function PremiumPostForm({
                 className="border-yellow-200 dark:border-yellow-600 focus:border-yellow-500 dark:focus:border-yellow-400 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                 required
               />
+            </div>
+
+            {/* Serviço */}
+            <div className="space-y-2">
+              <Label className="text-gray-900 dark:text-gray-100 flex items-center gap-1">
+                Serviço{" "}
+                <span className="text-gray-500 font-normal">(opcional)</span>
+              </Label>
+              <div className="flex flex-col gap-2">
+                <ServiceAutocomplete
+                  value={formData.service}
+                  onChange={(v) =>
+                    setFormData((prev) => ({ ...prev, service: v }))
+                  }
+                  placeholder="Selecione um serviço..."
+                  disabled={isLoading}
+                />
+                {formData.service && getServiceById(formData.service) && (
+                  <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
+                    <span className="text-xs text-gray-500">Tag do post:</span>
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] font-medium px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border-none w-fit"
+                    >
+                      {getServiceById(formData.service)?.name}
+                    </Badge>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Descrição */}
