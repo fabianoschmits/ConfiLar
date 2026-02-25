@@ -106,10 +106,13 @@ export const POST = withAdminAuth(
           p_metadata: metadata,
         });
 
-        if (error) {
-          console.error("Erro ao adicionar pontos:", error);
+        if (error || (data && data.success === false)) {
+          console.error("Erro ao adicionar pontos:", error || data?.error);
           return NextResponse.json(
-            { error: "Erro ao adicionar pontos" },
+            {
+              error:
+                error?.message || data?.error || "Erro ao adicionar pontos",
+            },
             { status: 500 },
           );
         }
@@ -124,10 +127,12 @@ export const POST = withAdminAuth(
           p_metadata: metadata,
         });
 
-        if (error) {
-          console.error("Erro ao remover pontos:", error);
+        if (error || (data && data.success === false)) {
+          console.error("Erro ao remover pontos:", error || data?.error);
           return NextResponse.json(
-            { error: "Erro ao remover pontos" },
+            {
+              error: error?.message || data?.error || "Erro ao remover pontos",
+            },
             { status: 500 },
           );
         }
