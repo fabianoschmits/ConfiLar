@@ -222,10 +222,12 @@ export function PushNotificationManager({
     if (onClose) onClose();
   };
 
+  if (isDismissed && !showDismissed) return null;
+
   if (!isSupported) {
     return (
       <Card>
-        <CardHeader>
+        <CardHeader className="relative">
           <CardTitle className="flex items-center gap-2">
             <BellOff className="w-5 h-5 text-gray-400" />
             Notificações Não Suportadas
@@ -233,12 +235,19 @@ export function PushNotificationManager({
           <CardDescription>
             Seu navegador não suporta notificações push ou Service Worker.
           </CardDescription>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute top-2 right-2 h-7 w-7 p-0"
+            onClick={handleDismiss}
+          >
+            <XCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+          </Button>
         </CardHeader>
       </Card>
     );
   }
 
-  if (isDismissed && !showDismissed) return null;
   if (permission.granted && subscription && !showDismissed) return null;
 
   return (
