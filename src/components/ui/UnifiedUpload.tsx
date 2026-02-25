@@ -33,6 +33,8 @@ interface UnifiedUploadProps {
     maxSizeMB?: number;
     maxWidthOrHeight?: number;
   };
+  existingUrls?: string[];
+  onRemoveExisting?: (index: number) => void;
 }
 
 export function UnifiedUpload({
@@ -49,11 +51,24 @@ export function UnifiedUpload({
   isLoading = false,
   maxSizeMB = 5,
   compressOptions,
+  existingUrls = [],
+  onRemoveExisting,
 }: UnifiedUploadProps) {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { compressImage, isCompressing, compressionProgress } =
     useImageCompression();
+  const [previews, setPreviews] = useState<string[]>([]);
+
+  // Gerar e limpar URLs de preview
+  React.useEffect(() => {
+    const urls = selectedFiles.map((file) =>
+      file.type.startsWith("image/") ? URL.createObjectURL(file) : "",
+    );
+    setPreviews(urls);
+
+    return () => urls.forEach((url) => url && URL.revokeObjectURL(url));
+  }, [selectedFiles]);
 
   const handleFiles = useCallback(
     async (files: FileList | File[]) => {
@@ -189,81 +204,117 @@ export function UnifiedUpload({
         />
 
         <div className="flex flex-col items-center">
-          <div
-            className={cn(
-              "w-16 h-16 rounded-2xl shadow-sm flex items-center justify-center mb-4 transition-transform ring-1",
-              dragActive
-                ? "scale-110 bg-blue-100 dark:bg-blue-900/40 ring-blue-200 dark:ring-blue-800"
-                : "bg-white dark:bg-gray-800 ring-gray-100 dark:ring-gray-700",
-            )}
-          >
-            {isCompressing ? (
-              <div className="relative">
-                <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-                <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-blue-600">
-                  {compressionProgress}%
-                </span>
-              </div>
-            ) : (
-              <UploadCloud
-                className={cn(
-                  "w-8 h-8",
-                  dragActive ? "text-blue-600" : "text-blue-500",
-                )}
-              />
+          {selectedFiles.length > 0 || existingUrls.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 w-full mb-6">
+              {/* Imagens Existentes */}
+              {existingUrls.map((url, index) => (
+                <div
+                  key={`existing-${index}`}
+                  className="relative group aspect-square rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm transition-transform hover:scale-[1.02]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <img
+                    src={url}
+                    alt={`Existing ${index}`}
+                    className="w-full h-full object-cover"
+                  />
+                  {onRemoveExisting && (
+                    <button
+                      type="button"
+                      onClick={() => onRemoveExisting(index)}
+                      className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                    >
+                      <X className="w-3 h-3" strokeWidth={3} />
+                    </button>
+                  )}
+                </div>
+              ))}
+
+              {/* Novos Arquivos Selecionados */}
+              {selectedFiles.map((file, index) => (
+                <div
+                  key={`new-${file.name}-${index}`}
+                  className="relative group aspect-square rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm transition-transform hover:scale-[1.02]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {file.type.startsWith("image/") ? (
+                    <img
+                      src={previews[index]}
+                      alt={file.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-blue-50 dark:bg-blue-900/20 p-2">
+                      <FileText className="w-6 h-6 text-blue-500 mb-1" />
+                      <span className="text-[10px] font-medium text-gray-500 truncate w-full text-center px-1">
+                        {file.name}
+                      </span>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => onRemoveFile(index)}
+                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                  >
+                    <X className="w-3 h-3" strokeWidth={3} />
+                  </button>
+                </div>
+              ))}
+
+              {/* Botão de Adicionar mais */}
+              {selectedFiles.length + existingUrls.length < maxFiles && (
+                <div className="aspect-square rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-800 flex flex-col items-center justify-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors bg-white/50 dark:bg-gray-800/50">
+                  <ImagePlus className="w-6 h-6 text-gray-400" />
+                  <span className="text-[10px] font-medium text-gray-400 mt-1">
+                    Adicionar
+                  </span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div
+              className={cn(
+                "w-16 h-16 rounded-2xl shadow-sm flex items-center justify-center mb-4 transition-transform ring-1",
+                dragActive
+                  ? "scale-110 bg-blue-100 dark:bg-blue-900/40 ring-blue-200 dark:ring-blue-800"
+                  : "bg-white dark:bg-gray-800 ring-gray-100 dark:ring-gray-700",
+              )}
+            >
+              {isCompressing ? (
+                <div className="relative">
+                  <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+                  <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-blue-600">
+                    {compressionProgress}%
+                  </span>
+                </div>
+              ) : (
+                <UploadCloud
+                  className={cn(
+                    "w-8 h-8",
+                    dragActive ? "text-blue-600" : "text-blue-500",
+                  )}
+                />
+              )}
+            </div>
+          )}
+
+          <div className="space-y-1">
+            <p className="text-base font-bold text-gray-900 dark:text-white">
+              {isCompressing
+                ? "Otimizando arquivos..."
+                : selectedFiles.length > 0 || existingUrls.length > 0
+                  ? "Arraste ou clique para adicionar mais fotos"
+                  : title}
+            </p>
+            {selectedFiles.length === 0 && existingUrls.length === 0 && (
+              <>
+                <p className="text-sm text-gray-500">{description}</p>
+                <p className="text-xs text-gray-400 mt-2">{subDescription}</p>
+              </>
             )}
           </div>
-
-          <p className="text-base font-bold text-gray-900 dark:text-white">
-            {isCompressing ? "Otimizando arquivos..." : title}
-          </p>
-          <p className="text-sm text-gray-500 mt-1">{description}</p>
-          <p className="text-xs text-gray-400 mt-2">{subDescription}</p>
         </div>
       </div>
-
-      {selectedFiles.length > 0 && (
-        <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-          <h5 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <FileText className="w-4 h-4 text-blue-500" />
-            Arquivos selecionados ({selectedFiles.length})
-          </h5>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {selectedFiles.map((file, index) => (
-              <div
-                key={`${file.name}-${index}`}
-                className="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm"
-              >
-                <div className="flex items-center gap-3 truncate">
-                  <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                    {file.type.startsWith("image/") ? (
-                      <Camera className="w-4 h-4 text-blue-500" />
-                    ) : (
-                      <FileText className="w-4 h-4 text-blue-500" />
-                    )}
-                  </div>
-                  <div className="flex flex-col truncate">
-                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">
-                      {file.name}
-                    </span>
-                    <span className="text-[10px] text-gray-500">
-                      {(file.size / 1024).toFixed(1)} KB
-                    </span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => onRemoveFile(index)}
-                  className="p-1 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full text-gray-400 hover:text-red-500 transition-colors"
-                  disabled={isLoading}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

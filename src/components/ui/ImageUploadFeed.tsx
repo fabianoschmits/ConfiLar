@@ -116,26 +116,29 @@ export function ImageUploadFeed({
 
   return (
     <div className={`space-y-3 ${className}`}>
-      {currentImages.length === 0 && (
-        <UnifiedUpload
-          selectedFiles={tempFiles}
-          onFilesSelected={(files) => {
-            setTempFiles(files);
-            handleFileUpload(files);
-          }}
-          onRemoveFile={(index) =>
-            setTempFiles((prev) => prev.filter((_, i) => i !== index))
-          }
-          maxFiles={maxImages}
-          title="O que você está pensando?"
-          description="Adicione fotos ao seu post"
-          subDescription={`Até ${maxImages} imagens (JPG, PNG, WEBP)`}
-          isLoading={isUploading}
-        />
-      )}
+      <UnifiedUpload
+        selectedFiles={tempFiles}
+        onFilesSelected={(files) => {
+          setTempFiles(files);
+          handleFileUpload(files);
+        }}
+        onRemoveFile={(index) =>
+          setTempFiles((prev) => prev.filter((_, i) => i !== index))
+        }
+        existingUrls={currentImages}
+        onRemoveExisting={(index) => {
+          const newImages = currentImages.filter((_, i) => i !== index);
+          onImagesUpload(newImages);
+        }}
+        maxFiles={maxImages}
+        title="O que você está pensando?"
+        description="Adicione fotos ao seu post"
+        subDescription={`Até ${maxImages} imagens (JPG, PNG, WEBP)`}
+        isLoading={isUploading}
+      />
 
       {/* Barra de Progresso de Carregamento (quando já tem imagens) */}
-      {currentImages.length > 0 && (isUploading || isCompressing) && (
+      {isUploading || isCompressing ? (
         <div className="flex items-center gap-3 p-3 rounded-lg bg-primary-50/50 dark:bg-primary-950/30 border border-primary-100 dark:border-primary-900/50 animate-pulse">
           <Loader2 className="w-4 h-4 text-primary-500 animate-spin" />
           <span className="text-xs font-medium text-primary-700 dark:text-primary-400">
@@ -144,7 +147,7 @@ export function ImageUploadFeed({
               : "Subindo fotos selecionadas..."}
           </span>
         </div>
-      )}
+      ) : null}
 
       {/* Mensagem quando limite atingido */}
       {!canAddMore && (
