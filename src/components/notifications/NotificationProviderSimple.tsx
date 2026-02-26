@@ -443,32 +443,31 @@ export const NotificationProviderSimple: React.FC<
             );
             // ... resto do código ...
             try {
-              const metadata = newNotification.metadata || {};
-              const senderId = metadata.sender_id;
-              const senderName = metadata.sender_name;
-              const conversationId =
-                metadata.conversation_id || metadata.chat_id;
+              // const metadata = newNotification.metadata || {};
+              // const senderId = metadata.sender_id;
+              // const senderName = metadata.sender_name;
+              // const conversationId =
+              //   metadata.conversation_id || metadata.chat_id;
 
               console.log(
-                "💬 Notificação de mensagem recebida via realtime, abrindo chat:",
-                { senderId, senderName, conversationId },
+                "💬 Notificação de mensagem recebida via realtime. (Abertura automática desativada)",
               );
 
-              // Se tiver conversation_id, abrir com o ID da conversa
+              // Auto-open disabled as requested by user
+              /*
               if (conversationId) {
                 openChat(conversationId);
               }
-              // Se tiver sender_id, abrir chat com o usuário
               else if (senderId && senderName) {
                 openChat(senderId, senderName);
               }
-              // Caso contrário, apenas abrir a lista de conversas
               else {
-                openChat();
+                // openChat(); 
               }
+              */
             } catch (error) {
               console.error(
-                "❌ Erro ao abrir chat flutuante via realtime:",
+                "❌ Erro ao processar notificação de chat via realtime:",
                 error,
               );
             }

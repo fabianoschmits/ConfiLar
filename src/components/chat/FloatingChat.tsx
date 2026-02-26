@@ -127,10 +127,12 @@ export function FloatingChat() {
       setLastUnreadMessageCount(unreadMessageCount);
 
       // Abrir chat automaticamente se houver nova notificação
+      /* 
       if (!isOpen) {
         console.log("💬 [FloatingChat] Abrindo chat automaticamente.");
         openChat();
       }
+      */
     } else if (unreadMessageCount < lastUnreadMessageCount) {
       console.log(
         "💬 [FloatingChat] Contagem de mensagens diminuiu, sincronizando...",
