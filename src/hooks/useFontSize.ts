@@ -13,7 +13,7 @@ export function useFontSize() {
 
   // Get current font size from profile or default based on device
   const defaultFontSize =
-    typeof window !== "undefined" && window.innerWidth < 768 ? 85 : 100;
+    typeof window !== "undefined" && window.innerWidth < 768 ? 80 : 100;
   const fontSize = profile?.font_size_preference ?? defaultFontSize;
 
   /**

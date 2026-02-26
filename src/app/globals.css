@@ -494,6 +494,9 @@
 /* Apply font size scaling globally */
 html {
   font-size: calc(16px * var(--font-size-scale));
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 /* Modern Design System Components */
