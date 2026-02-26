@@ -20,6 +20,8 @@ interface ResponsiveModalProps {
   fullContent?: boolean;
   showFooterBorder?: boolean;
   showHeaderBorder?: boolean;
+  /** When true, shows the modal centered on ALL screen sizes (not as bottom-sheet on mobile) */
+  centered?: boolean;
 }
 
 export function ResponsiveModal({
@@ -35,6 +37,7 @@ export function ResponsiveModal({
   fullContent = false,
   showFooterBorder = true,
   showHeaderBorder = true,
+  centered = false,
 }: ResponsiveModalProps) {
   return (
     <DialogPrimitive.Root open={isOpen} onOpenChange={onOpenChange}>
@@ -49,18 +52,35 @@ export function ResponsiveModal({
         <DialogPrimitive.Content
           className={cn(
             "fixed z-[201] flex flex-col bg-background shadow-2xl",
-            // Mobile (Bottom Sheet)
-            "bottom-0 left-0 right-0 rounded-t-3xl w-full",
-            "data-[state=open]:animate-in data-[state=closed]:animate-out",
-            "data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full",
-            "duration-500 ease-in-out",
-            // Desktop (Centered)
-            "md:bottom-auto md:left-1/2 md:top-1/2 md:right-auto md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:max-w-2xl md:max-h-[85vh]",
-            "md:data-[state=open]:zoom-in-95 md:data-[state=closed]:zoom-out-95 md:data-[state=open]:slide-in-from-bottom-0 md:data-[state=closed]:slide-out-to-bottom-0",
-            // Background & Effects (Onboarding Style)
+            centered
+              ? [
+                  // Centered on ALL screen sizes
+                  "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-3xl w-[calc(100vw-2rem)] max-w-2xl max-h-[85dvh]",
+                  "data-[state=open]:animate-in data-[state=closed]:animate-out",
+                  "data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95",
+                  "data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
+                  "duration-300 ease-in-out",
+                ]
+              : [
+                  // Mobile (Bottom Sheet)
+                  "bottom-0 left-0 right-0 rounded-t-3xl w-full",
+                  "data-[state=open]:animate-in data-[state=closed]:animate-out",
+                  "data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full",
+                  "duration-500 ease-in-out",
+                  // Desktop (Centered)
+                  "md:bottom-auto md:left-1/2 md:top-1/2 md:right-auto md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:max-w-2xl md:max-h-[85vh]",
+                  "md:data-[state=open]:zoom-in-95 md:data-[state=closed]:zoom-out-95 md:data-[state=open]:slide-in-from-bottom-0 md:data-[state=closed]:slide-out-to-bottom-0",
+                ],
+            // Background & Effects
             "bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 overflow-hidden",
             // Height logic
-            fullContent ? "h-[92dvh] md:max-h-[95vh]" : "max-h-[92dvh]",
+            fullContent
+              ? centered
+                ? "max-h-[85dvh]"
+                : "h-[92dvh] md:max-h-[95vh]"
+              : centered
+                ? "max-h-[85dvh]"
+                : "max-h-[92dvh]",
             className,
           )}
         >

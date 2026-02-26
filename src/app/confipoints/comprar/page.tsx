@@ -359,6 +359,7 @@ export default function ComprarPontosPage() {
                   onOpenChange={(open) => !open && setExpandedPackage(null)}
                   title={activePackage?.name}
                   className="max-w-md"
+                  centered
                 >
                   {activePackage && (
                     <div className="space-y-6">
