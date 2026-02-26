@@ -296,6 +296,7 @@ export const SignUpSchema = z.object({
   bio: z.string().optional(),
   services_offered: z.array(z.string()).optional(),
   experience_years: z.string().optional(),
+  font_size_preference: z.number().optional(),
 });
 
 // Schema de Profile
@@ -320,4 +321,5 @@ export const ProfileSchema = z.object({
   experience_years: z.string().optional(),
   allow_ai_indexing: z.boolean().optional(),
   hide_ai_announcement: z.boolean().optional(),
+  font_size_preference: z.number().optional(),
 });

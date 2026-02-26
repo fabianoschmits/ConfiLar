@@ -126,9 +126,9 @@ type AuthAction =
   | { type: "SET_USER"; payload: { id: string; email: string } | null }
   | { type: "SET_PROFILE"; payload: Profile | null }
   | {
-      type: "SET_SESSION";
-      payload: { user: { id: string; email: string } } | null;
-    }
+    type: "SET_SESSION";
+    payload: { user: { id: string; email: string } } | null;
+  }
   | { type: "SET_READY"; payload: boolean }
   | { type: "RESET_AUTH" };
 
@@ -254,6 +254,7 @@ export function useAuth(
         credits_ad_premium_1d: 0,
         credits_ad_premium_7d: 0,
         allow_ai_indexing: false,
+        font_size_preference: 100,
       } as Profile;
     },
     [],
