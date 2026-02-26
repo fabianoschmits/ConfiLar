@@ -13,22 +13,14 @@ import { cn } from "@/lib/utils";
 export function FontSizeControl() {
   const { fontSize, updateFontSize } = useFontSize();
   const [localSize, setLocalSize] = useState(fontSize);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Sync local state with profile font size
+  // Sync local state with profile font size (only when not editing/saving)
   useEffect(() => {
-    setLocalSize(fontSize);
-  }, [fontSize]);
-
-  // Debounced update to database
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (localSize !== fontSize) {
-        updateFontSize(localSize);
-      }
-    }, 500); // Wait 500ms after user stops adjusting
-
-    return () => clearTimeout(timer);
-  }, [localSize, fontSize, updateFontSize]);
+    if (!isSaving) {
+      setLocalSize(fontSize);
+    }
+  }, [fontSize, isSaving]);
 
   const handleDecrease = () => {
     setLocalSize((prev) => Math.max(75, prev - 5));
@@ -42,13 +34,26 @@ export function FontSizeControl() {
     setLocalSize(Number(e.target.value));
   };
 
+  const handleSave = async () => {
+    if (localSize === fontSize) return;
+
+    setIsSaving(true);
+    try {
+      await updateFontSize(localSize);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const hasChanges = localSize !== fontSize;
+
   return (
-    <div className="w-full px-2 py-1.5">
+    <div className="w-full px-2 py-1.5 space-y-3">
       <div className="flex items-center gap-2">
         {/* Decrease Button - Small A */}
         <button
           onClick={handleDecrease}
-          disabled={localSize <= 75}
+          disabled={localSize <= 75 || isSaving}
           className={cn(
             "flex items-center justify-center w-7 h-7 rounded-full transition-all flex-shrink-0",
             "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700",
@@ -71,15 +76,17 @@ export function FontSizeControl() {
             step="5"
             value={localSize}
             onChange={handleSliderChange}
+            disabled={isSaving}
             className={cn(
               "w-full h-1.5 rounded-lg appearance-none cursor-pointer",
               "bg-gray-200 dark:bg-gray-700",
+              "disabled:opacity-50 disabled:cursor-not-allowed",
               // Webkit (Chrome, Safari, Edge)
               "[&::-webkit-slider-thumb]:appearance-none",
               "[&::-webkit-slider-thumb]:w-5",
               "[&::-webkit-slider-thumb]:h-5",
               "[&::-webkit-slider-thumb]:rounded-full",
-              "[&::-webkit-slider-thumb]:bg-[#00b0b0]", // Brand color for visibility
+              "[&::-webkit-slider-thumb]:bg-[#00b0b0]",
               "[&::-webkit-slider-thumb]:border-2",
               "[&::-webkit-slider-thumb]:border-white",
               "[&::-webkit-slider-thumb]:dark:border-gray-900",
@@ -109,7 +116,7 @@ export function FontSizeControl() {
         {/* Increase Button - Large A */}
         <button
           onClick={handleIncrease}
-          disabled={localSize >= 150}
+          disabled={localSize >= 150 || isSaving}
           className={cn(
             "flex items-center justify-center w-7 h-7 rounded-full transition-all flex-shrink-0",
             "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700",
@@ -130,6 +137,28 @@ export function FontSizeControl() {
           </span>
         </div>
       </div>
+
+      {/* Save Button */}
+      <button
+        onClick={handleSave}
+        disabled={!hasChanges || isSaving}
+        className={cn(
+          "w-full py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2",
+          hasChanges
+            ? "bg-[#00b0b0] text-white hover:bg-[#009090] shadow-sm"
+            : "bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed",
+          isSaving && "opacity-80",
+        )}
+      >
+        {isSaving ? (
+          <>
+            <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            Salvando...
+          </>
+        ) : (
+          "Salvar Preferência"
+        )}
+      </button>
     </div>
   );
 }

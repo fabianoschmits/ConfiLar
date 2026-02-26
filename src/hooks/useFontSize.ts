@@ -12,8 +12,7 @@ export function useFontSize() {
   const { user, profile, updateProfile } = useAuthContext();
 
   // Get current font size from profile or default based on device
-  const defaultFontSize =
-    typeof window !== "undefined" && window.innerWidth < 768 ? 80 : 100;
+  const defaultFontSize = 100;
   const fontSize = profile?.font_size_preference ?? defaultFontSize;
 
   /**
