@@ -233,45 +233,41 @@ function generateEmailContent(template: string, data: any, subject: string) {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Nova Mensagem - ConfiLar</title>
             <style>
-              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
-              .container { max-width: 600px; margin: 0 auto; background: #ffffff; }
-              .header { background: linear-gradient(135deg, #00b0b0 0%, #008c8c 100%); color: white; padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0; }
-              .content { background: #f9fafb; padding: 40px 30px; border-radius: 0 0 12px 12px; }
-              .button { display: inline-block; background: linear-gradient(135deg, #00b0b0 0%, #008c8c 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: 600; box-shadow: 0 4px 12px rgba(0, 176, 176, 0.3); }
-              .message-box { background: white; padding: 20px; border-left: 4px solid #00b0b0; margin: 20px 0; border-radius: 8px; }
-              .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+              @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+              body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: #f1f5f9; color: #1e293b; }
+              .wrapper { width: 100%; background-color: #f1f5f9; padding-bottom: 40px; }
+              .main { margin: 0 auto; width: 100%; max-width: 600px; border-spacing: 0; }
+              .header { padding: 40px 0 20px 0; text-align: center; }
+              .logo { width: 180px; height: auto; }
+              .card { background-color: #ffffff; border-radius: 16px; padding: 48px 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; }
+              .title { font-size: 24px; font-weight: 700; color: #0f172a; margin-bottom: 16px; text-align: center; }
+              .text { font-size: 16px; line-height: 24px; color: #475569; margin-bottom: 32px; text-align: center; }
+              .message-box { background-color: #f8fafc; border-radius: 12px; padding: 24px; margin-bottom: 32px; border: 1px solid #e2e8f0; font-style: italic; color: #334155; text-align: center; }
+              .button-wrapper { text-align: center; margin-bottom: 16px; }
+              .button { background-color: #00b0b0; color: #ffffff !important; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: 600; display: inline-block; }
+              .footer { text-align: center; padding: 20px 32px; font-size: 13px; color: #64748b; }
             </style>
           </head>
           <body>
-            <div class="container">
-              <div class="header">
-                <h1>💬 Nova Mensagem</h1>
-                <p>ConfiLar - Conectando você aos melhores profissionais</p>
-              </div>
-              <div class="content">
-                <h2>Olá ${userName}!</h2>
-                <p>Você recebeu uma nova mensagem no ConfiLar:</p>
-                
-                <div class="message-box">
-                  <strong>De:</strong> ${senderName}<br>
-                  ${data.message ? `<strong>Mensagem:</strong> ${data.message.substring(0, 100)}${data.message.length > 100 ? "..." : ""}<br>` : ""}
-                  <strong>Status:</strong> Nova(s) mensagem(ns) recebida(s)
-                </div>
-                
-                <p>Entre no ConfiLar para ver e responder às mensagens!</p>
-                
-                <div style="text-align: center;">
-                  <a href="${data.actionUrl || baseUrl}" class="button">🚀 Entrar no ConfiLar</a>
-                </div>
-                
-                <p style="margin-top: 30px; font-size: 14px; color: #666; text-align: center;">
-                  Este email foi enviado automaticamente. Para parar de receber notificações, 
-                  <a href="${baseUrl}/configuracoes">clique aqui</a>.
-                </p>
-              </div>
-              <div class="footer">
-                <p><strong>ConfiLar</strong> - Conectando você aos melhores profissionais</p>
-              </div>
+            <div class="wrapper">
+              <center>
+                <table class="main">
+                  <tr><td class="header"><img src="https://img.lightshot.app/jUaAq4CZS-myxiHUiOLMiA.png" alt="ConfiLar" class="logo"></td></tr>
+                  <tr>
+                    <td>
+                      <div class="card">
+                        <h1 class="title">Você recebeu uma mensagem</h1>
+                        <p class="text">Olá <strong>${userName}</strong>! 👋<br><br>Você recebeu uma nova mensagem de <strong>${senderName}</strong> no ConfiLar.</p>
+                        ${data.message ? `<div class="message-box">"${data.message.substring(0, 200)}${data.message.length > 200 ? "..." : ""}"</div>` : ""}
+                        <div class="button-wrapper">
+                          <a href="${data.actionUrl || baseUrl + "/chat"}" class="button">Responder Agora</a>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr><td class="footer"><p><strong>ConfiLar</strong> — Tecnologia a serviço da sua casa.</p></td></tr>
+                </table>
+              </center>
             </div>
           </body>
           </html>
@@ -296,9 +292,7 @@ ConfiLar - Conectando você aos melhores profissionais
       };
 
     case "review":
-      const stars =
-        "★".repeat(data.reviewRating || 5) +
-        "☆".repeat(5 - (data.reviewRating || 5));
+      const stars = "⭐".repeat(data.reviewRating || 5);
       return {
         html: `
           <!DOCTYPE html>
@@ -306,49 +300,51 @@ ConfiLar - Conectando você aos melhores profissionais
           <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Nova Avaliação - ConfiLar</title>
+            <title>Nova Recomendação - ConfiLar</title>
             <style>
-              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
-              .container { max-width: 600px; margin: 0 auto; background: #ffffff; }
-              .header { background: linear-gradient(135deg, #00b0b0 0%, #008c8c 100%); color: white; padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0; }
-              .content { background: #f9fafb; padding: 40px 30px; border-radius: 0 0 12px 12px; }
-              .button { display: inline-block; background: linear-gradient(135deg, #00b0b0 0%, #008c8c 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: 600; box-shadow: 0 4px 12px rgba(0, 176, 176, 0.3); }
-              .review-box { background: white; padding: 30px; border-left: 4px solid #00b0b0; margin: 20px 0; border-radius: 8px; text-align: center; }
-              .stars { color: #00b0b0; font-size: 28px; margin: 20px 0; }
-              .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+              @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+              body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: #f1f5f9; color: #1e293b; }
+              .wrapper { width: 100%; background-color: #f1f5f9; padding-bottom: 40px; }
+              .main { margin: 0 auto; width: 100%; max-width: 600px; border-spacing: 0; }
+              .header { padding: 40px 0 20px 0; text-align: center; }
+              .logo { width: 180px; height: auto; }
+              .card { background-color: #ffffff; border-radius: 16px; padding: 48px 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; }
+              .title { font-size: 24px; font-weight: 700; color: #0f172a; margin-bottom: 16px; text-align: center; }
+              .text { font-size: 16px; line-height: 24px; color: #475569; margin-bottom: 32px; text-align: center; }
+              .recommendation-card { background: linear-gradient(135deg, #00b0b0 0%, #008a8a 100%); border-radius: 16px; padding: 32px; text-align: center; margin-bottom: 32px; color: #ffffff; }
+              .stars { font-size: 24px; margin-bottom: 12px; }
+              .rec-text { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+              .rec-subtext { font-size: 14px; opacity: 0.9; }
+              .button-wrapper { text-align: center; margin-bottom: 16px; }
+              .button { background-color: #ffffff; color: #00b0b0 !important; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: 700; display: inline-block; }
+              .footer { text-align: center; padding: 20px 32px; font-size: 13px; color: #64748b; }
             </style>
           </head>
           <body>
-            <div class="container">
-              <div class="header">
-                <h1>⭐ Nova Avaliação</h1>
-                <p>ConfiLar - Conectando você aos melhores profissionais</p>
-              </div>
-              <div class="content">
-                <h2>Olá ${userName}!</h2>
-                <p>Você recebeu uma nova avaliação:</p>
-                
-                <div class="review-box">
-                  <div class="stars">${stars}</div>
-                  <strong>Avaliação:</strong> ${data.reviewRating || 5}/5 estrelas<br><br>
-                  ${data.reviewComment ? `<strong>Comentário:</strong><br>${data.reviewComment}<br><br>` : ""}
-                  <strong>De:</strong> ${senderName}
-                </div>
-                
-                <p>Obrigado pelo excelente trabalho!</p>
-                
-                <div style="text-align: center;">
-                  <a href="${data.actionUrl || baseUrl + "/avaliacoes"}" class="button">⭐ Ver Avaliação</a>
-                </div>
-                
-                <p style="margin-top: 30px; font-size: 14px; color: #666; text-align: center;">
-                  Este email foi enviado automaticamente. Para parar de receber notificações, 
-                  <a href="${baseUrl}/configuracoes">clique aqui</a>.
-                </p>
-              </div>
-              <div class="footer">
-                <p><strong>ConfiLar</strong> - Conectando você aos melhores profissionais</p>
-              </div>
+            <div class="wrapper">
+              <center>
+                <table class="main">
+                  <tr><td class="header"><img src="https://img.lightshot.app/jUaAq4CZS-myxiHUiOLMiA.png" alt="ConfiLar" class="logo"></td></tr>
+                  <tr>
+                    <td>
+                      <div class="card">
+                        <h1 class="title">Parabéns! Nova avaliação</h1>
+                        <p class="text">Olá <strong>${userName}</strong>! 👋<br><br>Seu excelente trabalho está sendo reconhecido! Você recebeu uma nova recomendação de <strong>${senderName}</strong> no ConfiLar.</p>
+                        <div class="recommendation-card">
+                          <div class="stars">${stars}</div>
+                          <div class="rec-text">Avaliação ${data.reviewRating || 5} Estrelas</div>
+                          <div class="rec-subtext">"${data.reviewComment || "O cliente não deixou um comentário, mas avaliou seu serviço!"}"</div>
+                          <div class="button-wrapper" style="margin-top: 24px; margin-bottom: 0;">
+                            <a href="${data.actionUrl || baseUrl + "/perfil"}" class="button">Ver no Perfil</a>
+                          </div>
+                        </div>
+                        <p class="text" style="font-size: 14px; margin-bottom: 0;">Continue assim! Profissionais bem avaliados têm 3x mais chances de fechar novos serviços.</p>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr><td class="footer"><p><strong>ConfiLar</strong> — Valorizando quem faz bem feito.</p></td></tr>
+                </table>
+              </center>
             </div>
           </body>
           </html>
@@ -374,7 +370,6 @@ ConfiLar - Conectando você aos melhores profissionais
       };
 
     default:
-      // Template genérico para outros tipos
       return {
         html: `
           <!DOCTYPE html>
@@ -384,41 +379,45 @@ ConfiLar - Conectando você aos melhores profissionais
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>${subject} - ConfiLar</title>
             <style>
-              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
-              .container { max-width: 600px; margin: 0 auto; background: #ffffff; }
-              .header { background: linear-gradient(135deg, #00b0b0 0%, #008c8c 100%); color: white; padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0; }
-              .content { background: #f9fafb; padding: 40px 30px; border-radius: 0 0 12px 12px; }
-              .button { display: inline-block; background: linear-gradient(135deg, #00b0b0 0%, #008c8c 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: 600; box-shadow: 0 4px 12px rgba(0, 176, 176, 0.3); }
-              .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+              @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+              body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: #f1f5f9; color: #1e293b; }
+              .wrapper { width: 100%; background-color: #f1f5f9; padding-bottom: 40px; }
+              .main { margin: 0 auto; width: 100%; max-width: 600px; border-spacing: 0; }
+              .header { padding: 40px 0 20px 0; text-align: center; }
+              .logo { width: 180px; height: auto; }
+              .card { background-color: #ffffff; border-radius: 16px; padding: 48px 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; }
+              .title { font-size: 24px; font-weight: 700; color: #0f172a; margin-bottom: 16px; text-align: center; }
+              .text { font-size: 16px; line-height: 24px; color: #475569; margin-bottom: 32px; text-align: center; }
+              .button-wrapper { text-align: center; margin-bottom: 16px; }
+              .button { background-color: #00b0b0; color: #ffffff !important; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: 600; display: inline-block; }
+              .footer { text-align: center; padding: 20px 32px; font-size: 13px; color: #64748b; }
             </style>
           </head>
           <body>
-            <div class="container">
-              <div class="header">
-                <h1>🔔 Notificação</h1>
-                <p>ConfiLar - Conectando você aos melhores profissionais</p>
-              </div>
-              <div class="content">
-                <h2>Olá ${userName}!</h2>
-                <p>${subject}</p>
-                ${data.message ? `<p>${data.message}</p>` : ""}
-                ${
-                  data.actionUrl
-                    ? `
-                <div style="text-align: center;">
-                  <a href="${data.actionUrl}" class="button">Ver Detalhes</a>
-                </div>
-                `
-                    : ""
-                }
-                <p style="margin-top: 30px; font-size: 14px; color: #666; text-align: center;">
-                  Este email foi enviado automaticamente. Para parar de receber notificações, 
-                  <a href="${baseUrl}/configuracoes">clique aqui</a>.
-                </p>
-              </div>
-              <div class="footer">
-                <p><strong>ConfiLar</strong> - Conectando você aos melhores profissionais</p>
-              </div>
+            <div class="wrapper">
+              <center>
+                <table class="main">
+                  <tr><td class="header"><img src="https://img.lightshot.app/jUaAq4CZS-myxiHUiOLMiA.png" alt="ConfiLar" class="logo"></td></tr>
+                  <tr>
+                    <td>
+                      <div class="card">
+                        <h1 class="title">${subject}</h1>
+                        <p class="text">Olá <strong>${userName}</strong>! 👋<br><br>${data.message || "Você tem uma nova atualização no ConfiLar."}</p>
+                        ${
+                          data.actionUrl
+                            ? `
+                        <div class="button-wrapper">
+                          <a href="${data.actionUrl}" class="button">Ver Detalhes</a>
+                        </div>
+                        `
+                            : ""
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                  <tr><td class="footer"><p><strong>ConfiLar</strong> — Tecnologia a serviço da sua casa.</p></td></tr>
+                </table>
+              </center>
             </div>
           </body>
           </html>
