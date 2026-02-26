@@ -32,6 +32,7 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
 import { PullToRefresh } from "@/components/ui/PullToRefresh";
+import { LogoSplashScreen } from "@/components/common/LogoSplashScreen";
 import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 
@@ -213,7 +214,7 @@ export default function FeedPage() {
     } as any);
   }
 
-  if (!mounted) return null;
+  if (!mounted) return <LogoSplashScreen />;
 
   return (
     <MainLayout requireAuth={false}>

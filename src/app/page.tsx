@@ -39,7 +39,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHomeStats, formatStatNumber } from "@/hooks/useHomeStats";
-import { LandingPageSkeleton } from "@/components/ui/skeleton";
+import { LogoSplashScreen } from "@/components/common/LogoSplashScreen";
 import { supabase } from "@/lib/supabase";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { useTranslations } from "next-intl";
@@ -104,8 +104,7 @@ function HomeContent() {
     return () => clearTimeout(timer);
   }, []);
 
-  if (loading || !mounted) return <LandingPageSkeleton />;
-  if (user) return null;
+  if (loading || !mounted || user) return <LogoSplashScreen />;
 
   return (
     <PublicLayout>
@@ -993,7 +992,7 @@ function HomeContent() {
 export default function Home() {
   return (
     <HomePageLayout>
-      <Suspense fallback={<LandingPageSkeleton />}>
+      <Suspense fallback={<LogoSplashScreen />}>
         <HomeContent />
       </Suspense>
     </HomePageLayout>

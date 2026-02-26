@@ -12,6 +12,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useAdvancedSearch } from "@/hooks/useAdvancedSearch";
 import { ReferralBadge } from "@/components/referral/ReferralBadge";
+import { LogoSplashScreen } from "@/components/common/LogoSplashScreen";
 import { DashboardSkeleton } from "@/components/ui/skeleton";
 import {
   Users,
@@ -54,7 +55,7 @@ export default function HomePage() {
   }, [executeSearch]);
 
   if (!mounted) {
-    return <DashboardSkeleton />;
+    return <LogoSplashScreen />;
   }
 
   // Passos para clientes
