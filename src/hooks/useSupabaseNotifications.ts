@@ -365,18 +365,20 @@ export function useSupabaseNotifications() {
                 { senderId, senderName, conversationId },
               );
 
-              // Se tiver conversation_id, abrir com o ID da conversa
-              if (conversationId) {
-                openChat(conversationId);
-              }
-              // Se tiver sender_id, abrir chat com o usuário
-              else if (senderId && senderName) {
-                openChat(senderId, senderName);
-              }
-              // Caso contrário, apenas abrir a lista de conversas
-              else {
-                openChat();
-              }
+              /*
+               // Se tiver conversation_id, abrir com o ID da conversa
+               if (conversationId) {
+                 openChat(conversationId);
+               }
+               // Se tiver sender_id, abrir chat com o usuário
+               else if (senderId && senderName) {
+                 openChat(senderId, senderName);
+               }
+               // Caso contrário, apenas abrir a lista de conversas
+               else {
+                 openChat();
+               }
+               */
             } catch (error) {
               console.error("❌ Erro ao abrir chat flutuante:", error);
             }
