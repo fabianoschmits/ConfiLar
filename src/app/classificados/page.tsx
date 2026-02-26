@@ -948,43 +948,88 @@ export default function ClassificadosPage() {
                           images: selectedAd?.images,
                           location_state: selectedAd?.location_state,
                           location_city: selectedAd?.location_city,
+                          isPremium: selectedAd?.is_premium,
                         }}
                         onSubmit={async (data) => {
                           if (!user || !editingAdId) return;
                           try {
                             setIsEditingAd(true);
-                            const updateData = {
-                              title: data.title,
-                              description: data.description,
-                              category: data.category,
-                              location_state: data.location_state,
-                              location_city: data.location_city,
-                              ad_type:
-                                data.ad_type === "offer"
-                                  ? "oferecer"
-                                  : "procurar",
-                              images: data.images,
-                              price_range: data.price
-                                ? data.price.toString()
-                                : null,
-                            };
 
-                            const { error } = await supabase
-                              .from("classified_ads")
-                              .update(updateData)
-                              .eq("id", editingAdId)
-                              .eq("user_id", user.id);
+                            if (data.isPremium && !selectedAd?.is_premium) {
+                              // Caso o usuário esteja transformando um anúncio comum em premium (Upgrade)
+                              const response = await fetch(
+                                "/api/classifieds/premium",
+                                {
+                                  method: "POST",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                  },
+                                  credentials: "include",
+                                  body: JSON.stringify({
+                                    adId: editingAdId,
+                                    title: data.title,
+                                    description: data.description,
+                                    category: data.category,
+                                    ad_type: data.ad_type,
+                                    price: data.price,
+                                    images: data.images,
+                                    durationDays: data.durationDays,
+                                    pointsToSpend: data.pointsToSpend || 0,
+                                    useCreditType: data.useCreditType,
+                                    location_country: "BR",
+                                    location_state: data.location_state,
+                                    location_city: data.location_city,
+                                  }),
+                                },
+                              );
 
-                            if (error) throw error;
+                              const result = await response.json();
 
-                            toast.success("Anúncio atualizado com sucesso!");
+                              if (!response.ok) {
+                                throw new Error(
+                                  result.error ||
+                                    "Erro ao fazer upgrade para premium",
+                                );
+                              }
+
+                              toast.success("Upgrade para Premium concluído!");
+                            } else {
+                              // Edição normal (ou já era premium e está apenas editando dados básicos)
+                              const updateData = {
+                                title: data.title,
+                                description: data.description,
+                                category: data.category,
+                                location_state: data.location_state,
+                                location_city: data.location_city,
+                                ad_type:
+                                  data.ad_type === "offer"
+                                    ? "oferecer"
+                                    : "procurar",
+                                images: data.images,
+                                price_range: data.price
+                                  ? data.price.toString()
+                                  : null,
+                              };
+
+                              const { error } = await supabase
+                                .from("classified_ads")
+                                .update(updateData)
+                                .eq("id", editingAdId)
+                                .eq("user_id", user.id);
+
+                              if (error) throw error;
+                              toast.success("Anúncio atualizado com sucesso!");
+                            }
+
                             setShowEditDialog(false);
                             setEditingAdId(null);
                             setSelectedAd(null);
                             await loadClassifiedAds();
-                          } catch (error) {
+                          } catch (error: any) {
                             console.error("Erro ao editar anúncio:", error);
-                            toast.error("Erro ao editar anúncio");
+                            toast.error("Erro ao editar anúncio", {
+                              description: error?.message,
+                            });
                           } finally {
                             setIsEditingAd(false);
                           }

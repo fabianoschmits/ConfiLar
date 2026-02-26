@@ -14,6 +14,7 @@ export const POST = withAuth(
       const authenticatedUserId = user.id;
 
       const {
+        adId, // Adicionar suporte para ID de anúncio existente
         title,
         description,
         category,
@@ -30,7 +31,30 @@ export const POST = withAuth(
 
       const adminSupabase = createAdminSupabaseClient();
 
-      // 1. Processar pagamento (Pontos ou Créditos) ANTES de criar o anúncio
+      // Se adId for fornecido, verificar se o anúncio existe e pertence ao usuário
+      if (adId) {
+        const { data: existingAd, error: checkError } = await adminSupabase
+          .from("classified_ads")
+          .select("user_id, is_premium")
+          .eq("id", adId)
+          .single();
+
+        if (checkError || !existingAd) {
+          return NextResponse.json(
+            { error: "Anúncio não encontrado" },
+            { status: 404 },
+          );
+        }
+
+        if (existingAd.user_id !== authenticatedUserId) {
+          return NextResponse.json(
+            { error: "Você não tem permissão para editar este anúncio" },
+            { status: 403 },
+          );
+        }
+      }
+
+      // 1. Processar pagamento (Pontos ou Créditos) ANTES de criar/atualizar o anúncio
       if (useCreditType) {
         // Verificar créditos no perfil
         const { data: profileData } = await adminSupabase
@@ -82,7 +106,9 @@ export const POST = withAuth(
             p_user_id: authenticatedUserId,
             p_points: pointsToSpend,
             p_source: "premium_ad",
-            p_description: `Criou anúncio premium (${durationDays} dias)`,
+            p_description: adId
+              ? `Upgrade para anúncio premium (${durationDays} dias)`
+              : `Criou anúncio premium (${durationDays} dias)`,
           },
         );
 
@@ -98,7 +124,7 @@ export const POST = withAuth(
         }
       }
 
-      // 2. Criar anúncio
+      // 2. Criar ou Atualizar anúncio
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + durationDays);
 
@@ -108,44 +134,66 @@ export const POST = withAuth(
         .eq("id", authenticatedUserId)
         .single();
 
-      const { data: ad, error: adError } = await adminSupabase
-        .from("classified_ads")
-        .insert({
-          user_id: authenticatedUserId,
-          user_name: profile?.full_name || "Usuário",
-          user_type: profile?.user_type || "client",
-          title,
-          description,
-          category,
-          location_city,
-          location_state,
-          location_country: location_country || "BR",
-          ad_type: ad_type === "offer" ? "oferecer" : "procurar",
-          price_range: price ? price.toString() : null,
-          contact_phone: profile?.contact_phone || null,
-          contact_email: profile?.email || null,
-          images: images || [],
-          is_active: true,
-          is_premium: true,
-          is_featured: true,
-          premium_points_spent: useCreditType ? 0 : pointsToSpend,
-          premium_expires_at: expiresAt.toISOString(),
-          premium_highlight_color: "#FFD700",
-        })
-        .select()
-        .single();
+      const adPayload = {
+        user_id: authenticatedUserId,
+        user_name: profile?.full_name || "Usuário",
+        user_type: profile?.user_type || "client",
+        title,
+        description,
+        category,
+        location_city,
+        location_state,
+        location_country: location_country || "BR",
+        ad_type: ad_type === "offer" ? "oferecer" : "procurar",
+        price_range: price ? price.toString() : null,
+        contact_phone: profile?.contact_phone || null,
+        contact_email: profile?.email || null,
+        images: images || [],
+        is_active: true,
+        is_premium: true,
+        is_featured: true,
+        premium_points_spent: useCreditType ? 0 : pointsToSpend,
+        premium_expires_at: expiresAt.toISOString(),
+        premium_highlight_color: "#FFD700",
+      };
 
-      if (adError) {
-        console.error("Erro ao inserir anúncio:", adError);
-        // NOTA: Em um sistema ideal, aqui deveríamos estornar os pontos/créditos se a inserção falhar.
-        // Mas como o perfil está sendo debitado com sucesso, a falha aqui é rara.
-        return NextResponse.json(
-          { error: "Erro ao registrar anúncio no banco de dados" },
-          { status: 500 },
-        );
+      let resultAd;
+      if (adId) {
+        // Atualizar anúncio existente (Upgrade)
+        const { data, error: updateError } = await adminSupabase
+          .from("classified_ads")
+          .update(adPayload)
+          .eq("id", adId)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error("Erro ao atualizar anúncio para premium:", updateError);
+          return NextResponse.json(
+            { error: "Erro ao atualizar anúncio para premium" },
+            { status: 500 },
+          );
+        }
+        resultAd = data;
+      } else {
+        // Criar novo anúncio
+        const { data, error: adError } = await adminSupabase
+          .from("classified_ads")
+          .insert(adPayload)
+          .select()
+          .single();
+
+        if (adError) {
+          console.error("Erro ao inserir anúncio:", adError);
+          return NextResponse.json(
+            { error: "Erro ao registrar anúncio no banco de dados" },
+            { status: 500 },
+          );
+        }
+        resultAd = data;
       }
 
-      return NextResponse.json({ success: true, ad });
+      return NextResponse.json({ success: true, ad: resultAd });
     } catch (error) {
       console.error("Erro na API de anúncio premium:", error);
       return NextResponse.json(

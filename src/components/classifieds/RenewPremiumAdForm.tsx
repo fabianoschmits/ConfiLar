@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Crown, Coins, X } from "lucide-react";
+import { Crown, Coins, X, Zap } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { usePremiumAd } from "@/hooks/usePremiumAd";
 import { usePoints } from "@/hooks/usePoints";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { PREMIUM_PRICES } from "@/constants/premiumPrices";
 
@@ -26,11 +27,10 @@ export function RenewPremiumAdForm({
   onSubmit,
   onCancel,
 }: RenewPremiumAdFormProps) {
-  const { user } = useAuthContext();
+  const { user, profile } = useAuthContext();
   const { balance } = usePoints(user?.id);
   const { renewPremiumAd, isProcessing } = usePremiumAd({
     onSuccess: () => {
-      toast.success("Anúncio premium renovado com sucesso! 🌟");
       onSubmit();
     },
     onError: (error) => {
@@ -38,12 +38,44 @@ export function RenewPremiumAdForm({
     },
   });
 
+  // States for fresh credits
+  const [credits1d, setCredits1d] = useState(
+    profile?.credits_ad_premium_1d || 0,
+  );
+  const [credits7d, setCredits7d] = useState(
+    profile?.credits_ad_premium_7d || 0,
+  );
+
+  // Fetch latest credits on mount
+  useEffect(() => {
+    async function fetchCredits() {
+      if (!user?.id) return;
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("credits_ad_premium_1d, credits_ad_premium_7d")
+          .eq("id", user.id)
+          .single();
+
+        if (data) {
+          setCredits1d(data.credits_ad_premium_1d || 0);
+          setCredits7d(data.credits_ad_premium_7d || 0);
+        }
+      } catch (err) {
+        console.error("Erro ao buscar créditos:", err);
+      }
+    }
+    fetchCredits();
+  }, [user?.id]);
+
   const [formData, setFormData] = useState<{
     pointsToSpend: number;
     durationDays: number;
+    useCreditType?: "1d" | "7d";
   }>({
     pointsToSpend: PREMIUM_PRICES.AD_1_DAY.POINTS,
     durationDays: 1,
+    useCreditType: profile?.credits_ad_premium_1d ? "1d" : undefined,
   });
 
   const premiumOptions = [
@@ -81,9 +113,12 @@ export function RenewPremiumAdForm({
     },
   ];
 
-  const canAfford = balance?.balance
-    ? balance.balance >= formData.pointsToSpend
-    : false;
+  const hasCredit1Day = credits1d > 0;
+  const hasCredit7Days = credits7d > 0;
+
+  const canAfford =
+    !!formData.useCreditType ||
+    (balance?.balance ? balance.balance >= formData.pointsToSpend : false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,8 +128,15 @@ export function RenewPremiumAdForm({
       return;
     }
 
-    await renewPremiumAd(adId, formData.pointsToSpend, formData.durationDays);
+    await renewPremiumAd(
+      adId,
+      formData.useCreditType ? 0 : formData.pointsToSpend,
+      formData.durationDays,
+      formData.useCreditType,
+    );
   };
+
+  const currentBalance = balance?.balance || 0;
 
   return (
     <div className="space-y-4">
@@ -130,56 +172,81 @@ export function RenewPremiumAdForm({
             Escolha a duração do destaque:
           </Label>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {premiumOptions.map((option) => (
-              <Card
-                key={option.points}
-                className={`cursor-pointer transition-all ${formData.pointsToSpend === option.points
-                    ? "ring-2 ring-[#00b0b0] bg-[#00b0b0]/5 dark:bg-[#00b0b0]/10 border-[#00b0b0]/30 dark:border-[#00b0b0]/50 shadow-[0_0_15px_rgba(0,176,176,0.1)]"
-                    : "hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-700"
-                  } ${!canAfford && option.points > (balance?.balance || 0) ? "opacity-50 cursor-not-allowed" : ""}`}
-                onClick={() => {
-                  if (canAfford || option.points <= (balance?.balance || 0)) {
-                    setFormData((prev) => ({
-                      ...prev,
-                      pointsToSpend: option.points,
-                      durationDays: option.days,
-                    }));
-                  }
-                }}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">
-                      {option.label}
-                    </span>
-                    {option.badge && (
-                      <Badge
-                        variant="secondary"
-                        className="text-xs"
-                        style={{
-                          backgroundColor: option.color + "20",
-                          color: option.color,
-                        }}
-                      >
-                        {option.badge}
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                    {option.description}
-                  </p>
-                  <div className="flex items-center gap-1 text-sm font-medium text-gray-900 dark:text-gray-100">
-                    <Coins className="h-4 w-4 text-[#00b0b0]" />
-                    <span>{option.points.toLocaleString("pt-BR")} pontos</span>
-                  </div>
-                  {option.points > (balance?.balance || 0) && (
-                    <p className="text-xs text-red-600 dark:text-red-400 mt-2">
-                      Saldo insuficiente
+            {premiumOptions.map((option) => {
+              const isCreditAvailable =
+                (option.days === 1 && hasCredit1Day) ||
+                (option.days === 7 && hasCredit7Days);
+              const isSelected = formData.durationDays === option.days;
+              const hasBalance = currentBalance >= option.points;
+
+              return (
+                <Card
+                  key={option.days}
+                  className={`relative cursor-pointer transition-all ${
+                    isSelected
+                      ? "ring-2 ring-[#00b0b0] bg-[#00b0b0]/5 dark:bg-[#00b0b0]/10 border-[#00b0b0]/30 dark:border-[#00b0b0]/50 shadow-[0_0_15px_rgba(0,176,176,0.1)]"
+                      : "hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-700"
+                  } ${!isCreditAvailable && !hasBalance ? "opacity-50 cursor-not-allowed" : ""}`}
+                  onClick={() => {
+                    if (isCreditAvailable || hasBalance) {
+                      setFormData({
+                        pointsToSpend: option.points,
+                        durationDays: option.days,
+                        useCreditType:
+                          option.days === 1 && hasCredit1Day
+                            ? "1d"
+                            : option.days === 7 && hasCredit7Days
+                              ? "7d"
+                              : undefined,
+                      });
+                    }
+                  }}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold text-gray-900 dark:text-gray-100">
+                        {option.label}
+                      </span>
+                      {option.badge && !isCreditAvailable && (
+                        <Badge
+                          variant="secondary"
+                          className="text-xs"
+                          style={{
+                            backgroundColor: option.color + "20",
+                            color: option.color,
+                          }}
+                        >
+                          {option.badge}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                      {option.description}
                     </p>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+
+                    {isCreditAvailable ? (
+                      <div className="flex items-center gap-1 text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                        <Zap className="h-4 w-4" fill="currentColor" />
+                        <span>GRÁTIS</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 text-sm font-medium text-gray-900 dark:text-gray-100">
+                        <Coins className="h-4 w-4 text-[#00b0b0]" />
+                        <span>
+                          {option.points.toLocaleString("pt-BR")} pontos
+                        </span>
+                      </div>
+                    )}
+
+                    {!isCreditAvailable && !hasBalance && (
+                      <p className="text-xs text-red-600 dark:text-red-400 mt-2">
+                        Saldo insuficiente
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
 
@@ -190,31 +257,38 @@ export function RenewPremiumAdForm({
               Saldo atual:
             </span>
             <span className="font-semibold text-gray-900 dark:text-gray-100">
-              {balance?.balance?.toLocaleString("pt-BR") || 0} pontos
+              {currentBalance.toLocaleString("pt-BR")} pontos
             </span>
           </div>
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600 dark:text-gray-400">Custo:</span>
-            <span className="font-semibold text-[#008080] dark:text-[#00b0b0]">
-              -{formData.pointsToSpend.toLocaleString("pt-BR")} pontos
-            </span>
-          </div>
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-2 flex items-center justify-between">
-            <span className="font-semibold text-gray-900 dark:text-gray-100">
-              Saldo após:
-            </span>
             <span
-              className={`font-bold ${(balance?.balance || 0) - formData.pointsToSpend >= 0
-                  ? "text-green-600 dark:text-green-500"
-                  : "text-red-600 dark:text-red-500"
-                }`}
+              className={`font-semibold ${formData.useCreditType ? "text-emerald-600 dark:text-emerald-400" : "text-[#008080] dark:text-[#00b0b0]"}`}
             >
-              {(
-                (balance?.balance || 0) - formData.pointsToSpend
-              ).toLocaleString("pt-BR")}{" "}
-              pontos
+              {formData.useCreditType
+                ? "Crédito Premium"
+                : `-${formData.pointsToSpend.toLocaleString("pt-BR")} pontos`}
             </span>
           </div>
+          {!formData.useCreditType && (
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-2 flex items-center justify-between">
+              <span className="font-semibold text-gray-900 dark:text-gray-100">
+                Saldo após:
+              </span>
+              <span
+                className={`font-bold ${
+                  currentBalance - formData.pointsToSpend >= 0
+                    ? "text-green-600 dark:text-green-500"
+                    : "text-red-600 dark:text-red-500"
+                }`}
+              >
+                {(currentBalance - formData.pointsToSpend).toLocaleString(
+                  "pt-BR",
+                )}{" "}
+                pontos
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Botões */}

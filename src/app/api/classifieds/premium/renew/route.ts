@@ -10,7 +10,8 @@ import { createAdminSupabaseClient } from "@/lib/supabase";
 export const POST = withAuth(
   async (request: NextRequest, supabaseAuth, user) => {
     try {
-      const { adId, pointsToSpend, durationDays } = await request.json();
+      const { adId, pointsToSpend, durationDays, useCreditType } =
+        await request.json();
       const authenticatedUserId = user.id;
 
       const adminSupabase = createAdminSupabaseClient();
@@ -36,18 +37,83 @@ export const POST = withAuth(
         );
       }
 
-      // 2. Verificar saldo
-      const { data: balanceData } = await adminSupabase
-        .from("user_points_balance")
-        .select("balance")
-        .eq("user_id", authenticatedUserId)
-        .single();
+      // 2. Processar pagamento (Pontos ou Créditos)
+      if (useCreditType) {
+        // Verificar créditos no perfil
+        const { data: profileData } = await adminSupabase
+          .from("profiles")
+          .select("credits_ad_premium_1d, credits_ad_premium_7d")
+          .eq("id", authenticatedUserId)
+          .single();
 
-      if (!balanceData || balanceData.balance < pointsToSpend) {
-        return NextResponse.json(
-          { error: "Saldo insuficiente para renovação" },
-          { status: 400 },
+        const hasCredit =
+          useCreditType === "1d"
+            ? (profileData?.credits_ad_premium_1d || 0) > 0
+            : (profileData?.credits_ad_premium_7d || 0) > 0;
+
+        if (!hasCredit) {
+          return NextResponse.json(
+            {
+              error:
+                "Você não possui créditos premium disponíveis para esta duração.",
+            },
+            { status: 400 },
+          );
+        }
+
+        // Consumir crédito
+        const updateField =
+          useCreditType === "1d"
+            ? "credits_ad_premium_1d"
+            : "credits_ad_premium_7d";
+        const { data: creditRes, error: creditError } = await adminSupabase.rpc(
+          "decrement_credit_count",
+          {
+            p_user_id: authenticatedUserId,
+            p_field: updateField,
+            p_amount: 1,
+          },
         );
+
+        if (creditError || (creditRes && !creditRes.success)) {
+          return NextResponse.json(
+            { error: creditRes?.error || "Erro ao consumir crédito" },
+            { status: 500 },
+          );
+        }
+      } else if (pointsToSpend > 0) {
+        // Verificar saldo de pontos
+        const { data: balanceData } = await adminSupabase
+          .from("user_points_balance")
+          .select("balance")
+          .eq("user_id", authenticatedUserId)
+          .single();
+
+        if (!balanceData || balanceData.balance < pointsToSpend) {
+          return NextResponse.json(
+            { error: "Saldo insuficiente para renovação" },
+            { status: 400 },
+          );
+        }
+
+        // Deduzir pontos
+        const { error: pointsError } = await adminSupabase.rpc(
+          "deduct_points",
+          {
+            p_user_id: authenticatedUserId,
+            p_points: pointsToSpend,
+            p_source: "premium_ad_renewal",
+            p_description: `Renovou anúncio premium: ${ad.title}`,
+          },
+        );
+
+        if (pointsError) {
+          console.error("Erro ao deduzir pontos na renovação:", pointsError);
+          return NextResponse.json(
+            { error: "Erro ao debitar pontos" },
+            { status: 500 },
+          );
+        }
       }
 
       // 3. Renovar anúncio
@@ -59,7 +125,7 @@ export const POST = withAuth(
         .update({
           is_premium: true,
           is_featured: true,
-          premium_points_spent: pointsToSpend,
+          premium_points_spent: useCreditType ? 0 : pointsToSpend,
           premium_expires_at: expiresAt.toISOString(),
           updated_at: new Date().toISOString(),
         })
@@ -73,18 +139,6 @@ export const POST = withAuth(
           { error: "Erro ao renovar anúncio" },
           { status: 500 },
         );
-      }
-
-      // 4. Deduzir pontos
-      const { error: pointsError } = await adminSupabase.rpc("deduct_points", {
-        p_user_id: authenticatedUserId,
-        p_points: pointsToSpend,
-        p_source: "premium_ad_renewal",
-        p_description: `Renovou anúncio premium: ${ad.title}`,
-      });
-
-      if (pointsError) {
-        console.error("Erro ao deduzir pontos na renovação:", pointsError);
       }
 
       return NextResponse.json({ success: true, ad: updatedAd });

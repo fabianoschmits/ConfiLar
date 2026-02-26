@@ -100,10 +100,12 @@ export function usePremiumAd({ onSuccess, onError }: UsePremiumAdProps) {
       adId,
       pointsToSpend,
       durationDays,
+      useCreditType,
     }: {
       adId: string;
       pointsToSpend: number;
       durationDays: number;
+      useCreditType?: "1d" | "7d";
     }) => {
       if (!user) throw new Error("Usuário não autenticado");
 
@@ -118,6 +120,7 @@ export function usePremiumAd({ onSuccess, onError }: UsePremiumAdProps) {
           adId,
           pointsToSpend,
           durationDays,
+          useCreditType,
         }),
       });
 
@@ -130,9 +133,15 @@ export function usePremiumAd({ onSuccess, onError }: UsePremiumAdProps) {
       return result.ad;
     },
     onSuccess: (data, variables) => {
-      toast.success(
-        `Anúncio premium renovado com sucesso! (-${variables.pointsToSpend.toLocaleString("pt-BR")} pontos)`,
-      );
+      if (variables.useCreditType) {
+        toast.success(
+          "Anúncio premium renovado com sucesso usando crédito! 🌟",
+        );
+      } else {
+        toast.success(
+          `Anúncio premium renovado com sucesso! (-${variables.pointsToSpend.toLocaleString("pt-BR")} pontos)`,
+        );
+      }
       queryClient.invalidateQueries({ queryKey: ["classified-ads"] });
       queryClient.invalidateQueries({
         queryKey: ["user-classifieds", user?.id],
@@ -150,10 +159,16 @@ export function usePremiumAd({ onSuccess, onError }: UsePremiumAdProps) {
     adId: string,
     pointsToSpend: number,
     durationDays: number,
+    useCreditType?: "1d" | "7d",
   ) => {
     if (isProcessing || renewPremiumAdMutation.isPending) return;
 
-    renewPremiumAdMutation.mutate({ adId, pointsToSpend, durationDays });
+    renewPremiumAdMutation.mutate({
+      adId,
+      pointsToSpend,
+      durationDays,
+      useCreditType,
+    });
   };
 
   return {
