@@ -72,12 +72,8 @@ export function ImageUploadFeed({
           continue;
         }
 
-        // Comprimir imagem antes do upload (já feito pelo UnifiedUpload, mas mantemos redundância se necessário ou confiamos)
-        // O UnifiedUpload já comprime, então aqui poderíamos pular, mas para garantir:
-        const compressedFile = await compressImage(file, {
-          maxSizeMB: 1,
-          maxWidthOrHeight: 1080,
-        });
+        // O UnifiedUpload já comprime, então aqui confiamos na compressão feita lá.
+        const compressedFile = file;
 
         const fileExt = file.name.split(".").pop();
         const fileName = `feed/${Date.now()}-${Math.random().toString(36).substring(2)}-${i}.${fileExt}`;

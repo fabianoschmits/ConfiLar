@@ -18,6 +18,7 @@ import { RefreshCw } from "lucide-react";
 import { createReferral } from "@/hooks/useReferralTracking";
 import { SimpleCaptcha, useCaptcha } from "@/components/auth/SimpleCaptcha";
 import { checkCpfExists } from "@/lib/checkDuplicates";
+import { isValidCPF } from "@/lib/validation";
 
 // Função para validar CPF
 const validateCPF = (cpf: string): boolean => {
@@ -65,12 +66,12 @@ const basicSignupSchema = z
     email: z.string().email("Email inválido"),
     cpf_cnpj: z
       .string()
-      .min(11, "CPF deve ter 11 dígitos")
+      .min(11, "CPF deve ter pelo menos 11 dígitos")
       .refine((val) => {
         const cleaned = val.replace(/[^\d]+/g, "");
-        return cleaned.length === 11 || cleaned.length === 14;
-      }, "CPF inválido")
-      .refine((val) => validateCPF(val), "CPF inválido"),
+        return cleaned.length === 11;
+      }, "CPF deve ter exatamente 11 dígitos")
+      .refine((val) => isValidCPF(val), "CPF inválido"),
     referral_code: z.string().optional(), // Código de referência (opcional)
     password: z
       .string()
@@ -191,8 +192,11 @@ export function BasicSignupForm() {
     watch,
     setValue,
     formState: { errors, isValid },
+    trigger,
   } = useForm<BasicSignupFormData>({
     resolver: zodResolver(basicSignupSchema),
+    mode: "all",
+    reValidateMode: "onChange",
   });
 
   const watchedValues = watch();
@@ -224,7 +228,7 @@ export function BasicSignupForm() {
       return;
     }
 
-    if (!validateCPF(cpf)) {
+    if (!isValidCPF(cpf)) {
       setCpfExists(false);
       return;
     }

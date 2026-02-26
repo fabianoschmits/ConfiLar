@@ -113,9 +113,10 @@ export function UnifiedUpload({
 
             // Compress if it's an image
             const compressed = await compressImage(file, {
-              maxSizeMB: compressOptions?.maxSizeMB || 1,
-              maxWidthOrHeight: compressOptions?.maxWidthOrHeight || 1200,
+              maxSizeMB: compressOptions?.maxSizeMB || 0.8,
+              maxWidthOrHeight: compressOptions?.maxWidthOrHeight || 1080,
             });
+
             processedFiles.push(compressed);
           } catch (error) {
             console.error("Error processing image:", error);

@@ -611,6 +611,10 @@ export function UnifiedCreateAdForm({
             description="Mostre os detalhes do seu anúncio"
             subDescription="Arraste ou clique para selecionar (até 5 fotos)"
             isLoading={isLoading}
+            compressOptions={{
+              maxSizeMB: 0.8,
+              maxWidthOrHeight: 1080,
+            }}
           />
 
           {existingImages.length > 0 && (

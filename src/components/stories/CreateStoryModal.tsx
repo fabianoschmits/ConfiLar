@@ -127,6 +127,10 @@ export function CreateStoryModal({
             description="Selecione uma foto para o seu story"
             subDescription="PNG, JPG ou WEBP até 10MB"
             isLoading={isUploading}
+            compressOptions={{
+              maxSizeMB: 0.8,
+              maxWidthOrHeight: 1080,
+            }}
           />
         ) : (
           <div className="space-y-4">
