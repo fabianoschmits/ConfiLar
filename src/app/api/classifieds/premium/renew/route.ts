@@ -141,6 +141,23 @@ export const POST = withAuth(
         );
       }
 
+      // 4. Notificar o usuário
+      try {
+        await adminSupabase.from("notifications").insert({
+          user_id: authenticatedUserId,
+          type: "success",
+          title: "🌟 Anúncio Renovado!",
+          message: `Seu anúncio "${ad.title}" foi renovado com sucesso e continuará em destaque por mais ${durationDays} dias.`,
+          action_url: `/classificados`,
+          priority: "normal",
+          is_read: false,
+          created_at: new Date().toISOString(),
+        });
+      } catch (notifError) {
+        console.error("Erro ao criar notificação de renovação:", notifError);
+        // Não falhar a requisição se a notificação falhar
+      }
+
       return NextResponse.json({ success: true, ad: updatedAd });
     } catch (error) {
       console.error("Erro na API de renovação premium:", error);

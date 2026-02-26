@@ -325,8 +325,9 @@ export const NotificationProviderSimple: React.FC<
       user.id,
     );
 
+    const channelName = `notifications-realtime-${user.id}`;
     const channel = supabase
-      .channel("notifications-realtime")
+      .channel(channelName)
       .on(
         "postgres_changes",
         {
@@ -533,12 +534,9 @@ export const NotificationProviderSimple: React.FC<
           console.log("🔴 Conexão realtime FECHADA");
         } else if (status === "CHANNEL_ERROR") {
           console.error("❌ ERRO no canal realtime de notificações");
-          console.log("🔄 Tentando reconectar em 5 segundos...");
-          // Tentar reconectar após 5 segundos
-          setTimeout(() => {
-            console.log("🔄 Recarregando notificações (fallback)...");
-            loadNotifications();
-          }, 5000);
+          console.log("🔄 Recarregando notificações (fallback)...");
+          // Recarregar imediatamente no erro
+          loadNotifications();
         } else if (status === "TIMED_OUT") {
           console.error("⏱️ TIMEOUT na conexão realtime");
           console.log("🔄 Recarregando notificações...");

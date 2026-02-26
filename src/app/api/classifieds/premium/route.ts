@@ -193,6 +193,25 @@ export const POST = withAuth(
         resultAd = data;
       }
 
+      // 3. Notificar o usuário
+      try {
+        await adminSupabase.from("notifications").insert({
+          user_id: authenticatedUserId,
+          type: "success",
+          title: adId
+            ? "🌟 Upgrade Premium Ativado!"
+            : "🌟 Anúncio Premium Criado!",
+          message: `Seu anúncio "${title}" agora é Premium e terá destaque máximo por ${durationDays} dias.`,
+          action_url: `/classificados`,
+          priority: "high",
+          is_read: false,
+          created_at: new Date().toISOString(),
+        });
+      } catch (notifError) {
+        console.error("Erro ao criar notificação de upgrade:", notifError);
+        // Não falhar a requisição se a notificação falhar
+      }
+
       return NextResponse.json({ success: true, ad: resultAd });
     } catch (error) {
       console.error("Erro na API de anúncio premium:", error);
