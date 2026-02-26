@@ -2,11 +2,28 @@ import { supabase } from "@/lib/supabase";
 
 export interface NotificationData {
   user_id: string;
-  type: "like" | "comment" | "mention" | "share" | "reply" | "follow";
+  type:
+    | "like"
+    | "comment"
+    | "mention"
+    | "share"
+    | "reply"
+    | "follow"
+    | "message"
+    | "success"
+    | "info"
+    | "warning"
+    | "error"
+    | "review"
+    | "booking"
+    | "verification"
+    | "achievement"
+    | "support"
+    | "system";
   title: string;
   message: string;
   action_url?: string;
-  priority?: "low" | "normal" | "high";
+  priority?: "low" | "normal" | "high" | "urgent";
   metadata?: Record<string, any>;
 }
 
@@ -181,7 +198,7 @@ export class NotificationService {
     try {
       const notification: NotificationData = {
         user_id: recipientId,
-        type: "like", // Usando 'like' como fallback já que não temos 'message' definido
+        type: "message",
         title: "Nova mensagem",
         message: `${senderName}: ${messageContent.substring(0, 50)}${messageContent.length > 50 ? "..." : ""}`,
         action_url: `/chat/${chatId}`,
@@ -217,7 +234,7 @@ export class NotificationService {
     try {
       const notification: NotificationData = {
         user_id: recipientId,
-        type: "like",
+        type: "review",
         title: "Nova avaliação!",
         message: `${reviewerName} avaliou você com ${rating} estrelas`,
         action_url: `/avaliacoes`,
@@ -247,7 +264,7 @@ export class NotificationService {
     try {
       const notification: NotificationData = {
         user_id: recipientId,
-        type: "like",
+        type: "info",
         title: "Novo favorito!",
         message: `${userName} adicionou você aos favoritos`,
         action_url: `/perfil/${recipientId}`,
@@ -279,7 +296,7 @@ export class NotificationService {
     try {
       const notification: NotificationData = {
         user_id: recipientId,
-        type: "like",
+        type: "info",
         title: "Nova recomendação!",
         message: `${recommenderName} recomendou você`,
         action_url: `/perfil/${recipientId}`,
@@ -308,7 +325,7 @@ export class NotificationService {
     try {
       const notification: NotificationData = {
         user_id: recipientId,
-        type: "like",
+        type: "info",
         title: "Perfil visualizado",
         message: `${visitorName} visualizou seu perfil`,
         action_url: `/perfil/${recipientId}`,

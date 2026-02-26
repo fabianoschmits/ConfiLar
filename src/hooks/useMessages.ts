@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useNotifications } from "@/components/notifications/NotificationProviderSimple";
 import { RealtimeChannel } from "@supabase/supabase-js";
+import { NotificationService } from "@/services/NotificationService";
 
 export interface Message {
   id: string;
@@ -328,18 +329,12 @@ export function useMessages(activeConversationId?: string) {
 
         const senderName = (profile as any)?.full_name || "Alguém";
 
-        await supabase.from("notifications").insert({
-          user_id: otherUserId,
-          title: "Nova conversa iniciada",
-          message: `${senderName} iniciou uma conversa com você.`,
-          type: "message",
-          priority: "normal",
-          metadata: {
-            conversation_id: conversation.id,
-            sender_id: user?.id,
-            sender_name: senderName,
-          },
-        });
+        await NotificationService.notifyNewMessage(
+          otherUserId,
+          senderName,
+          "Iniciou uma nova conversa com você",
+          conversation.id,
+        );
       } catch (err) {
         console.error("❌ Erro ao enviar notificação de nova conversa:", err);
       }
@@ -464,6 +459,15 @@ export function useMessages(activeConversationId?: string) {
           );
         });
 
+        // Enviar notificação de nova mensagem via NotificationService
+        const senderName = (profile as any)?.full_name || "Alguém";
+        await NotificationService.notifyNewMessage(
+          receiverId,
+          senderName,
+          content.trim(),
+          conversationId,
+        );
+
         // Recarregar conversas para atualizar a lista
         await loadConversations();
 
@@ -481,7 +485,7 @@ export function useMessages(activeConversationId?: string) {
         setSending(false);
       }
     },
-    [user?.id, conversations, loadMessages],
+    [user?.id, profile, loadConversations],
   );
 
   // Marcar mensagens como lidas

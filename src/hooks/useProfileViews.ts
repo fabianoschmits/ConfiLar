@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { NotificationService } from "@/services/NotificationService";
 
 export interface ProfileViewStats {
   total_views: number;
@@ -33,7 +34,7 @@ export interface ProfileView {
 export function useProfileViews() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuthContext();
+  const { user, profile } = useAuthContext();
 
   // Registrar visualização de um perfil
   const recordView = useCallback(
@@ -81,6 +82,22 @@ export function useProfileViews() {
           "✅ recordView: Visualização registrada com sucesso para:",
           profileId,
         );
+
+        // Criar notificação para o usuário visualizado
+        if (data === true && user?.id && profile?.full_name) {
+          try {
+            await NotificationService.notifyProfileView(
+              profileId,
+              profile.full_name,
+            );
+          } catch (notifError) {
+            console.error(
+              "⚠️ recordView: Erro ao enviar notificação de visualização:",
+              notifError,
+            );
+          }
+        }
+
         return data === true;
       } catch (err) {
         console.error("❌ recordView: Erro ao registrar visualização:", err);

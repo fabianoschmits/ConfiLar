@@ -10,6 +10,7 @@ import { Profile } from "@/types/database";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useAutoNotifications } from "@/hooks/useAutoNotifications";
+import { NotificationService } from "@/services/NotificationService";
 import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import Link from "next/link";
 
@@ -206,6 +207,18 @@ export function RecommendationModal({
         }
       } catch (postError) {
         console.error("Erro ao criar post de recomendação:", postError);
+      }
+
+      // Criar notificação para o usuário recomendado
+      try {
+        if (profile?.full_name) {
+          await NotificationService.notifyNewRecommendation(
+            userId,
+            profile.full_name,
+          );
+        }
+      } catch (notifError) {
+        console.error("Erro ao criar notificação de recomendação:", notifError);
       }
     } catch (error) {
       console.error("Erro ao recomendar usuário:", error);

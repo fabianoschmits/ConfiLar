@@ -11,120 +11,6 @@ export function useNotificationTriggers() {
   const processedActions = useRef(new Set<string>());
   const isMonitoring = useRef(false); // Flag para evitar múltiplas instâncias
 
-  // Monitorar novas mensagens
-  const monitorNewMessages = useCallback(async () => {
-    try {
-      if (!user) {
-        console.log(
-          "⚠️ Usuário não autenticado, pulando monitoramento de mensagens",
-        );
-        return;
-      }
-
-      console.log("📨 [monitorNewMessages] INÍCIO", {
-        user: user.id,
-        timestamp: new Date().toISOString(),
-      });
-      const { data, error } = await supabase
-        .from("messages")
-        .select(
-          `
-          id,
-          content,
-          created_at,
-          sender_id,
-          receiver_id,
-          conversation_id,
-          sender:profiles!messages_sender_id_fkey(full_name)
-        `,
-        )
-        .eq("receiver_id", user.id)
-        .gte("created_at", new Date(Date.now() - 5 * 60 * 1000).toISOString())
-        .order("created_at", { ascending: false })
-        .limit(10);
-
-      if (error) {
-        console.error("❌ Erro ao buscar mensagens:", error);
-        throw error;
-      }
-
-      if (!data || data.length === 0) {
-        console.log("📭 Nenhuma mensagem nova encontrada");
-        return;
-      }
-
-      console.log(`📨 Encontradas ${data.length} mensagens para processar`);
-
-      for (const message of data) {
-        const actionId = `message_${message.id}`;
-
-        if (processedActions.current.has(actionId)) continue;
-
-        // Não criar notificação se o usuário é o próprio remetente
-        if (message.sender_id === user.id) {
-          console.log("⏭️ Ignorando mensagem: usuário é o próprio remetente");
-          processedActions.current.add(actionId);
-          continue;
-        }
-
-        // Verificar duplicação no banco de dados
-        const isDuplicate =
-          await NotificationControlService.isNotificationProcessed(
-            "message",
-            user.id,
-            { message_id: message.id, sender_id: message.sender_id },
-          );
-
-        if (isDuplicate) {
-          console.log("⏭️ Notificação de mensagem já existe:", message.id);
-          processedActions.current.add(actionId);
-          continue;
-        }
-
-        const senderName = (message.sender as any)?.full_name || "Usuário";
-
-        // Marcar como processada ANTES de criar a notificação
-        processedActions.current.add(actionId);
-        NotificationControlService.markAsProcessed("message", user.id, {
-          message_id: message.id,
-          sender_id: message.sender_id,
-        });
-
-        console.log(`🔔 [monitorNewMessages] CRIANDO NOTIFICAÇÃO`, {
-          messageId: message.id,
-          senderName,
-          timestamp: new Date().toISOString(),
-        });
-
-        // Criar notificação de mensagem com metadata completo
-        const result = await NotificationService.createNotification({
-          user_id: user.id,
-          title: `💬 Nova mensagem de ${senderName}`,
-          message: message.content,
-          type: "like", // Usando 'like' como fallback
-          priority: "high",
-          action_url: `/chat/${message.conversation_id}`,
-          metadata: {
-            sender_name: senderName,
-            conversation_id: message.conversation_id,
-            sender_id: message.sender_id,
-            action_type: "open_chat",
-          },
-        });
-
-        console.log(`✅ [monitorNewMessages] NOTIFICAÇÃO CRIADA`, {
-          messageId: message.id,
-          notificationId: result?.id,
-          timestamp: new Date().toISOString(),
-        });
-
-        console.log("✅ Notificação de mensagem criada:", actionId);
-      }
-    } catch (error) {
-      console.error("❌ Erro ao monitorar mensagens:", error);
-    }
-  }, [user]);
-
   // Monitorar novas avaliações
   const monitorNewReviews = useCallback(async () => {
     try {
@@ -338,7 +224,6 @@ export function useNotificationTriggers() {
     const runMonitoring = async () => {
       try {
         await Promise.all([
-          monitorNewMessages(),
           monitorNewReviews(),
           monitorNewFavorites(),
           monitorRecommendations(),
@@ -363,7 +248,6 @@ export function useNotificationTriggers() {
   }, [user]);
 
   return {
-    monitorNewMessages,
     monitorNewReviews,
     monitorNewFavorites,
     monitorRecommendations,
