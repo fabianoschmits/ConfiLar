@@ -40,7 +40,7 @@ export function useNotificationSound(): UseNotificationSoundReturn {
   const { user } = useAuthContext();
   const [preferences, setPreferences] = useState<SoundPreferences | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isEnabled, setIsEnabled] = useState(true);
+  const [isEnabled, setIsEnabled] = useState(false);
   const [volume, setVolumeState] = useState(0.7);
   const preloadedRef = useRef(false);
 
@@ -84,24 +84,24 @@ export function useNotificationSound(): UseNotificationSoundReturn {
         }
         // Silenciar erros esperados - usar padrões silenciosamente
         const defaultPrefs: SoundPreferences = {
-          enabled: true,
+          enabled: false,
           volume: 0.7,
           respect_quiet_hours: true,
           custom_sounds: {},
         };
         setPreferences(defaultPrefs);
-        setIsEnabled(true);
+        setIsEnabled(false);
         setVolumeState(0.7);
 
         // Configurar o sound manager com padrões
         soundManager.setOptions({
-          enabled: true,
+          enabled: false,
           volume: 0.7,
           respectQuietHours: true,
         });
       } else {
         const prefs: SoundPreferences = {
-          enabled: data?.sound_enabled ?? true,
+          enabled: data?.sound_enabled ?? false,
           volume: data?.sound_volume ?? 0.7,
           respect_quiet_hours: data?.respect_quiet_hours ?? true,
           custom_sounds: data?.custom_sounds ?? {},
@@ -121,13 +121,13 @@ export function useNotificationSound(): UseNotificationSoundReturn {
       console.log("⚠️ Erro ao carregar preferências, usando padrões:", error);
       // Usar padrões em caso de erro
       const defaultPrefs: SoundPreferences = {
-        enabled: true,
+        enabled: false,
         volume: 0.7,
         respect_quiet_hours: true,
         custom_sounds: {},
       };
       setPreferences(defaultPrefs);
-      setIsEnabled(true);
+      setIsEnabled(false);
       setVolumeState(0.7);
     } finally {
       setLoading(false);

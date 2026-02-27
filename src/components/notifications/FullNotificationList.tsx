@@ -15,6 +15,8 @@ import { toast } from "sonner";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
 import { Separator } from "@/components/ui/separator";
+import { Settings, ArrowLeft } from "lucide-react";
+import { NotificationSettingsView } from "./NotificationSettingsView";
 
 export function FullNotificationList() {
   const {
@@ -34,6 +36,7 @@ export function FullNotificationList() {
   const [filter, setFilter] = useState<NotificationCategory>("all");
   const [search, setSearch] = useState("");
   const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Handle highlighting from URL
   useEffect(() => {
@@ -218,6 +221,25 @@ export function FullNotificationList() {
     );
   }
 
+  if (showSettings) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-4 bg-card p-4 rounded-xl border shadow-sm">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowSettings(false)}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar para lista
+          </Button>
+        </div>
+        <NotificationSettingsView className="rounded-xl border shadow-sm overflow-hidden" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {/* Controls Header */}
@@ -245,12 +267,10 @@ export function FullNotificationList() {
             <Button
               variant="ghost"
               size="icon"
-              title="Limpar todas"
-              onClick={handleDeleteAll}
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-              disabled={notifications.length === 0}
+              title="Configurações"
+              onClick={() => setShowSettings(true)}
             >
-              <Trash2 className="h-4 w-4" />
+              <Settings className="h-4 w-4" />
             </Button>
           </div>
         </div>

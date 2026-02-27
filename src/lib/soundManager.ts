@@ -20,7 +20,7 @@ class SoundManager {
   private audioContext: AudioContext | null = null;
   private sounds: Map<string, HTMLAudioElement> = new Map();
   private options: SoundManagerOptions = {
-    enabled: true,
+    enabled: false,
     volume: 0.7,
     respectQuietHours: true,
   };
