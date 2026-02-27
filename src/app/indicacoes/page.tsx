@@ -10,6 +10,7 @@ import { ReferralHistory } from "@/components/referral/ReferralHistory";
 import { ReferralLeaderboard } from "@/components/referral/ReferralLeaderboard";
 import { ReferralBadge } from "@/components/referral/ReferralBadge";
 import { WhoReferredMe } from "@/components/referral/WhoReferredMe";
+import { ClaimReferral } from "@/components/referral/ClaimReferral";
 import { useWhoReferredMe } from "@/hooks/useWhoReferredMe";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, TrendingUp, Award, Sparkles, ChevronDown } from "lucide-react";
@@ -18,7 +19,11 @@ import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function IndicacoesPage() {
   const { user, loading } = useAuthContext();
-  const { referrer, loading: loadingReferrer } = useWhoReferredMe(user?.id);
+  const {
+    referrer,
+    loading: loadingReferrer,
+    refetch: refetchReferrer,
+  } = useWhoReferredMe(user?.id);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [showPointsTable, setShowPointsTable] = useState(false);
   const [showTiersBenefits, setShowTiersBenefits] = useState(false);
@@ -77,15 +82,18 @@ export default function IndicacoesPage() {
             </p>
           </div>
 
-          {/* Quem me indicou */}
-          {!loadingReferrer && referrer && (
-            <WhoReferredMe
-              referrerId={referrer.referrerId}
-              referrerName={referrer.referrerName}
-              referrerCode={referrer.referrerCode}
-              referrerAvatar={referrer.referrerAvatar}
-            />
-          )}
+          {/* Quem me indicou / Reivindicar */}
+          {!loadingReferrer &&
+            (referrer ? (
+              <WhoReferredMe
+                referrerId={referrer.referrerId}
+                referrerName={referrer.referrerName}
+                referrerCode={referrer.referrerCode}
+                referrerAvatar={referrer.referrerAvatar}
+              />
+            ) : (
+              <ClaimReferral onSuccess={() => refetchReferrer()} />
+            ))}
 
           {/* Dashboard de Estatísticas - Cards em linha única */}
           <ReferralDashboard userId={user.id} />

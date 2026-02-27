@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 
 export interface WhoReferredMe {
@@ -15,16 +15,12 @@ export function useWhoReferredMe(userId?: string) {
   const [referrer, setReferrer] = useState<WhoReferredMe | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const loadReferrer = useCallback(async () => {
     if (!userId) {
       setLoading(false);
       return;
     }
 
-    loadReferrer();
-  }, [userId]);
-
-  const loadReferrer = async () => {
     try {
       setLoading(true);
       console.log(
@@ -89,7 +85,11 @@ export function useWhoReferredMe(userId?: string) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
-  return { referrer, loading };
+  useEffect(() => {
+    loadReferrer();
+  }, [loadReferrer]);
+
+  return { referrer, loading, refetch: loadReferrer };
 }
