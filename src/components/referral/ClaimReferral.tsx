@@ -16,6 +16,7 @@ export function ClaimReferral({ onSuccess }: ClaimReferralProps) {
   const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleClaim = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,12 +77,35 @@ export function ClaimReferral({ onSuccess }: ClaimReferralProps) {
               Você foi convidado?
             </h3>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-300 max-w-lg">
-            Se você chegou aqui por recomendação e perdeu o link de convite, ou
-            se logou rapidamente com o Google, informe abaixo o{" "}
-            <strong>código do seu amigo</strong> para ganhar benefícios como{" "}
-            <strong>7 dias de Anúncio Premium Grátis!</strong>
-          </p>
+          <div className="text-sm text-gray-600 dark:text-gray-300 max-w-lg">
+            <p>
+              Insira o <strong>código do seu amigo</strong> para ganhar
+              benefícios exclusivos.
+              {!isExpanded && (
+                <button
+                  onClick={() => setIsExpanded(true)}
+                  className="ml-1 text-teal-600 dark:text-teal-400 font-medium hover:underline focus:outline-none"
+                >
+                  Ler mais...
+                </button>
+              )}
+            </p>
+
+            {isExpanded && (
+              <div className="mt-2 text-gray-500 dark:text-gray-400 animate-in fade-in slide-in-from-top-2 duration-300">
+                Se você chegou aqui por recomendação e perdeu o link de convite,
+                ou se logou rapidamente com o Google, informe o código do seu
+                indicado ao lado para ganhar{" "}
+                <strong>7 dias de Anúncio Premium Grátis!</strong>
+                <button
+                  onClick={() => setIsExpanded(false)}
+                  className="block mt-1 text-teal-600 dark:text-teal-400 font-medium hover:underline focus:outline-none"
+                >
+                  Mostrar menos
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <form onSubmit={handleClaim} className="flex-shrink-0 w-full md:w-auto">

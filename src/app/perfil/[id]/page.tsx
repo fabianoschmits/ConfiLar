@@ -56,7 +56,10 @@ import { ReviewCard } from "@/components/reviews/ReviewCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ProfilePageSkeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
-import { useReferralStats } from "@/hooks/useReferralStats";
+import {
+  useReferralStats,
+  useReferralDashboard,
+} from "@/hooks/useReferralStats";
 import { ReferralBadge } from "@/components/referral/ReferralBadge";
 import { ProVerifiedBadge } from "@/components/ui/ProVerifiedBadge";
 import { useTranslations } from "next-intl";
@@ -95,6 +98,8 @@ export default function ProfilePage() {
   );
   const { stats: referralStats, loading: referralLoading } =
     useReferralStats(userId);
+  const { dashboard: referralDashboard, loading: referralDashboardLoading } =
+    useReferralDashboard(userId);
 
   useEffect(() => {
     setMounted(true);
@@ -561,6 +566,94 @@ export default function ProfilePage() {
                     ))}
                   </div>
                 )}
+
+                {/* Seção de Usuários Indicados */}
+                <div className="mt-8">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Users className="w-5 h-5 text-teal-500" />
+                    <h2 className="text-xl font-semibold">
+                      Usuários Indicados
+                    </h2>
+                    {referralDashboard?.referrals?.length ? (
+                      <Badge variant="outline" className="ml-2">
+                        {referralDashboard.referrals.length}
+                      </Badge>
+                    ) : null}
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Pessoas que foram recomendadas e se juntaram à plataforma
+                    usando o código de convite deste usuário.
+                  </p>
+
+                  {referralDashboardLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {Array.from({ length: 2 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="border border-border rounded-lg p-4 space-y-3 animate-pulse bg-card"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-muted rounded-full"></div>
+                            <div className="flex-1 space-y-2">
+                              <div className="h-4 bg-muted rounded w-3/4"></div>
+                              <div className="h-3 bg-muted rounded w-1/2"></div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : !referralDashboard?.referrals ||
+                    referralDashboard.referrals.length === 0 ? (
+                    <EmptyState
+                      icon={
+                        <Users className="h-12 w-12 text-muted-foreground/50" />
+                      }
+                      title="Nenhuma indicação"
+                      description="Este usuário ainda não indicou ninguém."
+                    />
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                      {referralDashboard.referrals.map((ref) => (
+                        <Link
+                          key={ref.id}
+                          href={`/perfil/${ref.referredId}`}
+                          className="block group"
+                        >
+                          <Card className="transition-all cursor-pointer h-full border border-border/40 bg-card/20 backdrop-blur-md hover:border-teal-500/40 rounded-xl overflow-hidden shadow-none">
+                            <CardContent className="p-2 relative pt-8">
+                              <div className="absolute top-0 right-0 left-0 h-6 bg-gradient-to-r from-teal-500/10 to-emerald-500/10 border-b border-border/40 flex items-center justify-center">
+                                <span className="text-[8px] font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400 flex items-center gap-1">
+                                  <Sparkles className="w-2.5 h-2.5" /> Convidado
+                                </span>
+                              </div>
+                              <div className="flex flex-col items-center text-center gap-1.5 mt-1">
+                                <UserAvatar
+                                  src={ref.referredAvatar}
+                                  alt={ref.referredName}
+                                  fallback={ref.referredName?.charAt(0) || "U"}
+                                  size="sm"
+                                  className="h-8 w-8"
+                                />
+                                <div className="flex-1 min-w-0 w-full mt-1">
+                                  <h4 className="font-bold text-[11px] text-foreground truncate group-hover:text-teal-500 transition-colors leading-tight mb-1">
+                                    {ref.referredName}
+                                  </h4>
+                                  <span className="text-[9px] text-muted-foreground opacity-80 block truncate">
+                                    Membro desde{" "}
+                                    {new Date(ref.createdAt).toLocaleDateString(
+                                      "pt-BR",
+                                      { month: "short", year: "numeric" },
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </GuestBlurOverlay>
             </TabsContent>
 
