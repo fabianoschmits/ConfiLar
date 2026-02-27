@@ -58,6 +58,7 @@ export interface AuthActions {
   ) => Promise<{ error: { message: string } | null }>;
   requireReauthentication: (action: "password" | "email" | "general") => void;
   refreshProfile: () => Promise<void>;
+  signInWithGoogle: () => Promise<{ error: { message: string } | null }>;
   isMockMode: boolean;
 }
 
@@ -126,9 +127,9 @@ type AuthAction =
   | { type: "SET_USER"; payload: { id: string; email: string } | null }
   | { type: "SET_PROFILE"; payload: Profile | null }
   | {
-    type: "SET_SESSION";
-    payload: { user: { id: string; email: string } } | null;
-  }
+      type: "SET_SESSION";
+      payload: { user: { id: string; email: string } } | null;
+    }
   | { type: "SET_READY"; payload: boolean }
   | { type: "RESET_AUTH" };
 
@@ -1306,6 +1307,51 @@ export function useAuth(
     signOut,
     updateProfile,
     uploadAvatar,
+    signInWithGoogle: useCallback(async () => {
+      try {
+        logger.info("auth", "Attempting Google Sign-In");
+        dispatch({ type: "SET_LOADING", payload: true });
+        dispatch({ type: "SET_ERROR", payload: null });
+
+        // Obter a URL base do site
+        const siteUrl =
+          typeof window !== "undefined"
+            ? window.location.origin
+            : process.env.NEXT_PUBLIC_SITE_URL || "https://appconfilar.com.br";
+
+        const redirectTo = `${siteUrl}/auth/callback`;
+
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: redirectTo,
+            queryParams: {
+              access_type: "offline",
+              prompt: "consent",
+            },
+          },
+        });
+
+        if (error) {
+          logger.error("auth", error, { context: "signInWithGoogle" });
+          dispatch({ type: "SET_ERROR", payload: error.message });
+          return { error };
+        }
+
+        logger.info(
+          "auth",
+          `Google Sign-In initiated with redirect to ${redirectTo}`,
+        );
+        return { error: null };
+      } catch (error) {
+        logger.error("auth", error as Error, { context: "signInWithGoogle" });
+        const errorMessage = (error as Error).message;
+        dispatch({ type: "SET_ERROR", payload: errorMessage });
+        return { error: { message: errorMessage } };
+      } finally {
+        dispatch({ type: "SET_LOADING", payload: false });
+      }
+    }, []),
     refreshAuth,
     refreshProfile: refreshAuth,
     resetPassword,
