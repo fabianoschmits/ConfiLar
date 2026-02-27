@@ -235,7 +235,7 @@ export function FullNotificationList() {
             Voltar para lista
           </Button>
         </div>
-        <NotificationSettingsView className="rounded-xl border shadow-sm overflow-hidden" />
+        <NotificationSettingsView className="rounded-xl border shadow-sm" />
       </div>
     );
   }
