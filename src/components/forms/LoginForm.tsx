@@ -77,9 +77,23 @@ export function LoginForm() {
 
     try {
       // 1. Gerar token reCAPTCHA
+      console.log("🔐 [LoginForm] Solicitando token reCAPTCHA...");
+
+      if (!executeRecaptcha) {
+        console.error("❌ [LoginForm] executeRecaptcha não está definido!");
+        toast.error("Erro de segurança", {
+          description:
+            "Sistema de verificação não inicializado. Recarregue a página.",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       const token = await executeRecaptcha("login");
+      console.log("✅ [LoginForm] Token gerado com sucesso");
 
       // 2. Validar token no servidor
+      console.log("📡 [LoginForm] Validando token no servidor...");
       const recaptchaRes = await fetch("/api/verify-recaptcha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -88,6 +102,10 @@ export function LoginForm() {
 
       if (!recaptchaRes.ok) {
         const recaptchaData = await recaptchaRes.json();
+        console.error(
+          "❌ [LoginForm] Falha na validação do reCAPTCHA:",
+          recaptchaData,
+        );
         toast.error("Verificação de segurança falhou", {
           description: recaptchaData.message || "Por favor, tente novamente.",
         });
@@ -95,10 +113,14 @@ export function LoginForm() {
         return;
       }
 
+      console.log("✅ [LoginForm] reCAPTCHA validado com sucesso");
+
       // 3. Prosseguir com o login
+      console.log("🔑 [LoginForm] Realizando login...");
       const result = await signIn(data.email, data.password);
 
       if (result.error) {
+        console.error("❌ [LoginForm] Erro no signIn:", result.error);
         toast.error("Erro ao fazer login", {
           description:
             result.error.message ||
@@ -106,14 +128,16 @@ export function LoginForm() {
         });
         setIsLoading(false);
       } else {
+        console.log("🎉 [LoginForm] Login bem-sucedido!");
         toast.success("Login realizado com sucesso!");
         router.push(redirectPath);
         setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Erro no login:", error);
+    } catch (error: any) {
+      console.error("💥 [LoginForm] Erro inesperado:", error);
       toast.error("Erro inesperado ao fazer login", {
         description:
+          error.message ||
           "Ocorreu um erro inesperado. Verifique sua conexão e tente novamente.",
       });
       setIsLoading(false);

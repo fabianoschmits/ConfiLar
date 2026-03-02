@@ -427,18 +427,26 @@ export function BasicSignupForm() {
   };
 
   const onSubmit = async (data: BasicSignupFormData) => {
+    console.log("📝 [SignupForm] Iniciando submissão do formulário...");
+
     if (!executeRecaptcha) {
+      console.error("❌ [SignupForm] executeRecaptcha não está definido!");
       toast.error("Erro de segurança", {
         description:
           "Verificação de segurança não disponível. Recarregue a página.",
       });
+      setIsLoading(false);
       return;
     }
 
     setIsLoading(true);
     try {
       // ✅ VALIDAR reCAPTCHA v3
+      console.log("🔐 [SignupForm] Solicitando token reCAPTCHA...");
       const token = await executeRecaptcha("signup");
+      console.log("✅ [SignupForm] Token gerado com sucesso");
+
+      console.log("📡 [SignupForm] Validando token no servidor...");
       const recaptchaRes = await fetch("/api/verify-recaptcha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -447,6 +455,10 @@ export function BasicSignupForm() {
 
       if (!recaptchaRes.ok) {
         const recaptchaData = await recaptchaRes.json();
+        console.error(
+          "❌ [SignupForm] Falha na validação do reCAPTCHA:",
+          recaptchaData,
+        );
         toast.error("Verificação de segurança falhou", {
           description: recaptchaData.message || "Por favor, tente novamente.",
         });
@@ -454,11 +466,14 @@ export function BasicSignupForm() {
         return;
       }
 
+      console.log("✅ [SignupForm] reCAPTCHA validado com sucesso");
+
       // ✅ VALIDAR DUPLICATAS ANTES DE CADASTRAR
-      console.log("🔍 Verificando duplicatas...");
+      console.log("🔍 [SignupForm] Verificando duplicatas...");
 
       // Verificar email
       if (emailExists) {
+        console.warn("⚠️ [SignupForm] Email já cadastrado (estado local)");
         toast.error(
           "❌ Este email já está cadastrado. Use o link de recuperação de conta.",
         );
@@ -468,15 +483,17 @@ export function BasicSignupForm() {
 
       const emailCheck = await checkEmailExists(data.email);
       if (emailCheck) {
+        console.warn("⚠️ [SignupForm] Email já cadastrado (verificação API)");
         toast.error("❌ Este email já está cadastrado na plataforma");
         setIsLoading(false);
         return;
       }
 
-      console.log("✅ Email disponível");
+      console.log("✅ [SignupForm] Email disponível");
 
       // Verificar CPF
       if (cpfExists) {
+        console.warn("⚠️ [SignupForm] CPF já cadastrado (estado local)");
         toast.error(
           "❌ Este CPF já está cadastrado. Use o link de recuperação de conta.",
         );
@@ -486,17 +503,18 @@ export function BasicSignupForm() {
 
       const cpfCheck = await checkCpfExists(data.cpf_cnpj);
       if (cpfCheck) {
+        console.warn("⚠️ [SignupForm] CPF já cadastrado (verificação API)");
         toast.error("❌ Este CPF já está cadastrado na plataforma");
         setIsLoading(false);
         return;
       }
 
-      console.log("✅ CPF disponível");
+      console.log("✅ [SignupForm] CPF disponível");
 
       // ✅ SALVAR CÓDIGO DE REFERÊNCIA NO LOCALSTORAGE (sempre que houver código)
       if (data.referral_code) {
         console.log(
-          "💾 [Cadastro] Salvando código de referência no localStorage:",
+          "💾 [SignupForm] Salvando código de referência no localStorage:",
           data.referral_code,
         );
         const REFERRAL_STORAGE_KEY = "confilar_referral_code";
@@ -511,14 +529,9 @@ export function BasicSignupForm() {
             expiry: expiryDate.getTime(),
           }),
         );
-
-        console.log(
-          "✅ [Cadastro] Código salvo com sucesso! Será processado no onboarding.",
-        );
-      } else {
-        console.log("⚠️ [Cadastro] Nenhum código de referência para salvar");
       }
 
+      console.log("🚀 [SignupForm] Criando conta no Supabase...");
       const { error, data: signUpData } = await signUpBasic({
         email: data.email,
         password: data.password,
@@ -526,7 +539,7 @@ export function BasicSignupForm() {
       });
 
       if (error) {
-        console.error("❌ Erro detalhado:", error);
+        console.error("❌ [SignupForm] Erro detalhado Supabase:", error);
 
         // Tratar erros específicos do Supabase
         let errorMessage = error.message;
@@ -538,96 +551,65 @@ export function BasicSignupForm() {
         ) {
           errorTitle = "Limite de emails excedido";
           errorMessage =
-            "Muitos emails foram enviados recentemente. Por favor, aguarde algumas horas e tente novamente. Se o problema persistir, entre em contato com o suporte.";
+            "Muitos emails foram enviados recentemente. Por favor, aguarde algumas horas e tente novamente.";
         } else if (
           error.message?.toLowerCase().includes("user already registered")
         ) {
           errorTitle = "Email já cadastrado";
           errorMessage =
-            "Este email já está cadastrado. Use a opção de recuperação de senha se você já possui uma conta.";
-        } else if (error.message?.toLowerCase().includes("invalid email")) {
-          errorTitle = "Email inválido";
-          errorMessage =
-            "Por favor, verifique se o email está correto e tente novamente.";
-        } else if (error.message?.toLowerCase().includes("password")) {
-          errorTitle = "Senha inválida";
-          errorMessage =
-            "A senha não atende aos requisitos de segurança. Por favor, verifique e tente novamente.";
+            "Este email já está cadastrado. Use a opção de recuperação de senha.";
         }
 
         toast.error(`${errorTitle}: ${errorMessage}`, {
-          duration: 8000, // Mostrar por mais tempo para mensagens importantes
+          duration: 8000,
         });
         setIsLoading(false);
         return;
       }
 
-      console.log("✅ Conta criada com sucesso!");
+      console.log("✅ [SignupForm] Conta criada com sucesso!");
 
       // ✅ CRIAR REFERRAL IMEDIATAMENTE SE HOUVER CÓDIGO
       if (data.referral_code && signUpData?.user?.id) {
         try {
-          console.log(
-            "👥 [Cadastro] Criando referral para o usuário:",
-            signUpData.user.id,
-          );
-          console.log(
-            "👥 [Cadastro] Código de referência:",
-            data.referral_code,
-          );
-
+          console.log("👥 [SignupForm] Criando registro de referral...");
           const referralResult = await createReferral(
             signUpData.user.id,
             "signup_form",
             data.referral_code,
           );
-
-          if (referralResult.success) {
-            console.log("✅ [Cadastro] Referral criado com sucesso!");
-          } else {
-            console.warn(
-              "⚠️ [Cadastro] Erro ao criar referral:",
-              referralResult.error,
-            );
-          }
+          console.log("✅ [SignupForm] Resultado referral:", referralResult);
         } catch (referralError) {
           console.error(
-            "❌ [Cadastro] Erro ao processar referral:",
+            "❌ [SignupForm] Erro ao processar referral:",
             referralError,
           );
         }
       } else if (signUpData?.user?.id) {
-        // ✅ BÔNUS ORGÂNICO: Se não houver código, tentar aplicar o bônus de boas-vindas padrão
-        try {
-          console.log(
-            "🎁 [Cadastro] Usuário orgânico. Aplicando bônus de boas-vindas...",
-          );
-          fetch("/api/auth/hooks/apply-welcome-bonus", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: signUpData.user.id }),
-          }).catch((err) =>
-            console.error("Erro silencioso ao aplicar bônus:", err),
-          );
-        } catch (e) {
-          // Ignorar erro para não travar o fluxo
-          console.error("Erro ao chamar API de bônus:", e);
-        }
+        // ✅ BÔNUS ORGÂNICO
+        console.log("🎁 [SignupForm] Aplicando bônus orgânico...");
+        fetch("/api/auth/hooks/apply-welcome-bonus", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: signUpData.user.id }),
+        }).catch((err) =>
+          console.error("Erro silencioso ao aplicar bônus:", err),
+        );
       }
 
-      // Mostrar notificação de sucesso
       toast.success(
-        "🎉 Conta criada com sucesso! Um email de confirmação foi enviado para você. Verifique sua caixa de entrada e clique no link para ativar sua conta.",
+        "🎉 Conta criada com sucesso! Verifique sua caixa de entrada para ativar sua conta.",
       );
 
-      // Aguardar 3 segundos para o usuário ler a mensagem antes de redirecionar
       setTimeout(() => {
         setIsLoading(false);
         window.location.href = "/auth?message=account_created";
       }, 3000);
-    } catch (error) {
-      console.error("Erro no cadastro:", error);
-      toast.error("Erro inesperado ao criar conta");
+    } catch (error: any) {
+      console.error("💥 [SignupForm] Erro no cadastro:", error);
+      toast.error("Erro inesperado ao criar conta", {
+        description: error.message || "Tente novamente mais tarde.",
+      });
       setIsLoading(false);
     }
   };
