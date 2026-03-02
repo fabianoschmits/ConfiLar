@@ -32,6 +32,7 @@ import { TutorialOverlay } from "@/components/tutorial/TutorialOverlay";
 import { FontSizeApplier } from "@/components/ui/FontSizeApplier";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import "@/utils/errorInterceptor"; // Interceptor de erros
+import { RecaptchaProvider } from "@/components/providers/RecaptchaProvider";
 // import { AuthContextDebug } from "@/components/debug/AuthContextDebug"
 
 export const viewport = {
@@ -148,55 +149,57 @@ export default async function RootLayout({
           enableColorScheme={true}
           nonce={undefined}
         >
-          <ErrorBoundary>
-            <QueryProvider>
-              <NextIntlClientProvider messages={messages}>
-                <LocaleProvider>
-                  <OfflineProvider>
-                    <LoadingProvider>
-                      <SidebarProvider>
-                        <AuthProvider initialSession={session}>
-                          <FontSizeApplier />
-                          {/* <AutoReauthentication> */}
-                          <AvailabilityProvider>
-                            <FloatingChatProviderSimple>
-                              <NotificationProviderSimple>
-                                <TutorialProvider>
-                                  <Suspense
-                                    fallback={
-                                      <LoadingOverlay
-                                        isLoading={true}
-                                        message="Carregando aplicação..."
-                                      />
-                                    }
-                                  >
-                                    <BanNotification>
-                                      {children}
-                                    </BanNotification>
-                                  </Suspense>
-                                  <FloatingChatWrapper />
-                                  <LoadingOverlayProvider />
-                                  <NewNotificationSystem />
-                                  <CookieConsentBanner />
-                                  <PWAManager />
-                                  <TutorialOverlay />
-                                  <ToasterWithSounds
-                                    position="top-right"
-                                    richColors
-                                  />
-                                </TutorialProvider>
-                              </NotificationProviderSimple>
-                            </FloatingChatProviderSimple>
-                          </AvailabilityProvider>
-                          {/* </AutoReauthentication> */}
-                        </AuthProvider>
-                      </SidebarProvider>
-                    </LoadingProvider>
-                  </OfflineProvider>
-                </LocaleProvider>
-              </NextIntlClientProvider>
-            </QueryProvider>
-          </ErrorBoundary>
+          <RecaptchaProvider>
+            <ErrorBoundary>
+              <QueryProvider>
+                <NextIntlClientProvider messages={messages}>
+                  <LocaleProvider>
+                    <OfflineProvider>
+                      <LoadingProvider>
+                        <SidebarProvider>
+                          <AuthProvider initialSession={session}>
+                            <FontSizeApplier />
+                            {/* <AutoReauthentication> */}
+                            <AvailabilityProvider>
+                              <FloatingChatProviderSimple>
+                                <NotificationProviderSimple>
+                                  <TutorialProvider>
+                                    <Suspense
+                                      fallback={
+                                        <LoadingOverlay
+                                          isLoading={true}
+                                          message="Carregando aplicação..."
+                                        />
+                                      }
+                                    >
+                                      <BanNotification>
+                                        {children}
+                                      </BanNotification>
+                                    </Suspense>
+                                    <FloatingChatWrapper />
+                                    <LoadingOverlayProvider />
+                                    <NewNotificationSystem />
+                                    <CookieConsentBanner />
+                                    <PWAManager />
+                                    <TutorialOverlay />
+                                    <ToasterWithSounds
+                                      position="top-right"
+                                      richColors
+                                    />
+                                  </TutorialProvider>
+                                </NotificationProviderSimple>
+                              </FloatingChatProviderSimple>
+                            </AvailabilityProvider>
+                            {/* </AutoReauthentication> */}
+                          </AuthProvider>
+                        </SidebarProvider>
+                      </LoadingProvider>
+                    </OfflineProvider>
+                  </LocaleProvider>
+                </NextIntlClientProvider>
+              </QueryProvider>
+            </ErrorBoundary>
+          </RecaptchaProvider>
         </ThemeProvider>
       </body>
     </html>

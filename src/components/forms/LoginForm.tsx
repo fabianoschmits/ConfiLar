@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,6 +21,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -35,6 +36,7 @@ export function LoginForm() {
   const { signIn, signInWithGoogle, loading: authLoading } = useAuthContext();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   // Evitar problemas de hidratação
   useEffect(() => {
@@ -63,9 +65,37 @@ export function LoginForm() {
       return;
     }
 
+    if (!executeRecaptcha) {
+      toast.error("Erro de segurança", {
+        description:
+          "Verificação de segurança não disponível. Recarregue a página.",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
+      // 1. Gerar token reCAPTCHA
+      const token = await executeRecaptcha("login");
+
+      // 2. Validar token no servidor
+      const recaptchaRes = await fetch("/api/verify-recaptcha", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+
+      if (!recaptchaRes.ok) {
+        const recaptchaData = await recaptchaRes.json();
+        toast.error("Verificação de segurança falhou", {
+          description: recaptchaData.message || "Por favor, tente novamente.",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // 3. Prosseguir com o login
       const result = await signIn(data.email, data.password);
 
       if (result.error) {
@@ -258,6 +288,49 @@ export function LoginForm() {
             >
               Cadastre-se
             </button>
+          </div>
+          {/* Badge reCAPTCHA inline - acima dos termos */}
+          <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-gray-400">
+            <svg
+              viewBox="0 0 64 64"
+              className="w-4 h-4 flex-shrink-0"
+              aria-hidden="true"
+            >
+              <path
+                d="M32 4C16.536 4 4 16.536 4 32s12.536 28 28 28 28-12.536 28-28S47.464 4 32 4z"
+                fill="#4A90D9"
+              />
+              <path
+                d="M32 12c-11.046 0-20 8.954-20 20s8.954 20 20 20 20-8.954 20-20-8.954-20-20-20z"
+                fill="#fff"
+              />
+              <path
+                d="M32 18c-7.732 0-14 6.268-14 14s6.268 14 14 14 14-6.268 14-14-6.268-14-14-14z"
+                fill="#4A90D9"
+              />
+              <path d="M29 26l-5 6 5 5 2-2-3-3 3-4z" fill="#fff" />
+              <path d="M35 26l5 6-5 5-2-2 3-3-3-4z" fill="#fff" />
+            </svg>
+            <span>
+              Protegido pelo reCAPTCHA —{" "}
+              <a
+                href="https://policies.google.com/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-gray-600"
+              >
+                Privacidade
+              </a>
+              {" · "}
+              <a
+                href="https://policies.google.com/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-gray-600"
+              >
+                Termos
+              </a>
+            </span>
           </div>
         </form>
       </div>

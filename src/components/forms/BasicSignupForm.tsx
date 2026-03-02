@@ -16,9 +16,9 @@ import { toast } from "sonner";
 import { checkEmailExists } from "@/lib/checkDuplicates";
 import { RefreshCw } from "lucide-react";
 import { createReferral } from "@/hooks/useReferralTracking";
-import { SimpleCaptcha, useCaptcha } from "@/components/auth/SimpleCaptcha";
 import { checkCpfExists } from "@/lib/checkDuplicates";
 import { isValidCPF } from "@/lib/validation";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 // Função para validar CPF
 const validateCPF = (cpf: string): boolean => {
@@ -109,9 +109,7 @@ export function BasicSignupForm() {
     null,
   );
   const { signUpBasic, signInWithGoogle } = useAuthContext();
-
-  // CAPTCHA
-  const { isCaptchaValid, isBlocked, handleCaptchaValidate } = useCaptcha();
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   // Evitar problemas de hidratação
   useEffect(() => {
@@ -429,19 +427,29 @@ export function BasicSignupForm() {
   };
 
   const onSubmit = async (data: BasicSignupFormData) => {
+    if (!executeRecaptcha) {
+      toast.error("Erro de segurança", {
+        description:
+          "Verificação de segurança não disponível. Recarregue a página.",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
-      // ✅ VALIDAR CAPTCHA
-      if (!isCaptchaValid) {
-        toast.error(
-          "❌ Por favor, resolva a verificação de segurança corretamente.",
-        );
-        setIsLoading(false);
-        return;
-      }
+      // ✅ VALIDAR reCAPTCHA v3
+      const token = await executeRecaptcha("signup");
+      const recaptchaRes = await fetch("/api/verify-recaptcha", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
 
-      if (isBlocked) {
-        toast.error("❌ Muitas tentativas incorretas. Aguarde 1 minuto.");
+      if (!recaptchaRes.ok) {
+        const recaptchaData = await recaptchaRes.json();
+        toast.error("Verificação de segurança falhou", {
+          description: recaptchaData.message || "Por favor, tente novamente.",
+        });
         setIsLoading(false);
         return;
       }
@@ -1066,8 +1074,49 @@ export function BasicSignupForm() {
         </div>
       </div>
 
-      {/* CAPTCHA de Segurança */}
-      <SimpleCaptcha onValidate={handleCaptchaValidate} />
+      {/* Badge reCAPTCHA inline - acima dos termos */}
+      <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400 pt-2">
+        <svg
+          viewBox="0 0 64 64"
+          className="w-4 h-4 flex-shrink-0"
+          aria-hidden="true"
+        >
+          <path
+            d="M32 4C16.536 4 4 16.536 4 32s12.536 28 28 28 28-12.536 28-28S47.464 4 32 4z"
+            fill="#4A90D9"
+          />
+          <path
+            d="M32 12c-11.046 0-20 8.954-20 20s8.954 20 20 20 20-8.954 20-20-8.954-20-20-20z"
+            fill="#fff"
+          />
+          <path
+            d="M32 18c-7.732 0-14 6.268-14 14s6.268 14 14 14 14-6.268 14-14-6.268-14-14-14z"
+            fill="#4A90D9"
+          />
+          <path d="M29 26l-5 6 5 5 2-2-3-3 3-4z" fill="#fff" />
+          <path d="M35 26l5 6-5 5-2-2 3-3-3-4z" fill="#fff" />
+        </svg>
+        <span>
+          Protegido pelo reCAPTCHA —{" "}
+          <a
+            href="https://policies.google.com/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-gray-600"
+          >
+            Privacidade
+          </a>
+          {" · "}
+          <a
+            href="https://policies.google.com/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-gray-600"
+          >
+            Termos
+          </a>
+        </span>
+      </div>
 
       {/* Botão de cadastro */}
       <div className="pt-4">
@@ -1078,8 +1127,6 @@ export function BasicSignupForm() {
             !isMounted ||
             isLoading ||
             !isValid ||
-            !isCaptchaValid ||
-            isBlocked ||
             watchedValues.password !== watchedValues.confirmPassword ||
             emailExists ||
             cpfExists
@@ -1087,15 +1134,9 @@ export function BasicSignupForm() {
           isLoading={isLoading}
           loadingText="Criando conta..."
         >
-          {!isMounted
-            ? "Criar conta"
-            : isBlocked
-              ? "Aguarde para tentar novamente"
-              : !isCaptchaValid
-                ? "Complete a verificação de segurança"
-                : emailExists || cpfExists
-                  ? "Resolva o problema acima"
-                  : "Criar conta"}
+          {emailExists || cpfExists
+            ? "Resolva o problema acima"
+            : "Criar conta"}
         </LoadingButton>
 
         {/* Mensagem explicativa quando há duplicatas */}
