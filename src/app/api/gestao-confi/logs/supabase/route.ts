@@ -19,6 +19,7 @@ export const GET = withAdminAuth(async (request: NextRequest, supabaseAuth, user
     const { searchParams } = new URL(request.url)
     const service = searchParams.get('service') || 'api'
     const projectId = searchParams.get('projectId')
+    const timeRange = searchParams.get('timeRange') || '24h'
 
     if (!projectId) {
       return NextResponse.json(
@@ -57,9 +58,27 @@ export const GET = withAdminAuth(async (request: NextRequest, supabaseAuth, user
       'admin': 'admin'
     }
 
-    // Buscar logs das últimas 24 horas
-    const yesterday = new Date()
-    yesterday.setDate(yesterday.getDate() - 1)
+    // Calcular data de início baseada no timeRange
+    let startDate: Date | null = new Date()
+    switch (timeRange) {
+      case '1h':
+        startDate.setHours(startDate.getHours() - 1)
+        break
+      case '24h':
+        startDate.setDate(startDate.getDate() - 1)
+        break
+      case '7d':
+        startDate.setDate(startDate.getDate() - 7)
+        break
+      case '30d':
+        startDate.setDate(startDate.getDate() - 30)
+        break
+      case 'all':
+        startDate = null
+        break
+      default:
+        startDate.setDate(startDate.getDate() - 1) // 24h as fallback
+    }
 
     let query = adminSupabase
       .from('system_logs')
@@ -70,9 +89,12 @@ export const GET = withAdminAuth(async (request: NextRequest, supabaseAuth, user
           avatar_url
         )
       `)
-      .gte('created_at', yesterday.toISOString())
       .order('created_at', { ascending: false })
-      .limit(500)
+      .limit(1000)
+
+    if (startDate) {
+      query = query.gte('created_at', startDate.toISOString())
+    }
 
     if (serviceLower !== 'all') {
       const category = categoryMap[serviceLower] || serviceLower

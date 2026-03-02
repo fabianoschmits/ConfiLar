@@ -194,7 +194,7 @@ export default function AdminTicketDetailPage() {
   }
 
   return (
-    <div className="p-3 sm:p-6 max-w-6xl mx-auto space-y-4 sm:space-y-6">
+    <div className="p-2.5 sm:p-6 max-w-6xl mx-auto space-y-3.5 sm:space-y-6">
       <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-3 sm:gap-4">
         <div className="flex items-center gap-2 sm:gap-4 w-full xs:w-auto">
           <Button
@@ -206,10 +206,10 @@ export default function AdminTicketDetailPage() {
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
           <div className="min-w-0">
-            <h1 className="text-lg sm:text-2xl font-bold tracking-tight truncate">
+            <h1 className="text-base sm:text-2xl font-bold tracking-tight truncate">
               Gerenciar Ticket
             </h1>
-            <p className="text-[10px] sm:text-sm text-muted-foreground break-all">
+            <p className="text-[9px] sm:text-sm text-muted-foreground break-all opacity-70">
               ID: {ticket.id}
             </p>
           </div>
@@ -219,7 +219,7 @@ export default function AdminTicketDetailPage() {
             variant={activeTab === "chat" ? "default" : "outline"}
             onClick={() => setActiveTab("chat")}
             size="sm"
-            className="flex-1 xs:flex-none gap-1 sm:gap-2 h-7 sm:h-9 text-[10px] sm:text-xs px-2 sm:px-3"
+            className="flex-1 xs:flex-none gap-1 sm:gap-2 h-7.5 sm:h-9 text-[9px] sm:text-xs px-2 sm:px-3 rounded-xl"
           >
             <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
             <span className="hidden min-[380px]:inline">Conversa</span>
@@ -229,7 +229,7 @@ export default function AdminTicketDetailPage() {
             variant={activeTab === "logs" ? "default" : "outline"}
             onClick={() => setActiveTab("logs")}
             size="sm"
-            className="flex-1 xs:flex-none gap-1 sm:gap-2 h-7 sm:h-9 text-[10px] sm:text-xs px-2 sm:px-3"
+            className="flex-1 xs:flex-none gap-1 sm:gap-2 h-7.5 sm:h-9 text-[9px] sm:text-xs px-2 sm:px-3 rounded-xl"
           >
             <History className="w-3 h-3 sm:w-4 sm:h-4" />
             <span className="hidden min-[380px]:inline">Histórico</span>
@@ -243,14 +243,14 @@ export default function AdminTicketDetailPage() {
         <div className="lg:col-span-2">
           {activeTab === "chat" ? (
             <div className="space-y-4">
-              <Card className="bg-muted/30 border-dashed p-3">
+              <Card className="bg-muted/30 border-dashed p-2.5 sm:p-3">
                 <div className="flex items-center justify-between">
-                  <Label className="text-[9px] sm:text-[11px] font-bold uppercase flex items-center gap-1 sm:gap-2">
-                    <Zap className="w-2 h-2 sm:w-3 sm:h-3 text-yellow-500" />{" "}
+                  <Label className="text-[8px] sm:text-[11px] font-bold uppercase flex items-center gap-1 sm:gap-2">
+                    <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-500" />{" "}
                     Macros
                   </Label>
                   <Select onValueChange={(v) => handleSendMessage(v)}>
-                    <SelectTrigger className="w-[120px] sm:w-[200px] h-6 sm:h-8 text-[9px] sm:text-[11px]">
+                    <SelectTrigger className="w-[110px] sm:w-[200px] h-6 sm:h-8 text-[8px] sm:text-[11px] rounded-lg">
                       <SelectValue placeholder="Responder..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -319,7 +319,7 @@ export default function AdminTicketDetailPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader className="pb-4">
-              <div className="flex flex-col items-center gap-2 sm:gap-3 mb-4">
+              <div className="flex flex-col items-center gap-1.5 sm:gap-3 mb-3.5">
                 <Link
                   href={`/perfil/${ticket.user_id}`}
                   className="transition-transform hover:scale-105 active:scale-95"
@@ -328,11 +328,11 @@ export default function AdminTicketDetailPage() {
                     <img
                       src={ticket.profiles.avatar_url}
                       alt={ticket.profiles?.full_name || "Usuário"}
-                      className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover shadow-sm border border-border"
+                      className="w-11 h-11 sm:w-16 sm:h-16 rounded-full object-cover shadow-sm border border-border"
                     />
                   ) : (
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-muted flex items-center justify-center shadow-sm border border-border">
-                      <User className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground" />
+                    <div className="w-11 h-11 sm:w-16 sm:h-16 rounded-full bg-muted flex items-center justify-center shadow-sm border border-border">
+                      <User className="w-5 h-5 sm:w-8 sm:h-8 text-muted-foreground" />
                     </div>
                   )}
                 </Link>
@@ -341,25 +341,25 @@ export default function AdminTicketDetailPage() {
                     href={`/perfil/${ticket.user_id}`}
                     className="hover:text-primary transition-colors"
                   >
-                    <h3 className="font-bold text-[13px] sm:text-sm">
+                    <h3 className="font-bold text-[12px] sm:text-sm leading-tight">
                       {ticket.profiles?.full_name || "Usuário"}
                     </h3>
                   </Link>
-                  <div className="flex items-center justify-center gap-1 mt-1">
-                    <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-widest text-muted-foreground bg-muted border border-border/50 px-1.5 py-0.5 rounded-sm">
+                  <div className="flex items-center justify-center gap-1 mt-0.5">
+                    <span className="text-[7.5px] sm:text-[9px] font-bold uppercase tracking-widest text-muted-foreground bg-muted border border-border/50 px-1 py-0.5 rounded-sm">
                       {ticket.profiles?.user_type === "professional"
                         ? "Prof"
                         : "Cli"}
                     </span>
                     {ticket.profiles?.is_pro && (
-                      <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-widest bg-gradient-to-r from-amber-200 to-amber-500 text-amber-900 px-1.5 py-0.5 rounded-sm shadow-sm">
+                      <span className="text-[7.5px] sm:text-[9px] font-bold uppercase tracking-widest bg-gradient-to-r from-amber-200 to-amber-500 text-amber-900 px-1 py-0.5 rounded-sm shadow-sm">
                         PRO
                       </span>
                     )}
                   </div>
                 </div>
               </div>
-              <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground border-t border-border/50 pt-4">
+              <CardTitle className="text-[11px] font-black uppercase tracking-widest text-muted-foreground border-t border-border/50 pt-3.5">
                 Infos do Ticket
               </CardTitle>
             </CardHeader>

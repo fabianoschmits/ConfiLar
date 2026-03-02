@@ -1,39 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase";
-import { logCronExecution } from "@/lib/cron-logging";
+import { logCronExecution, CronExecutionLogger } from "@/lib/cron-logging";
 
 /**
  * CRON Job para processar a fila de emails de notificações
- *
- * Esta rota pode ser chamada manualmente ou por um serviço externo
- * (Vercel Cron, GitHub Actions, etc.) para processar emails pendentes.
- *
- * Processa até 50 emails por execução para evitar timeout
- *
- * Segurança: Usa Service Role Key para bypassar RLS
  */
 export async function GET(request: NextRequest) {
   const JOB_NAME = "process-email-queue";
 
   try {
-    // Verificar se é uma requisição autorizada (opcional: adicionar secret header)
     const authHeader = request.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
-
-    // NOTE: This also had the hard 401 check, so like the classifieds one, I need to fix it if I want dashboard access.
-    // However, I'll stick to just adding Auth Support properly via wrapping or similar logic.
-    // For now I am refactoring it to include logging and fixing the auth logic to allow dashboard access.
-
     const { withAdminAuth } = await import("@/lib/authenticatedRoute");
+
+    const logger = new CronExecutionLogger(JOB_NAME);
 
     // 1. Check Cron Secret
     if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
-      return await processQueue(JOB_NAME, "Cron Job");
+      return await processQueue(JOB_NAME, "Cron Job", logger);
     }
 
     // 2. Fallback to Admin Auth
     return withAdminAuth(async (req, supabase, user) => {
-      return await processQueue(JOB_NAME, `Admin ${user.id}`);
+      return await processQueue(JOB_NAME, `Admin ${user.id}`, logger);
     })(request);
   } catch (error: any) {
     await logCronExecution(JOB_NAME, "error", "Erro inesperado", {
@@ -47,7 +36,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
-async function processQueue(jobName: string, executor: string) {
+async function processQueue(
+  jobName: string,
+  executor: string,
+  logger: CronExecutionLogger,
+) {
   const supabase = createAdminSupabaseClient();
 
   // Buscar todas as notificações pendentes (sem limite para agrupar)
@@ -58,11 +51,11 @@ async function processQueue(jobName: string, executor: string) {
     .order("created_at", { ascending: true });
 
   if (queueError) {
+    logger.error(`Erro ao buscar fila: ${queueError.message}`);
     await logCronExecution(jobName, "error", "Erro ao buscar fila", {
       error: queueError.message,
       executor,
     });
-    console.error("❌ Erro ao buscar fila de emails:", queueError);
     return NextResponse.json(
       { error: "Erro ao buscar fila de emails", details: queueError.message },
       { status: 500 },
@@ -70,6 +63,7 @@ async function processQueue(jobName: string, executor: string) {
   }
 
   if (!emailQueue || emailQueue.length === 0) {
+    logger.log("Fila vazia: nenhum email pendente");
     await logCronExecution(jobName, "success", "Fila vazia", { executor });
     return NextResponse.json({
       success: true,
@@ -77,6 +71,7 @@ async function processQueue(jobName: string, executor: string) {
       processed: 0,
       failed: 0,
       grouped: 0,
+      logs: logger.getLogs(),
     });
   }
 
@@ -187,13 +182,16 @@ async function processQueue(jobName: string, executor: string) {
 
       processed += userGroup.notifications.length;
       groupedEmails++;
-      console.log(
+      logger.log(
         `✅ Email consolidado enviado para ${userGroup.user_email}: ${userGroup.notifications.length} notificações agrupadas`,
       );
     } catch (error: any) {
       failed += userGroup.notifications.length;
       const errorMessage = error.message || "Erro desconhecido";
       errors.push(`${userGroup.user_email}: ${errorMessage}`);
+      logger.error(
+        `Falha ao enviar para ${userGroup.user_email}: ${errorMessage}`,
+      );
 
       // Verificar tentativas e marcar como falhou ou voltar para pending
       const notificationIds = userGroup.notifications.map((n) => n.id);
@@ -262,6 +260,7 @@ async function processQueue(jobName: string, executor: string) {
     success: true,
     ...resultSummary,
     errors: errors.length > 0 ? errors.slice(0, 10) : [],
+    logs: logger.getLogs(),
   });
 }
 

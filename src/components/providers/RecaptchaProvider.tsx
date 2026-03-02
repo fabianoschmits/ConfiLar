@@ -8,6 +8,11 @@ export function RecaptchaProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setMounted(true);
+    if (!process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY) {
+      console.warn(
+        "⚠️ reCAPTCHA Site Key não encontrada nas variáveis de ambiente!",
+      );
+    }
   }, []);
 
   if (!mounted) return <>{children}</>;

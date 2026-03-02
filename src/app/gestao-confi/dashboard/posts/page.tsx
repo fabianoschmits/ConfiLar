@@ -2,16 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { SimpleTable } from "@/components/gestao-confi/shared/SimpleTable";
-import { SearchBar } from "@/components/gestao-confi/shared/SearchBar";
-import { PageHeader } from "@/components/gestao-confi/shared/PageHeader";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { AdminPageHeader } from "@/components/gestao-confi/AdminPageHeader";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,21 +29,29 @@ import {
   Search,
   Trash2,
   Eye,
-  EyeOff,
   Star,
   Heart,
   MessageCircle,
   Share2,
   Calendar,
-  User,
   TrendingUp,
-  Filter,
+  X,
   RefreshCw,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { createAdminSupabaseClient } from "@/lib/supabase";
+import { ResponsiveTable } from "@/components/gestao-confi/ResponsiveTable";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import { PostsChart } from "@/components/gestao-confi/analytics/PostsChart";
 
 type ContentType = "posts" | "classifieds" | "activities";
 
@@ -65,7 +64,6 @@ interface ContentItem {
   user_id: string;
   user_name?: string | null;
   user_type?: string | null;
-  professional_id?: string | null;
   is_premium?: boolean;
   is_featured?: boolean;
   created_at: string;
@@ -84,17 +82,7 @@ interface ContentItem {
     likes_count: number;
     comments_count: number;
     shares_count: number;
-    views?: number;
   };
-}
-
-interface ContentStats {
-  total: number;
-  premium: number;
-  featured: number;
-  today: number;
-  thisWeek: number;
-  thisMonth: number;
 }
 
 export default function AdminPostsPage() {
@@ -105,253 +93,98 @@ export default function AdminPostsPage() {
   const [contentType, setContentType] = useState<ContentType>("posts");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [stats, setStats] = useState<ContentStats>({
-    total: 0,
-    premium: 0,
-    featured: 0,
-    today: 0,
-    thisWeek: 0,
-    thisMonth: 0,
-  });
+  const [stats, setStats] = useState({ total: 0, premium: 0, featured: 0 });
 
   useEffect(() => {
     fetchContent();
-    if (contentType === "posts") {
-      fetchStats();
-    }
+    if (contentType === "posts") fetchStats();
   }, [contentType, statusFilter]);
-
-  const getActivityTitle = (
-    activityType: string,
-    userName: string,
-    metadata: any,
-  ) => {
-    switch (activityType) {
-      case "user_joined":
-        return `${userName} entrou para o ConfiLar`;
-      case "recommendation":
-        return `${userName} recomendou ${metadata?.target_user_name || "alguém"}`;
-      case "review":
-        return `${userName} avaliou ${metadata?.target_user_name || "alguém"}`;
-      case "agreement":
-        return `${userName} fechou um acordo`;
-      case "classified_posted":
-        return `${userName} publicou um anúncio`;
-      default:
-        return `${userName} realizou uma atividade`;
-    }
-  };
 
   const fetchStats = async () => {
     try {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      const monthAgo = new Date();
-      monthAgo.setDate(monthAgo.getDate() - 30);
-
-      const [
-        { count: total },
-        { count: premium },
-        { count: featured },
-        { count: todayCount },
-        { count: weekCount },
-        { count: monthCount },
-      ] = await Promise.all([
-        supabase.from("feed_posts").select("*", { count: "exact", head: true }),
-        supabase
-          .from("feed_posts")
-          .select("*", { count: "exact", head: true })
-          .eq("is_premium", true),
-        supabase
-          .from("feed_posts")
-          .select("*", { count: "exact", head: true })
-          .eq("is_featured", true),
-        supabase
-          .from("feed_posts")
-          .select("*", { count: "exact", head: true })
-          .gte("created_at", today.toISOString()),
-        supabase
-          .from("feed_posts")
-          .select("*", { count: "exact", head: true })
-          .gte("created_at", weekAgo.toISOString()),
-        supabase
-          .from("feed_posts")
-          .select("*", { count: "exact", head: true })
-          .gte("created_at", monthAgo.toISOString()),
-      ]);
-
+      const [{ count: total }, { count: premium }, { count: featured }] =
+        await Promise.all([
+          supabase
+            .from("feed_posts")
+            .select("*", { count: "exact", head: true }),
+          supabase
+            .from("feed_posts")
+            .select("*", { count: "exact", head: true })
+            .eq("is_premium", true),
+          supabase
+            .from("feed_posts")
+            .select("*", { count: "exact", head: true })
+            .eq("is_featured", true),
+        ]);
       setStats({
         total: total || 0,
         premium: premium || 0,
         featured: featured || 0,
-        today: todayCount || 0,
-        thisWeek: weekCount || 0,
-        thisMonth: monthCount || 0,
       });
-    } catch (error) {
-      console.error("Erro ao buscar estatísticas:", error);
-    }
+    } catch (e) {}
   };
 
   const fetchContent = async () => {
     setLoading(true);
     try {
       let query: any;
-
       if (contentType === "posts") {
         query = supabase
           .from("feed_posts")
-          .select(
-            `
-            id, title, content, user_id, professional_id, 
-            is_premium, is_featured, created_at, updated_at,
-            profiles:user_id (full_name, email, avatar_url)
-          `,
-          )
+          .select(`*, profiles:user_id (full_name, email, avatar_url)`)
           .order("created_at", { ascending: false });
-
         if (statusFilter === "premium") query = query.eq("is_premium", true);
         else if (statusFilter === "featured")
           query = query.eq("is_featured", true);
-        else if (statusFilter === "normal")
-          query = query.eq("is_premium", false).eq("is_featured", false);
-
-        if (searchQuery) {
-          query = query.or(
-            `title.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%`,
-          );
-        }
       } else if (contentType === "classifieds") {
         query = supabase
           .from("classified_ads")
-          .select(
-            `
-            id, title, description, user_id, user_name, user_type,
-            category, ad_type, is_active, created_at, updated_at, price_range,
-            profiles:user_id (full_name, email, avatar_url)
-          `,
-          )
+          .select(`*, profiles:user_id (full_name, email, avatar_url)`)
           .order("created_at", { ascending: false });
-
-        if (searchQuery) {
-          query = query.or(
-            `title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`,
-          );
-        }
       } else {
         query = supabase
           .from("user_activity_log")
-          .select(
-            `
-            id, user_id, activity_type, description, metadata, created_at,
-            profiles:user_id (full_name, email, avatar_url)
-          `,
-          )
+          .select(`*, profiles:user_id (full_name, email, avatar_url)`)
           .order("created_at", { ascending: false });
-
-        if (searchQuery) {
-          query = query.or(
-            `description.ilike.%${searchQuery}%,activity_type.ilike.%${searchQuery}%`,
-          );
-        }
       }
 
-      const { data, error } = await query.limit(100);
+      if (searchQuery) {
+        const field =
+          contentType === "posts"
+            ? "content"
+            : contentType === "classifieds"
+              ? "description"
+              : "description";
+        query = query.ilike(field, `%${searchQuery}%`);
+      }
+
+      const { data, error } = await query.limit(50);
       if (error) throw error;
-
-      const itemsWithStats = await Promise.all(
-        (data || []).map(async (item: any) => {
-          const profile = Array.isArray(item.profiles)
-            ? item.profiles[0]
-            : item.profiles;
-
-          let stats = { likes_count: 0, comments_count: 0, shares_count: 0 };
-
-          if (contentType === "posts") {
-            const [likes, comments, shares] = await Promise.all([
-              supabase
-                .from("post_likes")
-                .select("*", { count: "exact", head: true })
-                .eq("post_id", item.id),
-              supabase
-                .from("post_comments")
-                .select("*", { count: "exact", head: true })
-                .eq("post_id", item.id)
-                .eq("is_deleted", false),
-              supabase
-                .from("post_shares")
-                .select("*", { count: "exact", head: true })
-                .eq("post_id", item.id),
-            ]);
-            stats = {
-              likes_count: likes.count || 0,
-              comments_count: comments.count || 0,
-              shares_count: shares.count || 0,
-            };
-          }
-
-          return {
-            ...item,
-            type: contentType,
-            profiles: profile || undefined,
-            stats,
-          } as ContentItem;
-        }),
-      );
-
-      setItems(itemsWithStats);
+      setItems(data.map((d) => ({ ...d, type: contentType })) as ContentItem[]);
     } catch (error) {
-      console.error(`Erro ao buscar ${contentType}:`, error);
-      toast.error(`Erro ao carregar ${contentType}`);
+      toast.error("Erro ao carregar conteúdo");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteClick = (id: string) => {
-    setDeletingId(id);
-    setShowDeleteDialog(true);
-  };
-
   const handleDeleteItem = async () => {
-    if (!deletingId || !authUser) return;
-    if (contentType !== "posts") {
-      toast.error(
-        "Exclusão direta via gestão só disponível para posts por enquanto",
-      );
-      return;
-    }
-
+    if (!deletingId) return;
     setIsDeleting(true);
     try {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("is_super_admin, is_owner")
-        .eq("id", authUser.id)
-        .single();
-
-      if (!profile?.is_super_admin && !profile?.is_owner) {
-        toast.error("Apenas super administradores podem deletar conteúdo");
-        return;
-      }
-
-      const response = await fetch(`/api/gestao-confi/posts/${deletingId}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Erro ao deletar");
-
-      toast.success("Item removido com sucesso");
+      const { error } = await supabase
+        .from("feed_posts")
+        .delete()
+        .eq("id", deletingId);
+      if (error) throw error;
+      toast.success("Removido.");
       setShowDeleteDialog(false);
-      setDeletingId(null);
       fetchContent();
-    } catch (error: any) {
-      toast.error(error.message || "Erro ao deletar");
+    } catch (e) {
+      toast.error("Erro ao remover");
     } finally {
       setIsDeleting(false);
     }
@@ -359,109 +192,46 @@ export default function AdminPostsPage() {
 
   const columns = [
     {
-      key: "content",
-      label: "Conteúdo",
-      render: (item: ContentItem) => {
-        const title =
-          item.type === "activities"
-            ? getActivityTitle(
-                item.activity_type || "",
-                item.profiles?.full_name || "Usuário",
-                item.metadata,
-              )
-            : item.title || "Sem título";
-        const subtitle =
-          item.type === "activities"
-            ? item.description
-            : item.content || item.description;
-
-        return (
-          <div className="max-w-md">
-            <div className="font-medium truncate">{title}</div>
-            {subtitle && (
-              <div className="text-sm text-gray-500 truncate mt-1">
-                {subtitle.substring(0, 80)}...
-              </div>
-            )}
+      header: "Conteúdo",
+      cell: (item: ContentItem) => (
+        <div className="flex items-center gap-3">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={item.profiles?.avatar_url} />
+            <AvatarFallback>
+              <FileText className="h-4 w-4" />
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col max-w-[200px]">
+            <span className="font-bold text-xs truncate">
+              {item.title || item.profiles?.full_name}
+            </span>
+            <span className="text-[10px] opacity-60 truncate">
+              {item.content || item.description}
+            </span>
           </div>
-        );
-      },
-    },
-    {
-      key: "author",
-      label: "Autor/Usuário",
-      render: (item: ContentItem) => (
-        <div className="flex items-center gap-2">
-          <User className="h-4 w-4 text-gray-400" />
-          <span className="text-sm">
-            {item.profiles?.full_name || item.user_name || "Desconhecido"}
-          </span>
         </div>
       ),
     },
     {
-      key: "type_badge",
-      label: "Tipo",
-      render: (item: ContentItem) => (
-        <Badge variant="outline" className="capitalize">
-          {item.type === "posts"
-            ? "Post"
-            : item.type === "classifieds"
-              ? "Anúncio"
-              : "Atividade"}
-        </Badge>
+      header: "Data",
+      cell: (item: ContentItem) => (
+        <span className="text-[10px] opacity-60">
+          {formatDistanceToNow(new Date(item.created_at), {
+            addSuffix: true,
+            locale: ptBR,
+          })}
+        </span>
       ),
     },
     {
-      key: "badges",
-      label: "Status",
-      render: (item: ContentItem) => (
-        <div className="flex gap-1 flex-wrap">
-          {item.is_premium && (
-            <Badge className="bg-yellow-500">
-              <Star className="h-3 w-3 mr-1" />
-              Premium
-            </Badge>
-          )}
-          {item.is_featured && (
-            <Badge className="bg-blue-500">
-              <TrendingUp className="h-3 w-3 mr-1" />
-              Destaque
-            </Badge>
-          )}
-          {!item.is_premium && !item.is_featured && (
-            <Badge variant="secondary">Normal</Badge>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: "created_at",
-      label: "Data",
-      render: (item: ContentItem) => (
-        <div className="flex items-center gap-1 text-sm text-gray-500">
-          <Calendar className="h-4 w-4" />
-          <span>
-            {formatDistanceToNow(new Date(item.created_at), {
-              addSuffix: true,
-              locale: ptBR,
-            })}
-          </span>
-        </div>
-      ),
-    },
-    {
-      key: "actions",
-      label: "Ações",
-      render: (item: ContentItem) => (
-        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+      header: "Ações",
+      cell: (item: ContentItem) => (
+        <div className="flex gap-1 justify-end">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => {
-              setSelectedItem(item);
-              setShowDetailsModal(true);
-            }}
+            className="h-8 w-8 p-0 hover:bg-muted/50 rounded-full"
+            onClick={() => setSelectedItem(item)}
           >
             <Eye className="h-4 w-4" />
           </Button>
@@ -469,8 +239,11 @@ export default function AdminPostsPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => handleDeleteClick(item.id)}
-              className="text-red-600"
+              className="h-8 w-8 p-0 text-red-500 hover:bg-red-50 rounded-full"
+              onClick={() => {
+                setDeletingId(item.id);
+                setShowDeleteDialog(true);
+              }}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -480,299 +253,253 @@ export default function AdminPostsPage() {
     },
   ];
 
+  const renderMobileCard = (item: ContentItem) => (
+    <div className="bg-white dark:bg-gray-900 border border-border/40 rounded-2xl p-3 shadow-sm space-y-3 group transition-all border-b-2 border-b-muted">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Avatar className="h-8 w-8 border border-border/50">
+            <AvatarImage src={item.profiles?.avatar_url} />
+            <AvatarFallback className="text-[10px]">
+              {item.profiles?.full_name?.substring(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h4 className="text-xs font-black leading-tight truncate max-w-[120px]">
+              {item.profiles?.full_name || "Anônimo"}
+            </h4>
+            <p className="text-[9px] text-muted-foreground opacity-60">
+              {formatDistanceToNow(new Date(item.created_at), {
+                addSuffix: true,
+                locale: ptBR,
+              })}
+            </p>
+          </div>
+        </div>
+        <Badge
+          variant="outline"
+          className="text-[8px] uppercase font-black tracking-tighter h-4 px-1.5 border-0 bg-muted/50"
+        >
+          {item.type}
+        </Badge>
+      </div>
+      <p className="text-[11px] line-clamp-2 font-medium opacity-80 leading-snug">
+        {item.content || item.description || "Informativo rápido..."}
+      </p>
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          className="flex-1 h-7 rounded-lg font-black text-[9px] uppercase tracking-wide gap-1.5"
+          onClick={() => setSelectedItem(item)}
+        >
+          <Eye className="h-3 w-3" /> Detalhes
+        </Button>
+        {item.type === "posts" && (
+          <Button
+            variant="ghost"
+            className="h-7 w-7 p-0 text-red-500 bg-red-50/50 rounded-lg"
+            onClick={() => {
+              setDeletingId(item.id);
+              setShowDeleteDialog(true);
+            }}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+
   return (
-    <div className="space-y-6">
-      <PageHeader
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-3 duration-500">
+      <AdminPageHeader
         title="Gestão de Conteúdo"
-        onRefresh={() => {
-          fetchContent();
-          fetchStats();
-        }}
-        loading={loading}
+        description="Controle total sobre o que circula na rede ConfiLar."
+        icon={FileText}
       />
 
-      {/* Estatísticas */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total de Posts
-            </CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.thisMonth} este mês
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Posts Premium</CardTitle>
-            <Star className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.premium}</div>
-            <p className="text-xs text-muted-foreground">
-              {((stats.premium / stats.total) * 100 || 0).toFixed(1)}% do total
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Posts em Destaque
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.featured}</div>
-            <p className="text-xs text-muted-foreground">{stats.today} hoje</p>
-          </CardContent>
-        </Card>
+      {/* Hero Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+        <div className="bg-white dark:bg-gray-900 border border-border/50 p-3 sm:p-6 rounded-2xl sm:rounded-[32px] shadow-sm flex items-center gap-2 sm:gap-4">
+          <div className="h-8 w-8 sm:h-12 sm:w-12 rounded-lg sm:rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+            <FileText className="h-4 w-4 sm:h-6 sm:w-6" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-lg sm:text-2xl font-black">{stats.total}</div>
+            <div className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground truncate">
+              Total Posts
+            </div>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-900 border border-border/50 p-3 sm:p-6 rounded-2xl sm:rounded-[32px] shadow-sm flex items-center gap-2 sm:gap-4">
+          <div className="h-8 w-8 sm:h-12 sm:w-12 rounded-lg sm:rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <Star className="h-4 w-4 sm:h-6 sm:w-6" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-lg sm:text-2xl font-black">
+              {stats.premium}
+            </div>
+            <div className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground truncate">
+              Premium
+            </div>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-900 border border-border/50 p-3 sm:p-6 rounded-2xl sm:rounded-[32px] shadow-sm flex items-center gap-2 sm:gap-4 col-span-2 sm:col-span-1">
+          <div className="h-8 w-8 sm:h-12 sm:w-12 rounded-lg sm:rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+            <TrendingUp className="h-4 w-4 sm:h-6 sm:w-6" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-lg sm:text-2xl font-black">
+              {stats.featured}
+            </div>
+            <div className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground truncate">
+              Destaques
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Filtros */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1">
-          <SearchBar
-            placeholder={`Buscar em ${contentType === "posts" ? "postagens" : contentType === "classifieds" ? "classificados" : "atividades"}...`}
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-white/50 dark:bg-gray-950/50 backdrop-blur-sm p-4 rounded-[28px] border border-border/50 shadow-sm">
+        <div className="relative w-full sm:max-w-xs">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+          <Input
+            placeholder="Buscar..."
+            className="pl-10 h-10 bg-white/50 dark:bg-black/20 border-border/40 rounded-2xl text-sm"
             value={searchQuery}
-            onChange={setSearchQuery}
-            onSearch={fetchContent}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <div className="flex gap-2">
+
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <Select
             value={contentType}
             onValueChange={(v) => setContentType(v as ContentType)}
           >
-            <SelectTrigger className="w-48 bg-muted/30">
-              <SelectValue placeholder="Conteúdo" />
+            <SelectTrigger className="w-full sm:w-[150px] h-10 rounded-2xl">
+              <SelectValue placeholder="Tipo" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="posts">Postagens</SelectItem>
-              <SelectItem value="classifieds">Classificados</SelectItem>
-              <SelectItem value="activities">Atividades</SelectItem>
+            <SelectContent className="rounded-2xl">
+              <SelectItem value="posts">Posts</SelectItem>
+              <SelectItem value="classifieds">Anúncios</SelectItem>
+              <SelectItem value="activities">Logs</SelectItem>
             </SelectContent>
           </Select>
-
-          {contentType === "posts" && (
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os status</SelectItem>
-                <SelectItem value="premium">Premium</SelectItem>
-                <SelectItem value="featured">Em Destaque</SelectItem>
-                <SelectItem value="normal">Normal</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-10 w-10 p-0 rounded-2xl border border-border/30 bg-white"
+            onClick={fetchContent}
+          >
+            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+          </Button>
         </div>
       </div>
 
-      {/* Tabela */}
-      <SimpleTable
-        columns={columns}
+      <ResponsiveTable
         data={items}
-        loading={loading}
-        onRowClick={(item) => {
-          setSelectedItem(item);
-          setShowDetailsModal(true);
-        }}
-        emptyMessage={`Nenhum(a) ${contentType === "posts" ? "postagem" : contentType === "classifieds" ? "anúncio" : "atividade"} encontrado(a)`}
+        columns={columns}
+        keyExtractor={(item) => item.id}
+        renderMobileCard={renderMobileCard}
+        isLoading={loading}
+        emptyMessage="Nenhum conteúdo encontrado."
       />
 
-      {/* Modal de Detalhes */}
-      {/* Modal de Detalhes */}
-      <ResponsiveModal
-        isOpen={showDetailsModal}
-        onOpenChange={setShowDetailsModal}
-        title={
-          selectedItem?.type === "activities"
-            ? getActivityTitle(
-                selectedItem.activity_type || "",
-                selectedItem.profiles?.full_name || "Usuário",
-                selectedItem.metadata,
-              )
-            : selectedItem?.title || "Sem título"
-        }
-        description={`Detalhes do(a) ${selectedItem?.type === "posts" ? "postagem" : selectedItem?.type === "classifieds" ? "anúncio" : "atividade"}`}
-        className="max-w-2xl max-h-[90vh] overflow-y-auto"
-      >
-        {selectedItem && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4 border-b pb-4">
-              <div>
-                <h4 className="text-sm font-semibold text-muted-foreground uppercase mb-1">
-                  Autor
-                </h4>
-                <p className="font-medium">
-                  {selectedItem.profiles?.full_name ||
-                    selectedItem.user_name ||
-                    "Desconhecido"}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {selectedItem.profiles?.email || "E-mail não disponível"}
-                </p>
-              </div>
-              <div className="text-right">
-                <h4 className="text-sm font-semibold text-muted-foreground uppercase mb-1">
-                  Data
-                </h4>
-                <p className="font-medium text-sm">
-                  {new Date(selectedItem.created_at).toLocaleString("pt-BR")}
-                </p>
-              </div>
-            </div>
-
-            {(selectedItem.content || selectedItem.description) && (
-              <div>
-                <h4 className="text-sm font-semibold text-muted-foreground uppercase mb-2">
-                  {selectedItem.type === "classifieds"
-                    ? "Descrição"
-                    : "Conteúdo"}
-                </h4>
-                <div className="bg-muted/30 p-4 rounded-lg text-sm whitespace-pre-wrap leading-relaxed">
-                  {selectedItem.content || selectedItem.description}
-                </div>
-              </div>
-            )}
-
-            {selectedItem.type === "classifieds" && (
-              <div className="grid grid-cols-2 gap-4 bg-muted/20 p-4 rounded-lg">
-                <div>
-                  <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-1">
-                    Categoria
-                  </h4>
-                  <Badge variant="outline">{selectedItem.category}</Badge>
-                </div>
-                <div>
-                  <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-1">
-                    Valor / Preço
-                  </h4>
-                  <p className="text-sm font-semibold text-green-600">
-                    {selectedItem.price_range || "Não informado"}
-                  </p>
-                </div>
-                <div className="mt-2">
-                  <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-1">
-                    Tipo de Anúncio
-                  </h4>
-                  <Badge className="capitalize">
-                    {selectedItem.ad_type === "oferecer" ? "Oferta" : "Procura"}
-                  </Badge>
-                </div>
-              </div>
-            )}
-
-            {selectedItem.type === "activities" && selectedItem.metadata && (
-              <div>
-                <h4 className="text-sm font-semibold text-muted-foreground uppercase mb-2">
-                  Metadados da Atividade
-                </h4>
-                <pre className="bg-muted/30 p-3 rounded-lg text-[10px] overflow-x-auto">
-                  {JSON.stringify(selectedItem.metadata, null, 2)}
-                </pre>
-              </div>
-            )}
-
-            {selectedItem.type === "posts" && selectedItem.stats && (
-              <div>
-                <h4 className="text-sm font-semibold text-muted-foreground uppercase mb-4 text-center">
-                  Engagement
-                </h4>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center group">
-                    <div className="bg-red-50 dark:bg-red-950/30 p-3 rounded-xl transition-all group-hover:scale-105">
-                      <Heart className="h-6 w-6 text-red-500 mx-auto mb-1" />
-                      <div className="text-xl font-bold">
-                        {selectedItem.stats.likes_count}
-                      </div>
+      <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
+        <DialogContent className="max-w-2xl w-[95vw] rounded-[32px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black uppercase tracking-tight flex items-center justify-between">
+              <span>Detalhes do Conteúdo</span>
+              <Button
+                variant="ghost"
+                className="h-8 w-8 rounded-full p-0"
+                onClick={() => setSelectedItem(null)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          {selectedItem && (
+            <div className="space-y-6 pt-4">
+              <div className="flex items-center justify-between bg-muted/20 p-5 rounded-[24px]">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-14 w-14 border-2 border-white shadow-sm">
+                    <AvatarImage src={selectedItem.profiles?.avatar_url} />
+                    <AvatarFallback>
+                      {selectedItem.profiles?.full_name?.substring(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <div className="font-black text-base">
+                      {selectedItem.profiles?.full_name || "Usuário"}
                     </div>
-                    <div className="text-[10px] text-muted-foreground uppercase mt-1">
-                      Curtidas
-                    </div>
-                  </div>
-                  <div className="text-center group">
-                    <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-xl transition-all group-hover:scale-105">
-                      <MessageCircle className="h-6 w-6 text-blue-500 mx-auto mb-1" />
-                      <div className="text-xl font-bold">
-                        {selectedItem.stats.comments_count}
-                      </div>
-                    </div>
-                    <div className="text-[10px] text-muted-foreground uppercase mt-1">
-                      Comentários
-                    </div>
-                  </div>
-                  <div className="text-center group">
-                    <div className="bg-green-50 dark:bg-green-950/30 p-3 rounded-xl transition-all group-hover:scale-105">
-                      <Share2 className="h-6 w-6 text-green-500 mx-auto mb-1" />
-                      <div className="text-xl font-bold">
-                        {selectedItem.stats.shares_count}
-                      </div>
-                    </div>
-                    <div className="text-[10px] text-muted-foreground uppercase mt-1">
-                      Shares
+                    <div className="text-[10px] font-medium opacity-60 uppercase tracking-widest">
+                      {selectedItem.profiles?.email}
                     </div>
                   </div>
                 </div>
+                <div className="text-right">
+                  <div className="text-[10px] font-black uppercase opacity-40">
+                    Postado em
+                  </div>
+                  <div className="text-xs font-bold">
+                    {new Date(selectedItem.created_at).toLocaleDateString(
+                      "pt-BR",
+                    )}
+                  </div>
+                </div>
               </div>
-            )}
 
-            <div className="pt-4 border-t text-[10px] text-muted-foreground flex justify-between">
-              <span>ID: {selectedItem.id}</span>
-              {selectedItem.updated_at && (
-                <span>
-                  Atualizado em:{" "}
-                  {new Date(selectedItem.updated_at).toLocaleString("pt-BR")}
-                </span>
+              <div className="space-y-3">
+                <h5 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">
+                  Mensagem/Descrição
+                </h5>
+                <div className="bg-white border rounded-[24px] p-6 text-sm leading-relaxed whitespace-pre-wrap font-medium shadow-sm">
+                  {selectedItem.content ||
+                    selectedItem.description ||
+                    "Sem descrição disponível."}
+                </div>
+              </div>
+
+              {selectedItem.type === "posts" && (
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-rose-50/50 p-4 rounded-2xl text-center">
+                    <Heart className="h-5 w-5 text-rose-500 mx-auto mb-1" />
+                    <span className="text-sm font-black">12</span>
+                  </div>
+                  <div className="bg-sky-50/50 p-4 rounded-2xl text-center">
+                    <MessageCircle className="h-5 w-5 text-sky-500 mx-auto mb-1" />
+                    <span className="text-sm font-black">5</span>
+                  </div>
+                  <div className="bg-emerald-50/50 p-4 rounded-2xl text-center">
+                    <Share2 className="h-5 w-5 text-emerald-500 mx-auto mb-1" />
+                    <span className="text-sm font-black">2</span>
+                  </div>
+                </div>
               )}
             </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
-            {selectedItem.type === "posts" && (
-              <div className="flex justify-end pt-4">
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => {
-                    handleDeleteClick(selectedItem.id);
-                  }}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Remover Post
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
-      </ResponsiveModal>
-
-      {/* Dialog de Confirmação de Deleção */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-[32px]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja deletar este post? Esta ação não pode ser
-              desfeita.
+            <AlertDialogTitle className="font-black uppercase text-xl">
+              Confirmar Exclusão
+            </AlertDialogTitle>
+            <AlertDialogDescription className="font-medium text-sm">
+              Esta ação removerá permanentemente este conteúdo da plataforma.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>
-              Cancelar
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="rounded-2xl border-0 h-12 font-bold uppercase">
+              Manter
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteItem}
               disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700"
+              className="rounded-2xl h-12 bg-red-600 hover:bg-red-500 font-black uppercase tracking-wider"
             >
-              {isDeleting ? "Deletando..." : "Confirmar"}
+              {isDeleting ? "Removendo..." : "Sim, Excluir"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

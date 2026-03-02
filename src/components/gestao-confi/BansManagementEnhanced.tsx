@@ -319,12 +319,12 @@ export function BansManagementEnhanced() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                 <Input
                   id="search"
-                  placeholder="Buscar por nome ou email..."
+                  placeholder="Buscar..."
                   value={filters.search}
                   onChange={(e) =>
                     setFilters({ ...filters, search: e.target.value })
                   }
-                  className="pl-9 h-9 text-xs rounded-lg border-muted bg-background"
+                  className="pl-8 h-8 text-[11px] rounded-lg border-muted bg-background"
                 />
               </div>
             </div>
@@ -336,7 +336,7 @@ export function BansManagementEnhanced() {
                   setFilters({ ...filters, status: value })
                 }
               >
-                <SelectTrigger className="h-9 text-xs rounded-lg bg-background">
+                <SelectTrigger className="h-8 text-[11px] rounded-lg bg-background">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -425,58 +425,58 @@ export function BansManagementEnhanced() {
                       <CardContent className="p-3 sm:p-4">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
+                            <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
                               {investigation.user.avatar_url ? (
                                 <img
                                   src={investigation.user.avatar_url}
-                                  className="w-8 h-8 rounded-full border border-border shadow-xs"
+                                  className="w-7 h-7 rounded-full border border-border shadow-xs"
                                 />
                               ) : (
-                                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground border border-border">
-                                  <User className="h-4 w-4" />
+                                <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-muted-foreground border border-border">
+                                  <User className="h-3.5 w-3.5" />
                                 </div>
                               )}
                               <div className="min-w-0">
-                                <h3 className="font-bold text-sm truncate">
+                                <h3 className="font-bold text-[13px] truncate">
                                   {investigation.user.full_name}
                                 </h3>
-                                <p className="text-[10px] text-muted-foreground truncate">
+                                <p className="text-[9px] text-muted-foreground truncate">
                                   {investigation.user.email}
                                 </p>
                               </div>
                               <Badge
                                 variant="outline"
-                                className="text-[9px] px-1.5 py-0 h-4 ml-1"
+                                className="text-[8px] px-1.5 py-0 h-3.5 ml-0.5"
                               >
                                 {investigation.user.user_type}
                               </Badge>
-                              <Badge className="text-[9px] px-1.5 py-0 h-4 bg-yellow-500/10 text-yellow-600 border-yellow-200">
-                                EM ANÁLISE
+                              <Badge className="text-[8px] px-1.5 py-0 h-3.5 bg-yellow-500/10 text-yellow-600 border-yellow-200">
+                                ANÁLISE
                               </Badge>
                             </div>
 
-                            <div className="flex gap-4 text-[11px] mt-2 mb-3 bg-muted/20 p-2 rounded-lg border border-border/30">
+                            <div className="flex gap-3 text-[10px] mt-1.5 mb-2.5 bg-muted/20 p-1.5 rounded-lg border border-border/30">
                               <div className="flex flex-col">
-                                <span className="text-muted-foreground font-medium uppercase text-[9px] tracking-tight">
-                                  Total Denúncias
+                                <span className="text-muted-foreground font-medium uppercase text-[8px] tracking-tight">
+                                  Total
                                 </span>
-                                <span className="font-black text-red-600">
+                                <span className="font-black text-red-600 leading-none">
                                   {investigation.total_reports}
                                 </span>
                               </div>
                               <div className="flex flex-col">
-                                <span className="text-muted-foreground font-medium uppercase text-[9px] tracking-tight">
-                                  Pendentes
+                                <span className="text-muted-foreground font-medium uppercase text-[8px] tracking-tight">
+                                  Pend.
                                 </span>
-                                <span className="font-black text-yellow-600">
+                                <span className="font-black text-yellow-600 leading-none">
                                   {investigation.pending_reports}
                                 </span>
                               </div>
                               <div className="flex flex-col">
-                                <span className="text-muted-foreground font-medium uppercase text-[9px] tracking-tight">
-                                  Última denúncia
+                                <span className="text-muted-foreground font-medium uppercase text-[8px] tracking-tight">
+                                  Última
                                 </span>
-                                <span className="font-bold">
+                                <span className="font-bold leading-none">
                                   {investigation.last_report_date
                                     ? format(
                                         new Date(
@@ -571,11 +571,11 @@ export function BansManagementEnhanced() {
                             <img
                               src={ban.profiles.avatar_url}
                               alt={ban.profiles.full_name}
-                              className="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover shadow-sm border border-border"
+                              className="w-8 h-8 sm:w-11 sm:h-11 rounded-full object-cover shadow-sm border border-border"
                             />
                           ) : (
-                            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground border border-border shadow-sm">
-                              <UserX className="w-4 h-4 sm:w-5 sm:h-5" />
+                            <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground border border-border shadow-sm">
+                              <UserX className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                             </div>
                           )}
                         </div>
@@ -597,14 +597,14 @@ export function BansManagementEnhanced() {
                                 : "TEMPORÁRIO"}
                             </Badge>
                           </div>
-                          <h4 className="font-bold text-[13px] sm:text-sm truncate">
+                          <h4 className="font-bold text-[12px] sm:text-sm truncate">
                             {ban.profiles?.full_name}
                           </h4>
                           <div className="flex flex-col gap-0.5 mt-0.5">
-                            <p className="text-[10px] text-muted-foreground truncate">
+                            <p className="text-[9px] sm:text-[10px] text-muted-foreground truncate">
                               {ban.profiles?.email}
                             </p>
-                            <p className="text-[10px] text-muted-foreground line-clamp-1">
+                            <p className="text-[9px] sm:text-[10px] text-muted-foreground line-clamp-1">
                               <span className="font-medium">Motivo:</span>{" "}
                               {ban.reason}
                             </p>
@@ -664,11 +664,11 @@ export function BansManagementEnhanced() {
                               <img
                                 src={ban.profiles.avatar_url}
                                 alt={ban.profiles.full_name}
-                                className="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover shadow-sm border border-border"
+                                className="w-8 h-8 sm:w-11 sm:h-11 rounded-full object-cover shadow-sm border border-border"
                               />
                             ) : (
-                              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground border border-border shadow-sm">
-                                <User className="w-4 h-4 sm:w-5 sm:h-5" />
+                              <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground border border-border shadow-sm">
+                                <User className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                               </div>
                             )}
                           </div>

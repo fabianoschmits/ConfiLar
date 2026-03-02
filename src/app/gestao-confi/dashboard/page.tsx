@@ -2,55 +2,37 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { supportService } from "@/modules/support/services/supportService";
 import {
-  Users,
-  AlertTriangle,
-  FileText,
-  Shield,
-  ShieldCheck,
   Activity,
   ArrowUpRight,
   TrendingUp,
-  MessageSquare,
-  Star,
-  Clock,
   LayoutDashboard,
-  Megaphone,
+  Users,
+  AlertTriangle,
   CreditCard,
+  RefreshCw,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AdminPageHeader } from "@/components/gestao-confi/AdminPageHeader";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
-import { startOfDay, subDays } from "date-fns";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { startOfDay, subDays, format, isSameDay } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { AdminKpiCards } from "@/components/gestao-confi/dashboard/AdminKpiCards";
+import { AdminTemporalChart } from "@/components/gestao-confi/dashboard/AdminTemporalChart";
 
 // --- Interfaces ---
 interface DashboardStats {
   totalUsers: number;
   newUsersToday: number;
-  totalPosts: number;
   activeReports: number;
-  pendingReports: number;
-  totalReviews: number;
-  systemHealth: "healthy" | "warning" | "critical";
+  openTickets: number;
+  revenueToday: number;
 }
 
 interface ActivityLog {
@@ -58,110 +40,40 @@ interface ActivityLog {
   action: string;
   details: string;
   created_at: string;
-  user_email?: string;
+  userName?: string;
+  userAvatar?: string;
 }
+
+// ... (QuickLink omitido para brevidade no diff se possível, mas vou manter a estrutura correta)
 
 // --- Components ---
-
-function StatCard({
-  title,
-  value,
-  icon: Icon,
-  description,
-  trend,
-  loading,
-  href,
-}: {
-  title: string;
-  value: string | number;
-  icon: any;
-  description?: string;
-  trend?: "up" | "down" | "neutral";
-  loading?: boolean;
-  href?: string;
-}) {
-  const content = (
-    <>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        {description && (
-          <p className="text-xs text-muted-foreground flex items-center mt-1">
-            {trend === "up" && (
-              <ArrowUpRight className="mr-1 h-3 w-3 text-green-500" />
-            )}
-            {description}
-          </p>
-        )}
-      </CardContent>
-    </>
-  );
-
-  if (loading) {
-    return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-4 w-4 rounded-full" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-8 w-16 mb-1" />
-          <Skeleton className="h-3 w-32" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (href) {
-    return (
-      <Link
-        href={href}
-        className="block transition-transform active:scale-[0.98]"
-      >
-        <Card className="hover:border-primary/50 hover:bg-muted/30 transition-colors cursor-pointer">
-          {content}
-        </Card>
-      </Link>
-    );
-  }
-
-  return <Card>{content}</Card>;
-}
 
 function QuickLink({
   href,
   icon: Icon,
   label,
   color,
-  highlight,
 }: {
   href: string;
   icon: any;
   label: string;
   color: string;
-  highlight?: boolean;
 }) {
   return (
     <Link href={href} className="block group">
       <Button
         variant="outline"
-        className={cn(
-          "w-full h-24 sm:h-20 flex flex-col gap-2 hover:bg-muted/50 transition-all border-border shadow-sm",
-          highlight && "border-blue-200 dark:border-blue-900 bg-blue-50/10",
-        )}
+        className="w-full h-16 sm:h-20 flex flex-col gap-1 sm:gap-2 hover:bg-muted/50 transition-all border-border/50 shadow-sm rounded-xl sm:rounded-2xl"
       >
         <div
           className={cn(
-            "p-1.5 rounded-lg bg-card border border-border group-hover:scale-110 transition-transform",
+            "p-1 sm:p-1.5 rounded-lg bg-card border border-border group-hover:scale-110 transition-transform",
             color,
           )}
         >
-          <Icon className="h-5 w-5" />
+          <Icon className="h-4 w-4 sm:h-5 w-5" />
         </div>
-        <span className="text-[10px] sm:text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">
+        <span className="text-[8px] sm:text-xs font-bold uppercase tracking-widest text-muted-foreground/80">
           {label}
         </span>
       </Button>
@@ -172,311 +84,301 @@ function QuickLink({
 // --- Main Page Component ---
 
 export default function AdminDashboardPage() {
-  const t = useTranslations("admin");
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
     newUsersToday: 0,
-    totalPosts: 0,
     activeReports: 0,
-    pendingReports: 0,
-    totalReviews: 0,
-    systemHealth: "healthy",
+    openTickets: 0,
+    revenueToday: 0,
   });
   const [recentLogs, setRecentLogs] = useState<ActivityLog[]>([]);
-  const [chartData, setChartData] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<{ date: string; count: number }[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
+  const [logLimit, setLogLimit] = useState(6);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     const today = startOfDay(new Date());
+    const sevenDaysAgo = subDays(today, 6);
 
     try {
-      // 1. Basic Counts
+      // 1. Fetch KPI Data
       const [
         { count: usersCount },
         { count: newUsers },
-        { count: postsCount },
-        { count: reportsCount },
-        { count: pendingReports },
-        { count: reviewsCount },
+        metrics,
+        { data: revenueData },
       ] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact", head: true }),
         supabase
           .from("profiles")
           .select("*", { count: "exact", head: true })
           .gte("created_at", today.toISOString()),
-        supabase.from("feed_posts").select("*", { count: "exact", head: true }),
-        supabase.from("reports").select("*", { count: "exact", head: true }),
+        supportService.getAdvancedMetrics(),
         supabase
-          .from("reports")
-          .select("*", { count: "exact", head: true })
-          .eq("status", "pending"),
-        supabase.from("reviews").select("*", { count: "exact", head: true }),
+          .from("points_purchases")
+          .select("amount_brl")
+          .eq("status", "approved")
+          .gte("created_at", today.toISOString()),
       ]);
+
+      const totalRevenueToday = (revenueData || []).reduce(
+        (acc, curr) => acc + (Number(curr.amount_brl) || 0),
+        0,
+      );
+      const activeReports = metrics.total_reports - metrics.resolved_reports;
+      const openTickets =
+        metrics.total_tickets -
+        (metrics.resolved_tickets + metrics.closed_tickets);
 
       setStats({
         totalUsers: usersCount || 0,
         newUsersToday: newUsers || 0,
-        totalPosts: postsCount || 0,
-        activeReports: reportsCount || 0,
-        pendingReports: pendingReports || 0,
-        totalReviews: reviewsCount || 0,
-        systemHealth: "healthy", // Placeholder logic
+        activeReports,
+        openTickets,
+        revenueToday: totalRevenueToday,
       });
 
-      // 2. Recent Activity (Logs)
+      // 2. Recent Activity (Logs) with user info & dynamic limit - LOGIN ONLY
       const { data: logs } = await supabase
         .from("system_logs")
-        .select("id, message, details, created_at, level")
+        .select(
+          `
+          id, 
+          message, 
+          created_at, 
+          level,
+          user_id,
+          profiles:user_id (
+            full_name,
+            avatar_url
+          )
+        `,
+        )
+        .eq("action", "user_login")
         .order("created_at", { ascending: false })
-        .limit(5);
+        .limit(logLimit);
 
       if (logs) {
         setRecentLogs(
-          logs.map((l) => ({
+          logs.map((l: any) => ({
             id: l.id,
             action: l.level,
             details: l.message,
             created_at: l.created_at,
+            userName: l.profiles?.full_name,
+            userAvatar: l.profiles?.avatar_url,
           })),
         );
       }
 
-      // 3. Simple Chart Data (Last 7 Days Users)
-      // Mocked for simplicity in this refactor step, ideally fetch real daily counts
-      const mockChartData = Array.from({ length: 7 }).map((_, i) => {
+      // 3. Registration History (Last 7 Days)
+      const { data: recentProfiles } = await supabase
+        .from("profiles")
+        .select("created_at")
+        .gte("created_at", sevenDaysAgo.toISOString())
+        .order("created_at", { ascending: true });
+
+      const dailyCounts = Array.from({ length: 7 }).map((_, i) => {
         const d = subDays(new Date(), 6 - i);
+        const count = (recentProfiles || []).filter((p) =>
+          isSameDay(new Date(p.created_at), d),
+        ).length;
         return {
-          name: d.toLocaleDateString("pt-BR", { weekday: "short" }),
-          users: Math.floor(Math.random() * 50) + (usersCount || 0) / 100, // Dummy trend
+          date: format(d, "EEE", { locale: ptBR }),
+          count,
         };
       });
-      setChartData(mockChartData);
+
+      setChartData(dailyCounts);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [logLimit]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
+  const handleSeeMoreLogs = () => {
+    setLogLimit(50);
+  };
+
   return (
-    <div className="space-y-6 pb-20 md:pb-0">
+    <div className="space-y-8 pb-20 md:pb-8 animate-in fade-in duration-700">
       <AdminPageHeader
-        title="Visão Geral"
-        description="Monitoramento em tempo real da plataforma."
+        title="Dashboard Central"
+        description="Acompanhamento em tempo real da rede ConfiLar."
+        icon={LayoutDashboard}
       >
-        <Button size="sm" onClick={fetchData} disabled={loading}>
-          <Activity className="mr-2 h-4 w-4" />
-          Atualizar
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={fetchData}
+          disabled={loading}
+          className="rounded-xl border-border/50 bg-white/50 backdrop-blur-sm shadow-sm"
+        >
+          <RefreshCw
+            className={cn("mr-2 h-4 w-4", loading && "animate-spin")}
+          />
+          Atualizar Dados
         </Button>
       </AdminPageHeader>
 
-      {/* KPI Grid - Responsive: 1col mobile, 2col tablet, 4col desktop */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title="Total de Usuários"
-          value={stats.totalUsers}
-          icon={Users}
-          description={`+${stats.newUsersToday} hoje`}
-          trend="up"
-          loading={loading}
-          href="/gestao-confi/dashboard/users"
-        />
-        <StatCard
-          title="Postagens"
-          value={stats.totalPosts}
-          icon={FileText}
-          description="Total na plataforma"
-          loading={loading}
-          href="/gestao-confi/dashboard/posts"
-        />
-        <StatCard
-          title="Denúncias Pendentes"
-          value={stats.pendingReports}
-          icon={AlertTriangle}
-          description={
-            stats.pendingReports > 0 ? "Requer atenção imediata" : "Tudo limpo"
-          }
-          trend={stats.pendingReports > 0 ? "down" : "neutral"} // 'down' is bad here visually, but context aware
-          loading={loading}
-          href="/gestao-confi/dashboard/reports"
-        />
-        <StatCard
-          title="Saúde do Sistema"
-          value={stats.systemHealth === "healthy" ? "Normal" : "Alerta"}
-          icon={Activity}
-          description="Status dos serviços"
-          loading={loading}
-          href="/gestao-confi/dashboard/system"
-        />
-      </div>
+      <AdminKpiCards stats={stats} loading={loading} />
 
       <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
-        {/* Main Chart Area (Desktop: 4 cols, Mobile: 1 col) */}
-        <Card className="col-span-1 lg:col-span-4">
-          <CardHeader>
-            <CardTitle>Crescimento de Usuários</CardTitle>
-            <CardDescription>
-              Novos cadastros nos últimos 7 dias
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pl-0">
-            <div className="h-[300px] w-full">
-              {loading ? (
-                <Skeleton className="h-full w-full" />
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
-                    data={chartData}
-                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                  >
-                    <defs>
-                      <linearGradient
-                        id="colorUsers"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="#3b82f6"
-                          stopOpacity={0.8}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="#3b82f6"
-                          stopOpacity={0}
-                        />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis
-                      dataKey="name"
-                      stroke="#888888"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis
-                      stroke="#888888"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(value) => `${value}`}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "rgba(255, 255, 255, 0.8)",
-                        borderRadius: "8px",
-                        border: "none",
-                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                      }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="users"
-                      stroke="#3b82f6"
-                      strokeWidth={2}
-                      fillOpacity={1}
-                      fill="url(#colorUsers)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Main Chart Area */}
+        <div className="lg:col-span-4">
+          <AdminTemporalChart
+            data={chartData}
+            title="Crescimento da Comunidade"
+            description="Novos membros cadastrados na última semana"
+            loading={loading}
+          />
+        </div>
 
-        {/* Recent Activity / Quick Links (Desktop: 3 cols) */}
-        <div className="col-span-1 lg:col-span-3 space-y-6">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>Acesso Rápido</CardTitle>
-              <CardDescription>
-                Atalhos para funções administrativas
-              </CardDescription>
+        {/* Quick Links & Activity */}
+        <div className="lg:col-span-3 space-y-6">
+          <Card className="rounded-[20px] sm:rounded-[32px] border-border/50 shadow-sm bg-white/50 backdrop-blur-sm">
+            <CardHeader className="pb-2 sm:pb-3 px-4 sm:px-6">
+              <CardTitle className="text-[13px] sm:text-base font-bold">
+                Menu de Ação
+              </CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
-              <QuickLink
-                href="/gestao-confi/dashboard"
-                icon={LayoutDashboard}
-                label="Admin"
-                color="text-slate-500"
-              />
-              <QuickLink
-                href="/gestao-confi/dashboard/users"
-                icon={Users}
-                label="Usuários"
-                color="text-indigo-500"
-              />
-              <QuickLink
-                href="/gestao-confi/dashboard/reports"
-                icon={AlertTriangle}
-                label="Denúncias"
-                color="text-red-500"
-              />
-              <QuickLink
-                href="/gestao-confi/dashboard/purchases"
-                icon={CreditCard}
-                label="Financeiro"
-                color="text-purple-500"
-              />
-              <QuickLink
-                href="/gestao-confi/dashboard/system"
-                icon={Activity}
-                label="Sistema"
-                color="text-cyan-500"
-              />
+            <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                <QuickLink
+                  href="/gestao-confi/dashboard/atendimento"
+                  icon={Activity}
+                  label="Hub Atend."
+                  color="text-blue-500"
+                />
+                <QuickLink
+                  href="/gestao-confi/dashboard/users"
+                  icon={Users}
+                  label="Usuários"
+                  color="text-indigo-500"
+                />
+                <QuickLink
+                  href="/gestao-confi/dashboard/atendimento?tab=reports"
+                  icon={AlertTriangle}
+                  label="Denúncias"
+                  color="text-red-500"
+                />
+                <QuickLink
+                  href="/gestao-confi/dashboard/purchases"
+                  icon={CreditCard}
+                  label="Financeiro"
+                  color="text-emerald-500"
+                />
+                <QuickLink
+                  href="/gestao-confi/dashboard/system"
+                  icon={Activity}
+                  label="Sistema"
+                  color="text-slate-500"
+                />
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Atividade Recente</CardTitle>
+          <Card className="rounded-[20px] sm:rounded-[32px] border-border/50 shadow-sm bg-white/50 backdrop-blur-sm overflow-hidden">
+            <CardHeader className="px-4 sm:px-6 pt-4 sm:pt-6 flex flex-row items-center justify-between">
+              <CardTitle className="text-[13px] sm:text-base font-bold">
+                Log de Acessos
+              </CardTitle>
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {loading
-                  ? Array.from({ length: 3 }).map((_, i) => (
+            <CardContent className="px-6 pb-6">
+              <div
+                className={cn(
+                  "space-y-4",
+                  logLimit > 6 &&
+                    "max-h-[450px] overflow-y-auto pr-2 custom-scrollbar",
+                )}
+              >
+                {loading && recentLogs.length === 0
+                  ? Array.from({ length: 4 }).map((_, i) => (
                       <div key={i} className="flex items-center gap-4">
-                        <Skeleton className="h-9 w-9 rounded-full" />
+                        <Skeleton className="h-8 w-8 rounded-full" />
                         <div className="space-y-1">
-                          <Skeleton className="h-4 w-32" />
-                          <Skeleton className="h-3 w-16" />
+                          <Skeleton className="h-3 w-32" />
+                          <Skeleton className="h-2 w-16" />
                         </div>
                       </div>
                     ))
                   : recentLogs.map((log) => (
                       <div
                         key={log.id}
-                        className="flex items-start gap-3 text-sm border-b last:border-0 pb-3 last:pb-0 border-border"
+                        className="flex items-start gap-3 text-sm border-b last:border-0 pb-3 last:pb-0 border-border/40 group hover:bg-muted/5 transition-colors"
                       >
-                        <div className="bg-muted p-2 rounded-full mt-0.5">
-                          <Activity className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                        <div className="grid gap-1">
-                          <p className="font-medium">{log.details}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(log.created_at).toLocaleTimeString(
-                              "pt-BR",
-                              {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              },
-                            )}
+                        {log.userAvatar ? (
+                          <img
+                            src={log.userAvatar}
+                            alt={log.userName || "Admin"}
+                            className="h-8 w-8 rounded-full mt-0.5 shrink-0 object-cover border border-border shadow-sm group-hover:scale-110 transition-transform"
+                          />
+                        ) : (
+                          <div className="bg-muted p-2 rounded-full mt-0.5 shrink-0 group-hover:bg-blue-600/10 group-hover:text-blue-600 transition-colors">
+                            <Activity className="h-3.5 w-3.5" />
+                          </div>
+                        )}
+                        <div className="grid gap-0.5">
+                          <p className="font-bold text-[11px] sm:text-[13px] leading-snug">
+                            {log.details}
                           </p>
+                          <div className="flex items-center gap-2">
+                            {log.userName && (
+                              <span className="text-[8px] sm:text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                                {log.userName}
+                              </span>
+                            )}
+                            <span
+                              className={cn(
+                                "text-[7px] sm:text-[9px] font-black uppercase px-1.5 rounded-md",
+                                log.action === "ERROR"
+                                  ? "bg-red-100 text-red-600"
+                                  : "bg-blue-100 text-blue-600",
+                              )}
+                            >
+                              {log.action}
+                            </span>
+                            <p className="text-[8px] sm:text-[10px] text-muted-foreground font-medium">
+                              {format(
+                                new Date(log.created_at),
+                                "HH:mm '•' dd MMM",
+                                { locale: ptBR },
+                              )}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     ))}
                 {!loading && recentLogs.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    Nenhuma atividade recente.
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    Nenhum log registrado.
                   </p>
+                )}
+
+                {logLimit === 6 && recentLogs.length >= 6 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full mt-2 text-xs text-muted-foreground hover:text-primary rounded-xl"
+                    onClick={handleSeeMoreLogs}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                    ) : (
+                      <ArrowUpRight className="h-3 w-3 mr-2" />
+                    )}
+                    Ver mais eventos
+                  </Button>
                 )}
               </div>
             </CardContent>

@@ -290,41 +290,43 @@ export default function AdminPurchasesPage() {
   ];
 
   const renderMobileCard = (purchase: Purchase) => (
-    <div className="bg-card border rounded-lg p-4 space-y-3 shadow-sm">
+    <div className="bg-card border rounded-xl p-3 space-y-2 shadow-sm">
       <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10">
+        <div className="flex items-center gap-2">
+          <Avatar className="h-8 w-8">
             <AvatarImage src={purchase.user?.avatar_url} />
-            <AvatarFallback>
+            <AvatarFallback className="text-[10px]">
               {purchase.user?.full_name?.substring(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div>
-            <h3 className="font-semibold text-sm">
+          <div className="min-w-0">
+            <h3 className="font-bold text-xs truncate max-w-[120px]">
               {purchase.user?.full_name || "Sem nome"}
             </h3>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[10px] text-muted-foreground truncate">
               {purchase.package?.name}
             </p>
           </div>
         </div>
-        {getStatusBadge(purchase.status)}
-      </div>
-
-      <div className="grid grid-cols-2 gap-2 text-sm">
-        <div>
-          <span className="text-muted-foreground">Valor:</span>
-          <p className="font-semibold">{formatCurrency(purchase.amount_brl)}</p>
-        </div>
-        <div>
-          <span className="text-muted-foreground">Pontos:</span>
-          <p className="font-semibold">{purchase.points_received}</p>
+        <div className="scale-75 origin-top-right">
+          {getStatusBadge(purchase.status)}
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-2 border-t text-xs text-muted-foreground">
+      <div className="grid grid-cols-2 gap-2 text-[11px]">
+        <div>
+          <span className="text-muted-foreground opacity-70">Valor:</span>
+          <p className="font-bold">{formatCurrency(purchase.amount_brl)}</p>
+        </div>
+        <div>
+          <span className="text-muted-foreground opacity-70">Pontos:</span>
+          <p className="font-bold">{purchase.points_received}</p>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between pt-2 border-t text-[10px] text-muted-foreground">
         <span>
-          {format(new Date(purchase.created_at), "dd MMM yyyy HH:mm", {
+          {format(new Date(purchase.created_at), "dd/MM/yy HH:mm", {
             locale: ptBR,
           })}
         </span>
@@ -332,7 +334,7 @@ export default function AdminPurchasesPage() {
           variant="ghost"
           size="sm"
           onClick={() => handleViewDetails(purchase)}
-          className="h-7 px-2"
+          className="h-6 px-2 text-[10px] font-bold"
         >
           Detalhes
         </Button>
@@ -352,100 +354,62 @@ export default function AdminPurchasesPage() {
         </Button>
       </AdminPageHeader>
 
-      {/* Statistics Dashboard */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {statsLoading ? (
-              <Skeleton className="h-8 w-24" />
-            ) : (
-              <>
-                <div className="text-2xl font-bold">
-                  {formatCurrency(stats?.totalRevenue || 0)}
-                </div>
-                <p className="text-xs text-muted-foreground flex items-center mt-1">
-                  <ArrowUpRight className="mr-1 h-3 w-3 text-green-500" />
-                  Compras aprovadas
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="p-3 sm:p-5 rounded-2xl sm:rounded-[28px] border border-emerald-100 bg-emerald-50/20 shadow-sm">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <div className="p-1.5 sm:p-2 rounded-xl bg-emerald-600/10 text-emerald-600">
+              <DollarSign className="h-4 w-4 sm:h-5 w-5" />
+            </div>
+          </div>
+          <h4 className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest opacity-60">
+            Receita Total
+          </h4>
+          <div className="text-lg sm:text-xl font-black">
+            {statsLoading ? "..." : formatCurrency(stats?.totalRevenue || 0)}
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total de Compras
-            </CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {statsLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <>
-                <div className="text-2xl font-bold">
-                  {stats?.totalPurchases || 0}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Todas as compras
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
+        <div className="p-3 sm:p-5 rounded-2xl sm:rounded-[28px] border border-blue-100 bg-blue-50/20 shadow-sm">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <div className="p-1.5 sm:p-2 rounded-xl bg-blue-600/10 text-blue-600">
+              <ShoppingCart className="h-4 w-4 sm:h-5 w-5" />
+            </div>
+          </div>
+          <h4 className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest opacity-60">
+            Total Compras
+          </h4>
+          <div className="text-lg sm:text-xl font-black">
+            {statsLoading ? "..." : stats?.totalPurchases || 0}
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Compras Pendentes
-            </CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {statsLoading ? (
-              <Skeleton className="h-8 w-12" />
-            ) : (
-              <>
-                <div className="text-2xl font-bold">
-                  {stats?.pendingCount || 0}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {stats?.pendingCount && stats.pendingCount > 0
-                    ? "Requer atenção"
-                    : "Tudo em dia"}
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
+        <div className="p-3 sm:p-5 rounded-2xl sm:rounded-[28px] border border-amber-100 bg-amber-50/20 shadow-sm">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <div className="p-1.5 sm:p-2 rounded-xl bg-amber-600/10 text-amber-600">
+              <Clock className="h-4 w-4 sm:h-5 w-5" />
+            </div>
+          </div>
+          <h4 className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest opacity-60">
+            Pendentes
+          </h4>
+          <div className="text-lg sm:text-xl font-black">
+            {statsLoading ? "..." : stats?.pendingCount || 0}
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Taxa de Sucesso
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {statsLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <>
-                <div className="text-2xl font-bold">
-                  {stats?.successRate.toFixed(1) || 0}%
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Compras aprovadas
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
+        <div className="p-3 sm:p-5 rounded-2xl sm:rounded-[28px] border border-indigo-100 bg-indigo-50/20 shadow-sm">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <div className="p-1.5 sm:p-2 rounded-xl bg-indigo-600/10 text-indigo-600">
+              <TrendingUp className="h-4 w-4 sm:h-5 w-5" />
+            </div>
+          </div>
+          <h4 className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest opacity-60">
+            Taxa Sucesso
+          </h4>
+          <div className="text-lg sm:text-xl font-black">
+            {statsLoading ? "..." : `${stats?.successRate.toFixed(1) || 0}%`}
+          </div>
+        </div>
       </div>
 
       {/* Filters */}

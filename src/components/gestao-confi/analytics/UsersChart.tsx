@@ -7,7 +7,17 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { Line, LineChart, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
+import {
+  Area,
+  AreaChart,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import { Card, CardContent } from "@/components/ui/card";
+import { Users, TrendingUp, UserCheck } from "lucide-react";
 
 interface UsersChartProps {
   timeRange: string;
@@ -42,19 +52,16 @@ export function UsersChart({ timeRange }: UsersChartProps) {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
 
-      // Buscar usuários criados
       const { data: users } = await supabase
         .from("profiles")
         .select("created_at, updated_at")
         .gte("created_at", startDate.toISOString());
 
-      // Agrupar por data
       const grouped: Record<
         string,
         { total: number; new: number; active: number }
       > = {};
 
-      // Inicializar todos os dias
       for (let i = 0; i < days; i++) {
         const date = new Date(startDate);
         date.setDate(date.getDate() + i);
@@ -62,34 +69,25 @@ export function UsersChart({ timeRange }: UsersChartProps) {
         grouped[dateStr] = { total: 0, new: 0, active: 0 };
       }
 
-      // Processar usuários
       users?.forEach((user) => {
         const createdDate = new Date(user.created_at)
           .toISOString()
           .split("T")[0];
-
-        // Contar novos usuários no dia de criação
-        if (grouped[createdDate]) {
-          grouped[createdDate].new++;
-        }
+        if (grouped[createdDate]) grouped[createdDate].new++;
       });
 
-      // Calcular total acumulado e ativos
       let runningTotal = 0;
       Object.keys(grouped).forEach((date) => {
         runningTotal += grouped[date].new;
         grouped[date].total = runningTotal;
-
-        // Contar ativos (atualizados nos últimos 7 dias)
         const checkDate = new Date(date);
         const sevenDaysAgo = new Date(checkDate);
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
         users?.forEach((user) => {
           const updatedDate = new Date(user.updated_at);
-          if (updatedDate >= sevenDaysAgo && updatedDate <= checkDate) {
+          if (updatedDate >= sevenDaysAgo && updatedDate <= checkDate)
             grouped[date].active++;
-          }
         });
       });
 
@@ -104,123 +102,149 @@ export function UsersChart({ timeRange }: UsersChartProps) {
         .slice(-days);
 
       setData(chartData);
-    } catch (error) {
-      console.error("Erro ao buscar dados de usuários:", error);
+    } catch (e) {
     } finally {
       setLoading(false);
     }
   };
 
   const chartConfig = {
-    total: {
-      label: "Total de Usuários",
-      color: "hsl(var(--chart-1))",
-    },
-    new: {
-      label: "Novos Usuários",
-      color: "hsl(var(--chart-2))",
-    },
-    active: {
-      label: "Usuários Ativos",
-      color: "hsl(var(--chart-3))",
-    },
+    total: { label: "Total", color: "hsl(221 83% 53%)" },
+    new: { label: "Novos", color: "hsl(142 76% 36%)" },
+    active: { label: "Ativos", color: "hsl(47 95% 53%)" },
   };
 
-  if (loading) {
+  if (loading)
     return (
-      <div className="text-center py-12 text-gray-500">Carregando dados...</div>
-    );
-  }
-
-  if (!data || data.length === 0) {
-    return (
-      <div className="text-center py-12 text-gray-500">
-        Nenhum dado disponível
+      <div className="h-[300px] flex items-center justify-center text-muted-foreground animate-pulse font-black text-[10px] uppercase">
+        Calculando Métricas...
       </div>
     );
-  }
 
   return (
-    <div className="space-y-4">
-      <div className="w-full overflow-x-auto">
-        <ChartContainer
-          config={chartConfig}
-          className="h-[250px] sm:h-[300px] min-w-[600px]"
-        >
-          <LineChart
-            data={data}
-            margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
-          >
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        <div className="bg-blue-50/30 border border-blue-100 dark:bg-blue-950/20 dark:border-blue-900/40 p-3 sm:p-5 rounded-2xl sm:rounded-[24px] group hover:scale-[1.02] transition-transform">
+          <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+            <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600" />
+            <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-blue-600/80">
+              Base Total
+            </span>
+          </div>
+          <div className="text-xl sm:text-3xl font-black text-blue-600">
+            {data[data.length - 1]?.total || 0}
+          </div>
+          <p className="text-[8px] sm:text-[10px] font-bold opacity-60 mt-1 uppercase tracking-tight">
+            Usuários Registrados
+          </p>
+        </div>
+        <div className="bg-emerald-50/30 border border-emerald-100 dark:bg-emerald-950/20 dark:border-emerald-900/40 p-3 sm:p-5 rounded-2xl sm:rounded-[24px] group hover:scale-[1.02] transition-transform">
+          <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+            <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-600" />
+            <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-emerald-600/80">
+              Novos Leads
+            </span>
+          </div>
+          <div className="text-xl sm:text-3xl font-black text-emerald-600">
+            {data.reduce((sum, d) => sum + d.new, 0)}
+          </div>
+          <p className="text-[8px] sm:text-[10px] font-bold opacity-60 mt-1 uppercase tracking-tight">
+            Crescimento no Período
+          </p>
+        </div>
+        <div className="bg-amber-50/30 border border-amber-100 dark:bg-amber-950/20 dark:border-amber-900/40 p-3 sm:p-5 rounded-2xl sm:rounded-[24px] group hover:scale-[1.02] transition-transform">
+          <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+            <UserCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-600" />
+            <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-amber-600/80">
+              Engajados
+            </span>
+          </div>
+          <div className="text-xl sm:text-3xl font-black text-amber-600">
+            {data[data.length - 1]?.active || 0}
+          </div>
+          <p className="text-[8px] sm:text-[10px] font-bold opacity-60 mt-1 uppercase tracking-tight">
+            Retenção de 7 Dias
+          </p>
+        </div>
+      </div>
+
+      <div className="w-full h-[300px] sm:h-[350px] bg-white dark:bg-black/20 border border-border/50 rounded-2xl sm:rounded-[32px] p-3 sm:p-6 shadow-sm">
+        <ChartContainer config={chartConfig} className="h-full w-full">
+          <AreaChart data={data}>
+            <defs>
+              <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="5%"
+                  stopColor="hsl(221 83% 53%)"
+                  stopOpacity={0.3}
+                />
+                <stop
+                  offset="95%"
+                  stopColor="hsl(221 83% 53%)"
+                  stopOpacity={0}
+                />
+              </linearGradient>
+              <linearGradient id="colorNew" x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="5%"
+                  stopColor="hsl(142 76% 36%)"
+                  stopOpacity={0.3}
+                />
+                <stop
+                  offset="95%"
+                  stopColor="hsl(142 76% 36%)"
+                  stopOpacity={0}
+                />
+              </linearGradient>
+            </defs>
             <CartesianGrid
               strokeDasharray="3 3"
-              className="stroke-gray-200 dark:stroke-gray-800"
+              vertical={false}
+              strokeOpacity={0.1}
             />
             <XAxis
               dataKey="date"
-              className="text-[10px] sm:text-xs"
-              tick={{ fill: "currentColor", fontSize: 10 }}
-              angle={-45}
-              textAnchor="end"
-              height={60}
+              axisLine={false}
+              tickLine={false}
+              tick={{
+                fontSize: 10,
+                fontWeight: 700,
+                fill: "currentColor",
+                opacity: 0.5,
+              }}
+              dy={10}
             />
             <YAxis
-              className="text-[10px] sm:text-xs"
-              tick={{ fill: "currentColor", fontSize: 10 }}
-              width={50}
+              axisLine={false}
+              tickLine={false}
+              tick={{
+                fontSize: 10,
+                fontWeight: 700,
+                fill: "currentColor",
+                opacity: 0.5,
+              }}
             />
             <ChartTooltip content={<ChartTooltipContent />} />
-            <Legend wrapperStyle={{ fontSize: "12px" }} />
-            <Line
+            <Area
               type="monotone"
               dataKey="total"
-              stroke="hsl(221.2 83.2% 53.3%)"
-              strokeWidth={2}
-              name="Total de Usuários"
-              dot={{ r: 3 }}
+              stroke="hsl(221 83% 53%)"
+              strokeWidth={4}
+              fillOpacity={1}
+              fill="url(#colorTotal)"
+              name="Total"
             />
-            <Line
+            <Area
               type="monotone"
               dataKey="new"
-              stroke="hsl(142.1 76.2% 36.3%)"
-              strokeWidth={2}
-              name="Novos Usuários"
-              dot={{ r: 3 }}
+              stroke="hsl(142 76% 36%)"
+              strokeWidth={4}
+              fillOpacity={1}
+              fill="url(#colorNew)"
+              name="Novos"
             />
-            <Line
-              type="monotone"
-              dataKey="active"
-              stroke="hsl(47.9 95.8% 53.1%)"
-              strokeWidth={2}
-              name="Usuários Ativos"
-              dot={{ r: 3 }}
-            />
-          </LineChart>
+          </AreaChart>
         </ChartContainer>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-3">
-          <p className="text-xs text-gray-600 dark:text-gray-400">Total</p>
-          <p className="text-xl font-bold">
-            {data[data.length - 1]?.total || 0}
-          </p>
-        </div>
-        <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-3">
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            Novos (período)
-          </p>
-          <p className="text-xl font-bold">
-            {data.reduce((sum, d) => sum + d.new, 0)}
-          </p>
-        </div>
-        <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-3">
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            Ativos (últimos 7 dias)
-          </p>
-          <p className="text-xl font-bold">
-            {data[data.length - 1]?.active || 0}
-          </p>
-        </div>
       </div>
     </div>
   );

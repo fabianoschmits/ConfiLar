@@ -1,114 +1,68 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase";
 import { withAdminAuth } from "@/lib/authenticatedRoute";
-import { logCronExecution } from "@/lib/cron-logging";
+import { logCronExecution, CronExecutionLogger } from "@/lib/cron-logging";
 
-/**
- * API para limpeza de stories antigos
- *
- * ⚠️ NOTA: Esta rota pode ser chamada manualmente por administradores
- * ou por um serviço externo (Cron job, GitHub Actions, etc.)
- *
- * Função executada:
- * - Deleta stories que já passaram de 24 horas (expiraram)
- *
- * Segurança:
- * - Requer autenticação de administrador (se chamado do frontend)
- * - Ou usa CRON_SECRET (se chamado por serviço externo)
- */
 export async function GET(request: NextRequest) {
   const JOB_NAME = "cleanup-stories";
 
   try {
     const authHeader = request.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
+    const logger = new CronExecutionLogger(JOB_NAME);
 
-    // ⚠️ SEGURANÇA: NUNCA aceitar Service Role Key do frontend!
-    // Apenas aceitar CRON_SECRET (serviço externo) ou autenticação de admin
-
-    // Verificar se é chamada por serviço externo com CRON_SECRET
-    if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
-      // CRON_SECRET configurado (serviço externo) - usar Service Role do servidor
+    const runMaintenance = async (executorLabel: string) => {
       const adminSupabase = createAdminSupabaseClient();
-
-      // Usar função do banco que deleta stories expirados
       const { data: result, error: rpcError } = await adminSupabase.rpc(
         "cleanup_expired_stories_report",
       );
 
       if (rpcError) {
-        await logCronExecution(JOB_NAME, "error", "Erro ao limpar stories", {
-          error: rpcError.message,
-        });
-        console.error("❌ Erro ao limpar stories expirados:", rpcError);
-        return NextResponse.json(
-          { error: "Erro ao limpar stories", details: rpcError.message },
-          { status: 500 },
-        );
-      }
-
-      const storiesDeleted = result?.stories_deleted || 0;
-      await logCronExecution(
-        JOB_NAME,
-        "success",
-        `${storiesDeleted} stories deletados`,
-        result,
-      );
-
-      console.log(`✅ Limpeza de stories concluída (via CRON_SECRET):`);
-      console.log(`   - ${storiesDeleted} stories deletados`);
-
-      return NextResponse.json({
-        success: true,
-        message: "Stories expirados deletados com sucesso",
-        stories_deleted: storiesDeleted,
-        story_ids: result?.story_ids || [],
-        timestamp: result?.timestamp,
-      });
-    }
-
-    // Se não for CRON_SECRET, verificar se é admin autenticado
-    return withAdminAuth(async (req, supabase, user) => {
-      // Usar Service Role para bypassar RLS ao executar a função
-      const adminSupabase = createAdminSupabaseClient();
-
-      // Usar função do banco que deleta stories expirados
-      const { data: result, error: rpcError } = await adminSupabase.rpc(
-        "cleanup_expired_stories_report",
-      );
-
-      if (rpcError) {
+        logger.error(`Erro ao limpar stories: ${rpcError.message}`);
         await logCronExecution(
           JOB_NAME,
           "error",
-          "Erro ao limpar stories (Admin)",
-          { error: rpcError.message, admin_id: user.id },
+          `Erro ao limpar (${executorLabel})`,
+          {
+            error: rpcError.message,
+          },
         );
-        console.error("❌ Erro ao limpar stories expirados:", rpcError);
         return NextResponse.json(
-          { error: "Erro ao limpar stories", details: rpcError.message },
+          {
+            error: "Erro ao limpar stories",
+            details: rpcError.message,
+            logs: logger.getLogs(),
+          },
           { status: 500 },
         );
       }
 
       const storiesDeleted = result?.stories_deleted || 0;
+      logger.log(`Stories expirados deletados com sucesso: ${storiesDeleted}`);
+
       await logCronExecution(
         JOB_NAME,
         "success",
-        `${storiesDeleted} stories deletados (Admin)`,
-        { ...result, admin_id: user.id },
+        `${storiesDeleted} stories deletados (${executorLabel})`,
+        result,
       );
-
-      console.log(`✅ Limpeza de stories executada por admin ${user.id}:`);
-      console.log(`   - ${storiesDeleted} stories deletados`);
 
       return NextResponse.json({
         success: true,
-        message: "Stories expirados deletados com sucesso",
-        stories_deleted: storiesDeleted,
-        story_ids: result?.story_ids || [],
-        timestamp: result?.timestamp,
+        message: "Limpeza de stories concluída",
+        ...result,
+        logs: logger.getLogs(),
       });
+    };
+
+    // 1. Cron Secret
+    if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
+      return await runMaintenance("Cron Job");
+    }
+
+    // 2. Admin Auth
+    return withAdminAuth(async (req, supabase, user) => {
+      return await runMaintenance(`Admin ${user.id}`);
     })(request);
   } catch (error: any) {
     await logCronExecution(JOB_NAME, "error", "Erro inesperado", {
@@ -122,5 +76,4 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Permitir POST também (alguns serviços de CRON usam POST)
 export const POST = GET;

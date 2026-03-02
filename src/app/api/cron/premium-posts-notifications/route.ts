@@ -1,159 +1,72 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase";
 import { withAdminAuth } from "@/lib/authenticatedRoute";
-import { logCronExecution } from "@/lib/cron-logging";
+import { logCronExecution, CronExecutionLogger } from "@/lib/cron-logging";
 
-/**
- * API para notificações e manutenção de posts premium
- *
- * ⚠️ NOTA: Esta rota pode ser chamada manualmente por administradores
- * ou por um serviço externo (Cron job, GitHub Actions, etc.)
- *
- * Funções executadas:
- * - Cria notificações para posts premium expirando em 24h
- * - Remove status premium e featured de posts que expiraram
- * - Cria notificações para posts premium que acabaram de expirar
- * - Converte posts premium expirados para posts normais
- *
- * Segurança:
- * - Requer autenticação de administrador (se chamado do frontend)
- * - Ou usa CRON_SECRET (se chamado por serviço externo)
- */
 export async function GET(request: NextRequest) {
   const JOB_NAME = "premium-posts-notifications";
 
   try {
     const authHeader = request.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
+    const logger = new CronExecutionLogger(JOB_NAME);
 
-    // ⚠️ SEGURANÇA: NUNCA aceitar Service Role Key do frontend!
-    // Apenas aceitar CRON_SECRET (serviço externo) ou autenticação de admin
-
-    // Verificar se é chamada por serviço externo com CRON_SECRET
-    if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
-      // CRON_SECRET configurado (serviço externo) - usar Service Role do servidor
+    // Função interna para executar a lógica de manutenção
+    const runMaintenance = async (executorLabel: string) => {
       const adminSupabase = createAdminSupabaseClient();
-
-      // Usar função do banco que cria todas as notificações
       const { data: result, error: rpcError } = await adminSupabase.rpc(
         "maintain_premium_posts_notifications",
       );
 
       if (rpcError) {
+        logger.error(`Erro ao executar manutenção: ${rpcError.message}`);
         await logCronExecution(
           JOB_NAME,
           "error",
-          "Erro ao executar manutenção",
-          { error: rpcError.message },
-        );
-        console.error(
-          "❌ Erro ao executar notificações de posts premium:",
-          rpcError,
+          `Erro ao executar (${executorLabel})`,
+          {
+            error: rpcError.message,
+          },
         );
         return NextResponse.json(
-          { error: "Erro ao executar notificações", details: rpcError.message },
+          {
+            error: "Erro ao executar notificações",
+            details: rpcError.message,
+            logs: logger.getLogs(),
+          },
           { status: 500 },
         );
       }
 
       const deactivatedCount = result?.deactivated_count || 0;
-      const deactivatedIds = result?.deactivated_ids || [];
       const expiringNotifications = result?.expiring_notifications || 0;
       const expiredNotifications = result?.expired_notifications || 0;
 
-      const logMessage = `Sucesso: ${deactivatedCount} posts desativados, ${expiringNotifications} alertados, ${expiredNotifications} expirados`;
+      logger.log(`Posts premium convertidos para normais: ${deactivatedCount}`);
+      logger.log(
+        `Notificações de expiração (24h) criadas: ${expiringNotifications}`,
+      );
+      logger.log(`Notificações de expirados criadas: ${expiredNotifications}`);
+
+      const logMessage = `Sucesso (${executorLabel}): ${deactivatedCount} desativados, ${expiringNotifications} alertados`;
       await logCronExecution(JOB_NAME, "success", logMessage, result);
 
-      console.log(
-        `✅ Manutenção de posts premium concluída (via CRON_SECRET):`,
-      );
-      console.log(
-        `   - ${deactivatedCount} posts premium foram convertidos para posts normais`,
-      );
-      console.log(
-        `   - ${expiringNotifications} notificações de expiração criadas`,
-      );
-      console.log(
-        `   - ${expiredNotifications} notificações de expirados criadas`,
-      );
-
       return NextResponse.json({
         success: true,
-        message:
-          "Posts premium expirados foram convertidos para posts normais e notificações criadas",
-        deactivated_count: deactivatedCount,
-        deactivated_ids: deactivatedIds,
-        expiring_notifications: expiringNotifications,
-        expired_notifications: expiredNotifications,
-        expiring_post_ids: result?.expiring_post_ids || [],
-        expired_post_ids: result?.expired_post_ids || [],
-        timestamp: result?.timestamp,
+        message: "Manutenção de posts premium concluída",
+        ...result,
+        logs: logger.getLogs(),
       });
+    };
+
+    // 1. Verificar chamada via CRON_SECRET
+    if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
+      return await runMaintenance("Cron Job");
     }
 
-    // Se não for CRON_SECRET, verificar se é admin autenticado
+    // 2. Verificar chamada via Admin autenticado
     return withAdminAuth(async (req, supabase, user) => {
-      // Usar Service Role para bypassar RLS ao executar a função
-      const adminSupabase = createAdminSupabaseClient();
-
-      // Usar função do banco que cria todas as notificações
-      const { data: result, error: rpcError } = await adminSupabase.rpc(
-        "maintain_premium_posts_notifications",
-      );
-
-      if (rpcError) {
-        await logCronExecution(
-          JOB_NAME,
-          "error",
-          "Erro ao executar manutenção (Admin)",
-          { error: rpcError.message, admin_id: user.id },
-        );
-        console.error(
-          "❌ Erro ao executar notificações de posts premium:",
-          rpcError,
-        );
-        return NextResponse.json(
-          { error: "Erro ao executar notificações", details: rpcError.message },
-          { status: 500 },
-        );
-      }
-
-      const deactivatedCount = result?.deactivated_count || 0;
-      const deactivatedIds = result?.deactivated_ids || [];
-      const expiringNotifications = result?.expiring_notifications || 0;
-      const expiredNotifications = result?.expired_notifications || 0;
-
-      const logMessage = `Sucesso (Admin): ${deactivatedCount} desativados, ${expiringNotifications} alertados`;
-      await logCronExecution(JOB_NAME, "success", logMessage, {
-        ...result,
-        admin_id: user.id,
-      });
-
-      console.log(
-        `✅ Manutenção de posts premium executada por admin ${user.id}:`,
-      );
-      console.log(
-        `   - ${deactivatedCount} posts premium foram convertidos para posts normais`,
-      );
-      console.log(
-        `   - ${expiringNotifications} notificações de expiração criadas`,
-      );
-      console.log(
-        `   - ${expiredNotifications} notificações de expirados criadas`,
-      );
-
-      return NextResponse.json({
-        success: true,
-        message:
-          "Posts premium expirados foram convertidos para posts normais e notificações criadas",
-        deactivated_count: deactivatedCount,
-        deactivated_ids: deactivatedIds,
-        expiring_notifications: expiringNotifications,
-        expired_notifications: expiredNotifications,
-        expiring_post_ids: result?.expiring_post_ids || [],
-        expired_post_ids: result?.expired_post_ids || [],
-        timestamp: result?.timestamp,
-      });
+      return await runMaintenance(`Admin ${user.id}`);
     })(request);
   } catch (error: any) {
     await logCronExecution(JOB_NAME, "error", "Erro inesperado", {

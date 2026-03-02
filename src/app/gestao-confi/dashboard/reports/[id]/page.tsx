@@ -266,7 +266,7 @@ export default function AdminReportDetailPage() {
   const preview = getPreviewContent();
 
   return (
-    <div className="space-y-4 max-w-4xl mx-auto p-4 sm:p-5 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-3.5 max-w-4xl mx-auto p-2.5 sm:p-5 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -280,7 +280,9 @@ export default function AdminReportDetailPage() {
           </Button>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-black tracking-tight">Detalhes</h1>
+              <h1 className="text-base sm:text-xl font-black tracking-tight">
+                Detalhes
+              </h1>
               <Badge
                 variant="outline"
                 className="font-mono text-[9px] bg-muted/50 border-primary/20 px-1.5 py-0"
@@ -328,11 +330,13 @@ export default function AdminReportDetailPage() {
                     className={`flex items-center gap-1.5 px-3 py-1 rounded-full transition-all ${isActive ? "bg-primary text-primary-foreground shadow-sm" : isPast ? "text-primary/60" : "text-muted-foreground/60"}`}
                   >
                     <Icon className="w-3.5 h-3.5" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:inline">
+                    <span className="text-[9px] font-bold uppercase tracking-wider hidden sm:inline">
                       {step.label}
                     </span>
                   </div>
-                  {idx < 2 && <div className="w-4 h-[1px] bg-border mx-1" />}
+                  {idx < 2 && (
+                    <div className="w-3 h-[1px] bg-border mx-0.5 sm:mx-1" />
+                  )}
                 </React.Fragment>
               );
             })}
@@ -344,7 +348,7 @@ export default function AdminReportDetailPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Reporter Card */}
         <Card className="overflow-hidden border-none shadow-sm bg-gradient-to-br from-background to-muted/20">
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-2">
                 <div className="p-1 bg-primary/10 rounded-lg">
@@ -388,7 +392,7 @@ export default function AdminReportDetailPage() {
 
         {/* Reported User Card */}
         <Card className="overflow-hidden border-none shadow-sm bg-gradient-to-br from-background to-red-50/10 dark:to-red-950/5">
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-2">
                 <div className="p-1 bg-red-100 dark:bg-red-900/30 rounded-lg text-red-600 dark:text-red-400">
@@ -439,7 +443,7 @@ export default function AdminReportDetailPage() {
 
       {/* Reason & Description */}
       <Card className="border-none shadow-sm overflow-hidden">
-        <CardHeader className="pb-2 border-b bg-muted/5 p-4">
+        <CardHeader className="pb-1.5 border-b bg-muted/5 p-3 sm:p-4">
           <div className="flex items-center gap-2">
             <ShieldAlert className="w-3.5 h-3.5 text-primary" />
             <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">
@@ -447,19 +451,19 @@ export default function AdminReportDetailPage() {
             </CardTitle>
           </div>
         </CardHeader>
-        <CardContent className="p-4 space-y-4">
+        <CardContent className="p-3 sm:p-4 space-y-4">
           <div className="space-y-3">
             <Badge
               variant="secondary"
-              className="bg-primary/5 text-primary border-primary/10 px-3 py-1 rounded-lg font-bold text-[10px] uppercase"
+              className="bg-primary/5 text-primary border-primary/10 px-2.5 py-0.5 rounded-lg font-bold text-[9px] uppercase"
             >
               {report.reason ||
                 (report.type === "message"
                   ? "Mensagem imprópria"
                   : "Denúncia de conteúdo")}
             </Badge>
-            <div className="bg-muted/30 p-4 rounded-2xl border border-dashed border-border/50 relative">
-              <p className="text-[13px] leading-relaxed whitespace-pre-wrap">
+            <div className="bg-muted/30 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-dashed border-border/50 relative">
+              <p className="text-[12px] sm:text-[13px] leading-relaxed whitespace-pre-wrap">
                 {report.description}
               </p>
               <p className="text-[9px] text-muted-foreground mt-3 italic opacity-70">
@@ -478,7 +482,7 @@ export default function AdminReportDetailPage() {
       {/* Reported Content Preview (Miniature) */}
       {preview && (
         <Card className="border-none shadow-sm overflow-hidden">
-          <CardHeader className="pb-2 border-b bg-muted/5 p-4">
+          <CardHeader className="pb-1.5 border-b bg-muted/5 p-3 sm:p-4">
             <div className="flex items-center gap-2">
               <Eye className="w-3.5 h-3.5 text-primary" />
               <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">
@@ -486,7 +490,7 @@ export default function AdminReportDetailPage() {
               </CardTitle>
             </div>
           </CardHeader>
-          <CardContent className="p-4 sm:p-5">
+          <CardContent className="p-3 sm:p-4 sm:p-5">
             {report.type === "post" && report.reported_post ? (
               <div className="max-w-lg mx-auto flex flex-col gap-4">
                 <PostCard
@@ -591,7 +595,7 @@ export default function AdminReportDetailPage() {
 
       {/* Moderator Feedback Section */}
       <Card className="border-none shadow-sm overflow-hidden">
-        <CardHeader className="pb-2 border-b bg-muted/5 p-4">
+        <CardHeader className="pb-1.5 border-b bg-muted/5 p-3 sm:p-4">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-3.5 h-3.5 text-primary" />
             <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">
@@ -599,7 +603,7 @@ export default function AdminReportDetailPage() {
             </CardTitle>
           </div>
         </CardHeader>
-        <CardContent className="p-4 space-y-4">
+        <CardContent className="p-3 sm:p-4 space-y-4">
           <div className="flex flex-wrap gap-2 mb-2">
             {FEEDBACK_TEMPLATES.map((tmpl) => (
               <Button
@@ -627,16 +631,17 @@ export default function AdminReportDetailPage() {
                 placeholder="Descreva o que foi feito ou o motivo da decisão..."
                 value={resolution}
                 onChange={(e) => setResolution(e.target.value)}
-                className="flex-1 min-h-[100px] resize-none rounded-2xl border-muted bg-muted/20 focus:bg-background transition-colors p-3 text-[13px]"
+                className="flex-1 min-h-[80px] sm:min-h-[100px] resize-none rounded-xl sm:rounded-2xl border-muted bg-muted/20 focus:bg-background transition-colors p-2.5 sm:p-3 text-[12px] sm:text-[13px]"
               />
               <Button
                 onClick={() => handleUpdate(report.status, resolution)}
                 disabled={isUpdating || !resolution.trim()}
-                className="self-end rounded-xl h-10 px-4 gap-2 bg-primary text-primary-foreground font-bold shadow-sm"
+                className="self-end rounded-xl h-9 sm:h-10 px-3 sm:px-4 gap-1.5 sm:gap-2 bg-primary text-primary-foreground font-bold shadow-sm text-[10px] sm:text-base"
                 title="Apenas enviar mensagem sem mudar status"
               >
-                <Send className="w-4 h-4" />
-                Enviar Mensagem
+                <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Enviar Mensagem</span>
+                <span className="inline sm:hidden">Enviar</span>
               </Button>
             </div>
           </div>

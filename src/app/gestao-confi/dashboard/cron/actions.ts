@@ -79,3 +79,17 @@ export async function fetchCronStats(): Promise<CronStats> {
     lastFailedTime: lastFail?.created_at || null,
   };
 }
+
+export async function getEmailQueueCount(): Promise<number> {
+  const supabase = createAdminSupabaseClient();
+  const { count, error } = await supabase
+    .from("notification_email_queue")
+    .select("*", { count: "exact", head: true });
+
+  if (error) {
+    console.error("Error fetching email queue count:", error);
+    return 0;
+  }
+
+  return count || 0;
+}

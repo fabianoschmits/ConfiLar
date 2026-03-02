@@ -17,80 +17,81 @@ import {
   ShoppingCart,
   ShieldCheck,
   MessageSquare,
+  ChevronRight,
+  CreditCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const adminNavItems = [
+const navGroups = [
   {
-    href: "/gestao-confi/dashboard",
-    label: "Visão Geral",
-    icon: LayoutDashboard,
-    description: "Resumo completo do sistema",
+    title: "Gestão Principal",
+    items: [
+      {
+        href: "/gestao-confi/dashboard",
+        label: "Visão Geral",
+        icon: LayoutDashboard,
+      },
+      {
+        href: "/gestao-confi/dashboard/atendimento",
+        label: "Atendimento & Hub",
+        icon: MessageSquare,
+      },
+      {
+        href: "/gestao-confi/dashboard/users",
+        label: "Gerenciar Usuários",
+        icon: Users,
+      },
+      {
+        href: "/gestao-confi/dashboard/purchases",
+        label: "Financeiro & Créditos",
+        icon: CreditCard,
+      },
+    ],
   },
   {
-    href: "/gestao-confi/dashboard/analytics",
-    label: "Analytics",
-    icon: BarChart3,
-    description: "Gráficos e estatísticas",
+    title: "Moderação & Conteúdo",
+    items: [
+      {
+        href: "/gestao-confi/dashboard/atendimento?tab=verifications",
+        label: "Verificações de ID",
+        icon: ShieldCheck,
+      },
+      {
+        href: "/gestao-confi/dashboard/posts",
+        label: "Posts & Conteúdo",
+        icon: FileText,
+      },
+    ],
   },
   {
-    href: "/gestao-confi/dashboard/users",
-    label: "Usuários",
-    icon: Users,
-    description: "Gerenciar usuários",
-  },
-  {
-    href: "/gestao-confi/dashboard/purchases",
-    label: "Compras",
-    icon: ShoppingCart,
-    description: "Gerenciar compras de pontos",
-  },
-  {
-    href: "/gestao-confi/dashboard/verifications",
-    label: "Verificações",
-    icon: ShieldCheck,
-    description: "Analisar documentos de identidade",
-  },
-  {
-    href: "/gestao-confi/dashboard/posts",
-    label: "Posts & Conteúdo",
-    icon: FileText,
-    description: "Gerenciar posts e conteúdo",
-  },
-  {
-    href: "/gestao-confi/dashboard/reports",
-    label: "Moderação",
-    icon: Shield,
-    description: "Denúncias e banimentos",
-  },
-  {
-    href: "/gestao-confi/dashboard/tickets",
-    label: "Tickets de Suporte",
-    icon: MessageSquare,
-    description: "Gerenciar chamados de suporte",
-  },
-  {
-    href: "/gestao-confi/dashboard/cron",
-    label: "Cron Jobs",
-    icon: Clock,
-    description: "Tarefas agendadas",
-  },
-  {
-    href: "/gestao-confi/dashboard/system",
-    label: "Sistema",
-    icon: Settings,
-    description: "Configurações do sistema",
-  },
-  {
-    href: "/gestao-confi/dashboard/logs",
-    label: "Logs",
-    icon: Activity,
-    description: "Logs e monitoramento",
+    title: "Análise & Sistema",
+    items: [
+      {
+        href: "/gestao-confi/dashboard/analytics",
+        label: "Analytics",
+        icon: BarChart3,
+      },
+      {
+        href: "/gestao-confi/dashboard/logs",
+        label: "Logs de Sistema",
+        icon: Activity,
+      },
+      {
+        href: "/gestao-confi/dashboard/cron",
+        label: "Tarefas Cron",
+        icon: Clock,
+      },
+      {
+        href: "/gestao-confi/dashboard/system",
+        label: "Configurações",
+        icon: Settings,
+      },
+    ],
   },
 ];
 
 interface AdminSidebarProps {
-  onNavigate?: () => void; // Optional callback to close mobile sheet on navigation
+  onNavigate?: () => void;
 }
 
 export function AdminSidebar({ onNavigate }: AdminSidebarProps) {
@@ -104,43 +105,70 @@ export function AdminSidebar({ onNavigate }: AdminSidebarProps) {
   };
 
   return (
-    <div className="flex flex-col h-full py-4 space-y-4">
-      <div className="px-3 py-2">
-        <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-          Administração
-        </h2>
-        <div className="space-y-1">
-          {adminNavItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = getActiveTab(item.href);
-
-            return (
-              <Button
-                key={item.href}
-                variant={isActive ? "secondary" : "ghost"}
-                size="sm"
-                className={cn(
-                  "w-full justify-start",
-                  isActive ? "bg-accent text-accent-foreground" : "font-normal",
-                )}
-                asChild
-                onClick={onNavigate}
-              >
-                <Link href={item.href}>
-                  <Icon className="mr-2 h-4 w-4" />
-                  {item.label}
-                </Link>
-              </Button>
-            );
-          })}
-        </div>
-      </div>
-      <div className="mt-auto px-3">
-        <div className="flex items-center gap-4 px-4 py-4 rounded-lg bg-muted/50">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">ConfiLar Admin</p>
-            <p className="text-xs text-muted-foreground">v3.0.0</p>
+    <div className="flex flex-col h-full py-6 space-y-6">
+      <div className="px-6">
+        <div className="flex items-center gap-2 mb-8">
+          <div className="bg-blue-600 p-1.5 rounded-lg shadow-lg shadow-blue-500/20">
+            <Shield className="h-5 w-5 text-white" />
           </div>
+          <h2 className="text-xl font-bold tracking-tight">Admin</h2>
+        </div>
+
+        <nav className="space-y-6">
+          {navGroups.map((group) => (
+            <div key={group.title} className="space-y-2">
+              <h3 className="px-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                {group.title}
+              </h3>
+              <div className="space-y-1">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = getActiveTab(item.href);
+
+                  return (
+                    <Button
+                      key={item.href}
+                      variant={isActive ? "secondary" : "ghost"}
+                      size="sm"
+                      className={cn(
+                        "w-full justify-start h-9 px-3 rounded-xl transition-all",
+                        isActive
+                          ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 font-semibold"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                      )}
+                      asChild
+                      onClick={onNavigate}
+                    >
+                      <Link href={item.href}>
+                        <Icon
+                          className={cn(
+                            "mr-2.5 h-4 w-4",
+                            isActive && "text-blue-600 dark:text-blue-400",
+                          )}
+                        />
+                        <span className="flex-1 truncate">{item.label}</span>
+                        {isActive && (
+                          <ChevronRight className="ml-auto h-3 w-3 opacity-50" />
+                        )}
+                      </Link>
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </nav>
+      </div>
+
+      <div className="mt-auto px-4 pb-4">
+        <div className="p-4 rounded-2xl bg-muted/30 border border-border/50">
+          <div className="flex items-center gap-2 mb-1">
+            <p className="text-sm font-bold truncate">ConfiLar</p>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 font-bold">
+              PRO
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground">Versão 3.5.0</p>
         </div>
       </div>
     </div>

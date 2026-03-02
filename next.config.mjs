@@ -90,17 +90,17 @@ const nextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()'
           },
-          // Content Security Policy - ajustado para permitir APIs necessárias
+          // Content Security Policy - ajustado para permitir APIs necessárias e reCAPTCHA v3
           {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://vercel.live https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://vercel.live https://www.google.com https://www.gstatic.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: https: blob: https://api.dicebear.com https://img.youtube.com https://i.ytimg.com https://images.unsplash.com https://randomuser.me",
               "font-src 'self' https://fonts.gstatic.com data:",
-              "connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co https://api.dicebear.com https://servicodados.ibge.gov.br https://*.ibge.gov.br https://img.youtube.com https://i.ytimg.com https://www.google.com",
-              "frame-src 'self' https://*.supabase.co https://vercel.live https://www.youtube.com https://youtube.com https://www.google.com/recaptcha/",
+              "connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co https://api.dicebear.com https://servicodados.ibge.gov.br https://*.ibge.gov.br https://img.youtube.com https://i.ytimg.com https://www.google.com https://www.gstatic.com",
+              "frame-src 'self' https://*.supabase.co https://vercel.live https://www.youtube.com https://youtube.com https://www.google.com",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",

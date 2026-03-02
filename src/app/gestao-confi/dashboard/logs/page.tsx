@@ -25,10 +25,12 @@ import {
   Globe
 } from 'lucide-react'
 import { toast } from 'sonner'
+import Link from 'next/link'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 
 interface SupabaseLog {
   id: string
@@ -45,7 +47,7 @@ export default function AdminLogsPage() {
   const [filteredLogs, setFilteredLogs] = useState<SupabaseLog[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedService, setSelectedService] = useState<string>('api')
+  const [selectedService, setSelectedService] = useState<string>('all')
   const [selectedLevel, setSelectedLevel] = useState<string>('all')
   const [timeRange, setTimeRange] = useState<string>('24h')
   const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set())
@@ -68,8 +70,8 @@ export default function AdminLogsPage() {
 
     setIsLoading(true)
     try {
-      // Buscar logs via API do Supabase
-      const response = await fetch(`/api/gestao-confi/logs/supabase?service=${selectedService}&projectId=${projectId}`)
+      // Buscar logs via API do Supabase com timeRange
+      const response = await fetch(`/api/gestao-confi/logs/supabase?service=${selectedService}&projectId=${projectId}&timeRange=${timeRange}`)
 
       if (!response.ok) {
         const errorData = await response.json()
@@ -93,13 +95,13 @@ export default function AdminLogsPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [projectId, selectedService])
+  }, [projectId, selectedService, timeRange])
 
   useEffect(() => {
     if (projectId) {
       fetchSupabaseLogs()
     }
-  }, [projectId, selectedService, fetchSupabaseLogs])
+  }, [projectId, selectedService, timeRange, fetchSupabaseLogs])
 
   // Realtime Subscription
   useEffect(() => {
@@ -358,6 +360,18 @@ export default function AdminLogsPage() {
                 <SelectItem value="referrals">Indicações</SelectItem>
               </SelectContent>
             </Select>
+            <Select value={timeRange} onValueChange={setTimeRange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Período" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1h">Última hora</SelectItem>
+                <SelectItem value="24h">Últimas 24 horas</SelectItem>
+                <SelectItem value="7d">Últimos 7 dias</SelectItem>
+                <SelectItem value="30d">Últimos 30 dias</SelectItem>
+                <SelectItem value="all">Todo o histórico</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={selectedLevel} onValueChange={setSelectedLevel}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Nível" />
@@ -395,33 +409,33 @@ export default function AdminLogsPage() {
       </Card>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="p-4 md:p-6 pb-2">
-            <CardDescription className="text-xs md:text-sm">Total de Logs</CardDescription>
-            <CardTitle className="text-xl md:text-2xl">{filteredLogs.length}</CardTitle>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <Card className="rounded-2xl sm:rounded-[24px]">
+          <CardHeader className="p-3 sm:p-6 pb-1 sm:pb-2">
+            <CardDescription className="text-[10px] sm:text-sm">Total de Logs</CardDescription>
+            <CardTitle className="text-lg sm:text-2xl">{filteredLogs.length}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
-          <CardHeader className="p-4 md:p-6 pb-2">
-            <CardDescription className="text-xs md:text-sm">Erros</CardDescription>
-            <CardTitle className="text-xl md:text-2xl text-red-500">
+        <Card className="rounded-2xl sm:rounded-[24px]">
+          <CardHeader className="p-3 sm:p-6 pb-1 sm:pb-2">
+            <CardDescription className="text-[10px] sm:text-sm">Erros</CardDescription>
+            <CardTitle className="text-lg sm:text-2xl text-red-500">
               {filteredLogs.filter(l => l.level?.toLowerCase().includes('error')).length}
             </CardTitle>
           </CardHeader>
         </Card>
-        <Card>
-          <CardHeader className="p-4 md:p-6 pb-2">
-            <CardDescription className="text-xs md:text-sm">Avisos</CardDescription>
-            <CardTitle className="text-xl md:text-2xl text-orange-500">
+        <Card className="rounded-2xl sm:rounded-[24px]">
+          <CardHeader className="p-3 sm:p-6 pb-1 sm:pb-2">
+            <CardDescription className="text-[10px] sm:text-sm">Avisos</CardDescription>
+            <CardTitle className="text-lg sm:text-2xl text-orange-500">
               {filteredLogs.filter(l => l.level?.toLowerCase().includes('warn')).length}
             </CardTitle>
           </CardHeader>
         </Card>
-        <Card>
-          <CardHeader className="p-4 md:p-6 pb-2">
-            <CardDescription className="text-xs md:text-sm">Serviço</CardDescription>
-            <CardTitle className="text-base md:text-lg flex items-center gap-2 truncate">
+        <Card className="rounded-2xl sm:rounded-[24px]">
+          <CardHeader className="p-3 sm:p-6 pb-1 sm:pb-2">
+            <CardDescription className="text-[10px] sm:text-sm">Serviço</CardDescription>
+            <CardTitle className="text-sm sm:text-lg flex items-center gap-2 truncate">
               {getServiceIcon(selectedService)}
               <span className="truncate">{selectedService === 'all' ? 'TODOS' : selectedService.toUpperCase()}</span>
             </CardTitle>
@@ -434,7 +448,7 @@ export default function AdminLogsPage() {
         <CardHeader>
           <CardTitle>Logs do Supabase</CardTitle>
           <CardDescription>
-            Logs do serviço {selectedService} (últimas 24 horas)
+            Logs do serviço {selectedService} ({timeRange === 'all' ? 'todo o histórico' : `últimos ${timeRange}`})
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0 md:p-6">
@@ -446,7 +460,7 @@ export default function AdminLogsPage() {
           ) : filteredLogs.length === 0 ? (
             <div className="text-center py-8 text-gray-500 px-4">
               <Info className="h-8 w-8 mx-auto mb-4 text-blue-500" />
-              <p className="font-medium">Nenhum log encontrado nas últimas 24 horas</p>
+              <p className="font-medium">Nenhum log encontrado {timeRange === 'all' ? 'no histórico' : `nas últimas ${timeRange}`}</p>
               <div className="text-sm mt-3 space-y-2 max-w-md mx-auto">
                 <p>
                   Os logs de infraestrutura (API interna, Auth, Banco) do Supabase não são espelhados automaticamente nesta tabela.
@@ -462,88 +476,154 @@ export default function AdminLogsPage() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredLogs.map((log) => (
-                <Card
-                  key={log.id}
-                  className="flex flex-col h-full hover:shadow-md transition-shadow duration-200 border-gray-200 dark:border-gray-800"
-                >
-                  <CardHeader className="p-4 pb-2 space-y-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5">
-                        {getLevelIcon(log.level)}
-                        {getLevelBadge(log.level)}
-                      </div>
-                      <span className="text-[10px] text-gray-400 font-medium">
-                        {log.timestamp ? formatDistanceToNow(new Date(log.timestamp), {
-                          addSuffix: true,
-                          locale: ptBR
-                        }) : 'Agora'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {getServiceBadge(log.service)}
-                    </div>
-                  </CardHeader>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {filteredLogs.map((log) => {
+                const metadata = log.metadata || {};
+                const hasTechnicalInfo = metadata.ip || metadata.endpoint || metadata.method || metadata.status_code || metadata.action;
 
-                  <CardContent className="p-4 pt-2 flex-grow space-y-4">
-                    {/* Mensagem Principal */}
-                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 min-h-[2.5rem]">
-                      {log.message}
-                    </p>
-
-                    {/* Informações do Usuário */}
-                    {(log.metadata?.user_id || log.metadata?.user_name) && (
-                      <div className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-100 dark:border-gray-800">
-                        {log.metadata?.user_avatar ? (
-                          <img
-                            src={log.metadata.user_avatar}
-                            alt={log.metadata.user_name || 'User'}
-                            className="h-9 w-9 rounded-full object-cover border border-gray-200 dark:border-gray-700"
-                          />
-                        ) : (
-                          <div className="h-9 w-9 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                            <span className="text-xs font-bold">
-                              {(log.metadata?.user_name || 'U').substring(0, 1).toUpperCase()}
-                            </span>
-                          </div>
-                        )}
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-xs font-bold text-gray-900 dark:text-white truncate">
-                            {log.metadata?.user_name || 'Usuário Desconhecido'}
-                          </span>
-                          <span className="text-[10px] text-gray-500 truncate font-mono">
-                            {log.metadata?.user_id?.substring(0, 8)}...
+                return (
+                  <Card
+                    key={log.id}
+                    className="flex flex-col h-full hover:shadow-xl transition-all duration-300 border-border/40 bg-white/40 backdrop-blur-md overflow-hidden group rounded-2xl sm:rounded-[24px]"
+                  >
+                    {/* Header: Level & Service */}
+                    <div className="p-3 pb-0 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-xl bg-white/80 shadow-sm border border-border/50">
+                          {getLevelIcon(log.level)}
+                        </div>
+                        <div className="flex flex-col">
+                          {getLevelBadge(log.level)}
+                          <span className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-tighter mt-0.5">
+                            Level Status
                           </span>
                         </div>
                       </div>
-                    )}
+                      <div className="text-right">
+                        <span className="text-[10px] font-black text-muted-foreground/40 font-mono block">
+                          {log.timestamp ? formatDistanceToNow(new Date(log.timestamp), {
+                            addSuffix: true,
+                            locale: ptBR
+                          }) : 'Agora'}
+                        </span>
+                        {getServiceBadge(log.service)}
+                      </div>
+                    </div>
 
-                    {/* Botão de Detalhes */}
-                    {log.metadata && Object.keys(log.metadata).length > 0 && (
-                      <div className="pt-2">
+                    <CardContent className="p-3 sm:p-4 space-y-2 sm:space-y-3 flex-grow">
+                      {/* Big Message */}
+                      <div className="relative">
+                        <div className="absolute -left-3 sm:-left-4 top-0 w-1 h-full bg-blue-500/20 rounded-r-full" />
+                        <h3 className="text-xs sm:text-sm font-black text-slate-800 dark:text-slate-100 leading-tight tracking-tight line-clamp-2">
+                          {log.message}
+                        </h3>
+                      </div>
+
+                      {/* Technical Grid (Auto-extracted from metadata) */}
+                      {hasTechnicalInfo && (
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 p-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-800/60 shadow-inner">
+                          {metadata.action && (
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Ação</span>
+                              <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 truncate font-mono">
+                                {metadata.action}
+                              </span>
+                            </div>
+                          )}
+                          {metadata.status_code && (
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">status</span>
+                              <span className={cn(
+                                "text-[10px] font-bold font-mono",
+                                metadata.status_code >= 400 ? "text-red-500" : "text-emerald-500"
+                              )}>
+                                {metadata.status_code}
+                              </span>
+                            </div>
+                          )}
+                          {metadata.method && (
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">método</span>
+                              <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 font-mono">
+                                {metadata.method}
+                              </span>
+                            </div>
+                          )}
+                          {metadata.ip && (
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">ip origem</span>
+                              <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 font-mono truncate">
+                                {metadata.ip}
+                              </span>
+                            </div>
+                          )}
+                          {metadata.endpoint && (
+                            <div className="flex flex-col min-w-0 col-span-2 border-t border-slate-200/40 mt-1 pt-1">
+                              <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">endpoint</span>
+                              <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 font-mono truncate">
+                                {metadata.endpoint}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* User Insight Section */}
+                      {(metadata.user_id || metadata.user_name) && (
+                        <Link
+                          href={`/gestao-confi/dashboard/users?search=${metadata.user_id || metadata.user_name}`}
+                          className="flex items-center gap-2 sm:gap-3 p-1.5 sm:p-2 bg-white/80 dark:bg-white/5 rounded-xl sm:rounded-2xl border border-slate-200/60 dark:border-white/10 hover:border-blue-500/40 hover:bg-blue-50/30 dark:hover:bg-blue-500/10 transition-all group/user shadow-sm"
+                        >
+                          <div className="relative">
+                            {metadata.user_avatar ? (
+                              <img
+                                src={metadata.user_avatar}
+                                alt={metadata.user_name || 'User'}
+                                className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl object-cover border border-white dark:border-slate-800 shadow-md group-hover/user:scale-105 transition-transform"
+                              />
+                            ) : (
+                              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 border border-white dark:border-slate-800 shadow-md group-hover/user:scale-105 transition-transform">
+                                <span className="text-[10px] sm:text-[12px] font-black uppercase">
+                                  {(metadata.user_name || 'U').substring(0, 1)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <span className="text-[10px] sm:text-[12px] font-black text-slate-800 dark:text-white truncate group-hover/user:text-blue-600 transition-colors">
+                              {metadata.user_name || 'Usuário Desconhecido'}
+                            </span>
+                            <span className="text-[8px] sm:text-[9px] font-bold text-muted-foreground font-mono truncate select-all">
+                              {metadata.user_id || 'SYSTEM_INTERNAL'}
+                            </span>
+                          </div>
+                        </Link>
+                      )}
+                    </CardContent>
+
+                    {/* Footer: Details Toggle */}
+                    {Object.keys(metadata).length > 0 && (
+                      <div className="px-4 pb-4">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => toggleLogExpansion(log.id)}
-                          className="w-full h-8 justify-between hover:bg-gray-100 dark:hover:bg-gray-800"
+                          className="w-full h-6 sm:h-8 justify-between hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg sm:rounded-xl bg-slate-50/50 dark:bg-slate-900/20 text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground"
                         >
-                          <span className="text-xs font-medium">
-                            {expandedLogs.has(log.id) ? 'Ocultar Detalhes' : `Ver Detalhes (${Object.keys(log.metadata).length})`}
-                          </span>
-                          {expandedLogs.has(log.id) ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                          <span>{expandedLogs.has(log.id) ? 'Recolher JSON' : `Análise Bruta (${Object.keys(metadata).length})`}</span>
+                          {expandedLogs.has(log.id) ? <ChevronUp className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> : <ChevronDown className="h-3 w-3 sm:h-3.5 sm:w-3.5" />}
                         </Button>
 
                         {expandedLogs.has(log.id) && (
-                          <div className="mt-3 p-3 bg-gray-900 text-gray-300 rounded-md text-[10px] font-mono overflow-auto max-h-40 custom-scrollbar">
-                            <pre className="whitespace-pre-wrap">{JSON.stringify(log.metadata, null, 2)}</pre>
+                          <div className="mt-3 p-3 bg-slate-950 text-emerald-400 rounded-2xl text-[10px] font-mono overflow-auto max-h-60 custom-scrollbar border border-slate-800 shadow-2xl animate-in slide-in-from-top-2 duration-300">
+                            <pre className="whitespace-pre-wrap">{JSON.stringify(metadata, null, 2)}</pre>
                           </div>
                         )}
                       </div>
                     )}
-                  </CardContent>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </div>
           )}
         </CardContent>
