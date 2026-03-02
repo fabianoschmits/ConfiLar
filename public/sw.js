@@ -3,16 +3,16 @@
 // Cache estratégico, offline functionality, push notifications
 // =====================================================
 
-const CACHE_NAME = 'confilar-pwa-v1.4.0'
-const STATIC_CACHE = 'confilar-static-v1.4.0'
-const DYNAMIC_CACHE = 'confilar-dynamic-v1.4.0'
-const API_CACHE = 'confilar-api-v1.4.0'
-const IMAGE_CACHE = 'confilar-images-v1.4.0'
-const DATA_CACHE = 'confilar-data-v1.4.0'
-const SOUND_CACHE = 'confilar-sounds-v1.4.0'
+const CACHE_NAME = "confilar-pwa-v1.4.0";
+const STATIC_CACHE = "confilar-static-v1.4.0";
+const DYNAMIC_CACHE = "confilar-dynamic-v1.4.0";
+const API_CACHE = "confilar-api-v1.4.0";
+const IMAGE_CACHE = "confilar-images-v1.4.0";
+const DATA_CACHE = "confilar-data-v1.4.0";
+const SOUND_CACHE = "confilar-sounds-v1.4.0";
 
 // Background Sync para ações offline
-const SYNC_TAG = 'confilar-offline-sync'
+const SYNC_TAG = "confilar-offline-sync";
 
 // =====================================================
 // ESTRATÉGIAS DE CACHE
@@ -21,221 +21,235 @@ const SYNC_TAG = 'confilar-offline-sync'
 const CACHE_STRATEGIES = {
   // Cache-first: Assets estáticos (CSS, JS, imagens, sons)
   CACHE_FIRST: [
-    '/static/',
-    '/_next/static/',
-    '/icons/',
-    '/images/',
-    '/sounds/',
-    '.css',
-    '.js',
-    '.png',
-    '.jpg',
-    '.jpeg',
-    '.svg',
-    '.ico',
-    '.woff',
-    '.woff2',
-    '.ttf',
-    '.mp3',
-    '.wav',
-    '.ogg',
-    '.m4a'
+    "/static/",
+    "/_next/static/",
+    "/icons/",
+    "/images/",
+    "/sounds/",
+    ".css",
+    ".js",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".svg",
+    ".ico",
+    ".woff",
+    ".woff2",
+    ".ttf",
+    ".mp3",
+    ".wav",
+    ".ogg",
+    ".m4a",
   ],
-  
+
   // Network-first: Dados dinâmicos (APIs, dados do usuário)
-  NETWORK_FIRST: [
-    '/api/',
-    '/auth/',
-    '/supabase/',
-    '/admin/'
-  ],
-  
+  NETWORK_FIRST: ["/api/", "/auth/", "/supabase/", "/admin/"],
+
   // Stale-while-revalidate: Dados que podem ser um pouco antigos
   STALE_WHILE_REVALIDATE: [
-    '/api/profiles/',
-    '/api/services/',
-    '/api/posts/',
-    '/api/notifications/'
+    "/api/profiles/",
+    "/api/services/",
+    "/api/posts/",
+    "/api/notifications/",
   ],
-  
+
   // Cache-only: Páginas offline
-  CACHE_ONLY: [
-    '/offline',
-    '/error'
-  ]
-}
+  CACHE_ONLY: ["/offline", "/error"],
+};
 
 // Páginas essenciais para funcionamento offline
 const OFFLINE_PAGES = [
-  '/',
-  '/auth',
-  '/perfil',
-  '/chat',
-  '/favoritos',
-  '/buscar',
-  '/classificados',
-  '/feed'
-]
+  "/",
+  "/auth",
+  "/perfil",
+  "/chat",
+  "/favoritos",
+  "/buscar",
+  "/classificados",
+  "/feed",
+];
 
 // Sons essenciais para funcionamento offline
 const ESSENTIAL_SOUNDS = [
-  '/sounds/New/atualizar.mp3',
-  '/sounds/New/click.mp3',
-  '/sounds/New/clickbuttons.mp3',
-  '/sounds/New/error.mp3',
-  '/sounds/New/fast.mp3',
-  '/sounds/New/notification-off.mp3',
-  '/sounds/New/notification-pluck-on.mp3',
-  '/sounds/New/notification-reversed.mp3',
-  '/sounds/New/switchMode.mp3',
-  '/sounds/New/very-fast.mp3'
-]
+  "/sounds/New/atualizar.mp3",
+  "/sounds/New/click.mp3",
+  "/sounds/New/clickbuttons.mp3",
+  "/sounds/New/error.mp3",
+  "/sounds/New/fast.mp3",
+  "/sounds/New/notification-off.mp3",
+  "/sounds/New/notification-pluck-on.mp3",
+  "/sounds/New/notification-reversed.mp3",
+  "/sounds/New/switchMode.mp3",
+  "/sounds/New/very-fast.mp3",
+];
 
 // =====================================================
 // INSTALAÇÃO DO SERVICE WORKER
 // =====================================================
 
-self.addEventListener('install', (event) => {
-  console.log('🚀 ConfiLar PWA: Service Worker instalando...')
-  
+self.addEventListener("install", (event) => {
+  console.log("🚀 ConfiLar PWA: Service Worker instalando...");
+
   event.waitUntil(
     Promise.all([
       // Cache de assets estáticos
       caches.open(STATIC_CACHE).then((cache) => {
-        console.log('📦 Cacheando assets estáticos...')
-        return cache.addAll([
-          '/',
-          '/manifest.json',
-          '/favicon.ico',
-          '/favicon.svg',
-          '/icon-192x192.png',
-          '/icon-512x512.png',
-          '/icon-192x192-maskable.png',
-          '/icon-512x512-maskable.png'
-        ]).catch(err => {
-          console.warn('⚠️ Alguns assets estáticos não puderam ser cacheados:', err)
-        })
+        console.log("📦 Cacheando assets estáticos...");
+        return cache
+          .addAll([
+            "/",
+            "/manifest.json",
+            "/favicon.ico",
+            "/favicon.svg",
+            "/icon-192x192.png",
+            "/icon-512x512.png",
+            "/icon-192x192-maskable.png",
+            "/icon-512x512-maskable.png",
+          ])
+          .catch((err) => {
+            console.warn(
+              "⚠️ Alguns assets estáticos não puderam ser cacheados:",
+              err,
+            );
+          });
       }),
-      
+
       // Cache de páginas offline
       caches.open(DYNAMIC_CACHE).then((cache) => {
-        console.log('📱 Cacheando páginas offline...')
-        return cache.addAll(OFFLINE_PAGES).catch(err => {
-          console.warn('⚠️ Algumas páginas não puderam ser cacheadas:', err)
-        })
+        console.log("📱 Cacheando páginas offline...");
+        return cache.addAll(OFFLINE_PAGES).catch((err) => {
+          console.warn("⚠️ Algumas páginas não puderam ser cacheadas:", err);
+        });
       }),
-      
+
       // Cache de sons essenciais
       caches.open(SOUND_CACHE).then((cache) => {
-        console.log('🔊 Cacheando sons essenciais...')
-        return cache.addAll(ESSENTIAL_SOUNDS).catch(err => {
-          console.warn('⚠️ Alguns sons não puderam ser cacheados:', err)
-        })
-      })
+        console.log("🔊 Cacheando sons essenciais...");
+        return cache.addAll(ESSENTIAL_SOUNDS).catch((err) => {
+          console.warn("⚠️ Alguns sons não puderam ser cacheados:", err);
+        });
+      }),
     ]).then(() => {
-      console.log('✅ ConfiLar PWA: Cache inicial criado com sucesso!')
-      return self.skipWaiting()
-    })
-  )
-})
+      console.log("✅ ConfiLar PWA: Cache inicial criado com sucesso!");
+      return self.skipWaiting();
+    }),
+  );
+});
 
 // =====================================================
 // ATIVAÇÃO DO SERVICE WORKER
 // =====================================================
 
-self.addEventListener('activate', (event) => {
-  console.log('🔄 ConfiLar PWA: Service Worker ativando...')
-  
+self.addEventListener("activate", (event) => {
+  console.log("🔄 ConfiLar PWA: Service Worker ativando...");
+
   event.waitUntil(
     Promise.all([
       // Limpar caches antigos
       caches.keys().then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
-            if (cacheName !== CACHE_NAME && 
-                cacheName !== STATIC_CACHE && 
-                cacheName !== DYNAMIC_CACHE && 
-                cacheName !== API_CACHE &&
-                cacheName !== IMAGE_CACHE &&
-                cacheName !== DATA_CACHE &&
-                cacheName !== SOUND_CACHE) {
-              console.log('🗑️ Removendo cache antigo:', cacheName)
-              return caches.delete(cacheName)
+            if (
+              cacheName !== CACHE_NAME &&
+              cacheName !== STATIC_CACHE &&
+              cacheName !== DYNAMIC_CACHE &&
+              cacheName !== API_CACHE &&
+              cacheName !== IMAGE_CACHE &&
+              cacheName !== DATA_CACHE &&
+              cacheName !== SOUND_CACHE
+            ) {
+              console.log("🗑️ Removendo cache antigo:", cacheName);
+              return caches.delete(cacheName);
             }
-          })
-        )
+          }),
+        );
       }),
-      
+
       // Assumir controle de todas as abas
-      self.clients.claim()
+      self.clients.claim(),
     ]).then(() => {
-      console.log('✅ ConfiLar PWA: Service Worker ativado com sucesso!')
-    })
-  )
-})
+      console.log("✅ ConfiLar PWA: Service Worker ativado com sucesso!");
+    }),
+  );
+});
 
 // =====================================================
 // INTERCEPTAÇÃO DE REQUISIÇÕES
 // =====================================================
 
-self.addEventListener('fetch', (event) => {
-  const { request } = event
-  const url = new URL(request.url)
-  
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
   // Ignorar requisições não-HTTP
-  if (!request.url.startsWith('http')) {
-    return
+  if (!request.url.startsWith("http")) {
+    return;
   }
-  
+
   // Ignorar requisições do Supabase Realtime
-  if (url.hostname.includes('supabase.co') && url.pathname.includes('realtime')) {
-    return
+  if (
+    url.hostname.includes("supabase.co") &&
+    url.pathname.includes("realtime")
+  ) {
+    return;
   }
-  
-  event.respondWith(handleRequest(request))
-})
+
+  // ⚠️ IMPORTANTE: Ignorar domínios do Google reCAPTCHA para evitar problemas de inicialização
+  if (
+    url.hostname.includes("google.com") ||
+    url.hostname.includes("gstatic.com") ||
+    url.hostname.includes("recaptcha.net")
+  ) {
+    return;
+  }
+
+  event.respondWith(handleRequest(request));
+});
 
 // =====================================================
 // ESTRATÉGIAS DE CACHE
 // =====================================================
 
 async function handleRequest(request) {
-  const url = new URL(request.url)
-  const requestUrl = request.url
-  
+  const url = new URL(request.url);
+  const requestUrl = request.url;
+
   try {
     // ⚠️ IMPORTANTE: Só cachear requisições GET
-    if (request.method !== 'GET') {
-      console.log('🚫 Método não GET, apenas fazendo fetch:', request.method, url.pathname)
-      return await fetch(request)
+    if (request.method !== "GET") {
+      console.log(
+        "🚫 Método não GET, apenas fazendo fetch:",
+        request.method,
+        url.pathname,
+      );
+      return await fetch(request);
     }
-    
+
     // 1. CACHE-FIRST: Assets estáticos
     if (isCacheFirst(requestUrl)) {
-      return await cacheFirst(request)
+      return await cacheFirst(request);
     }
-    
+
     // 2. STALE-WHILE-REVALIDATE: Dados que podem ser um pouco antigos
     if (isStaleWhileRevalidate(requestUrl)) {
-      return await staleWhileRevalidate(request)
+      return await staleWhileRevalidate(request);
     }
-    
+
     // 3. NETWORK-FIRST: Dados dinâmicos
     if (isNetworkFirst(requestUrl)) {
-      return await networkFirst(request)
+      return await networkFirst(request);
     }
-    
+
     // 4. CACHE-ONLY: Páginas offline
     if (isCacheOnly(requestUrl)) {
-      return await cacheOnly(request)
+      return await cacheOnly(request);
     }
-    
+
     // 4. ESTRATÉGIA PADRÃO: Network com fallback
-    return await networkWithFallback(request)
-    
+    return await networkWithFallback(request);
   } catch (error) {
-    console.error('❌ Erro no Service Worker:', error)
-    return await getOfflineFallback(request)
+    console.error("❌ Erro no Service Worker:", error);
+    return await getOfflineFallback(request);
   }
 }
 
@@ -245,78 +259,87 @@ async function handleRequest(request) {
 
 // Cache-First: Para assets estáticos
 async function cacheFirst(request) {
-  const url = new URL(request.url)
-  const isImage = /\.(jpg|jpeg|png|gif|webp|svg|ico)$/i.test(url.pathname)
-  const isSound = /\.(mp3|wav|ogg|m4a)$/i.test(url.pathname)
-  
+  const url = new URL(request.url);
+  const isImage = /\.(jpg|jpeg|png|gif|webp|svg|ico)$/i.test(url.pathname);
+  const isSound = /\.(mp3|wav|ogg|m4a)$/i.test(url.pathname);
+
   // Cache separado para cada tipo
-  let cacheName = STATIC_CACHE
-  if (isImage) cacheName = IMAGE_CACHE
-  if (isSound) cacheName = SOUND_CACHE
-  
-  const cache = await caches.open(cacheName)
-  const cached = await cache.match(request)
-  
+  let cacheName = STATIC_CACHE;
+  if (isImage) cacheName = IMAGE_CACHE;
+  if (isSound) cacheName = SOUND_CACHE;
+
+  const cache = await caches.open(cacheName);
+  const cached = await cache.match(request);
+
   if (cached) {
-    console.log('📦 Cache hit (static):', request.url)
+    console.log("📦 Cache hit (static):", request.url);
     // Se for imagem ou som, atualizar em background
     if (isImage || isSound) {
-      fetchAndUpdateAsset(request, cache)
+      fetchAndUpdateAsset(request, cache);
     }
-    return cached
+    return cached;
   }
-  
+
   try {
-    const response = await fetch(request)
+    const response = await fetch(request);
     // ⚠️ Não cachear respostas parciais (206) ou com erro
     if (response.ok && response.status !== 206) {
-      const clonedResponse = response.clone()
-      const blob = await clonedResponse.blob()
-      
+      const clonedResponse = response.clone();
+      const blob = await clonedResponse.blob();
+
       // Só cachear arquivos < 5MB
-      if (blob.size < 5 * 1024 * 1024) { // 5MB
-        cache.put(request, response.clone()).catch(err => {
-          console.warn('⚠️ Erro ao cachear:', url.pathname, err.message)
-        })
+      if (blob.size < 5 * 1024 * 1024) {
+        // 5MB
+        cache.put(request, response.clone()).catch((err) => {
+          console.warn("⚠️ Erro ao cachear:", url.pathname, err.message);
+        });
         if (isImage) {
-          console.log('📸 Imagem cacheada:', url.pathname, `(${formatBytes(blob.size)})`)
+          console.log(
+            "📸 Imagem cacheada:",
+            url.pathname,
+            `(${formatBytes(blob.size)})`,
+          );
         } else if (isSound) {
-          console.log('🔊 Som cacheado:', url.pathname, `(${formatBytes(blob.size)})`)
+          console.log(
+            "🔊 Som cacheado:",
+            url.pathname,
+            `(${formatBytes(blob.size)})`,
+          );
         }
       } else {
-        console.log('⚠️ Arquivo muito grande, não cacheado:', url.pathname)
+        console.log("⚠️ Arquivo muito grande, não cacheado:", url.pathname);
       }
     }
-    return response
+    return response;
   } catch (error) {
-    console.log('❌ Erro ao buscar asset:', request.url)
-    
+    console.log("❌ Erro ao buscar asset:", request.url);
+
     // Se for imagem, retornar placeholder
     if (isImage) {
-      return getImagePlaceholder()
+      return getImagePlaceholder();
     }
-    
+
     // Se for som, retornar resposta vazia (silêncio)
     if (isSound) {
-      return new Response(new Blob(), { 
+      return new Response(new Blob(), {
         status: 200,
-        headers: { 'Content-Type': 'audio/mpeg' }
-      })
+        headers: { "Content-Type": "audio/mpeg" },
+      });
     }
-    
-    return new Response('Asset não disponível offline', { status: 503 })
+
+    return new Response("Asset não disponível offline", { status: 503 });
   }
 }
 
 // Atualizar asset em background (imagem ou som)
 async function fetchAndUpdateAsset(request, cache) {
   try {
-    const response = await fetch(request)
+    const response = await fetch(request);
     // ⚠️ Não cachear respostas parciais (206) ou com erro
     if (response.ok && response.status !== 206) {
-      cache.put(request, response.clone()).catch(err => {
-        console.warn('⚠️ Erro ao atualizar asset em background:', err.message)
-      })
+      cache.put(request, response.clone()).catch((err) => {
+        console.warn("⚠️ Erro ao atualizar asset em background:", err.message);
+      });
     }
   } catch (error) {
     // Ignorar erros de atualização em background
@@ -332,107 +355,112 @@ function getImagePlaceholder() {
         📷 Imagem indisponível offline
       </text>
     </svg>
-  `
-  
+  `;
+
   return new Response(svg, {
     headers: {
-      'Content-Type': 'image/svg+xml',
-      'Cache-Control': 'no-cache'
-    }
-  })
+      "Content-Type": "image/svg+xml",
+      "Cache-Control": "no-cache",
+    },
+  });
 }
 
 // Formatar bytes
 function formatBytes(bytes) {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
 // Stale-While-Revalidate: Para dados que podem ser um pouco antigos
 async function staleWhileRevalidate(request) {
-  const cache = await caches.open(DATA_CACHE)
-  const cached = await cache.match(request)
-  
+  const cache = await caches.open(DATA_CACHE);
+  const cached = await cache.match(request);
+
   // Buscar nova versão em background
-  const fetchPromise = fetch(request).then(response => {
-    // ⚠️ Não cachear respostas parciais (206) ou com erro
-    if (response.ok && response.status !== 206) {
-      cache.put(request, response.clone()).catch(err => {
-        console.warn('⚠️ Erro ao cachear (stale-while-revalidate):', err.message)
-      })
-    }
-    return response
-  }).catch(() => {
-    // Se falhar, retornar cached se existir
-    return cached
-  })
-  
+  const fetchPromise = fetch(request)
+    .then((response) => {
+      // ⚠️ Não cachear respostas parciais (206) ou com erro
+      if (response.ok && response.status !== 206) {
+        cache.put(request, response.clone()).catch((err) => {
+          console.warn(
+            "⚠️ Erro ao cachear (stale-while-revalidate):",
+            err.message,
+          );
+        });
+      }
+      return response;
+    })
+    .catch(() => {
+      // Se falhar, retornar cached se existir
+      return cached;
+    });
+
   // Retornar cached imediatamente se existir, senão aguardar fetch
-  return cached || await fetchPromise
+  return cached || (await fetchPromise);
 }
 
 // Network-First: Para dados dinâmicos
 async function networkFirst(request) {
   try {
-    const response = await fetch(request)
+    const response = await fetch(request);
     // ⚠️ Não cachear respostas parciais (206) ou com erro
     if (response.ok && response.status !== 206) {
-      const cache = await caches.open(DYNAMIC_CACHE)
-      cache.put(request, response.clone()).catch(err => {
-        console.warn('⚠️ Erro ao cachear (network-first):', err.message)
-      })
+      const cache = await caches.open(DYNAMIC_CACHE);
+      cache.put(request, response.clone()).catch((err) => {
+        console.warn("⚠️ Erro ao cachear (network-first):", err.message);
+      });
     }
-    return response
+    return response;
   } catch (error) {
-    console.log('🌐 Tentando cache (network-first):', request.url)
-    const cache = await caches.open(DYNAMIC_CACHE)
-    const cached = await cache.match(request)
-    
+    console.log("🌐 Tentando cache (network-first):", request.url);
+    const cache = await caches.open(DYNAMIC_CACHE);
+    const cached = await cache.match(request);
+
     if (cached) {
-      return cached
+      return cached;
     }
-    
-    return await getOfflineFallback(request)
+
+    return await getOfflineFallback(request);
   }
 }
 
 // Cache-Only: Para páginas offline
 async function cacheOnly(request) {
-  const cache = await caches.open(DYNAMIC_CACHE)
-  const cached = await cache.match(request)
-  
+  const cache = await caches.open(DYNAMIC_CACHE);
+  const cached = await cache.match(request);
+
   if (cached) {
-    return cached
+    return cached;
   }
-  
-  return await getOfflineFallback(request)
+
+  return await getOfflineFallback(request);
 }
 
 // Network com fallback: Estratégia padrão
 async function networkWithFallback(request) {
   try {
-    const response = await fetch(request)
+    const response = await fetch(request);
     // ⚠️ Não cachear respostas parciais (206) ou com erro
     if (response.ok && response.status !== 206) {
-      const cache = await caches.open(DYNAMIC_CACHE)
-      cache.put(request, response.clone()).catch(err => {
-        console.warn('⚠️ Erro ao cachear (fallback):', err.message)
-      })
+      const cache = await caches.open(DYNAMIC_CACHE);
+      cache.put(request, response.clone()).catch((err) => {
+        console.warn("⚠️ Erro ao cachear (fallback):", err.message);
+      });
     }
-    return response
+    return response;
   } catch (error) {
-    console.log('🌐 Tentando cache (fallback):', request.url)
-    const cache = await caches.open(DYNAMIC_CACHE)
-    const cached = await cache.match(request)
-    
+    console.log("🌐 Tentando cache (fallback):", request.url);
+    const cache = await caches.open(DYNAMIC_CACHE);
+    const cached = await cache.match(request);
+
     if (cached) {
-      return cached
+      return cached;
     }
-    
-    return await getOfflineFallback(request)
+
+    return await getOfflineFallback(request);
   }
 }
 
@@ -441,19 +469,20 @@ async function networkWithFallback(request) {
 // =====================================================
 
 async function getOfflineFallback(request) {
-  const url = new URL(request.url)
-  
+  const url = new URL(request.url);
+
   // Se for uma página HTML, mostrar página offline
-  if (request.headers.get('accept')?.includes('text/html')) {
-    const cache = await caches.open(DYNAMIC_CACHE)
-    const offlinePage = await cache.match('/offline')
-    
+  if (request.headers.get("accept")?.includes("text/html")) {
+    const cache = await caches.open(DYNAMIC_CACHE);
+    const offlinePage = await cache.match("/offline");
+
     if (offlinePage) {
-      return offlinePage
+      return offlinePage;
     }
-    
+
     // Página offline simples
-    return new Response(`
+    return new Response(
+      `
       <!DOCTYPE html>
       <html lang="pt-BR">
       <head>
@@ -515,13 +544,15 @@ async function getOfflineFallback(request) {
         </div>
       </body>
       </html>
-    `, {
-      headers: { 'Content-Type': 'text/html' }
-    })
+    `,
+      {
+        headers: { "Content-Type": "text/html" },
+      },
+    );
   }
-  
+
   // Para outros tipos de requisição, retornar erro
-  return new Response('Recurso não disponível offline', { status: 503 })
+  return new Response("Recurso não disponível offline", { status: 503 });
 }
 
 // =====================================================
@@ -529,107 +560,111 @@ async function getOfflineFallback(request) {
 // =====================================================
 
 function isCacheFirst(url) {
-  return CACHE_STRATEGIES.CACHE_FIRST.some(pattern => url.includes(pattern))
+  return CACHE_STRATEGIES.CACHE_FIRST.some((pattern) => url.includes(pattern));
 }
 
 function isStaleWhileRevalidate(url) {
-  return CACHE_STRATEGIES.STALE_WHILE_REVALIDATE.some(pattern => url.includes(pattern))
+  return CACHE_STRATEGIES.STALE_WHILE_REVALIDATE.some((pattern) =>
+    url.includes(pattern),
+  );
 }
 
 function isNetworkFirst(url) {
-  return CACHE_STRATEGIES.NETWORK_FIRST.some(pattern => url.includes(pattern))
+  return CACHE_STRATEGIES.NETWORK_FIRST.some((pattern) =>
+    url.includes(pattern),
+  );
 }
 
 function isCacheOnly(url) {
-  return CACHE_STRATEGIES.CACHE_ONLY.some(pattern => url.includes(pattern))
+  return CACHE_STRATEGIES.CACHE_ONLY.some((pattern) => url.includes(pattern));
 }
 
 // =====================================================
 // NOTIFICAÇÕES PUSH
 // =====================================================
 
-self.addEventListener('push', (event) => {
-  console.log('🔔 ConfiLar PWA: Notificação push recebida')
-  
+self.addEventListener("push", (event) => {
+  console.log("🔔 ConfiLar PWA: Notificação push recebida");
+
   if (event.data) {
-    const data = event.data.json()
+    const data = event.data.json();
     const options = {
-      body: data.body || 'Nova notificação do ConfiLar',
-      icon: '/icon-192x192.png',
-      badge: '/icon-96x96.png',
-      tag: data.tag || 'confilar-notification',
+      body: data.body || "Nova notificação do ConfiLar",
+      icon: "/icon-192x192.png",
+      badge: "/icon-96x96.png",
+      tag: data.tag || "confilar-notification",
       data: data.data || {},
       actions: data.actions || [],
       requireInteraction: data.requireInteraction || false,
-      silent: data.silent || false
-    }
-    
+      silent: data.silent || false,
+    };
+
     event.waitUntil(
-      self.registration.showNotification(data.title || 'ConfiLar', options)
-    )
+      self.registration.showNotification(data.title || "ConfiLar", options),
+    );
   }
-})
+});
 
 // =====================================================
 // CLIQUE EM NOTIFICAÇÕES
 // =====================================================
 
-self.addEventListener('notificationclick', (event) => {
-  console.log('👆 ConfiLar PWA: Notificação clicada')
-  
-  event.notification.close()
-  
-  const urlToOpen = event.notification.data?.url || '/'
-  
+self.addEventListener("notificationclick", (event) => {
+  console.log("👆 ConfiLar PWA: Notificação clicada");
+
+  event.notification.close();
+
+  const urlToOpen = event.notification.data?.url || "/";
+
   event.waitUntil(
-    clients.matchAll({ type: 'window' }).then((clientList) => {
+    clients.matchAll({ type: "window" }).then((clientList) => {
       // Se já existe uma aba aberta, focar nela
       for (const client of clientList) {
-        if (client.url.includes(urlToOpen) && 'focus' in client) {
-          return client.focus()
+        if (client.url.includes(urlToOpen) && "focus" in client) {
+          return client.focus();
         }
       }
-      
+
       // Senão, abrir nova aba
       if (clients.openWindow) {
-        return clients.openWindow(urlToOpen)
+        return clients.openWindow(urlToOpen);
       }
-    })
-  )
-})
+    }),
+  );
+});
 
 // =====================================================
 // SINCRONIZAÇÃO EM BACKGROUND
 // =====================================================
 
-self.addEventListener('sync', (event) => {
-  console.log('🔄 ConfiLar PWA: Background sync -', event.tag)
-  
-  if (event.tag === 'confilar-sync') {
-    event.waitUntil(doBackgroundSync())
+self.addEventListener("sync", (event) => {
+  console.log("🔄 ConfiLar PWA: Background sync -", event.tag);
+
+  if (event.tag === "confilar-sync") {
+    event.waitUntil(doBackgroundSync());
   }
-  
-  if (event.tag === 'sync-offline-queue') {
-    event.waitUntil(syncOfflineQueue())
+
+  if (event.tag === "sync-offline-queue") {
+    event.waitUntil(syncOfflineQueue());
   }
-})
+});
 
 async function doBackgroundSync() {
   try {
-    console.log('🔄 Executando sincronização em background...')
-    
+    console.log("🔄 Executando sincronização em background...");
+
     // Sincronizar queue de ações offline
-    await syncOfflineQueue()
-    
+    await syncOfflineQueue();
+
     // Limpar caches antigos
-    await cleanOldCaches()
-    
+    await cleanOldCaches();
+
     // Pré-cachear páginas importantes
-    await precacheImportantPages()
-    
-    console.log('✅ Sincronização em background concluída')
+    await precacheImportantPages();
+
+    console.log("✅ Sincronização em background concluída");
   } catch (error) {
-    console.error('❌ Erro na sincronização em background:', error)
+    console.error("❌ Erro na sincronização em background:", error);
   }
 }
 
@@ -637,24 +672,24 @@ async function doBackgroundSync() {
 async function syncOfflineQueue() {
   try {
     // Obter queue do IndexedDB ou localStorage
-    const queue = await getOfflineQueue()
-    
+    const queue = await getOfflineQueue();
+
     if (queue && queue.length > 0) {
-      console.log(`🔄 Sincronizando ${queue.length} ações offline...`)
-      
+      console.log(`🔄 Sincronizando ${queue.length} ações offline...`);
+
       // Processar cada ação
       for (const action of queue) {
         try {
-          await processOfflineAction(action)
-          await removeFromQueue(action.id)
-          console.log('✅ Ação sincronizada:', action.type)
+          await processOfflineAction(action);
+          await removeFromQueue(action.id);
+          console.log("✅ Ação sincronizada:", action.type);
         } catch (error) {
-          console.error('❌ Erro ao sincronizar ação:', error)
+          console.error("❌ Erro ao sincronizar ação:", error);
         }
       }
     }
   } catch (error) {
-    console.error('❌ Erro ao sincronizar queue:', error)
+    console.error("❌ Erro ao sincronizar queue:", error);
   }
 }
 
@@ -662,67 +697,69 @@ async function syncOfflineQueue() {
 async function getOfflineQueue() {
   try {
     // Tentar obter do IndexedDB primeiro, fallback para localStorage
-    const clients = await self.clients.matchAll()
+    const clients = await self.clients.matchAll();
     if (clients.length > 0) {
       // Enviar mensagem para cliente para obter queue
-      const client = clients[0]
+      const client = clients[0];
       return new Promise((resolve) => {
-        const channel = new MessageChannel()
+        const channel = new MessageChannel();
         channel.port1.onmessage = (event) => {
-          resolve(event.data.queue)
-        }
-        client.postMessage({ type: 'GET_QUEUE' }, [channel.port2])
-      })
+          resolve(event.data.queue);
+        };
+        client.postMessage({ type: "GET_QUEUE" }, [channel.port2]);
+      });
     }
-    return []
+    return [];
   } catch (error) {
-    return []
+    return [];
   }
 }
 
 // Processar ação offline
 async function processOfflineAction(action) {
   // Implementação simplificada - pode ser expandida
-  console.log('Processando ação:', action)
+  console.log("Processando ação:", action);
 }
 
 // Remover ação da queue
 async function removeFromQueue(actionId) {
-  const clients = await self.clients.matchAll()
+  const clients = await self.clients.matchAll();
   if (clients.length > 0) {
-    clients[0].postMessage({ type: 'REMOVE_FROM_QUEUE', actionId })
+    clients[0].postMessage({ type: "REMOVE_FROM_QUEUE", actionId });
   }
 }
 
 // Limpar caches antigos
 async function cleanOldCaches() {
-  const cacheNames = await caches.keys()
-  const currentCaches = [CACHE_NAME, STATIC_CACHE, DYNAMIC_CACHE, API_CACHE, IMAGE_CACHE, DATA_CACHE, SOUND_CACHE]
-  
+  const cacheNames = await caches.keys();
+  const currentCaches = [
+    CACHE_NAME,
+    STATIC_CACHE,
+    DYNAMIC_CACHE,
+    API_CACHE,
+    IMAGE_CACHE,
+    DATA_CACHE,
+    SOUND_CACHE,
+  ];
+
   for (const cacheName of cacheNames) {
     if (!currentCaches.includes(cacheName)) {
-      console.log('🗑️ Limpando cache antigo:', cacheName)
-      await caches.delete(cacheName)
+      console.log("🗑️ Limpando cache antigo:", cacheName);
+      await caches.delete(cacheName);
     }
   }
 }
 
 // Pré-cachear páginas importantes
 async function precacheImportantPages() {
-  const cache = await caches.open(DYNAMIC_CACHE)
-  const pagesToCache = [
-    '/',
-    '/feed',
-    '/chat',
-    '/perfil',
-    '/favoritos'
-  ]
-  
+  const cache = await caches.open(DYNAMIC_CACHE);
+  const pagesToCache = ["/", "/feed", "/chat", "/perfil", "/favoritos"];
+
   try {
-    await cache.addAll(pagesToCache)
-    console.log('📦 Páginas importantes pré-cacheadas')
+    await cache.addAll(pagesToCache);
+    console.log("📦 Páginas importantes pré-cacheadas");
   } catch (error) {
-    console.log('⚠️ Algumas páginas não puderam ser pré-cacheadas')
+    console.log("⚠️ Algumas páginas não puderam ser pré-cacheadas");
   }
 }
 
@@ -730,66 +767,66 @@ async function precacheImportantPages() {
 // MENSAGENS DO CLIENTE
 // =====================================================
 
-self.addEventListener('message', (event) => {
-  console.log('💬 ConfiLar PWA: Mensagem recebida:', event.data)
-  
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting()
+self.addEventListener("message", (event) => {
+  console.log("💬 ConfiLar PWA: Mensagem recebida:", event.data);
+
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
   }
-  
-  if (event.data && event.data.type === 'CACHE_URLS') {
-    event.waitUntil(cacheUrls(event.data.urls))
+
+  if (event.data && event.data.type === "CACHE_URLS") {
+    event.waitUntil(cacheUrls(event.data.urls));
   }
-  
+
   // Registrar sincronização de ações offline
-  if (event.data && event.data.type === 'SYNC_OFFLINE_ACTIONS') {
-    event.waitUntil(syncOfflineActions())
+  if (event.data && event.data.type === "SYNC_OFFLINE_ACTIONS") {
+    event.waitUntil(syncOfflineActions());
   }
-})
+});
 
 // =====================================================
 // BACKGROUND SYNC - Sincronização offline/online
 // =====================================================
 
-self.addEventListener('sync', (event) => {
-  console.log('🔄 Background Sync ativado:', event.tag)
-  
+self.addEventListener("sync", (event) => {
+  console.log("🔄 Background Sync ativado:", event.tag);
+
   if (event.tag === SYNC_TAG) {
-    event.waitUntil(syncOfflineActions())
+    event.waitUntil(syncOfflineActions());
   }
-})
+});
 
 // Sincronizar ações offline quando voltar online
 async function syncOfflineActions() {
   try {
-    console.log('🔄 Iniciando sincronização de ações offline...')
-    
+    console.log("🔄 Iniciando sincronização de ações offline...");
+
     // Enviar mensagem para cliente sincronizar ações
-    const clients = await self.clients.matchAll()
+    const clients = await self.clients.matchAll();
     for (const client of clients) {
-      client.postMessage({ 
-        type: 'SYNC_PENDING_ACTIONS',
-        timestamp: Date.now()
-      })
+      client.postMessage({
+        type: "SYNC_PENDING_ACTIONS",
+        timestamp: Date.now(),
+      });
     }
-    
-    console.log('✅ Sincronização de ações offline iniciada')
+
+    console.log("✅ Sincronização de ações offline iniciada");
   } catch (error) {
-    console.error('❌ Erro ao sincronizar ações offline:', error)
+    console.error("❌ Erro ao sincronizar ações offline:", error);
   }
 }
 
 async function cacheUrls(urls) {
-  const cache = await caches.open(DYNAMIC_CACHE)
-  await cache.addAll(urls)
-  console.log('📦 URLs cacheadas:', urls)
+  const cache = await caches.open(DYNAMIC_CACHE);
+  await cache.addAll(urls);
+  console.log("📦 URLs cacheadas:", urls);
 }
 
 // =====================================================
 // LOGS DE DEBUG
 // =====================================================
 
-console.log('🚀 ConfiLar PWA Service Worker carregado!')
-console.log('📱 Versão:', CACHE_NAME)
-console.log('🎯 Estratégias configuradas:', Object.keys(CACHE_STRATEGIES))
-console.log('📦 Páginas offline:', OFFLINE_PAGES)
+console.log("🚀 ConfiLar PWA Service Worker carregado!");
+console.log("📱 Versão:", CACHE_NAME);
+console.log("🎯 Estratégias configuradas:", Object.keys(CACHE_STRATEGIES));
+console.log("📦 Páginas offline:", OFFLINE_PAGES);

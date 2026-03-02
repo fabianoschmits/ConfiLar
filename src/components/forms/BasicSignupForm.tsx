@@ -1111,14 +1111,19 @@ export function BasicSignupForm() {
             !isValid ||
             watchedValues.password !== watchedValues.confirmPassword ||
             emailExists ||
-            cpfExists
+            cpfExists ||
+            !executeRecaptcha
           }
           isLoading={isLoading}
-          loadingText="Criando conta..."
+          loadingText={
+            !executeRecaptcha ? "Carregando segurança..." : "Criando conta..."
+          }
         >
-          {emailExists || cpfExists
-            ? "Resolva o problema acima"
-            : "Criar conta"}
+          {!executeRecaptcha
+            ? "Carregando segurança..."
+            : emailExists || cpfExists
+              ? "Resolva o problema acima"
+              : "Criar conta"}
         </LoadingButton>
 
         {/* Mensagem explicativa quando há duplicatas */}

@@ -248,11 +248,15 @@ export function LoginForm() {
           <LoadingButton
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
-            disabled={!isMounted || isLoading || authLoading}
+            disabled={
+              !isMounted || isLoading || authLoading || !executeRecaptcha
+            }
             isLoading={isLoading || authLoading}
-            loadingText="Entrando..."
+            loadingText={
+              !executeRecaptcha ? "Carregando segurança..." : "Entrando..."
+            }
           >
-            Entrar
+            {!executeRecaptcha ? "Carregando segurança..." : "Entrar"}
           </LoadingButton>
 
           <div className="relative my-6">
