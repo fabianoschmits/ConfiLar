@@ -22,6 +22,8 @@ import {
   ChevronRight,
   MessageSquare,
   ThumbsUp,
+  Coins,
+  Share2,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -46,7 +48,9 @@ interface HistoryItem {
     | "recommendation"
     | "review"
     | "comment"
-    | "reaction";
+    | "reaction"
+    | "share"
+    | "point";
   title: string;
   description?: string;
   created_at: string;
@@ -73,38 +77,77 @@ export function UserHistoryModal({
         // Aggregate data from multiple tables
         // In a real scenario, this might be better handled by a database view or a dedicated activity log table
         // But since user_activity_log is empty, we aggregate manually for now.
-
-        const [posts, classifieds, favorites, recommendations] =
-          await Promise.all([
-            supabase
-              .from("feed_posts")
-              .select("id, title, description, created_at")
-              .eq("user_id", userId)
-              .order("created_at", { ascending: false })
-              .limit(20),
-            supabase
-              .from("classified_ads")
-              .select("id, title, description, created_at")
-              .eq("user_id", userId)
-              .order("created_at", { ascending: false })
-              .limit(20),
-            supabase
-              .from("favorites")
-              .select(
-                "id, created_at, professional_id, professional:profiles!favorites_professional_id_fkey(full_name)",
-              )
-              .eq("user_id", userId)
-              .order("created_at", { ascending: false })
-              .limit(20),
-            supabase
-              .from("user_recommendations")
-              .select(
-                "id, created_at, recommended_id, recommended:profiles!user_recommendations_recommended_id_fkey(full_name)",
-              )
-              .eq("recommender_id", userId)
-              .order("created_at", { ascending: false })
-              .limit(20),
-          ]);
+        const [
+          posts,
+          classifieds,
+          favorites,
+          recommendations,
+          likes,
+          comments,
+          shares,
+          points,
+        ] = await Promise.all([
+          supabase
+            .from("feed_posts")
+            .select("id, title, description, created_at")
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false })
+            .limit(20),
+          supabase
+            .from("classified_ads")
+            .select("id, title, description, created_at")
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false })
+            .limit(20),
+          supabase
+            .from("favorites")
+            .select(
+              "id, created_at, professional_id, professional:profiles!favorites_professional_id_fkey(full_name)",
+            )
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false })
+            .limit(20),
+          supabase
+            .from("user_recommendations")
+            .select(
+              "id, created_at, recommended_id, recommended:profiles!user_recommendations_recommended_id_fkey(full_name)",
+            )
+            .eq("recommender_id", userId)
+            .order("created_at", { ascending: false })
+            .limit(20),
+          supabase
+            .from("feed_posts_likes")
+            .select(
+              "id, post_id, is_premium, created_at, post:feed_posts(title, user:profiles!feed_posts_user_id_fkey(full_name))",
+            )
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false })
+            .limit(20),
+          supabase
+            .from("post_comments")
+            .select(
+              "id, post_id, content, created_at, post:feed_posts(title, user:profiles!feed_posts_user_id_fkey(full_name))",
+            )
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false })
+            .limit(20),
+          supabase
+            .from("post_shares")
+            .select(
+              "id, post_id, share_type, created_at, post:feed_posts(title, user:profiles!feed_posts_user_id_fkey(full_name))",
+            )
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false })
+            .limit(20),
+          supabase
+            .from("point_transactions")
+            .select(
+              "id, amount, type, description, source, metadata, created_at, related_user:profiles!point_transactions_related_user_id_fkey(full_name)",
+            )
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false })
+            .limit(20),
+        ]);
 
         let allItems: HistoryItem[] = [];
 
@@ -164,6 +207,92 @@ export function UserHistoryModal({
           ];
         }
 
+        if (likes.data) {
+          allItems = [
+            ...allItems,
+            ...likes.data.map((l) => ({
+              id: l.id,
+              type: "reaction" as const,
+              title: l.is_premium ? "Deu um Like Premium" : "Curtiu um post",
+              description: `${(l.post as any)?.title || "Ver post"} de ${(l.post as any)?.user?.full_name || "alguém"}`,
+              created_at: l.created_at,
+              target_id: (l as any).post_id,
+              metadata: { is_premium: l.is_premium },
+            })),
+          ];
+        }
+
+        if (comments.data) {
+          allItems = [
+            ...allItems,
+            ...comments.data.map((c) => ({
+              id: c.id,
+              type: "comment" as const,
+              title: "Comentou em um post",
+              description: `${c.content} (no post de ${(c.post as any)?.user?.full_name || "alguém"})`,
+              created_at: c.created_at,
+              target_id: (c as any).post_id,
+            })),
+          ];
+        }
+
+        if (shares.data) {
+          allItems = [
+            ...allItems,
+            ...shares.data.map((s) => ({
+              id: s.id,
+              type: "share" as const,
+              title: "Compartilhou um post",
+              description: `Compartilhou o post de ${(s.post as any)?.user?.full_name || "alguém"}`,
+              created_at: s.created_at,
+              target_id: (s as any).post_id,
+            })),
+          ];
+        }
+
+        if (points.data) {
+          allItems = [
+            ...allItems,
+            ...points.data.map((p) => {
+              const prefix =
+                p.type === "earn" ||
+                p.type === "purchase" ||
+                p.type === "refund"
+                  ? "+"
+                  : "-";
+              let desc = p.description || p.source || "";
+              if (p.type === "transfer" && (p.metadata as any)?.to_user_name) {
+                desc = `Para ${(p.metadata as any).to_user_name}`;
+              } else if (p.type === "transfer") {
+                const relUser = Array.isArray((p as any).related_user)
+                  ? (p as any).related_user[0]
+                  : (p as any).related_user;
+                if (relUser?.full_name) {
+                  desc = `Para ${relUser.full_name}`;
+                }
+              }
+
+              return {
+                id: p.id,
+                type: "point" as const,
+                title:
+                  p.type === "earn"
+                    ? "Recebeu pontos"
+                    : p.type === "spend"
+                      ? "Gastou pontos"
+                      : p.type === "transfer"
+                        ? "Transferiu pontos"
+                        : p.type === "purchase"
+                          ? "Comprou pontos"
+                          : "Pontos",
+                description: `${prefix}${p.amount} pontos · ${desc}`,
+                created_at: p.created_at,
+                metadata: p,
+              };
+            }),
+          ];
+        }
+
         // Sort all items by date
         allItems.sort(
           (a, b) =>
@@ -212,6 +341,14 @@ export function UserHistoryModal({
         return <Heart className="w-4 h-4 text-rose-500" />;
       case "recommendation":
         return <Star className="w-4 h-4 text-amber-500" />;
+      case "comment":
+        return <MessageSquare className="w-4 h-4 text-indigo-500" />;
+      case "reaction":
+        return <ThumbsUp className="w-4 h-4 text-blue-600" />;
+      case "share":
+        return <Share2 className="w-4 h-4 text-blue-400" />;
+      case "point":
+        return <Coins className="w-4 h-4 text-yellow-500" />;
       default:
         return <Clock className="w-4 h-4 text-slate-400" />;
     }
@@ -269,7 +406,9 @@ export function UserHistoryModal({
                       {item.target_id ? (
                         <Link
                           href={
-                            item.type === "post"
+                            item.type === "post" ||
+                            item.type === "comment" ||
+                            item.type === "reaction"
                               ? `/feed?post=${item.target_id}`
                               : item.type === "classified"
                                 ? `/classificados?ad=${item.target_id}`
