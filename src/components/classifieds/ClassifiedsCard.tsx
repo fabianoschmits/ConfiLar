@@ -131,13 +131,9 @@ export function ClassifiedsCard({
     toast.success(`Abrindo chat com ${ad.user_name}...`);
   };
 
-  // Truncate Description
+  // Truncate Description - Now using line-clamp CSS
   const description = ad.description || "";
-  const shouldTruncate = description.length > 150;
-  const displayDescription =
-    shouldTruncate && !showFullDescription
-      ? description.slice(0, 150) + "..."
-      : description;
+  const displayDescription = description;
 
   // Category Icon helper (inline or import)
   // Reusing logic from page.tsx: services are imported there, maybe should pass category object or just string
@@ -201,19 +197,21 @@ export function ClassifiedsCard({
                 </AvatarFallback>
               </Avatar>
             </Link>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5 min-w-0">
               <Link
                 href={`/perfil/${ad.user_id}`}
-                className="text-base font-semibold text-gray-900 dark:text-white hover:underline transition-all"
+                className="text-base font-semibold text-gray-900 dark:text-white hover:underline transition-all truncate"
               >
                 {ad.user_name}
               </Link>
-              <ProVerifiedBadge
-                isVerified={ad.user_profile?.is_verified}
-                isPro={ad.user_profile?.is_pro}
-                proExpiresAt={ad.user_profile?.pro_expires_at}
-                iconSize={2.5}
-              />
+              <div className="flex-shrink-0 flex items-center mb-0.5">
+                <ProVerifiedBadge
+                  isVerified={ad.user_profile?.is_verified}
+                  isPro={ad.user_profile?.is_pro}
+                  proExpiresAt={ad.user_profile?.pro_expires_at}
+                  iconSize={2.2}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -408,17 +406,24 @@ export function ClassifiedsCard({
 
         {/* 4. Description */}
         <div className="px-5 py-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap">
-            <MentionText text={displayDescription} />
-            {shouldTruncate && (
+          <div className="relative">
+            <p
+              className={cn(
+                "text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap",
+                !showFullDescription && "line-clamp-3",
+              )}
+            >
+              <MentionText text={displayDescription} />
+            </p>
+            {description.length > 100 && ( // Rough estimate to show button if potentially long
               <button
                 onClick={() => setShowFullDescription(!showFullDescription)}
-                className="text-[#00b0b0] ml-1 font-semibold hover:underline text-xs"
+                className="text-[#00b0b0] mt-1 font-bold hover:underline text-xs"
               >
-                {showFullDescription ? "ver menos" : "ver mais"}
+                {showFullDescription ? "ver menos" : "ler mais"}
               </button>
             )}
-          </p>
+          </div>
 
           {/* Price Range if available */}
           {ad.price_range && (
