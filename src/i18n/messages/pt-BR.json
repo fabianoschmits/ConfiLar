@@ -33,6 +33,7 @@
     "register": "Cadastrar",
     "about": "Sobre",
     "help": "Ajuda",
+    "professionals": "Profissionais",
     "backToHome": "Voltar",
     "welcome": "Bem-vindo ao ConfiLar",
     "createAccount": "Criar Conta Grátis",
@@ -56,6 +57,7 @@
       "real": "Reais",
       "cities": "Cidades",
       "attended": "Atendidas",
+      "referrals": "Indicações",
       "services": "Serviços",
       "categories": "Categorias"
     },
