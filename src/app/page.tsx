@@ -1,59 +1,47 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { useAuthContext } from "@/contexts/AuthContext";
-import { PublicLayout } from "@/components/layout/PublicLayout";
-import { HomePageLayout } from "@/components/layout/HomePageLayout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import {
   Search,
+  ArrowRight,
+  LogIn,
+  ShieldCheck,
   Users,
   Star,
-  Shield,
-  ArrowRight,
-  MessageCircle,
+  Zap,
   Briefcase,
-  Eye,
-  ThumbsUp,
-  Gift,
-  CheckCircle2,
+  Smartphone,
+  CheckCircle,
   Menu,
   X,
-  Mail,
-  Instagram,
   TrendingUp,
   Award,
-  Sparkles,
-  Zap,
-  Info,
-  HelpCircle,
-  FileText,
-  LogIn,
   UserPlus,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useHomeStats, formatStatNumber } from "@/hooks/useHomeStats";
-import { LogoSplashScreen } from "@/components/common/LogoSplashScreen";
 import { supabase } from "@/lib/supabase";
-import { BrandLogo } from "@/components/common/BrandLogo";
-import { useTranslations } from "next-intl";
-import { services } from "@/data/services";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { PublicLayout } from "@/components/layout/PublicLayout";
+import { LogoSplashScreen } from "@/components/common/LogoSplashScreen";
 
-// Página Inicial Principal - Hero com Imagem de Fundo Full + Overlay
-function HomeContent() {
+export default function HomePage() {
   const router = useRouter();
-  const { user, loading, isReady } = useAuthContext();
+  const { user, loading: authLoading, isReady } = useAuthContext();
   const t = useTranslations("landing");
   const tNav = useTranslations("navigation");
-  const [isVisible, setIsVisible] = useState(false);
-  const [mounted, setMounted] = useState(false);
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Dados Reais do Projeto
   const {
     professionalsCount,
     reviewsCount,
@@ -61,6 +49,7 @@ function HomeContent() {
     servicesCount,
     loading: statsLoading,
   } = useHomeStats();
+
   const [referralStats, setReferralStats] = useState({
     totalReferrals: 0,
     totalUsersParticipating: 0,
@@ -69,7 +58,17 @@ function HomeContent() {
 
   useEffect(() => {
     setMounted(true);
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Redirecionamento se já estiver logado
+  useEffect(() => {
+    if (mounted && isReady && user) {
+      router.push("/feed");
+    }
+  }, [user, isReady, router, mounted]);
 
   useEffect(() => {
     const fetchReferralStats = async () => {
@@ -93,908 +92,523 @@ function HomeContent() {
     if (mounted) fetchReferralStats();
   }, [mounted]);
 
-  useEffect(() => {
-    if (mounted && isReady && user) {
-      router.push("/feed");
-    }
-  }, [user, isReady, router, mounted]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (loading || !mounted || user) return <LogoSplashScreen />;
+  if (authLoading || !mounted || user) return <LogoSplashScreen />;
 
   return (
     <PublicLayout>
-      <div className="min-h-screen bg-gray-950">
-        {/* Header Flutuante Transparente */}
-        <header className="absolute top-0 left-0 right-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex justify-between items-center bg-white/10 dark:bg-black/30 backdrop-blur-xl rounded-2xl px-6 py-4 border border-white/20">
-              <Link href="/" className="flex items-center">
-                <Image
-                  src="/imagens/logo/Logo branco - sem fundo - horizontal.png"
-                  alt="ConfiLar"
-                  width={360}
-                  height={96}
-                  quality={95}
-                  priority
-                  className="h-10 sm:h-12 w-auto object-contain"
-                />
-              </Link>
+      <div className="min-h-screen bg-white text-gray-900 font-sans selection:bg-[#00b0b0]/20 selection:text-[#00b0b0]">
+        {/* Header com Design de Cartão Flutuante (como na desktop original) */}
+        <header
+          className={cn(
+            "fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-4 pt-4 pb-2 md:px-8 md:pt-6",
+            scrolled ? "translate-y-0" : "",
+          )}
+        >
+          <div
+            className={cn(
+              "max-w-7xl mx-auto flex justify-between items-center px-6 py-4 rounded-2xl border transition-all duration-500",
+              scrolled
+                ? "bg-white/90 backdrop-blur-xl border-gray-100 shadow-lg text-gray-900"
+                : "bg-white/10 backdrop-blur-md border-white/20 text-white shadow-2xl",
+            )}
+          >
+            <Link href="/" className="flex items-center">
+              <Image
+                src={
+                  scrolled
+                    ? "/imagens/logo/Logo azul - sem fundo - horizontal.png"
+                    : "/imagens/logo/Logo branco - sem fundo - horizontal.png"
+                }
+                alt="ConfiLar"
+                width={160}
+                height={40}
+                priority
+                className="h-8 md:h-10 w-auto object-contain"
+              />
+            </Link>
 
-              <nav className="hidden md:flex items-center space-x-6">
+            <div className="hidden md:flex items-center gap-8">
+              <nav className="flex items-center gap-6 text-sm font-semibold">
+                <Link
+                  href="/buscar"
+                  className="hover:text-[#00b0b0] transition-colors"
+                >
+                  {t("ctaSearch")}
+                </Link>
                 <Link
                   href="/sobre"
-                  className="text-white hover:text-[#00b0b0] transition-colors font-medium"
+                  className="hover:text-[#00b0b0] transition-colors"
                 >
                   {tNav("about")}
                 </Link>
                 <Link
                   href="/ajuda"
-                  className="text-white hover:text-[#00b0b0] transition-colors font-medium"
+                  className="hover:text-[#00b0b0] transition-colors"
                 >
                   {tNav("help")}
                 </Link>
               </nav>
-
-              <div className="hidden md:flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  asChild
-                  className="text-white hover:text-[#00b0b0] hover:bg-white/10"
+              <div
+                className={cn(
+                  "h-4 w-[1px]",
+                  scrolled ? "bg-gray-200" : "bg-white/20",
+                )}
+              />
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/auth"
+                  className={cn(
+                    "text-sm font-bold hover:underline px-4",
+                    scrolled ? "text-[#00b0b0]" : "text-white",
+                  )}
                 >
-                  <Link href="/auth">{tNav("login")}</Link>
-                </Button>
+                  {tNav("login")}
+                </Link>
                 <Button
                   asChild
-                  className="bg-[#00b0b0] hover:bg-[#00a0a0] text-white shadow-lg shadow-[#00b0b0]/50"
+                  className="bg-[#00b0b0] hover:bg-[#009090] text-white rounded-full px-6 font-bold shadow-lg shadow-[#00b0b0]/20 border-0 transition-transform active:scale-95"
                 >
                   <Link href="/auth?tab=register">{tNav("createAccount")}</Link>
                 </Button>
               </div>
-
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 text-white"
-              >
-                {mobileMenuOpen ? (
-                  <X className="h-6 w-6" />
-                ) : (
-                  <Menu className="h-6 w-6" />
-                )}
-              </button>
             </div>
 
-            {/* Menu Mobile Dropdown */}
-            <div
-              className={cn(
-                "md:hidden absolute top-full left-0 right-0 mt-2 transition-all duration-300 transform origin-top",
-                mobileMenuOpen
-                  ? "opacity-100 scale-100 translate-y-0"
-                  : "opacity-0 scale-95 -translate-y-2 pointer-events-none",
-              )}
+            <button
+              className="md:hidden p-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              <div className="mx-4 bg-gray-900/95 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-2xl max-h-[80vh] overflow-y-auto">
-                <nav className="space-y-1">
-                  {/* Navegação Principal */}
-                  <div className="pb-2 mb-2 border-b border-white/10">
-                    <p className="text-[10px] font-bold text-gray-500 uppercase px-3 mb-2 tracking-wider">
-                      {tNav("welcome")}
-                    </p>
-                    <Link
-                      href="/buscar"
-                      className="flex items-center gap-3 px-3 py-2.5 text-white hover:bg-white/10 rounded-xl transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-[#00b0b0]/20 flex items-center justify-center text-[#00b0b0]">
-                        <Search className="h-4 w-4" />
-                      </div>
-                      <span className="font-medium">{t("ctaSearch")}</span>
-                    </Link>
-                    <Link
-                      href="/classificados"
-                      className="flex items-center gap-3 px-3 py-2.5 text-white hover:bg-white/10 rounded-xl transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400">
-                        <Briefcase className="h-4 w-4" />
-                      </div>
-                      <span className="font-medium">{tNav("classifieds")}</span>
-                    </Link>
-                  </div>
-
-                  {/* Institucional */}
-                  <div className="pb-2 mb-2 border-b border-white/10">
-                    <Link
-                      href="/sobre"
-                      className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Info className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm">{tNav("about")}</span>
-                    </Link>
-                    <Link
-                      href="/ajuda"
-                      className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <HelpCircle className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm">{tNav("help")}</span>
-                    </Link>
-                    <Link
-                      href="/termos"
-                      className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <FileText className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm">Termos de Uso</span>
-                    </Link>
-                  </div>
-
-                  {/* Contato & Social */}
-                  <div className="pb-2 mb-2 border-b border-white/10">
-                    <a
-                      href="mailto:contato@appconfilar.com.br"
-                      className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Mail className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm">Contato</span>
-                    </a>
-                    <a
-                      href="https://www.instagram.com/appconfilar"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Instagram className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm">Instagram</span>
-                    </a>
-                  </div>
-
-                  {/* Autenticação */}
-                  <div className="pt-2 grid grid-cols-2 gap-2 mt-2 border-t border-white/10">
-                    <Button
-                      variant="ghost"
-                      asChild
-                      className="text-white hover:bg-white/10 border border-white/10"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Link href="/auth">
-                        <LogIn className="w-4 h-4 mr-2" />
-                        {tNav("login")}
-                      </Link>
-                    </Button>
-                    <Link href="/auth?tab=register" className="w-full">
-                      <Button
-                        className="w-full bg-[#00b0b0] hover:bg-[#00a0a0] text-white"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        {tNav("register")}
-                      </Button>
-                    </Link>
-                  </div>
-                </nav>
-              </div>
-            </div>
+              {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
           </div>
         </header>
 
-        {/* Hero Section com Imagem de Fundo */}
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-          {/* Imagem de Fundo com Overlay */}
-          <div className="absolute inset-0">
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{
-                backgroundImage: "url('/imagens/Fotos/hero-bg.png')",
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-900/95 via-gray-900/90 to-[#00b0b0]/30" />
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMDMiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-30" />
-          </div>
+        {/* Menu Mobile Simplificado */}
+        <div
+          className={cn(
+            "fixed inset-0 z-40 bg-white transition-transform duration-300 md:hidden pt-24 px-6",
+            mobileMenuOpen ? "translate-x-0" : "translate-x-full",
+          )}
+        >
+          <nav className="flex flex-col gap-6 text-xl font-bold">
+            <Link
+              href="/auth"
+              className="flex items-center gap-3 py-4 border-b border-gray-100 text-[#00b0b0]"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <LogIn size={24} /> {tNav("login")}
+            </Link>
+            <Link
+              href="/buscar"
+              className="flex items-center gap-3 py-4 border-b border-gray-100"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Search size={24} /> {t("ctaSearch")}
+            </Link>
+            <Link
+              href="/sobre"
+              className="flex items-center gap-3 py-4 border-b border-gray-100"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Users size={24} /> {tNav("about")}
+            </Link>
+            <Link
+              href="/auth?tab=register"
+              className="mt-8"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Button className="w-full bg-[#00b0b0] hover:bg-[#009090] text-white py-6 rounded-2xl text-lg font-bold">
+                {t("ctaStart")}
+              </Button>
+            </Link>
+          </nav>
+        </div>
 
-          {/* Conteúdo Hero */}
-          <div
-            className={`relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-32 transition-all duration-1000 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
-          >
-            <Badge className="mb-6 bg-[#00b0b0]/20 text-[#00b0b0] border-[#00b0b0]/50 px-4 py-2 text-sm font-medium backdrop-blur-sm">
-              {t("subtitle")}
-            </Badge>
-
-            <div className="flex items-center justify-center gap-3 flex-wrap mb-6">
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight">
-                {t("title")}
-              </h1>
-              <Image
-                src="/imagens/logo/Logo azul - sem fundo - horizontal.png"
-                alt="ConfiLar"
-                width={300}
-                height={80}
-                quality={95}
-                priority
-                className="h-10 sm:h-14 md:h-20 lg:h-24 w-auto object-contain mt-5 sm:mt-6 md:mt-7 lg:mt-8"
+        <main>
+          {/* Hero Section - A Cara da Desktop com a Praticidade da Mobile */}
+          <section className="relative min-h-screen flex items-center pt-24 overflow-hidden">
+            {/* Fundo Original Exato da Desktop (com Grid e Gradiente) */}
+            <div className="absolute inset-0 z-0">
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{
+                  backgroundImage: "url('/imagens/Fotos/hero-bg-premium.png')",
+                }}
               />
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight">
-                ?
-              </h1>
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-950/95 via-gray-950/80 to-[#00b0b0]/20" />
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMDMiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-40" />
+              <div className="absolute inset-0 bg-black/40 md:hidden" />
             </div>
 
-            <p className="text-xl sm:text-2xl text-gray-300 mb-4 max-w-4xl mx-auto font-medium leading-relaxed">
-              {t("description")}
-            </p>
+            <div className="max-w-7xl mx-auto px-6 relative z-10 w-full text-center md:text-left">
+              <div className="inline-flex items-center gap-2 bg-[#00b0b0]/20 backdrop-blur-md text-[#00e6e6] border border-[#00b0b0]/40 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider mb-8 mx-auto md:mx-0">
+                <Zap size={14} className="fill-[#00e6e6] animate-pulse" />{" "}
+                {t("subtitle")}
+              </div>
 
-            <p className="text-base sm:text-lg text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed">
-              {t("description2")}
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-              <Button
-                size="lg"
-                asChild
-                className="bg-[#00b0b0] hover:bg-[#00a0a0] text-white text-lg px-8 py-6 shadow-2xl shadow-[#00b0b0]/50 hover:shadow-[#00b0b0]/70 transition-all"
-              >
-                <Link href="/auth?tab=register">
-                  {t("ctaStart")}
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                asChild
-                className="text-white border-2 border-white/60 bg-white/10 hover:bg-white/20 text-lg px-8 py-6 backdrop-blur-sm"
-              >
-                <Link href="/buscar">
-                  <Search className="mr-2 h-5 w-5" />
-                  {t("ctaSearch")}
-                </Link>
-              </Button>
-            </div>
-
-            {/* Stats Cards com Glassmorphism */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 max-w-5xl mx-auto">
-              <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all">
-                <div className="text-4xl sm:text-5xl font-bold text-[#00b0b0] mb-2">
-                  {statsLoading ? "..." : formatStatNumber(professionalsCount)}
-                </div>
-                <div className="text-sm text-gray-300 font-medium">
-                  {t("stats.professionals")}
-                </div>
-                <div className="text-xs text-gray-400 mt-1">
-                  {t("stats.verified")}
+              <div className="flex flex-col md:flex-row items-center md:items-start md:gap-4 mb-8">
+                <h1 className="text-4xl md:text-6xl lg:text-8xl font-black text-white leading-tight drop-shadow-lg">
+                  {t("title")}
+                </h1>
+                <div className="flex items-center gap-3">
+                  <Image
+                    src="/imagens/logo/Logo azul - sem fundo - horizontal.png"
+                    alt="ConfiLar"
+                    width={280}
+                    height={80}
+                    priority
+                    className="h-10 md:h-14 lg:h-20 w-auto object-contain mt-1 md:mt-3"
+                  />
+                  <h1 className="text-4xl md:text-6xl lg:text-8xl font-black text-white leading-tight drop-shadow-lg">
+                    ?
+                  </h1>
                 </div>
               </div>
 
-              <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all">
-                <div className="text-4xl sm:text-5xl font-bold text-[#00b0b0] mb-2">
-                  {statsLoading ? "..." : formatStatNumber(reviewsCount)}
-                </div>
-                <div className="text-sm text-gray-300 font-medium">
-                  {t("stats.reviews")}
-                </div>
-                <div className="text-xs text-gray-400 mt-1">
-                  {t("stats.real")}
-                </div>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all">
-                <div className="text-4xl sm:text-5xl font-bold text-[#00b0b0] mb-2">
-                  {statsLoading ? "..." : formatStatNumber(citiesCount)}
-                </div>
-                <div className="text-sm text-gray-300 font-medium">
-                  {t("stats.cities")}
-                </div>
-                <div className="text-xs text-gray-400 mt-1">
-                  {t("stats.attended")}
-                </div>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all">
-                <div className="text-4xl sm:text-5xl font-bold text-[#00b0b0] mb-2">
-                  {statsLoading ? "..." : formatStatNumber(servicesCount)}
-                </div>
-                <div className="text-sm text-gray-300 font-medium">
-                  {t("stats.services")}
-                </div>
-                <div className="text-xs text-gray-400 mt-1">
-                  {t("stats.categories")}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Scroll Indicator */}
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
-            <div className="w-6 h-10 border-2 border-white/30 rounded-full flex items-start justify-center p-2">
-              <div className="w-1 h-3 bg-white/50 rounded-full" />
-            </div>
-          </div>
-        </section>
-
-        {/* Seção Como Funciona - Cards com Imagens */}
-        <section className="py-24 bg-white dark:bg-gray-900">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <Badge className="mb-4 bg-[#00b0b0]/10 text-[#00b0b0] border-[#00b0b0]/50">
-                {t("howItWorks.title")}
-              </Badge>
-              <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                {t("howItWorks.subtitle")}
-              </h2>
-              <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-                {t("howItWorks.description")}
+              <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl font-medium leading-relaxed drop-shadow-md mx-auto md:mx-0">
+                {t("description")}
               </p>
+
+              <div className="flex flex-col sm:flex-row gap-6 justify-center md:justify-start mb-20 px-4 md:px-0">
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-[#00b0b0] hover:bg-[#009090] text-white py-8 px-10 rounded-3xl text-xl font-black shadow-2xl shadow-[#00b0b0]/50 group border-0 transition-all hover:-translate-y-1"
+                >
+                  <Link href="/buscar" className="flex items-center">
+                    {t("ctaSearch")}{" "}
+                    <ArrowRight
+                      size={24}
+                      className="ml-3 group-hover:translate-x-2 transition-transform"
+                    />
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="bg-white/10 backdrop-blur-xl border-2 border-white/80 text-white py-8 px-10 rounded-3xl text-xl font-bold hover:bg-white/30 transition-all hover:-translate-y-1"
+                >
+                  <Link href="/auth">{tNav("login")}</Link>
+                </Button>
+              </div>
+
+              {/* Stats com Dados Reais */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-5xl">
+                <div className="bg-white/15 backdrop-blur-xl p-6 rounded-3xl border border-white/20 hover:bg-white/20 transition-all group">
+                  <p className="text-3xl lg:text-4xl font-black text-[#00b0b0] mb-1 group-hover:scale-110 transition-transform origin-left">
+                    {statsLoading
+                      ? "..."
+                      : formatStatNumber(professionalsCount)}
+                  </p>
+                  <p className="text-xs uppercase font-extrabold text-white/70 tracking-widest">
+                    {t("stats.professionals")}
+                  </p>
+                  <div className="w-8 h-1 bg-[#00b0b0] mt-3 rounded-full" />
+                </div>
+                <div className="bg-white/15 backdrop-blur-xl p-6 rounded-3xl border border-white/20 hover:bg-white/20 transition-all group">
+                  <p className="text-3xl lg:text-4xl font-black text-[#00b0b0] mb-1 group-hover:scale-110 transition-transform origin-left">
+                    {statsLoading ? "..." : formatStatNumber(reviewsCount)}
+                  </p>
+                  <p className="text-xs uppercase font-extrabold text-white/70 tracking-widest">
+                    {t("stats.reviews")}
+                  </p>
+                  <div className="w-8 h-1 bg-[#00b0b0] mt-3 rounded-full" />
+                </div>
+                <div className="bg-white/15 backdrop-blur-xl p-6 rounded-3xl border border-white/20 hover:bg-white/20 transition-all group">
+                  <p className="text-3xl lg:text-4xl font-black text-[#00b0b0] mb-1 group-hover:scale-110 transition-transform origin-left">
+                    {statsLoading ? "..." : formatStatNumber(citiesCount)}
+                  </p>
+                  <p className="text-xs uppercase font-extrabold text-white/70 tracking-widest">
+                    {t("stats.cities")}
+                  </p>
+                  <div className="w-8 h-1 bg-[#00b0b0] mt-3 rounded-full" />
+                </div>
+                <div className="bg-white/15 backdrop-blur-xl p-6 rounded-3xl border border-white/20 hover:bg-white/20 transition-all group">
+                  <p className="text-3xl lg:text-4xl font-black text-[#00b0b0] mb-1 group-hover:scale-110 transition-transform origin-left">
+                    {statsLoading ? "..." : formatStatNumber(servicesCount)}
+                  </p>
+                  <p className="text-xs uppercase font-extrabold text-white/70 tracking-widest">
+                    {t("stats.services")}
+                  </p>
+                  <div className="w-8 h-1 bg-[#00b0b0] mt-3 rounded-full" />
+                </div>
+              </div>
             </div>
+          </section>
 
-            <div className="grid md:grid-cols-2 gap-8 mb-12">
-              {/* Card 1 */}
-              <Card className="group overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all">
-                <div className="relative h-64 overflow-hidden">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center transform group-hover:scale-110 transition-transform duration-500"
-                    style={{
-                      backgroundImage: "url('/imagens/Fotos/transparency.png')",
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                  <div className="absolute bottom-6 left-6 right-6">
-                    <div className="w-14 h-14 bg-[#00b0b0] rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                      <Eye className="h-7 w-7 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">
-                      {t("features.transparency.title")}
-                    </h3>
-                  </div>
-                </div>
-                <CardContent className="p-6">
-                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    {t("features.transparency.description")}
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Card 2 */}
-              <Card className="group overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all">
-                <div className="relative h-64 overflow-hidden">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center transform group-hover:scale-110 transition-transform duration-500"
-                    style={{
-                      backgroundImage: "url('/imagens/Fotos/referrals.png')",
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                  <div className="absolute bottom-6 left-6 right-6">
-                    <div className="w-14 h-14 bg-[#00b0b0] rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                      <Users className="h-7 w-7 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">
-                      {t("features.referrals.title")}
-                    </h3>
-                  </div>
-                </div>
-                <CardContent className="p-6">
-                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    {t("features.referrals.description")}
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Card 3 */}
-              <Card className="group overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all">
-                <div className="relative h-64 overflow-hidden">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center transform group-hover:scale-110 transition-transform duration-500"
-                    style={{
-                      backgroundImage:
-                        "url('/imagens/Fotos/recommendations.png')",
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                  <div className="absolute bottom-6 left-6 right-6">
-                    <div className="w-14 h-14 bg-[#00b0b0] rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                      <ThumbsUp className="h-7 w-7 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">
-                      {t("features.recommendations.title")}
-                    </h3>
-                  </div>
-                </div>
-                <CardContent className="p-6">
-                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    {t("features.recommendations.description")}
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Card 4 */}
-              <Card className="group overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all">
-                <div className="relative h-64 overflow-hidden">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center transform group-hover:scale-110 transition-transform duration-500"
-                    style={{ backgroundImage: "url('/imagens/Fotos/ads.png')" }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                  <div className="absolute bottom-6 left-6 right-6">
-                    <div className="w-14 h-14 bg-[#00b0b0] rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                      <Briefcase className="h-7 w-7 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">
-                      {t("features.ads.title")}
-                    </h3>
-                  </div>
-                </div>
-                <CardContent className="p-6">
-                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    {t("features.ads.description")}
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
-
-        {/* Seção Funcionalidades Detalhadas - Layout Alternado */}
-        <section className="py-24 bg-gray-50 dark:bg-gray-950">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <Badge className="mb-4 bg-[#00b0b0]/10 text-[#00b0b0] border-[#00b0b0]/50">
-                {t("features.title")}
-              </Badge>
-              <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                {t("features.subtitle")}
-              </h2>
-              <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-                {t("features.description")}
-              </p>
-            </div>
-
-            <div className="space-y-24">
-              {/* Feature 1 - Imagem à esquerda */}
-              <div className="grid md:grid-cols-2 gap-12 items-center">
-                <div className="relative h-[400px] rounded-3xl overflow-hidden shadow-2xl">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{
-                      backgroundImage:
-                        "url('/imagens/Fotos/transparency-detail.png')",
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#00b0b0]/20 to-transparent" />
-                </div>
+          {/* Categorias */}
+          <section className="py-24 bg-white relative">
+            <div className="max-w-7xl mx-auto px-6">
+              <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8 text-center md:text-left">
                 <div>
-                  <div className="w-16 h-16 bg-[#00b0b0] rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-                    <Eye className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                    {t("features.transparencyDetail.title")}
-                  </h3>
-                  <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
-                    {t("features.transparencyDetail.description")}
+                  <h2 className="text-4xl md:text-5xl font-black mb-4">
+                    Serviços Favoritos
+                  </h2>
+                  <p className="text-lg text-gray-500 max-w-2xl">
+                    Os mais requisitados em Venâncio Aires e região agora na
+                    palma da sua mão.
                   </p>
-                  <ul className="space-y-4">
-                    <li className="flex items-start gap-3">
-                      <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-0.5 text-[#00b0b0]" />
-                      <span className="text-gray-600 dark:text-gray-400">
-                        {t("features.transparencyDetail.points.whoHired")}
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-0.5 text-[#00b0b0]" />
-                      <span className="text-gray-600 dark:text-gray-400">
-                        {t("features.transparencyDetail.points.allReviews")}
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-0.5 text-[#00b0b0]" />
-                      <span className="text-gray-600 dark:text-gray-400">
-                        {t(
-                          "features.transparencyDetail.points.completeHistory",
-                        )}
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-0.5 text-[#00b0b0]" />
-                      <span className="text-gray-600 dark:text-gray-400">
-                        {t(
-                          "features.transparencyDetail.points.identityVerification",
-                        )}
-                      </span>
-                    </li>
-                  </ul>
                 </div>
-              </div>
-
-              {/* Feature 2 - Imagem à direita */}
-              <div className="grid md:grid-cols-2 gap-12 items-center">
-                <div className="order-2 md:order-1">
-                  <div className="w-16 h-16 bg-[#00b0b0] rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-                    <Users className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                    {t("features.referralsDetail.title")}
-                  </h3>
-                  <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
-                    {t("features.referralsDetail.description")}
-                  </p>
-
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800">
-                      <Gift className="h-8 w-8 text-[#00b0b0] mb-3" />
-                      <h4 className="font-bold text-gray-900 dark:text-white mb-2">
-                        {t("features.referralsDetail.referralProgram.title")}
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {t(
-                          "features.referralsDetail.referralProgram.description",
-                        )}
-                      </p>
-                    </div>
-                    <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800">
-                      <ThumbsUp className="h-8 w-8 text-[#00b0b0] mb-3" />
-                      <h4 className="font-bold text-gray-900 dark:text-white mb-2">
-                        {t(
-                          "features.referralsDetail.publicRecommendations.title",
-                        )}
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {t(
-                          "features.referralsDetail.publicRecommendations.description",
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="order-1 md:order-2 relative h-[400px] rounded-3xl overflow-hidden shadow-2xl">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{
-                      backgroundImage: "url('/imagens/Fotos/referrals.png')",
-                    }}
+                <Link
+                  href="/buscar"
+                  className="text-[#00b0b0] font-bold flex items-center gap-2 hover:underline group mx-auto md:mx-0"
+                >
+                  Ver catálogo completo{" "}
+                  <ArrowRight
+                    size={20}
+                    className="group-hover:translate-x-1 transition-transform"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#00b0b0]/20 to-transparent" />
-                </div>
+                </Link>
               </div>
 
-              {/* Feature 3 - Imagem à esquerda */}
-              <div className="grid md:grid-cols-2 gap-12 items-center">
-                <div className="relative h-[400px] rounded-3xl overflow-hidden shadow-2xl">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10">
+                {[
+                  {
+                    name: "Limpeza",
+                    icon: (
+                      <Star
+                        size={24}
+                        className="text-yellow-400 fill-yellow-400"
+                      />
+                    ),
+                    img: "/imagens/Fotos/transparency.png",
+                  },
+                  {
+                    name: "Reparos",
+                    icon: <Briefcase size={24} className="text-blue-500" />,
+                    img: "/imagens/Fotos/ads.png",
+                  },
+                  {
+                    name: "Elétrica",
+                    icon: (
+                      <Zap
+                        size={24}
+                        className="text-[#00b0b0] fill-[#00b0b0]"
+                      />
+                    ),
+                    img: "/imagens/Fotos/recommendations.png",
+                  },
+                  {
+                    name: "Jardim",
+                    icon: <CheckCircle size={24} className="text-green-500" />,
+                    img: "/imagens/Fotos/referrals.png",
+                  },
+                ].map((item, idx) => (
                   <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: "url('/imagens/Fotos/ads.png')" }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#00b0b0]/20 to-transparent" />
-                </div>
-                <div>
-                  <div className="w-16 h-16 bg-[#00b0b0] rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-                    <Briefcase className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                    {t("features.adsDetail.title")}
-                  </h3>
-                  <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
-                    {t("features.adsDetail.description")}
-                  </p>
-                  <ul className="space-y-4">
-                    <li className="flex items-start gap-3">
-                      <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-0.5 text-[#00b0b0]" />
-                      <span className="text-gray-600 dark:text-gray-400">
-                        {t("features.adsDetail.offerServices")}
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-0.5 text-[#00b0b0]" />
-                      <span className="text-gray-600 dark:text-gray-400">
-                        {t("features.adsDetail.requestServices")}
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-0.5 text-[#00b0b0]" />
-                      <span className="text-gray-600 dark:text-gray-400">
-                        {t("features.adsDetail.premiumAds")}
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Seção Programa de Indicações - Card Grande */}
-        <section className="py-24 bg-gradient-to-br from-[#00b0b0] to-[#008080]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
-                {t("referralProgram.title")}
-              </h2>
-              <p className="text-xl text-white/90 max-w-3xl mx-auto">
-                {t("referralProgram.description")}
-              </p>
-            </div>
-
-            <Card className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl">
-              <CardContent className="p-8 md:p-12">
-                <div className="grid md:grid-cols-2 gap-12 items-center">
-                  <div>
-                    <div className="flex items-center gap-3 mb-8">
-                      <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg">
-                        <Gift className="h-7 w-7 text-[#00b0b0]" />
+                    key={idx}
+                    className="group relative aspect-[3/4] overflow-hidden rounded-[3rem] cursor-pointer shadow-xl hover:shadow-2xl transition-all duration-700 hover:-rotate-1 active:scale-95"
+                  >
+                    <Image
+                      src={item.img}
+                      alt={item.name}
+                      fill
+                      className="object-cover group-hover:scale-115 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-950/90 via-gray-950/20 to-transparent opacity-90" />
+                    <div className="absolute bottom-8 left-8 right-8">
+                      <div className="bg-white/10 backdrop-blur-xl w-14 h-14 rounded-3xl flex items-center justify-center mb-4 border border-white/20 group-hover:bg-[#00b0b0] group-hover:border-0 transition-all duration-500">
+                        {item.icon}
                       </div>
-                      <h3 className="text-3xl font-bold text-white">
-                        {t("referralProgram.howItWorks")}
+                      <h3 className="text-white font-black text-2xl drop-shadow-md">
+                        {item.name}
                       </h3>
                     </div>
-
-                    <div className="space-y-6">
-                      {[
-                        {
-                          num: 1,
-                          title: t("referralProgram.steps.step1.title"),
-                          desc: t("referralProgram.steps.step1.description"),
-                        },
-                        {
-                          num: 2,
-                          title: t("referralProgram.steps.step2.title"),
-                          desc: t("referralProgram.steps.step2.description"),
-                        },
-                        {
-                          num: 3,
-                          title: t("referralProgram.steps.step3.title"),
-                          desc: t("referralProgram.steps.step3.description"),
-                        },
-                        {
-                          num: 4,
-                          title: t("referralProgram.steps.step4.title"),
-                          desc: t("referralProgram.steps.step4.description"),
-                        },
-                      ].map((step) => (
-                        <div key={step.num} className="flex items-start gap-4">
-                          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center flex-shrink-0 font-bold text-[#00b0b0] shadow-lg">
-                            {step.num}
-                          </div>
-                          <div>
-                            <h4 className="font-bold text-white mb-1">
-                              {step.title}
-                            </h4>
-                            <p className="text-sm text-white/80">{step.desc}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
                   </div>
+                ))}
+              </div>
+            </div>
+          </section>
 
-                  <div className="bg-white dark:bg-gray-900 rounded-3xl p-8 shadow-2xl">
-                    <h4 className="font-bold text-xl text-gray-900 dark:text-white mb-6 text-center">
-                      {t("referralProgram.stats.title")}
-                    </h4>
-                    <div className="grid grid-cols-2 gap-6">
-                      <div className="text-center p-6 bg-gradient-to-br from-[#00b0b0]/10 to-[#00b0b0]/5 rounded-2xl">
-                        <div className="text-4xl font-bold text-[#00b0b0] mb-2">
-                          {referralStats.loading
-                            ? "..."
-                            : formatStatNumber(referralStats.totalReferrals)}
-                        </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                          {t("referralProgram.stats.totalReferrals")}
-                        </div>
-                      </div>
-                      <div className="text-center p-6 bg-gradient-to-br from-[#00b0b0]/10 to-[#00b0b0]/5 rounded-2xl">
-                        <div className="text-4xl font-bold text-[#00b0b0] mb-2">
-                          {referralStats.loading
-                            ? "..."
-                            : formatStatNumber(
-                                referralStats.totalUsersParticipating,
-                              )}
-                        </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                          {t("referralProgram.stats.usersParticipating")}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-8">
-                      <Button
-                        asChild
-                        className="w-full bg-[#00b0b0] hover:bg-[#00a0a0] text-white py-6 text-lg shadow-xl"
-                      >
-                        <Link href="/auth?tab=register">
-                          {t("referralProgram.cta")}
-                          <ArrowRight className="ml-2 h-5 w-5" />
-                        </Link>
-                      </Button>
-                    </div>
+          {/* Indicações */}
+          <section className="py-28 bg-[#f8fafb] overflow-hidden relative border-y border-gray-100">
+            <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-20 items-center">
+              <div className="relative group">
+                <div className="absolute -inset-4 bg-gradient-to-tr from-[#00b0b0] to-teal-200 rounded-[4rem] opacity-20 blur-2xl group-hover:opacity-30 transition-opacity" />
+                <div className="relative rounded-[3.5rem] overflow-hidden shadow-3xl border-[12px] border-white">
+                  <Image
+                    src="/imagens/Fotos/referrals.png"
+                    alt="Indicações ConfiLar"
+                    width={600}
+                    height={600}
+                    className="w-full h-auto transition-transform duration-700 group-hover:scale-105"
+                  />
+                </div>
+              </div>
+
+              <div className="text-center md:text-left">
+                <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest mb-8">
+                  <TrendingUp size={16} /> Valorização da confiança
+                </div>
+                <h2 className="text-4xl md:text-5xl font-black mb-8 leading-tight text-gray-900">
+                  Uma rede feita por{" "}
+                  <span className="text-[#00b0b0]">pessoas reais</span>.
+                </h2>
+                <p className="text-xl text-gray-500 mb-12 leading-relaxed">
+                  No ConfiLar, o seu histórico de confiança vale pontos. Já
+                  movimentamos mais de{" "}
+                  <strong>
+                    {referralStats.loading
+                      ? "..."
+                      : formatStatNumber(referralStats.totalReferrals)}
+                  </strong>{" "}
+                  indicações verificadas.
+                </p>
+
+                <div className="flex flex-wrap gap-6 justify-center md:justify-start mb-12">
+                  <div className="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-50 flex-1 min-w-[200px]">
+                    <p className="text-sm font-bold text-gray-400 mb-2 tracking-widest uppercase">
+                      {t("stats.referrals")}
+                    </p>
+                    <p className="text-4xl font-black text-[#00b0b0]">
+                      {referralStats.loading
+                        ? "..."
+                        : formatStatNumber(referralStats.totalReferrals)}
+                    </p>
+                  </div>
+                  <div className="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-50 flex-1 min-w-[200px]">
+                    <p className="text-sm font-bold text-gray-400 mb-2 tracking-widest uppercase">
+                      Participantes
+                    </p>
+                    <p className="text-4xl font-black text-gray-900">
+                      {referralStats.loading
+                        ? "..."
+                        : formatStatNumber(
+                            referralStats.totalUsersParticipating,
+                          )}
+                    </p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
 
-        {/* Por que escolher - Grid 3 colunas */}
-        <section className="py-24 bg-white dark:bg-gray-900">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <Badge className="mb-4 bg-[#00b0b0]/10 text-[#00b0b0] border-[#00b0b0]/50">
-                {t("whyChoose.badge")}
-              </Badge>
-              <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                {t("whyChoose.title")}
-              </h2>
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-gray-900 hover:bg-black text-white py-8 px-12 rounded-3xl text-xl font-black shadow-2xl transition-all hover:scale-105"
+                >
+                  <Link href="/auth?tab=register">Entrar para a rede</Link>
+                </Button>
+              </div>
             </div>
+          </section>
 
-            <div className="grid md:grid-cols-3 gap-8">
-              <Card className="border-0 shadow-xl hover:shadow-2xl transition-all">
-                <CardContent className="p-8 text-center">
-                  <div className="w-20 h-20 bg-[#00b0b0]/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                    <Shield className="h-10 w-10 text-[#00b0b0]" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                    {t("whyChoose.transparency.title")}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    {t("whyChoose.transparency.description")}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-xl hover:shadow-2xl transition-all">
-                <CardContent className="p-8 text-center">
-                  <div className="w-20 h-20 bg-[#00b0b0]/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                    <CheckCircle2 className="h-10 w-10 text-[#00b0b0]" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                    {t("whyChoose.verified.title")}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    {t("whyChoose.verified.description")}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-xl hover:shadow-2xl transition-all">
-                <CardContent className="p-8 text-center">
-                  <div className="w-20 h-20 bg-[#00b0b0]/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                    <MessageCircle className="h-10 w-10 text-[#00b0b0]" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                    {t("whyChoose.communication.title")}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    {t("whyChoose.communication.description")}
-                  </p>
-                </CardContent>
-              </Card>
+          {/* CTA Master */}
+          <section className="py-24 px-6 mb-12">
+            <div className="max-w-6xl mx-auto bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 rounded-[4rem] p-12 md:p-24 text-center text-white shadow-3xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#00b0b0]/5 rounded-full blur-[100px] -mr-64 -mt-64" />
+              <div className="relative z-10 flex flex-col items-center">
+                <div className="w-24 h-24 bg-white/5 backdrop-blur-2xl rounded-[2rem] flex items-center justify-center mb-10 border border-white/10 shadow-inner">
+                  <Award size={48} className="text-[#00b0b0]" />
+                </div>
+                <h2 className="text-5xl md:text-7xl font-black mb-10 tracking-tight leading-tight">
+                  Dê ao seu lar o <span className="text-[#00b0b0]">melhor</span>
+                  .
+                </h2>
+                <p className="text-white/60 text-xl md:text-2xl mb-16 max-w-3xl font-medium leading-relaxed">
+                  Centenas de profissionais verificados esperando para resolver
+                  o seu problema agora mesmo.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-8 justify-center w-full max-w-2xl">
+                  <Button
+                    asChild
+                    size="lg"
+                    className="bg-[#00b0b0] hover:bg-[#009090] text-white py-9 px-14 rounded-[2rem] text-2xl font-black shadow-[0_20px_40px_-10px_rgba(0,176,176,0.6)] border-0 transition-all hover:scale-105 active:scale-95"
+                  >
+                    <Link href="/auth?tab=register">Criar Conta Grátis</Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="ghost"
+                    size="lg"
+                    className="text-white hover:bg-white/10 py-9 px-14 rounded-[2rem] text-2xl font-bold border-2 border-white/20 backdrop-blur-md"
+                  >
+                    <Link href="/buscar">Apenas Olhar</Link>
+                  </Button>
+                </div>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </main>
 
-        {/* Footer */}
-        <footer className="bg-gray-900 text-white py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-              <div className="col-span-1 md:col-span-2">
-                <BrandLogo width={140} height={38} className="mb-6" />
-                <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                  {t("footer.description")}
+        <footer className="py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-12 text-center md:text-left border-b border-gray-100 pb-16">
+              <div className="max-w-sm">
+                <Image
+                  src="/imagens/logo/Logo azul - sem fundo - horizontal.png"
+                  alt="ConfiLar"
+                  width={180}
+                  height={45}
+                  className="h-10 w-auto mb-8 mx-auto md:mx-0 opacity-90"
+                />
+                <p className="text-lg text-gray-500 leading-relaxed font-medium">
+                  Conectando profissionais reais a problemas reais.
+                  Transparência e confiança em cada clique.
                 </p>
               </div>
-
-              <div>
-                <h3 className="text-lg font-bold mb-4">Categorias Populares</h3>
-                <ul className="space-y-3 text-sm">
-                  {services.slice(0, 6).map((service) => (
-                    <li key={service.id}>
-                      <Link
-                        href={`/profissionais/${service.id}`}
-                        className="text-gray-400 hover:text-[#00b0b0] transition-colors"
-                      >
-                        {service.name}
-                      </Link>
-                    </li>
-                  ))}
-                  <li>
-                    <Link
-                      href="/buscar"
-                      className="text-[#00b0b0] hover:underline font-medium"
-                    >
-                      Ver todos →
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-bold mb-4">
-                  {t("footer.quickLinks")}
-                </h3>
-                <ul className="space-y-3 text-sm">
-                  <li>
-                    <Link
-                      href="/sobre"
-                      className="text-gray-400 hover:text-[#00b0b0] transition-colors"
-                    >
-                      {t("footer.aboutUs")}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/ajuda"
-                      className="text-gray-400 hover:text-[#00b0b0] transition-colors"
-                    >
-                      {t("footer.helpCenter")}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/termos"
-                      className="text-gray-400 hover:text-[#00b0b0] transition-colors"
-                    >
-                      {t("footer.termsOfUse")}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/buscar"
-                      className="text-gray-400 hover:text-[#00b0b0] transition-colors"
-                    >
-                      {t("footer.search")}
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-bold mb-4">
-                  {t("footer.contact")}
-                </h3>
-                <ul className="space-y-3 text-sm">
-                  <li className="flex items-center text-gray-400">
-                    <Mail className="h-4 w-4 mr-2 text-[#00b0b0]" />
-                    <a
-                      href="mailto:contato@appconfilar.com.br"
-                      className="hover:text-[#00b0b0] transition-colors"
-                    >
-                      contato@appconfilar.com.br
-                    </a>
-                  </li>
-                  <li className="flex items-center text-gray-400">
-                    <Instagram className="h-4 w-4 mr-2 text-[#00b0b0]" />
-                    <a
-                      href="https://www.instagram.com/appconfilar"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:text-[#00b0b0] transition-colors"
-                    >
-                      @appconfilar
-                    </a>
-                  </li>
-                </ul>
+              <div className="flex flex-wrap justify-center gap-12 text-base font-black text-gray-900">
+                <div className="flex flex-col gap-4">
+                  <p className="text-xs text-[#00b0b0] uppercase tracking-widest mb-2">
+                    Plataforma
+                  </p>
+                  <Link
+                    href="/buscar"
+                    className="hover:text-[#00b0b0] transition-colors"
+                  >
+                    {t("ctaSearch")}
+                  </Link>
+                  <Link
+                    href="/profissionais"
+                    className="hover:text-[#00b0b0] transition-colors"
+                  >
+                    {tNav("professionals")}
+                  </Link>
+                </div>
+                <div className="flex flex-col gap-4">
+                  <p className="text-xs text-[#00b0b0] uppercase tracking-widest mb-2">
+                    Suporte
+                  </p>
+                  <Link
+                    href="/ajuda"
+                    className="hover:text-[#00b0b0] transition-colors"
+                  >
+                    {tNav("help")}
+                  </Link>
+                  <Link
+                    href="/sobre"
+                    className="hover:text-[#00b0b0] transition-colors"
+                  >
+                    {tNav("about")}
+                  </Link>
+                </div>
+                <div className="flex flex-col gap-4">
+                  <p className="text-xs text-[#00b0b0] uppercase tracking-widest mb-2">
+                    Legal
+                  </p>
+                  <Link
+                    href="/termos"
+                    className="hover:text-[#00b0b0] transition-colors"
+                  >
+                    Termos
+                  </Link>
+                  <Link
+                    href="/privacidade"
+                    className="hover:text-[#00b0b0] transition-colors"
+                  >
+                    Privacidade
+                  </Link>
+                </div>
               </div>
             </div>
-
-            <Separator className="my-12 bg-gray-800" />
-
-            <div className="text-center">
-              <p className="text-gray-400 text-sm">{t("footer.copyright")}</p>
+            <div className="mt-12 flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-gray-400 font-medium">
+              <p>© 2026 ConfiLar Brasil. Venâncio Aires, RS.</p>
+              <div className="flex items-center gap-6">
+                <span className="flex items-center gap-2 bg-gray-50 px-3 py-1 rounded-full text-[10px] uppercase font-black">
+                  <Smartphone size={12} /> App Progressive
+                </span>
+              </div>
             </div>
           </div>
         </footer>
       </div>
     </PublicLayout>
-  );
-}
-
-export default function Home() {
-  return (
-    <HomePageLayout>
-      <Suspense fallback={<LogoSplashScreen />}>
-        <HomeContent />
-      </Suspense>
-    </HomePageLayout>
   );
 }
