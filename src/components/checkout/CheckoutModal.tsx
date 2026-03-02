@@ -20,6 +20,7 @@ import { LoadingButton } from "@/components/ui/LoadingButton";
 import { toast } from "sonner";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
+import { ValidationUtils } from "@/lib/validation";
 
 interface Package {
   id: string;
@@ -98,8 +99,12 @@ export function CheckoutModal({
         ...prev,
         name: profile.full_name || prev.name,
         email: user.email || prev.email,
-        phone: profile.phone || prev.phone,
-        cpf: profile.cpf_cnpj || prev.cpf,
+        phone: profile.phone
+          ? ValidationUtils.formatPhone(profile.phone)
+          : prev.phone,
+        cpf: profile.cpf_cnpj
+          ? ValidationUtils.formatCPF(profile.cpf_cnpj)
+          : prev.cpf,
         address: {
           ...prev.address,
           street: profile.address || prev.address.street,
@@ -319,20 +324,14 @@ export function CheckoutModal({
     }
   };
 
-  const formatCPF = (value: string) => {
-    const numbers = value.replace(/\D/g, "");
-    if (numbers.length <= 11) {
-      return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
-    }
-    return value;
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = ValidationUtils.formatPhone(e.target.value);
+    handleInputChange("phone", formatted);
   };
 
-  const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, "");
-    if (numbers.length <= 11) {
-      return numbers.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
-    }
-    return value;
+  const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = ValidationUtils.formatCPF(e.target.value);
+    handleInputChange("cpf", formatted);
   };
 
   const formatCEP = (value: string) => {
@@ -828,9 +827,7 @@ export function CheckoutModal({
                   <Input
                     id="phone"
                     value={formData.phone}
-                    onChange={(e) =>
-                      handleInputChange("phone", formatPhone(e.target.value))
-                    }
+                    onChange={handlePhoneChange}
                     placeholder="(00) 00000-0000"
                     maxLength={15}
                   />
@@ -841,9 +838,7 @@ export function CheckoutModal({
                   <Input
                     id="cpf"
                     value={formData.cpf}
-                    onChange={(e) =>
-                      handleInputChange("cpf", formatCPF(e.target.value))
-                    }
+                    onChange={handleCPFChange}
                     placeholder="000.000.000-00"
                     maxLength={14}
                   />

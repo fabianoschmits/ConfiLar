@@ -66,7 +66,6 @@ export function ClassifiedsCard({
   const { openChat } = useFloatingChat();
   const { isAdmin } = useIsAdmin();
   const [showFullDescription, setShowFullDescription] = useState(false);
-  const [userInfoExpanded, setUserInfoExpanded] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageExpanded, setIsImageExpanded] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -147,13 +146,12 @@ export function ClassifiedsCard({
   return (
     <div
       className={cn(
-        "group relative flex flex-col h-full overflow-hidden rounded-3xl bg-white dark:bg-black border transition-all duration-500",
+        "group relative flex flex-col h-full overflow-hidden rounded-[2.5rem] bg-white dark:bg-black border transition-all duration-500",
         isHighlighted
           ? "border-blue-400 dark:border-blue-700 z-10 shadow-sm"
           : isActivePremium
-            ? "ring-2 ring-[#00b0b0]/50 dark:ring-[#00b0b0]/40 border-[#00b0b0]/30 dark:border-[#00b0b0]/20 bg-gradient-to-br from-[#00b0b0]/5 to-transparent dark:from-[#00b0b0]/10 dark:to-transparent shadow-[0_15px_40px_-15px_rgba(0,176,176,0.4)] dark:shadow-[0_15px_40px_-15px_rgba(0,176,176,0.2)] premium-border-shine"
-            : "border-gray-200 dark:border-gray-800",
-        "hover:shadow-lg",
+            ? "ring-2 ring-[#00b0b0]/40 border-[#00b0b0]/50 bg-white dark:bg-black shadow-[0_10px_30px_-10px_rgba(0,176,176,0.3)] premium-border-shine"
+            : "border-transparent dark:border-transparent bg-white dark:bg-black hover:shadow-md",
       )}
     >
       {isHighlighted && (
@@ -259,7 +257,7 @@ export function ClassifiedsCard({
 
             {/* Premium Badge */}
             {isActivePremium && (
-              <Badge className="bg-gradient-to-r from-[#008080] to-[#00b0b0] text-white border-0 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-[0_2px_10px_-3px_rgba(0,176,176,0.5)] gap-1">
+              <Badge className="bg-[#00b0b0] hover:bg-[#00a0a0] text-white border-0 text-[10px] font-bold px-2 py-0.5 rounded-full gap-1">
                 <Crown className="h-3 w-3" />
                 Premium
               </Badge>
@@ -410,14 +408,14 @@ export function ClassifiedsCard({
 
         {/* 4. Description */}
         <div className="px-5 py-4">
-          <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap">
             <MentionText text={displayDescription} />
             {shouldTruncate && (
               <button
                 onClick={() => setShowFullDescription(!showFullDescription)}
-                className="text-primary-600 dark:text-primary-400 ml-1 font-medium hover:underline text-xs"
+                className="text-[#00b0b0] ml-1 font-semibold hover:underline text-xs"
               >
-                {showFullDescription ? "ler menos" : "ler mais"}
+                {showFullDescription ? "ver menos" : "ver mais"}
               </button>
             )}
           </p>
@@ -433,70 +431,23 @@ export function ClassifiedsCard({
 
         {/* 5. Footer: User + Contact */}
         <div className="mt-auto bg-gray-50/50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-800">
-          <div className="px-5 py-4 flex items-center justify-end">
+          <div className="px-5 py-6 flex items-center justify-end">
             {/* Contact Button */}
             <Button
               onClick={handleContactClick}
               disabled={isOwner}
               className={cn(
-                "rounded-full px-5 font-semibold shadow-sm transition-all hover:shadow-md active:scale-95",
+                "rounded-full px-8 py-6 font-bold shadow-sm transition-all hover:shadow-md active:scale-95 text-base",
                 isOwner ? "opacity-50 cursor-not-allowed" : "",
+                isActivePremium
+                  ? "bg-[#878a94] hover:bg-[#767982] text-white border-0"
+                  : "bg-[#f4f7fa] hover:bg-[#e9eff5] text-[#1a1c21] border-0",
               )}
-              variant={isActivePremium ? "default" : "secondary"}
-              size="sm"
+              size="lg"
             >
               Contatar
             </Button>
           </div>
-
-          {/* Expanded User Info (Stats) */}
-          {userInfoExpanded && ad.user_profile && (
-            <div className="px-5 pb-4 pt-0 text-xs animate-in slide-in-from-top-2">
-              <div className="grid grid-cols-2 gap-2 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                {ad.user_profile.idade && (
-                  <div className="text-gray-600 dark:text-gray-300">
-                    <span className="font-semibold text-gray-900 dark:text-white block text-[10px] uppercase opacity-70">
-                      Idade
-                    </span>
-                    {ad.user_profile.idade} anos
-                  </div>
-                )}
-                {ad.user_profile.estado_civil && (
-                  <div className="text-gray-600 dark:text-gray-300">
-                    <span className="font-semibold text-gray-900 dark:text-white block text-[10px] uppercase opacity-70">
-                      Estado Civil
-                    </span>
-                    {ad.user_profile.estado_civil}
-                  </div>
-                )}
-                {ad.user_profile.escolaridade && (
-                  <div className="text-gray-600 dark:text-gray-300 col-span-2">
-                    <span className="font-semibold text-gray-900 dark:text-white block text-[10px] uppercase opacity-70">
-                      Escolaridade
-                    </span>
-                    {ad.user_profile.escolaridade.replace(/_/g, " ")}
-                  </div>
-                )}
-                {ad.user_profile.filhos !== undefined &&
-                  ad.user_profile.filhos > 0 && (
-                    <div className="text-gray-600 dark:text-gray-300">
-                      <span className="font-semibold text-gray-900 dark:text-white block text-[10px] uppercase opacity-70">
-                        Filhos
-                      </span>
-                      {ad.user_profile.filhos}
-                    </div>
-                  )}
-                {ad.user_profile.professional_experience_years && (
-                  <div className="text-gray-600 dark:text-gray-300">
-                    <span className="font-semibold text-gray-900 dark:text-white block text-[10px] uppercase opacity-70">
-                      Experiência
-                    </span>
-                    {ad.user_profile.professional_experience_years} anos
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </GuestBlurOverlay>
     </div>

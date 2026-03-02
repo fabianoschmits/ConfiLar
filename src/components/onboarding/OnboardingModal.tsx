@@ -1100,7 +1100,8 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
                               <strong>Nome:</strong> {watchedValues.full_name}
                             </p>
                             <p>
-                              <strong>Telefone:</strong> {watchedValues.phone}
+                              <strong>Telefone:</strong>{" "}
+                              {ValidationUtils.formatPhone(watchedValues.phone)}
                             </p>
                             <p>
                               <strong>Local:</strong>{" "}
