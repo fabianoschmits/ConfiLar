@@ -85,9 +85,13 @@ export function ProVerifiedBadge({
   return (
     <div
       className={cn(
-        "relative w-4 h-4 flex items-center justify-center",
+        "relative flex-shrink-0 flex items-center justify-center translate-y-[-1px]",
         className,
       )}
+      style={{
+        width: `${iconSize * 4}px`,
+        height: `${iconSize * 4}px`,
+      }}
     >
       {/* Estado 1: Sempre Azul (Verificado) */}
       <div

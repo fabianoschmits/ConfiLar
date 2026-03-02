@@ -298,40 +298,46 @@ export function PackageSkeleton() {
 // Skeleton para card de anúncio classificado
 export function ClassifiedsCardSkeleton() {
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden shadow-lg animate-fade-in bg-white dark:bg-gray-900">
-      {/* Header com tipo de anúncio e localização */}
-      <div className="flex items-center justify-between p-4 pb-2">
-        <div className="flex items-center gap-2">
-          <Skeleton width={80} height={24} className="rounded-full" />
-          <Skeleton width={100} height={14} />
+    <div className="border border-gray-100 dark:border-gray-800 rounded-[2.5rem] overflow-hidden shadow-sm animate-fade-in bg-white dark:bg-gray-900 border-2">
+      {/* 1. Header: Avatar + User Info */}
+      <div className="px-5 py-4">
+        <div className="flex items-center gap-3">
+          <Skeleton variant="circle" width={44} height={44} />
+          <div className="space-y-1.5 flex-1">
+            <div className="flex items-center gap-1">
+              <Skeleton width="60%" height={20} className="rounded" />
+              <Skeleton width={12} height={12} variant="circle" />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Conteúdo principal */}
-      <div className="px-4 pb-4 space-y-3">
-        {/* Título */}
-        <Skeleton width="85%" height={24} />
-
-        {/* Imagem do anúncio */}
-        <Skeleton width="100%" height={128} className="rounded-lg" />
-
-        {/* Descrição */}
-        <div className="space-y-2">
-          <Skeleton width="100%" height={16} />
-          <Skeleton width="90%" height={16} />
-        </div>
-
-        {/* Badge de categoria */}
+      {/* 2. Content Info: Tags & Time */}
+      <div className="px-5 py-3 flex flex-wrap items-center gap-2">
+        <Skeleton width={60} height={24} className="rounded-full" />
         <Skeleton width={100} height={24} className="rounded-full" />
+        <Skeleton width={80} height={24} className="rounded-full" />
+        <Skeleton width={60} height={14} className="ml-auto" />
       </div>
 
-      {/* Footer com usuário */}
-      <div className="flex items-center justify-between pt-3 px-4 pb-4 border-t border-gray-100 dark:border-gray-700">
-        <div className="flex items-center gap-2">
-          <Skeleton variant="circle" width={32} height={32} />
-          <Skeleton width={80} height={16} />
+      {/* 3. Main Content: Title & Media */}
+      <div className="px-5 pb-4 space-y-3">
+        <Skeleton width="70%" height={28} className="rounded" />
+        <div className="aspect-[4/3] w-full rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800">
+          <Skeleton width="100%" height="100%" className="rounded-none" />
         </div>
-        <Skeleton width={100} height={32} className="rounded-md" />
+
+        {/* Description */}
+        <div className="space-y-2 py-2">
+          <Skeleton width="100%" height={14} />
+          <Skeleton width="90%" height={14} />
+          <Skeleton width="60%" height={14} />
+        </div>
+      </div>
+
+      {/* 4. Footer: Call to action */}
+      <div className="px-5 py-6 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+        <Skeleton width={130} height={48} className="rounded-full" />
       </div>
     </div>
   );

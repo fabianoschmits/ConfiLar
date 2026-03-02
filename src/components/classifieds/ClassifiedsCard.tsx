@@ -197,21 +197,20 @@ export function ClassifiedsCard({
                 </AvatarFallback>
               </Avatar>
             </Link>
-            <div className="flex items-center gap-1.5 min-w-0">
-              <Link
-                href={`/perfil/${ad.user_id}`}
-                className="text-base font-semibold text-gray-900 dark:text-white hover:underline transition-all truncate"
-              >
-                {ad.user_name}
+            <div className="flex flex-col">
+              <Link href={`/perfil/${ad.user_id}`}>
+                <div className="flex items-center gap-1">
+                  <span className="font-bold text-[17px] text-[#1a1c21] dark:text-white hover:underline transition-all truncate">
+                    {ad.user_name}
+                  </span>
+                  <ProVerifiedBadge
+                    isVerified={ad.user_profile?.is_verified}
+                    isPro={ad.user_profile?.is_pro}
+                    proExpiresAt={ad.user_profile?.pro_expires_at}
+                    iconSize={2.5}
+                  />
+                </div>
               </Link>
-              <div className="flex-shrink-0 flex items-center mb-0.5">
-                <ProVerifiedBadge
-                  isVerified={ad.user_profile?.is_verified}
-                  isPro={ad.user_profile?.is_pro}
-                  proExpiresAt={ad.user_profile?.pro_expires_at}
-                  iconSize={2.2}
-                />
-              </div>
             </div>
           </div>
         </div>
@@ -409,18 +408,36 @@ export function ClassifiedsCard({
           <div className="relative">
             <p
               className={cn(
-                "text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap",
+                "text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap",
                 !showFullDescription && "line-clamp-3",
               )}
             >
               <MentionText text={displayDescription} />
             </p>
-            {description.length > 100 && ( // Rough estimate to show button if potentially long
+            {!showFullDescription &&
+              (description.length > 50 ||
+                description.split("\n").length > 3) && (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowFullDescription(true);
+                  }}
+                  className="text-[#00b0b0] mt-2 font-bold hover:underline text-sm block"
+                >
+                  ler mais
+                </button>
+              )}
+            {showFullDescription && (
               <button
-                onClick={() => setShowFullDescription(!showFullDescription)}
-                className="text-[#00b0b0] mt-1 font-bold hover:underline text-xs"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowFullDescription(false);
+                }}
+                className="text-[#00b0b0] mt-2 font-bold hover:underline text-sm block"
               >
-                {showFullDescription ? "ver menos" : "ler mais"}
+                ver menos
               </button>
             )}
           </div>
