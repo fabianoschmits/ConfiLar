@@ -307,6 +307,7 @@ export const ProfileSchema = z.object({
     .optional(),
   bio: z.string().optional(),
   phone: z.string().optional(),
+  cpf_cnpj: z.string().optional(),
   birth_date: z.string().optional(),
   gender: z.enum(["male", "female", "other"]).optional(),
   user_type: z.enum(["client", "professional"]).optional(),

@@ -576,8 +576,10 @@ export function useAuth(
             updated_at: new Date().toISOString(),
           };
 
-          if (userData.cpf_cnpj) profileUpdates.cpf_cnpj = userData.cpf_cnpj;
-          if (userData.phone) profileUpdates.phone = userData.phone;
+          if (userData.cpf_cnpj)
+            profileUpdates.cpf_cnpj = userData.cpf_cnpj.replace(/\D/g, "");
+          if (userData.phone)
+            profileUpdates.phone = userData.phone.replace(/\D/g, "");
 
           const { data: upsertData, error: profileError } = await supabase
             .from("profiles")
@@ -671,8 +673,8 @@ export function useAuth(
           email: state.user.email!,
           full_name: profileData.full_name,
           user_type: profileData.user_type,
-          phone: profileData.phone,
-          cpf_cnpj: profileData.cpf_cnpj,
+          phone: profileData.phone.replace(/\D/g, ""),
+          cpf_cnpj: profileData.cpf_cnpj.replace(/\D/g, ""),
           birth_date: profileData.birth_date || null,
           location_state: profileData.location_state,
           location_city: profileData.location_city,
@@ -847,8 +849,8 @@ export function useAuth(
           email: data.user.email!,
           full_name: validation.data.full_name,
           user_type: validation.data.user_type,
-          phone: validation.data.phone || "",
-          cpf_cnpj: validation.data.cpf_cnpj || "",
+          phone: (validation.data.phone || "").replace(/\D/g, ""),
+          cpf_cnpj: (validation.data.cpf_cnpj || "").replace(/\D/g, ""),
           birth_date: validation.data.birth_date || null,
           location_state: validation.data.location_state || "",
           location_city: validation.data.location_city || "",
@@ -988,10 +990,22 @@ export function useAuth(
           return { data: null, error: { message: error } };
         }
 
+        // Normalizar CPF e Telefone se presentes nos updates
+        const normalizedUpdates: any = { ...validation.data };
+        if (normalizedUpdates.cpf_cnpj) {
+          normalizedUpdates.cpf_cnpj = normalizedUpdates.cpf_cnpj.replace(
+            /\D/g,
+            "",
+          );
+        }
+        if (normalizedUpdates.phone) {
+          normalizedUpdates.phone = normalizedUpdates.phone.replace(/\D/g, "");
+        }
+
         const { data, error } = await supabase
           .from("profiles")
           .update({
-            ...validation.data,
+            ...normalizedUpdates,
             updated_at: new Date().toISOString(),
           })
           .eq("id", state.user.id)

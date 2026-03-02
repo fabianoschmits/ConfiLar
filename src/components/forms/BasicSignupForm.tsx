@@ -604,8 +604,8 @@ export function BasicSignupForm() {
       const { error, data: signUpData } = await signUpBasic({
         email: data.email,
         password: data.password,
-        cpf_cnpj: data.cpf_cnpj,
-        phone: data.phone,
+        cpf_cnpj: data.cpf_cnpj.replace(/\D/g, ""),
+        phone: data.phone.replace(/\D/g, ""),
       });
 
       if (error) {
