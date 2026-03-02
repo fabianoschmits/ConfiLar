@@ -91,6 +91,7 @@ export type BasicSignUpData = {
   email: string;
   password: string;
   cpf_cnpj?: string;
+  phone?: string;
 };
 
 export type CompleteProfileData = {
@@ -533,6 +534,7 @@ export function useAuth(
         options: {
           data: {
             cpf_cnpj: userData.cpf_cnpj || null,
+            phone: userData.phone || null,
             // Nome será preenchido no onboarding
           },
         },
@@ -559,75 +561,42 @@ export function useAuth(
           user_metadata: data.user.user_metadata,
         });
 
-        // ✅ SALVAR CPF DIRETO NA TABELA PROFILES (mesmo lugar que editar perfil salva)
-        // IMPORTANTE: Tentar salvar o CPF na tabela profiles, mas não falhar se não conseguir
-        // O CPF também está nos user_metadata e será recuperado no onboarding como fallback
-        if (userData.cpf_cnpj) {
-          console.log(
-            "💾 [signUpBasic] Tentando salvar CPF na tabela profiles...",
-          );
+        // ✅ SALVAR CPF E TELEFONE DIRETO NA TABELA PROFILES
+        if (userData.cpf_cnpj || userData.phone) {
+          console.log("💾 [signUpBasic] Tentando salvar dados no perfil...");
           console.log("💾 [signUpBasic] User ID:", data.user.id);
-          console.log("💾 [signUpBasic] CPF a ser salvo:", userData.cpf_cnpj);
 
           // Aguardar um pouco para garantir que o usuário está autenticado
           await new Promise((resolve) => setTimeout(resolve, 500));
 
+          const profileUpdates: any = {
+            id: data.user.id,
+            email: data.user.email,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+
+          if (userData.cpf_cnpj) profileUpdates.cpf_cnpj = userData.cpf_cnpj;
+          if (userData.phone) profileUpdates.phone = userData.phone;
+
           const { data: upsertData, error: profileError } = await supabase
             .from("profiles")
-            .upsert(
-              {
-                id: data.user.id,
-                email: data.user.email,
-                cpf_cnpj: userData.cpf_cnpj,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-              },
-              {
-                onConflict: "id",
-              },
-            )
+            .upsert(profileUpdates, {
+              onConflict: "id",
+            })
             .select();
 
           if (profileError) {
             console.error(
-              "❌ [signUpBasic] Erro ao salvar CPF na tabela profiles:",
+              "❌ [signUpBasic] Erro ao salvar dados na tabela profiles:",
               profileError,
-            );
-            console.warn(
-              "⚠️ [signUpBasic] CPF está salvo nos user_metadata e será recuperado no onboarding",
             );
           } else {
             console.log(
-              "✅ [signUpBasic] CPF salvo com sucesso na tabela profiles",
+              "✅ [signUpBasic] Dados salvos com sucesso na tabela profiles",
+              upsertData,
             );
-            console.log("✅ [signUpBasic] Dados salvos:", upsertData);
-
-            // Verificar imediatamente se foi salvo
-            const { data: checkData, error: checkError } = await supabase
-              .from("profiles")
-              .select("cpf_cnpj")
-              .eq("id", data.user.id)
-              .maybeSingle();
-
-            if (checkError) {
-              console.error(
-                "❌ [signUpBasic] Erro ao verificar CPF salvo:",
-                checkError,
-              );
-            } else {
-              console.log(
-                "✅ [signUpBasic] Verificação: CPF na tabela profiles:",
-                checkData?.cpf_cnpj,
-              );
-              if (!checkData?.cpf_cnpj) {
-                console.warn(
-                  "⚠️ [signUpBasic] CPF não encontrado na verificação, mas está nos user_metadata",
-                );
-              }
-            }
           }
-        } else {
-          console.warn("⚠️ [signUpBasic] Nenhum CPF fornecido para salvar");
         }
 
         logger.info("auth", `Basic signup successful for ${userData.email}`);

@@ -13,10 +13,13 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { checkEmailExists } from "@/lib/checkDuplicates";
 import { RefreshCw } from "lucide-react";
 import { createReferral } from "@/hooks/useReferralTracking";
-import { checkCpfExists } from "@/lib/checkDuplicates";
+import {
+  checkEmailExists,
+  checkCpfExists,
+  checkPhoneExists,
+} from "@/lib/checkDuplicates";
 import { isValidCPF } from "@/lib/validation";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
@@ -72,6 +75,13 @@ const basicSignupSchema = z
         return cleaned.length === 11;
       }, "CPF deve ter exatamente 11 dígitos")
       .refine((val) => isValidCPF(val), "CPF inválido"),
+    phone: z
+      .string()
+      .min(10, "Telefone inválido")
+      .refine((val) => {
+        const cleaned = val.replace(/[^\d]+/g, "");
+        return cleaned.length >= 10 && cleaned.length <= 11;
+      }, "Telefone deve ter 10 ou 11 dígitos"),
     referral_code: z.string().optional(), // Código de referência (opcional)
     password: z
       .string()
@@ -99,6 +109,8 @@ export function BasicSignupForm() {
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [cpfExists, setCpfExists] = useState(false);
   const [isCheckingCpf, setIsCheckingCpf] = useState(false);
+  const [phoneExists, setPhoneExists] = useState(false);
+  const [isCheckingPhone, setIsCheckingPhone] = useState(false);
   const [referrerName, setReferrerName] = useState<string | null>(null); // Nome de quem indicou
   const [referralCodeFromUrl, setReferralCodeFromUrl] = useState<string | null>(
     null,
@@ -243,6 +255,26 @@ export function BasicSignupForm() {
     }
   };
 
+  // Função para verificar telefone em tempo real
+  const checkPhoneInRealTime = async (phone: string) => {
+    const cleaned = phone.replace(/[^\d]+/g, "");
+    if (!cleaned || cleaned.length < 10) {
+      setPhoneExists(false);
+      return;
+    }
+
+    setIsCheckingPhone(true);
+    try {
+      const exists = await checkPhoneExists(phone);
+      setPhoneExists(exists);
+    } catch (error) {
+      console.error("Erro ao verificar telefone:", error);
+      setPhoneExists(false);
+    } finally {
+      setIsCheckingPhone(false);
+    }
+  };
+
   // Debounce para verificação de email
   useEffect(() => {
     const email = watchedValues.email;
@@ -274,6 +306,23 @@ export function BasicSignupForm() {
 
     return () => clearTimeout(timeoutId);
   }, [watchedValues.cpf_cnpj]);
+
+  // Debounce para verificação de Telefone
+  useEffect(() => {
+    const phone = watchedValues.phone;
+    const cleaned = phone?.replace(/[^\d]+/g, "");
+
+    if (!cleaned || cleaned.length < 10) {
+      setPhoneExists(false);
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      checkPhoneInRealTime(phone);
+    }, 500); // Debounce de 500ms
+
+    return () => clearTimeout(timeoutId);
+  }, [watchedValues.phone]);
 
   // Validação de código de referência digitado manualmente
   const validateReferralCode = async (code: string) => {
@@ -511,6 +560,26 @@ export function BasicSignupForm() {
 
       console.log("✅ [SignupForm] CPF disponível");
 
+      // Verificar Telefone
+      if (phoneExists) {
+        console.warn("⚠️ [SignupForm] Telefone já cadastrado (estado local)");
+        toast.error("❌ Este telefone já está cadastrado na plataforma");
+        setIsLoading(false);
+        return;
+      }
+
+      const phoneCheck = await checkPhoneExists(data.phone);
+      if (phoneCheck) {
+        console.warn(
+          "⚠️ [SignupForm] Telefone já cadastrado (verificação API)",
+        );
+        toast.error("❌ Este telefone já está cadastrado na plataforma");
+        setIsLoading(false);
+        return;
+      }
+
+      console.log("✅ [SignupForm] Telefone disponível");
+
       // ✅ SALVAR CÓDIGO DE REFERÊNCIA NO LOCALSTORAGE (sempre que houver código)
       if (data.referral_code) {
         console.log(
@@ -536,6 +605,7 @@ export function BasicSignupForm() {
         email: data.email,
         password: data.password,
         cpf_cnpj: data.cpf_cnpj,
+        phone: data.phone,
       });
 
       if (error) {
@@ -859,6 +929,80 @@ export function BasicSignupForm() {
               )}
           </div>
 
+          {/* Telefone */}
+          <div className="space-y-2">
+            <Label
+              htmlFor="phone"
+              className="text-sm font-medium text-gray-700"
+            >
+              Telefone *
+            </Label>
+            <div className="relative">
+              <Input
+                id="phone"
+                type="text"
+                placeholder="(00) 00000-0000"
+                {...register("phone")}
+                onChange={(e) => {
+                  // Formatar Telefone enquanto digita
+                  let value = e.target.value.replace(/\D/g, "");
+                  if (value.length <= 11) {
+                    if (value.length > 2) {
+                      value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+                    }
+                    if (value.length > 9) {
+                      value = `${value.slice(0, 9)}-${value.slice(9)}`;
+                    }
+                  }
+                  e.target.value = value;
+                  register("phone").onChange(e);
+                }}
+                className={cn(
+                  "transition-colors pr-10",
+                  errors.phone ? "border-red-500 focus:border-red-500" : "",
+                  phoneExists
+                    ? "border-orange-500 focus:border-orange-500"
+                    : "",
+                )}
+              />
+              {isCheckingPhone && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <RefreshCw size={16} className="animate-spin text-blue-500" />
+                </div>
+              )}
+            </div>
+
+            {isCheckingPhone && (
+              <FormFieldFeedback
+                state="validating"
+                message="Verificando disponibilidade..."
+              />
+            )}
+            {errors.phone && (
+              <FormFieldFeedback state="error" message={errors.phone.message} />
+            )}
+            {phoneExists && (
+              <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                <p className="text-sm text-orange-800 font-medium mb-1">
+                  ⚠️ Este telefone já está cadastrado
+                </p>
+                <p className="text-xs text-orange-700">
+                  Cada conta deve possuir um telefone único.
+                </p>
+              </div>
+            )}
+            {watchedValues.phone &&
+              !errors.phone &&
+              !phoneExists &&
+              !isCheckingPhone &&
+              watchedValues.phone.replace(/\D/g, "").length >= 10 && (
+                <FormFieldFeedback
+                  state="valid"
+                  message="Telefone disponível"
+                />
+              )}
+          </div>
+
           <div className="space-y-2">
             <Label
               htmlFor="password"
@@ -1112,6 +1256,7 @@ export function BasicSignupForm() {
             watchedValues.password !== watchedValues.confirmPassword ||
             emailExists ||
             cpfExists ||
+            phoneExists ||
             !executeRecaptcha
           }
           isLoading={isLoading}
@@ -1121,7 +1266,7 @@ export function BasicSignupForm() {
         >
           {!executeRecaptcha
             ? "Carregando segurança..."
-            : emailExists || cpfExists
+            : emailExists || cpfExists || phoneExists
               ? "Resolva o problema acima"
               : "Criar conta"}
         </LoadingButton>

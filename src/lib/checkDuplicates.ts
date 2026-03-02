@@ -54,40 +54,73 @@ export async function checkCpfExists(cpf: string): Promise<boolean> {
 }
 
 /**
- * Verifica email e CPF de uma vez (mais eficiente)
+ * Verifica se um telefone já está cadastrado no sistema
+ * @param phone - Telefone a ser verificado
+ * @returns true se o telefone já existe, false caso contrário
+ */
+export async function checkPhoneExists(phone: string): Promise<boolean> {
+  if (!phone) return false;
+
+  // Remover toda formatação do telefone
+  const cleanPhone = phone.replace(/\D/g, "");
+
+  if (cleanPhone.length < 10) return false;
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("phone", cleanPhone)
+    .limit(1)
+    .maybeSingle();
+
+  return !!data && !error;
+}
+
+/**
+ * Verifica email, CPF e telefone de uma vez (mais eficiente)
  * @param email - Email a ser verificado
  * @param cpf - CPF/CNPJ a ser verificado (opcional)
- * @returns Objeto com emailExists e cpfExists
+ * @param phone - Telefone a ser verificado (opcional)
+ * @returns Objeto com emailExists, cpfExists e phoneExists
  */
 export async function checkDuplicates(
   email: string,
   cpf?: string | null,
-): Promise<{ emailExists: boolean; cpfExists: boolean }> {
+  phone?: string | null,
+): Promise<{ emailExists: boolean; cpfExists: boolean; phoneExists: boolean }> {
   // Executar verificações em paralelo para melhor performance
-  const [emailExists, cpfExists] = await Promise.all([
+  const [emailExists, cpfExists, phoneExists] = await Promise.all([
     checkEmailExists(email),
     cpf ? checkCpfExists(cpf) : Promise.resolve(false),
+    phone ? checkPhoneExists(phone) : Promise.resolve(false),
   ]);
 
-  return { emailExists, cpfExists };
+  return { emailExists, cpfExists, phoneExists };
 }
 
 /**
  * Verifica duplicatas e retorna mensagens de erro apropriadas
  * @param email - Email a ser verificado
  * @param cpf - CPF/CNPJ a ser verificado (opcional)
+ * @param phone - Telefone a ser verificado (opcional)
  * @returns Objeto com hasError e errorMessage
  */
 export async function validateNoDuplicates(
   email: string,
   cpf?: string | null,
+  phone?: string | null,
 ): Promise<{ hasError: boolean; errorMessage: string | null }> {
-  const { emailExists, cpfExists } = await checkDuplicates(email, cpf);
+  const { emailExists, cpfExists, phoneExists } = await checkDuplicates(
+    email,
+    cpf,
+    phone,
+  );
 
-  if (emailExists && cpfExists) {
+  if (emailExists && cpfExists && phoneExists) {
     return {
       hasError: true,
-      errorMessage: "Este email e CPF/CNPJ já estão cadastrados na plataforma",
+      errorMessage:
+        "Email, CPF/CNPJ e Telefone já estão cadastrados na plataforma",
     };
   }
 
@@ -102,6 +135,13 @@ export async function validateNoDuplicates(
     return {
       hasError: true,
       errorMessage: "Este CPF/CNPJ já está cadastrado na plataforma",
+    };
+  }
+
+  if (phoneExists) {
+    return {
+      hasError: true,
+      errorMessage: "Este telefone já está cadastrado na plataforma",
     };
   }
 
