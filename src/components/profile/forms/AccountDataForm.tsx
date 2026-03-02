@@ -131,8 +131,8 @@ export function AccountDataForm({ onSuccess }: { onSuccess?: () => void }) {
         .single();
       if (profile) {
         setValue("full_name", profile.full_name || "");
-        setValue("phone", profile.phone || "");
-        setValue("cpf_cnpj", profile.cpf_cnpj || "");
+        setValue("phone", ValidationUtils.formatPhone(profile.phone || ""));
+        setValue("cpf_cnpj", ValidationUtils.formatCPF(profile.cpf_cnpj || ""));
         setValue("birth_date", profile.birth_date || "");
         setValue("bio", profile.bio || "");
         setValue("escolaridade", (profile.escolaridade as any) || undefined);
@@ -249,7 +249,16 @@ export function AccountDataForm({ onSuccess }: { onSuccess?: () => void }) {
           </div>
           <div className="space-y-2">
             <Label>CPF</Label>
-            <Input {...register("cpf_cnpj")} placeholder="000.000.000-00" />
+            <Input
+              {...register("cpf_cnpj")}
+              placeholder="000.000.000-00"
+              readOnly
+              className="bg-gray-100 dark:bg-gray-800/50 cursor-not-allowed opacity-80"
+              title="O CPF não pode ser alterado após o cadastro"
+            />
+            <p className="text-[10px] text-gray-400">
+              Campo não editável por segurança
+            </p>
           </div>
           <div className="space-y-2">
             <Label>Data de Nascimento</Label>

@@ -23,8 +23,14 @@ export function useProfileUpdate() {
     try {
       // 1. Atualizar ou inserir na tabela profiles no banco de dados
       // Injetamos o ID e o Email do usuário para garantir que o RLS e as constraints permitam a operação
+      const cleanData = { ...data };
+      if (cleanData.cpf_cnpj)
+        cleanData.cpf_cnpj = String(cleanData.cpf_cnpj).replace(/\D/g, "");
+      if (cleanData.phone)
+        cleanData.phone = String(cleanData.phone).replace(/\D/g, "");
+
       const profileData = {
-        ...data,
+        ...cleanData,
         id: user.id,
         email: user.email,
       };
