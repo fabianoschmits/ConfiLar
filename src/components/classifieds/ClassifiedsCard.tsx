@@ -192,19 +192,24 @@ export function ClassifiedsCard({
         {/* Header: User Info */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-100 dark:border-gray-800">
           <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10 border border-gray-100 dark:border-gray-800">
-              <AvatarImage
-                src={ad.user_avatar || ad.user_avatar_url || ""}
-                alt={ad.user_name || "Usuário"}
-              />
-              <AvatarFallback className="bg-primary-50 text-primary-700 font-bold uppercase">
-                {(ad.user_name || "U").charAt(0)}
-              </AvatarFallback>
-            </Avatar>
+            <Link href={`/perfil/${ad.user_id}`}>
+              <Avatar className="h-10 w-10 border border-gray-100 dark:border-gray-800 hover:opacity-80 transition-opacity">
+                <AvatarImage
+                  src={ad.user_avatar || ad.user_avatar_url || ""}
+                  alt={ad.user_name || "Usuário"}
+                />
+                <AvatarFallback className="bg-primary-50 text-primary-700 font-bold uppercase">
+                  {(ad.user_name || "U").charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
             <div className="flex items-center gap-1">
-              <p className="text-base font-semibold text-gray-900 dark:text-white">
+              <Link
+                href={`/perfil/${ad.user_id}`}
+                className="text-base font-semibold text-gray-900 dark:text-white hover:underline transition-all"
+              >
                 {ad.user_name}
-              </p>
+              </Link>
               <ProVerifiedBadge
                 isVerified={ad.user_profile?.is_verified}
                 isPro={ad.user_profile?.is_pro}
