@@ -143,7 +143,7 @@ export function ClassifiedsCard({
   return (
     <div
       className={cn(
-        "group relative flex flex-col h-full overflow-hidden rounded-[2.5rem] bg-white dark:bg-black border transition-all duration-500",
+        "group relative flex flex-col h-full overflow-hidden rounded-xl bg-white dark:bg-black border transition-all duration-500",
         isHighlighted
           ? "border-blue-400 dark:border-blue-700 z-10 shadow-sm"
           : isActivePremium
@@ -201,7 +201,7 @@ export function ClassifiedsCard({
             <div className="flex flex-col">
               <Link href={`/perfil/${ad.user_id}`}>
                 <div className="flex items-center gap-1">
-                  <span className="font-bold text-[17px] text-[#1a1c21] dark:text-white hover:underline transition-all truncate">
+                  <span className="font-semibold text-sm text-[#1a1c21] dark:text-white hover:underline transition-all truncate">
                     {ad.user_name}
                   </span>
                   <ProVerifiedBadge
@@ -219,8 +219,8 @@ export function ClassifiedsCard({
             href={`/perfil/${ad.user_id}?tab=about`}
             className="group flex items-center text-gray-400 hover:text-[#00b0b0] transition-all"
           >
-            <div className="p-1 bg-white dark:bg-gray-800 rounded-full shadow-sm group-hover:shadow-md border border-gray-100 dark:border-gray-700">
-              <Info className="h-2.5 w-2.5" />
+            <div className="p-1.5 bg-white dark:bg-gray-800 rounded-full shadow-sm group-hover:shadow-md border border-gray-100 dark:border-gray-700">
+              <Info className="h-3.5 w-3.5" />
             </div>
           </Link>
         </div>
@@ -425,7 +425,7 @@ export function ClassifiedsCard({
               <MentionText text={displayDescription} />
             </p>
             {!showFullDescription &&
-              (description.length > 180 ||
+              (description.length > 120 ||
                 description.split("\n").length > 3) && (
                 <button
                   onClick={(e) => {

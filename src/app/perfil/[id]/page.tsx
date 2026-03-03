@@ -152,12 +152,22 @@ export default function ProfilePage() {
     fetchViewStats();
   }, [userId, mounted, getViewStats]);
 
-  // Forçar scroll para o topo quando o perfil terminar de carregar
+  // Scroll para o topo ou para as abas dependendo do parâmetro ?tab
   useEffect(() => {
     if (mounted && !loading) {
-      window.scrollTo(0, 0);
+      if (initialTab !== "recommendations") {
+        // Delay para garantir que o DOM esteja renderizado
+        setTimeout(() => {
+          const tabsEl = document.getElementById("profile-tabs");
+          if (tabsEl) {
+            tabsEl.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 300);
+      } else {
+        window.scrollTo(0, 0);
+      }
     }
-  }, [mounted, loading]);
+  }, [mounted, loading, initialTab]);
 
   const handleContact = () => {
     if (!user) {
@@ -391,205 +401,99 @@ export default function ProfilePage() {
           </div>
 
           {/* Tabs - Classic Scrollable */}
-          <Tabs
-            defaultValue={initialTab}
-            className="space-y-6 w-full max-w-4xl mx-auto"
-          >
-            <div className="relative w-full group/tabs">
-              <div
-                className="relative w-full overflow-x-auto pb-6 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0"
-                onScroll={(e) => {
-                  const target = e.currentTarget;
-                  const isAtEnd =
-                    target.scrollWidth - target.scrollLeft <=
-                    target.clientWidth + 10;
-                  const indicator = document.getElementById(
-                    "tab-scroll-indicator",
-                  );
-                  if (indicator) {
-                    indicator.style.opacity = isAtEnd ? "0" : "1";
-                    indicator.style.visibility = isAtEnd ? "hidden" : "visible";
-                  }
-                }}
-              >
-                <TabsList className="flex w-max min-w-full h-12 items-center justify-start gap-1.5 bg-muted/40 p-1.5 rounded-xl border border-border/50 backdrop-blur-sm">
-                  <TabsTrigger
-                    value="recommendations"
-                    className="px-4 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-md"
-                  >
-                    Recomendações
-                  </TabsTrigger>
-                  {isProfessional && (
+          <div id="profile-tabs">
+            <Tabs
+              defaultValue={initialTab}
+              className="space-y-6 w-full max-w-4xl mx-auto"
+            >
+              <div className="relative w-full group/tabs">
+                <div
+                  className="relative w-full overflow-x-auto pb-6 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0"
+                  onScroll={(e) => {
+                    const target = e.currentTarget;
+                    const isAtEnd =
+                      target.scrollWidth - target.scrollLeft <=
+                      target.clientWidth + 10;
+                    const indicator = document.getElementById(
+                      "tab-scroll-indicator",
+                    );
+                    if (indicator) {
+                      indicator.style.opacity = isAtEnd ? "0" : "1";
+                      indicator.style.visibility = isAtEnd
+                        ? "hidden"
+                        : "visible";
+                    }
+                  }}
+                >
+                  <TabsList className="flex w-max min-w-full h-12 items-center justify-start gap-1.5 bg-muted/40 p-1.5 rounded-xl border border-border/50 backdrop-blur-sm">
                     <TabsTrigger
-                      value="services"
+                      value="recommendations"
+                      className="px-4 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-md"
+                    >
+                      Recomendações
+                    </TabsTrigger>
+                    {isProfessional && (
+                      <TabsTrigger
+                        value="services"
+                        className="px-6 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-md"
+                      >
+                        {t("services")}
+                      </TabsTrigger>
+                    )}
+                    <TabsTrigger
+                      value="reviews"
                       className="px-6 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-md"
                     >
-                      {t("services")}
+                      {t("reviews")}
                     </TabsTrigger>
-                  )}
-                  <TabsTrigger
-                    value="reviews"
-                    className="px-6 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-md"
-                  >
-                    {t("reviews")}
-                  </TabsTrigger>
-                  {isProfessional && (
+                    {isProfessional && (
+                      <TabsTrigger
+                        value="portfolio"
+                        className="px-6 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-md"
+                      >
+                        {t("portfolio")}
+                      </TabsTrigger>
+                    )}
                     <TabsTrigger
-                      value="portfolio"
+                      value="about"
                       className="px-6 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-md"
                     >
-                      {t("portfolio")}
+                      Sobre
                     </TabsTrigger>
-                  )}
-                  <TabsTrigger
-                    value="about"
-                    className="px-6 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-md"
-                  >
-                    Sobre
-                  </TabsTrigger>
-                </TabsList>
-              </div>
+                  </TabsList>
+                </div>
 
-              {/* Scroll Indicator - Mobile Only */}
-              <div
-                id="tab-scroll-indicator"
-                className="absolute right-0 top-1/2 -translate-y-[calc(50%+12px)] h-10 w-12 bg-gradient-to-l from-background via-background/80 to-transparent flex items-center justify-end pr-2 pointer-events-none transition-all duration-300 sm:hidden z-10"
-              >
-                <div className="bg-primary/20 p-1.5 rounded-full animate-bounce-x">
-                  <ChevronRight className="w-4 h-4 text-primary" />
+                {/* Scroll Indicator - Mobile Only */}
+                <div
+                  id="tab-scroll-indicator"
+                  className="absolute right-0 top-1/2 -translate-y-[calc(50%+12px)] h-10 w-12 bg-gradient-to-l from-background via-background/80 to-transparent flex items-center justify-end pr-2 pointer-events-none transition-all duration-300 sm:hidden z-10"
+                >
+                  <div className="bg-primary/20 p-1.5 rounded-full animate-bounce-x">
+                    <ChevronRight className="w-4 h-4 text-primary" />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Aba de Recomendações */}
-            <TabsContent
-              value="recommendations"
-              className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500"
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <ThumbsUp className="w-5 h-5 text-primary" />
-                <h2 className="text-xl font-semibold">
-                  {t("recommendations")}
-                </h2>
-                {recommendations.length > 0 && (
-                  <Badge variant="outline" className="ml-2">
-                    {recommendations.length}
-                  </Badge>
-                )}
-              </div>
-              <GuestBlurOverlay isGuest={!user}>
-                {recommendationsLoading ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="border border-border rounded-lg p-4 space-y-3 animate-pulse bg-card"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-muted rounded-full"></div>
-                          <div className="flex-1 space-y-2">
-                            <div className="h-4 bg-muted rounded w-3/4"></div>
-                            <div className="h-3 bg-muted rounded w-1/2"></div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : recommendations.length === 0 ? (
-                  <EmptyState
-                    icon={
-                      <ThumbsUp className="h-12 w-12 text-muted-foreground/50" />
-                    }
-                    title="Nenhuma recomendação"
-                    description="Este usuário ainda não recebeu recomendações."
-                  />
-                ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                    {recommendations.map((rec) => (
-                      <Link
-                        key={rec.id}
-                        href={`/perfil/${rec.recommender.id}`}
-                        className="block group"
-                      >
-                        <Card className="transition-all cursor-pointer h-full border border-border/40 bg-card/20 backdrop-blur-md group-hover:border-primary/40 rounded-xl overflow-hidden shadow-none">
-                          <CardContent className="p-2">
-                            <div className="flex flex-col items-center text-center gap-1.5">
-                              <UserAvatar
-                                src={rec.recommender.avatar_url}
-                                alt={rec.recommender.full_name}
-                                fallback={
-                                  rec.recommender.full_name?.charAt(0) || "U"
-                                }
-                                size="sm"
-                                className="h-8 w-8"
-                              />
-                              <div className="flex-1 min-w-0 w-full">
-                                <h4 className="font-bold text-[11px] text-foreground truncate group-hover:text-primary transition-colors leading-tight mb-0.5">
-                                  {rec.recommender.full_name}
-                                </h4>
-                                <div className="flex items-center justify-center gap-1 mb-1">
-                                  {rec.recommender.is_verified && (
-                                    <ProVerifiedBadge
-                                      isVerified={rec.recommender.is_verified}
-                                      isPro={(rec.recommender as any).is_pro}
-                                      proExpiresAt={
-                                        (rec.recommender as any).pro_expires_at
-                                      }
-                                      iconSize={1.5}
-                                    />
-                                  )}
-                                  {rec.recommender.rating > 0 && (
-                                    <div className="flex items-center gap-0.5">
-                                      <Star className="w-2 h-2 text-yellow-500 fill-yellow-500" />
-                                      <span className="text-[9px] font-bold text-foreground">
-                                        {rec.recommender.rating.toFixed(1)}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                                {rec.recommender.location_city && (
-                                  <p className="text-[9px] text-muted-foreground truncate leading-none mb-1 opacity-70">
-                                    {rec.recommender.location_city}
-                                  </p>
-                                )}
-                                <Badge
-                                  variant="outline"
-                                  className="text-[8px] px-1 h-3.5 leading-none border-muted-foreground/20 text-muted-foreground"
-                                >
-                                  {rec.recommender.user_type === "professional"
-                                    ? t("professional")
-                                    : t("client")}
-                                </Badge>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-
-                {/* Seção de Usuários Indicados */}
-                <div className="mt-8">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Users className="w-5 h-5 text-teal-500" />
-                    <h2 className="text-xl font-semibold">
-                      Usuários Indicados
-                    </h2>
-                    {referralDashboard?.referrals?.length ? (
-                      <Badge variant="outline" className="ml-2">
-                        {referralDashboard.referrals.length}
-                      </Badge>
-                    ) : null}
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Pessoas que foram recomendadas e se juntaram à plataforma
-                    usando o código de convite deste usuário.
-                  </p>
-
-                  {referralDashboardLoading ? (
+              {/* Aba de Recomendações */}
+              <TabsContent
+                value="recommendations"
+                className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500"
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <ThumbsUp className="w-5 h-5 text-primary" />
+                  <h2 className="text-xl font-semibold">
+                    {t("recommendations")}
+                  </h2>
+                  {recommendations.length > 0 && (
+                    <Badge variant="outline" className="ml-2">
+                      {recommendations.length}
+                    </Badge>
+                  )}
+                </div>
+                <GuestBlurOverlay isGuest={!user}>
+                  {recommendationsLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {Array.from({ length: 2 }).map((_, i) => (
+                      {Array.from({ length: 4 }).map((_, i) => (
                         <div
                           key={i}
                           className="border border-border rounded-lg p-4 space-y-3 animate-pulse bg-card"
@@ -604,49 +508,73 @@ export default function ProfilePage() {
                         </div>
                       ))}
                     </div>
-                  ) : !referralDashboard?.referrals ||
-                    referralDashboard.referrals.length === 0 ? (
+                  ) : recommendations.length === 0 ? (
                     <EmptyState
                       icon={
-                        <Users className="h-12 w-12 text-muted-foreground/50" />
+                        <ThumbsUp className="h-12 w-12 text-muted-foreground/50" />
                       }
-                      title="Nenhuma indicação"
-                      description="Este usuário ainda não indicou ninguém."
+                      title="Nenhuma recomendação"
+                      description="Este usuário ainda não recebeu recomendações."
                     />
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                      {referralDashboard.referrals.map((ref) => (
+                      {recommendations.map((rec) => (
                         <Link
-                          key={ref.id}
-                          href={`/perfil/${ref.referredId}`}
+                          key={rec.id}
+                          href={`/perfil/${rec.recommender.id}`}
                           className="block group"
                         >
-                          <Card className="transition-all cursor-pointer h-full border border-border/40 bg-card/20 backdrop-blur-md hover:border-teal-500/40 rounded-xl overflow-hidden shadow-none">
-                            <CardContent className="p-2 relative pt-8">
-                              <div className="absolute top-0 right-0 left-0 h-6 bg-gradient-to-r from-teal-500/10 to-emerald-500/10 border-b border-border/40 flex items-center justify-center">
-                                <span className="text-[8px] font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400 flex items-center gap-1">
-                                  <Sparkles className="w-2.5 h-2.5" /> Convidado
-                                </span>
-                              </div>
-                              <div className="flex flex-col items-center text-center gap-1.5 mt-1">
+                          <Card className="transition-all cursor-pointer h-full border border-border/40 bg-card/20 backdrop-blur-md group-hover:border-primary/40 rounded-xl overflow-hidden shadow-none">
+                            <CardContent className="p-2">
+                              <div className="flex flex-col items-center text-center gap-1.5">
                                 <UserAvatar
-                                  src={ref.referredAvatar}
-                                  alt={ref.referredName}
-                                  fallback={ref.referredName?.charAt(0) || "U"}
+                                  src={rec.recommender.avatar_url}
+                                  alt={rec.recommender.full_name}
+                                  fallback={
+                                    rec.recommender.full_name?.charAt(0) || "U"
+                                  }
                                   size="sm"
                                   className="h-8 w-8"
                                 />
-                                <div className="flex-1 min-w-0 w-full mt-1">
-                                  <h4 className="font-bold text-[11px] text-foreground truncate group-hover:text-teal-500 transition-colors leading-tight mb-1">
-                                    {ref.referredName}
+                                <div className="flex-1 min-w-0 w-full">
+                                  <h4 className="font-bold text-[11px] text-foreground truncate group-hover:text-primary transition-colors leading-tight mb-0.5">
+                                    {rec.recommender.full_name}
                                   </h4>
-                                  <span className="text-[9px] text-muted-foreground opacity-80 block truncate">
-                                    Membro desde{" "}
-                                    {new Date(ref.createdAt).toLocaleDateString(
-                                      "pt-BR",
-                                      { month: "short", year: "numeric" },
+                                  <div className="flex items-center justify-center gap-1 mb-1">
+                                    {rec.recommender.is_verified && (
+                                      <ProVerifiedBadge
+                                        isVerified={rec.recommender.is_verified}
+                                        isPro={(rec.recommender as any).is_pro}
+                                        proExpiresAt={
+                                          (rec.recommender as any)
+                                            .pro_expires_at
+                                        }
+                                        iconSize={1.5}
+                                      />
                                     )}
-                                  </span>
+                                    {rec.recommender.rating > 0 && (
+                                      <div className="flex items-center gap-0.5">
+                                        <Star className="w-2 h-2 text-yellow-500 fill-yellow-500" />
+                                        <span className="text-[9px] font-bold text-foreground">
+                                          {rec.recommender.rating.toFixed(1)}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  {rec.recommender.location_city && (
+                                    <p className="text-[9px] text-muted-foreground truncate leading-none mb-1 opacity-70">
+                                      {rec.recommender.location_city}
+                                    </p>
+                                  )}
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[8px] px-1 h-3.5 leading-none border-muted-foreground/20 text-muted-foreground"
+                                  >
+                                    {rec.recommender.user_type ===
+                                    "professional"
+                                      ? t("professional")
+                                      : t("client")}
+                                  </Badge>
                                 </div>
                               </div>
                             </CardContent>
@@ -655,361 +583,457 @@ export default function ProfilePage() {
                       ))}
                     </div>
                   )}
-                </div>
-              </GuestBlurOverlay>
-            </TabsContent>
 
-            <TabsContent
-              value="about"
-              className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
-            >
-              <GuestBlurOverlay isGuest={!user}>
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Informações Pessoais */}
-                    <div className="bg-white dark:bg-zinc-900 rounded-3xl p-5 border border-gray-100 dark:border-zinc-800 shadow-sm">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-2xl">
-                          <User className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
-                        </div>
-                        <h3 className="text-base font-bold text-foreground">
-                          Informações Pessoais
-                        </h3>
-                      </div>
+                  {/* Seção de Usuários Indicados */}
+                  <div className="mt-8">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Users className="w-5 h-5 text-teal-500" />
+                      <h2 className="text-xl font-semibold">
+                        Usuários Indicados
+                      </h2>
+                      {referralDashboard?.referrals?.length ? (
+                        <Badge variant="outline" className="ml-2">
+                          {referralDashboard.referrals.length}
+                        </Badge>
+                      ) : null}
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Pessoas que foram recomendadas e se juntaram à plataforma
+                      usando o código de convite deste usuário.
+                    </p>
 
-                      <div className="space-y-3">
-                        {profile.location_city && profile.location_state && (
-                          <div className="flex items-center justify-between p-2.5 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
-                            <span className="text-xs font-medium text-muted-foreground inline-flex items-center gap-2">
-                              <MapPin className="w-3 h-3" />
-                              Localização
-                            </span>
-                            <span className="text-xs font-bold text-foreground">
-                              {profile.location_city}, {profile.location_state}
-                            </span>
-                          </div>
-                        )}
-
-                        {profile.gender && (
-                          <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
-                            <span className="text-sm font-medium text-muted-foreground">
-                              Gênero
-                            </span>
-                            <span className="text-sm font-bold text-foreground">
-                              {formatGender(profile.gender)}
-                            </span>
-                          </div>
-                        )}
-
-                        {profile.idade && (
-                          <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
-                            <span className="text-sm font-medium text-muted-foreground">
-                              {t("age")}
-                            </span>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-sm font-bold text-foreground">
-                                {profile.idade}
-                              </span>
-                              <span className="text-xs text-muted-foreground font-medium">
-                                {t("years")}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-
-                        {profile.escolaridade && (
-                          <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
-                            <span className="text-sm font-medium text-muted-foreground inline-flex items-center gap-2">
-                              <GraduationCap className="w-3.5 h-3.5" />
-                              {t("education")}
-                            </span>
-                            <span className="text-sm font-bold text-foreground text-right max-w-[180px] leading-tight">
-                              {formatEscolaridade(profile.escolaridade)}
-                            </span>
-                          </div>
-                        )}
-
-                        {profile.estado_civil && (
-                          <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
-                            <span className="text-sm font-medium text-muted-foreground">
-                              {t("maritalStatus")}
-                            </span>
-                            <span className="text-sm font-bold text-foreground">
-                              {formatEstadoCivil(profile.estado_civil)}
-                            </span>
-                          </div>
-                        )}
-
-                        {profile.filhos !== null &&
-                          profile.filhos !== undefined && (
-                            <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
-                              <span className="text-sm font-medium text-muted-foreground">
-                                {t("childrenLabel")}
-                              </span>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-sm font-bold text-foreground">
-                                  {profile.filhos}
-                                </span>
-                                <span className="text-xs text-muted-foreground font-medium">
-                                  {profile.filhos === 1
-                                    ? t("child")
-                                    : t("children")}
-                                </span>
+                    {referralDashboardLoading ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Array.from({ length: 2 }).map((_, i) => (
+                          <div
+                            key={i}
+                            className="border border-border rounded-lg p-4 space-y-3 animate-pulse bg-card"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-muted rounded-full"></div>
+                              <div className="flex-1 space-y-2">
+                                <div className="h-4 bg-muted rounded w-3/4"></div>
+                                <div className="h-3 bg-muted rounded w-1/2"></div>
                               </div>
                             </div>
-                          )}
+                          </div>
+                        ))}
                       </div>
-                    </div>
+                    ) : !referralDashboard?.referrals ||
+                      referralDashboard.referrals.length === 0 ? (
+                      <EmptyState
+                        icon={
+                          <Users className="h-12 w-12 text-muted-foreground/50" />
+                        }
+                        title="Nenhuma indicação"
+                        description="Este usuário ainda não indicou ninguém."
+                      />
+                    ) : (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                        {referralDashboard.referrals.map((ref) => (
+                          <Link
+                            key={ref.id}
+                            href={`/perfil/${ref.referredId}`}
+                            className="block group"
+                          >
+                            <Card className="transition-all cursor-pointer h-full border border-border/40 bg-card/20 backdrop-blur-md hover:border-teal-500/40 rounded-xl overflow-hidden shadow-none">
+                              <CardContent className="p-2 relative pt-8">
+                                <div className="absolute top-0 right-0 left-0 h-6 bg-gradient-to-r from-teal-500/10 to-emerald-500/10 border-b border-border/40 flex items-center justify-center">
+                                  <span className="text-[8px] font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400 flex items-center gap-1">
+                                    <Sparkles className="w-2.5 h-2.5" />{" "}
+                                    Convidado
+                                  </span>
+                                </div>
+                                <div className="flex flex-col items-center text-center gap-1.5 mt-1">
+                                  <UserAvatar
+                                    src={ref.referredAvatar}
+                                    alt={ref.referredName}
+                                    fallback={
+                                      ref.referredName?.charAt(0) || "U"
+                                    }
+                                    size="sm"
+                                    className="h-8 w-8"
+                                  />
+                                  <div className="flex-1 min-w-0 w-full mt-1">
+                                    <h4 className="font-bold text-[11px] text-foreground truncate group-hover:text-teal-500 transition-colors leading-tight mb-1">
+                                      {ref.referredName}
+                                    </h4>
+                                    <span className="text-[9px] text-muted-foreground opacity-80 block truncate">
+                                      Membro desde{" "}
+                                      {new Date(
+                                        ref.createdAt,
+                                      ).toLocaleDateString("pt-BR", {
+                                        month: "short",
+                                        year: "numeric",
+                                      })}
+                                    </span>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </GuestBlurOverlay>
+              </TabsContent>
 
-                    {/* Informações Profissionais */}
-                    {isProfessional && (
+              <TabsContent
+                value="about"
+                className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
+              >
+                <GuestBlurOverlay isGuest={!user}>
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Informações Pessoais */}
                       <div className="bg-white dark:bg-zinc-900 rounded-3xl p-5 border border-gray-100 dark:border-zinc-800 shadow-sm">
                         <div className="flex items-center gap-3 mb-4">
                           <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-2xl">
-                            <Briefcase className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
+                            <User className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
                           </div>
                           <h3 className="text-base font-bold text-foreground">
-                            {t("professionalInfo")}
+                            Informações Pessoais
                           </h3>
                         </div>
 
                         <div className="space-y-3">
-                          {profile.professional_experience_years && (
+                          {profile.location_city && profile.location_state && (
                             <div className="flex items-center justify-between p-2.5 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
                               <span className="text-xs font-medium text-muted-foreground inline-flex items-center gap-2">
-                                <Award className="w-3 h-3" />
-                                {t("experience")}
+                                <MapPin className="w-3 h-3" />
+                                Localização
+                              </span>
+                              <span className="text-xs font-bold text-foreground">
+                                {profile.location_city},{" "}
+                                {profile.location_state}
+                              </span>
+                            </div>
+                          )}
+
+                          {profile.gender && (
+                            <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
+                              <span className="text-sm font-medium text-muted-foreground">
+                                Gênero
+                              </span>
+                              <span className="text-sm font-bold text-foreground">
+                                {formatGender(profile.gender)}
+                              </span>
+                            </div>
+                          )}
+
+                          {profile.idade && (
+                            <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
+                              <span className="text-sm font-medium text-muted-foreground">
+                                {t("age")}
                               </span>
                               <div className="flex items-center gap-1.5">
-                                <span className="text-xs font-bold text-foreground">
-                                  {profile.professional_experience_years}
+                                <span className="text-sm font-bold text-foreground">
+                                  {profile.idade}
                                 </span>
-                                <span className="text-[10px] text-muted-foreground font-medium">
-                                  {profile.professional_experience_years === 1
-                                    ? t("year")
-                                    : t("years")}
+                                <span className="text-xs text-muted-foreground font-medium">
+                                  {t("years")}
                                 </span>
                               </div>
                             </div>
                           )}
 
-                          {profile.turno_trabalho && (
+                          {profile.escolaridade && (
                             <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
                               <span className="text-sm font-medium text-muted-foreground inline-flex items-center gap-2">
-                                <Clock className="w-3.5 h-3.5" />
-                                {t("shift")}
+                                <GraduationCap className="w-3.5 h-3.5" />
+                                {t("education")}
+                              </span>
+                              <span className="text-sm font-bold text-foreground text-right max-w-[180px] leading-tight">
+                                {formatEscolaridade(profile.escolaridade)}
+                              </span>
+                            </div>
+                          )}
+
+                          {profile.estado_civil && (
+                            <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
+                              <span className="text-sm font-medium text-muted-foreground">
+                                {t("maritalStatus")}
                               </span>
                               <span className="text-sm font-bold text-foreground">
-                                {formatTurnoTrabalho(profile.turno_trabalho)}
+                                {formatEstadoCivil(profile.estado_civil)}
                               </span>
                             </div>
                           )}
 
-                          {profile.referencia_profissional && (
-                            <div className="p-4 rounded-2xl bg-gray-50/30 dark:bg-zinc-800/10 border border-transparent">
-                              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-2">
-                                {t("professionalReference")}
-                              </span>
-                              <p className="text-sm text-foreground leading-relaxed italic opacity-80">
-                                "{profile.referencia_profissional}"
-                              </p>
-                            </div>
-                          )}
+                          {profile.filhos !== null &&
+                            profile.filhos !== undefined && (
+                              <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
+                                <span className="text-sm font-medium text-muted-foreground">
+                                  {t("childrenLabel")}
+                                </span>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-sm font-bold text-foreground">
+                                    {profile.filhos}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground font-medium">
+                                    {profile.filhos === 1
+                                      ? t("child")
+                                      : t("children")}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
                         </div>
                       </div>
-                    )}
-                  </div>
-                </div>
-              </GuestBlurOverlay>
-            </TabsContent>
 
-            <TabsContent
-              value="services"
-              className="animate-in fade-in slide-in-from-bottom-4 duration-500"
-            >
-              <GuestBlurOverlay isGuest={!user}>
-                {isProfessional ? (
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Briefcase className="w-5 h-5 text-primary" />
-                      <h2 className="text-xl font-semibold">
-                        {t("servicesOffered")}
-                      </h2>
-                    </div>
-
-                    {profile.professional_services &&
-                    profile.professional_services.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {profile.professional_services.map((service, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center gap-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm transition-all"
-                          >
-                            <div className="shrink-0 p-2 bg-primary/5 rounded-xl">
-                              <CheckCircle className="w-5 h-5 text-primary" />
+                      {/* Informações Profissionais */}
+                      {isProfessional && (
+                        <div className="bg-white dark:bg-zinc-900 rounded-3xl p-5 border border-gray-100 dark:border-zinc-800 shadow-sm">
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-2xl">
+                              <Briefcase className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
                             </div>
-                            <span className="text-foreground text-sm font-bold">
-                              {service}
-                            </span>
+                            <h3 className="text-base font-bold text-foreground">
+                              {t("professionalInfo")}
+                            </h3>
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <EmptyState
-                        icon={
-                          <Briefcase className="h-12 w-12 text-muted-foreground/50" />
-                        }
-                        title={t("noServices")}
-                        description={t("noServicesDescription")}
-                      />
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center p-12 text-center bg-muted/20 rounded-lg border border-border border-dashed">
-                    <User className="w-16 h-16 text-muted-foreground/50 mb-4" />
-                    <h3 className="text-lg font-medium text-foreground mb-2">
-                      {t("client")}
-                    </h3>
-                    <p className="text-muted-foreground">
-                      Este usuário é um cliente e não oferece serviços.
-                    </p>
-                  </div>
-                )}
-              </GuestBlurOverlay>
-            </TabsContent>
 
-            <TabsContent
-              value="reviews"
-              className="animate-in fade-in slide-in-from-bottom-4 duration-500"
-            >
-              <GuestBlurOverlay isGuest={!user}>
-                <div className="space-y-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Star className="w-5 h-5 text-primary" />
-                    <h2 className="text-xl font-semibold">{t("reviews")}</h2>
-                  </div>
+                          <div className="space-y-3">
+                            {profile.professional_experience_years && (
+                              <div className="flex items-center justify-between p-2.5 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
+                                <span className="text-xs font-medium text-muted-foreground inline-flex items-center gap-2">
+                                  <Award className="w-3 h-3" />
+                                  {t("experience")}
+                                </span>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs font-bold text-foreground">
+                                    {profile.professional_experience_years}
+                                  </span>
+                                  <span className="text-[10px] text-muted-foreground font-medium">
+                                    {profile.professional_experience_years === 1
+                                      ? t("year")
+                                      : t("years")}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
 
-                  {reviewsLoading ? (
-                    <div className="space-y-4">
-                      {Array.from({ length: 3 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className="border border-border rounded-lg p-4 animate-pulse bg-card"
-                        >
-                          <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
-                          <div className="h-4 bg-muted rounded w-1/2"></div>
+                            {profile.turno_trabalho && (
+                              <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50/50 dark:bg-zinc-800/20 border border-transparent">
+                                <span className="text-sm font-medium text-muted-foreground inline-flex items-center gap-2">
+                                  <Clock className="w-3.5 h-3.5" />
+                                  {t("shift")}
+                                </span>
+                                <span className="text-sm font-bold text-foreground">
+                                  {formatTurnoTrabalho(profile.turno_trabalho)}
+                                </span>
+                              </div>
+                            )}
+
+                            {profile.referencia_profissional && (
+                              <div className="p-4 rounded-2xl bg-gray-50/30 dark:bg-zinc-800/10 border border-transparent">
+                                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-2">
+                                  {t("professionalReference")}
+                                </span>
+                                <p className="text-sm text-foreground leading-relaxed italic opacity-80">
+                                  "{profile.referencia_profissional}"
+                                </p>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      ))}
+                      )}
                     </div>
-                  ) : reviews && reviews.length > 0 ? (
-                    <div className="space-y-4">
-                      {reviews.map((review) => (
-                        <ReviewCard
-                          key={review.id}
-                          review={review}
-                          currentUserId={user?.id}
-                          profileOwnerId={userId}
-                          onRespond={async (reviewId, responseText) => {
-                            const result = await respondToReview(
-                              reviewId,
-                              responseText,
-                            );
+                  </div>
+                </GuestBlurOverlay>
+              </TabsContent>
 
-                            if (userId && !result.error) {
-                              setTimeout(async () => {
-                                await fetchUserReviews(userId);
-                              }, 1000);
-                            }
-                            return result;
-                          }}
-                          onEdit={async (reviewToEdit) => {
-                            fetchUserReviews(userId);
-                          }}
-                          onDelete={async (reviewId) => {
-                            const result = await deleteReview(reviewId);
-                            if (!result.error) {
-                              toast.success("Avaliação excluída com sucesso");
-                              fetchUserReviews(userId);
-                            } else {
-                              toast.error("Erro ao excluir avaliação");
-                            }
-                          }}
+              <TabsContent
+                value="services"
+                className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+              >
+                <GuestBlurOverlay isGuest={!user}>
+                  {isProfessional ? (
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Briefcase className="w-5 h-5 text-primary" />
+                        <h2 className="text-xl font-semibold">
+                          {t("servicesOffered")}
+                        </h2>
+                      </div>
+
+                      {profile.professional_services &&
+                      profile.professional_services.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {profile.professional_services.map(
+                            (service, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center gap-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm transition-all"
+                              >
+                                <div className="shrink-0 p-2 bg-primary/5 rounded-xl">
+                                  <CheckCircle className="w-5 h-5 text-primary" />
+                                </div>
+                                <span className="text-foreground text-sm font-bold">
+                                  {service}
+                                </span>
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      ) : (
+                        <EmptyState
+                          icon={
+                            <Briefcase className="h-12 w-12 text-muted-foreground/50" />
+                          }
+                          title={t("noServices")}
+                          description={t("noServicesDescription")}
                         />
-                      ))}
+                      )}
                     </div>
                   ) : (
-                    <EmptyState
-                      icon={
-                        <Star className="h-12 w-12 text-muted-foreground/50" />
-                      }
-                      title="Nenhuma avaliação encontrada"
-                      description="Este usuário ainda não recebeu avaliações."
-                    />
+                    <div className="flex flex-col items-center justify-center p-12 text-center bg-muted/20 rounded-lg border border-border border-dashed">
+                      <User className="w-16 h-16 text-muted-foreground/50 mb-4" />
+                      <h3 className="text-lg font-medium text-foreground mb-2">
+                        {t("client")}
+                      </h3>
+                      <p className="text-muted-foreground">
+                        Este usuário é um cliente e não oferece serviços.
+                      </p>
+                    </div>
                   )}
-                </div>
-              </GuestBlurOverlay>
-            </TabsContent>
+                </GuestBlurOverlay>
+              </TabsContent>
 
-            {isProfessional && (
               <TabsContent
-                value="portfolio"
+                value="reviews"
                 className="animate-in fade-in slide-in-from-bottom-4 duration-500"
               >
                 <GuestBlurOverlay isGuest={!user}>
                   <div className="space-y-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        {/* Using Briefcase as placeholder if LayoutGrid is not imported, or replace with Briefcase if consistent */}
-                        <Briefcase className="w-5 h-5 text-primary" />
-                        <h2 className="text-xl font-semibold">
-                          {t("portfolio")}
-                        </h2>
-                      </div>
-                      {isOwnProfile && (
-                        <Button
-                          asChild
-                          size="sm"
-                          variant="outline"
-                          className="rounded-full"
-                        >
-                          <Link href="/portfolio">Gerenciar Portfólio</Link>
-                        </Button>
-                      )}
+                    <div className="flex items-center gap-2 mb-4">
+                      <Star className="w-5 h-5 text-primary" />
+                      <h2 className="text-xl font-semibold">{t("reviews")}</h2>
                     </div>
 
-                    {portfolioLoading ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {reviewsLoading ? (
+                      <div className="space-y-4">
                         {Array.from({ length: 3 }).map((_, i) => (
                           <div
                             key={i}
-                            className="aspect-[4/3] bg-muted animate-pulse rounded-lg"
-                          />
+                            className="border border-border rounded-lg p-4 animate-pulse bg-card"
+                          >
+                            <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                            <div className="h-4 bg-muted rounded w-1/2"></div>
+                          </div>
                         ))}
                       </div>
-                    ) : portfolioProjects && portfolioProjects.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {portfolioProjects.map((project) => (
-                          <PortfolioProjectCard
-                            key={project.id}
-                            project={project}
-                            isOwner={false}
+                    ) : reviews && reviews.length > 0 ? (
+                      <div className="space-y-4">
+                        {reviews.map((review) => (
+                          <ReviewCard
+                            key={review.id}
+                            review={review}
+                            currentUserId={user?.id}
+                            profileOwnerId={userId}
+                            onRespond={async (reviewId, responseText) => {
+                              const result = await respondToReview(
+                                reviewId,
+                                responseText,
+                              );
+
+                              if (userId && !result.error) {
+                                setTimeout(async () => {
+                                  await fetchUserReviews(userId);
+                                }, 1000);
+                              }
+                              return result;
+                            }}
+                            onEdit={async (reviewToEdit) => {
+                              fetchUserReviews(userId);
+                            }}
+                            onDelete={async (reviewId) => {
+                              const result = await deleteReview(reviewId);
+                              if (!result.error) {
+                                toast.success("Avaliação excluída com sucesso");
+                                fetchUserReviews(userId);
+                              } else {
+                                toast.error("Erro ao excluir avaliação");
+                              }
+                            }}
                           />
                         ))}
                       </div>
                     ) : (
                       <EmptyState
                         icon={
-                          <Briefcase className="h-12 w-12 text-muted-foreground/50" />
+                          <Star className="h-12 w-12 text-muted-foreground/50" />
                         }
-                        title={t("noPortfolio")}
-                        description={t("noPortfolioDescription")}
+                        title="Nenhuma avaliação encontrada"
+                        description="Este usuário ainda não recebeu avaliações."
                       />
                     )}
                   </div>
                 </GuestBlurOverlay>
               </TabsContent>
-            )}
-          </Tabs>
+
+              {isProfessional && (
+                <TabsContent
+                  value="portfolio"
+                  className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+                >
+                  <GuestBlurOverlay isGuest={!user}>
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          {/* Using Briefcase as placeholder if LayoutGrid is not imported, or replace with Briefcase if consistent */}
+                          <Briefcase className="w-5 h-5 text-primary" />
+                          <h2 className="text-xl font-semibold">
+                            {t("portfolio")}
+                          </h2>
+                        </div>
+                        {isOwnProfile && (
+                          <Button
+                            asChild
+                            size="sm"
+                            variant="outline"
+                            className="rounded-full"
+                          >
+                            <Link href="/portfolio">Gerenciar Portfólio</Link>
+                          </Button>
+                        )}
+                      </div>
+
+                      {portfolioLoading ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {Array.from({ length: 3 }).map((_, i) => (
+                            <div
+                              key={i}
+                              className="aspect-[4/3] bg-muted animate-pulse rounded-lg"
+                            />
+                          ))}
+                        </div>
+                      ) : portfolioProjects && portfolioProjects.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {portfolioProjects.map((project) => (
+                            <PortfolioProjectCard
+                              key={project.id}
+                              project={project}
+                              isOwner={false}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <EmptyState
+                          icon={
+                            <Briefcase className="h-12 w-12 text-muted-foreground/50" />
+                          }
+                          title={t("noPortfolio")}
+                          description={t("noPortfolioDescription")}
+                        />
+                      )}
+                    </div>
+                  </GuestBlurOverlay>
+                </TabsContent>
+              )}
+            </Tabs>
+          </div>
         </div>
       </div>
     </MainLayout>
