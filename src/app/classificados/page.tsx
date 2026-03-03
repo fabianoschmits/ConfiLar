@@ -744,7 +744,7 @@ export default function ClassificadosPage() {
             </div>
 
             {/* Abas de Filtro por Tipo de Anúncio */}
-            <div className="bg-gray-100 dark:bg-gray-900 py-3 mb-6 rounded-xl px-4">
+            <div className="bg-gray-50 dark:bg-black py-3 mb-6 rounded-xl px-4 border-b border-gray-200 dark:border-gray-900">
               <div className="flex justify-center w-full">
                 {/* Abas */}
                 <div className="flex items-center justify-center gap-1 sm:gap-2 overflow-x-auto w-full sm:w-auto scrollbar-hide">

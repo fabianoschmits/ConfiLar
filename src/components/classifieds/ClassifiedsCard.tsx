@@ -13,6 +13,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Info,
   Clock,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -415,7 +416,7 @@ export function ClassifiedsCard({
               <MentionText text={displayDescription} />
             </p>
             {!showFullDescription &&
-              (description.length > 50 ||
+              (description.length > 180 ||
                 description.split("\n").length > 3) && (
                 <button
                   onClick={(e) => {
@@ -453,7 +454,21 @@ export function ClassifiedsCard({
 
         {/* 5. Footer: User + Contact */}
         <div className="mt-auto bg-gray-50/50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-800">
-          <div className="px-5 py-6 flex items-center justify-end">
+          <div className="px-5 py-6 flex items-center justify-between">
+            {/* User Profile Info Link */}
+            <Link
+              href={`/perfil/${ad.user_id}?tab=about`}
+              className="group flex items-center gap-2 text-gray-500 hover:text-[#00b0b0] transition-all"
+            >
+              <div className="p-2 bg-white dark:bg-gray-800 rounded-full shadow-sm group-hover:shadow-md border border-gray-100 dark:border-gray-700">
+                <Info className="h-4 w-4" />
+              </div>
+              <span className="text-xs font-bold leading-tight">
+                Sobre o<br />
+                Proprietário
+              </span>
+            </Link>
+
             {/* Contact Button */}
             <Button
               onClick={handleContactClick}
