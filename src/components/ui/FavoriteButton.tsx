@@ -6,12 +6,7 @@ import { Heart, HeartFilled } from "@/components/ui/icons";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
+import { supabase } from "@/lib/supabase";
 
 interface FavoriteButtonProps {
   userId: string;
@@ -50,16 +45,21 @@ export function FavoriteButton({
   const loadFavoriteCount = useCallback(async () => {
     if (!userId) return;
     try {
+      // console.log(`🔍 Buscando contagem de favoritos para: ${userId}`);
       const { count, error } = await supabase
         .from("favorites")
         .select("*", { count: "exact", head: true })
         .eq("professional_id", userId);
 
-      if (!error) {
-        setFavoriteCount(count || 0);
+      if (error) {
+        console.error("❌ Erro Supabase ao carregar contagem:", error);
+        return;
       }
+
+      // console.log(`✅ Contagem carregada: ${count}`);
+      setFavoriteCount(count || 0);
     } catch (error) {
-      console.error("Erro ao carregar contagem de favoritos:", error);
+      console.error("❌ Erro catch ao carregar contagem de favoritos:", error);
     }
   }, [userId]);
 
