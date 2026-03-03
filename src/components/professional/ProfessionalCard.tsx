@@ -280,7 +280,7 @@ export function ProfessionalCard({
           <div className="flex items-center justify-center mt-auto pt-3 px-1 border-t border-gray-100 dark:border-gray-800/50 overflow-x-auto scrollbar-hide">
             <div
               onClick={(e) => e.stopPropagation()}
-              className="flex items-center justify-center gap-1.5 sm:gap-4 flex-nowrap min-w-max pb-1"
+              className="flex items-center justify-center gap-2 sm:gap-5 flex-nowrap min-w-max pb-1"
             >
               <FavoriteButton
                 userId={profile.id}
@@ -316,7 +316,7 @@ export function ProfessionalCard({
               <Button
                 size="sm"
                 variant="outline"
-                className="h-9 px-2 sm:px-3 text-[10px] sm:text-xs font-bold border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/5 whitespace-nowrap shrink-0"
+                className="h-9 px-2 sm:px-3 text-[11px] sm:text-xs font-bold border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/5 whitespace-nowrap shrink-0"
                 onClick={() => handleProfileClick(profile.id)}
               >
                 Perfil

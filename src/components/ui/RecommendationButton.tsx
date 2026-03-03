@@ -146,20 +146,17 @@ export function RecommendationButton({
           className,
         )}
       >
-        <div className="h-4 w-4 relative inline-flex items-center justify-center">
+        <div className="h-5 w-5 relative inline-flex items-center justify-center">
           <ThumbsUp
             className={cn(
-              "h-4 w-4 transition-colors",
-              isRecommended ? "fill-[#00b0b0] text-[#00b0b0]" : "",
+              "h-5 w-5 transition-colors",
+              isRecommended
+                ? "text-emerald-500 fill-emerald-500"
+                : "text-emerald-500/80",
             )}
           />
           {showCount && recommendationCount > 0 && (
-            <span
-              className={cn(
-                "absolute -top-2.5 -right-3 font-bold text-gray-950 dark:text-white",
-                vertical ? "text-[10px]" : "text-[11px]",
-              )}
-            >
+            <span className="absolute -top-3 -right-3.5 text-[11px] sm:text-[12px] font-bold text-gray-950 dark:text-white">
               {recommendationCount}
             </span>
           )}
@@ -167,7 +164,7 @@ export function RecommendationButton({
         {(customLabel || activeLabel) && (
           <span
             className={cn(
-              "text-[8px] sm:text-[9px] font-bold uppercase text-gray-500",
+              "text-[10px] sm:text-[11px] font-bold uppercase text-gray-500",
               !vertical && "ml-2",
             )}
           >
