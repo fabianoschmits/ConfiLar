@@ -194,14 +194,26 @@ export function RequestEvaluationButton({
           "bg-transparent hover:bg-transparent shadow-none border-none p-0 h-auto transition-all ring-0 focus-visible:ring-0",
           "flex flex-col items-center gap-1.5 group/eval",
           buttonState.variant === "ghost"
-            ? "text-gray-400 group-hover/eval:text-yellow-500"
-            : "text-blue-600 group-hover/eval:text-blue-700",
+            ? "text-gray-950 group-hover/eval:text-gray-950"
+            : "text-gray-950 group-hover/eval:text-gray-950",
           className,
         )}
         disabled={buttonState.disabled}
       >
         <div className="h-6 w-6 relative inline-flex items-center justify-center">
-          {buttonState.icon}
+          {React.isValidElement(buttonState.icon) &&
+            React.cloneElement(buttonState.icon as React.ReactElement<any>, {
+              className: cn(
+                (buttonState.icon as React.ReactElement<any>).props.className,
+                "stroke-gray-950",
+                buttonState.text === "Avaliar" &&
+                  buttonState.variant === "default" &&
+                  "fill-yellow-400",
+                buttonState.text === "Aceitar" && "fill-emerald-400",
+                buttonState.text === "Avaliado" && "fill-emerald-400",
+                buttonState.text === "Concluída" && "fill-emerald-400",
+              ),
+            })}
           {showCount && evaluationCount > 0 && (
             <span
               className={cn(
@@ -212,7 +224,16 @@ export function RequestEvaluationButton({
             </span>
           )}
         </div>
-        <span className="text-[11px] sm:text-xs font-bold uppercase text-gray-500">
+        <span
+          className={cn(
+            "text-[11px] sm:text-xs font-bold uppercase",
+            buttonState.variant === "default" ||
+              buttonState.text === "Avaliado" ||
+              buttonState.text === "Concluída"
+              ? "text-gray-950"
+              : "text-gray-500",
+          )}
+        >
           {buttonState.text}
         </span>
       </Button>

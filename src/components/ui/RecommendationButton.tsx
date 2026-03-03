@@ -151,8 +151,8 @@ export function RecommendationButton({
             className={cn(
               "h-6 w-6 transition-colors",
               isRecommended
-                ? "text-emerald-500 fill-emerald-500"
-                : "text-emerald-500/80",
+                ? "stroke-gray-950 fill-emerald-500"
+                : "stroke-gray-950",
             )}
           />
           {showCount && recommendationCount > 0 && (
@@ -164,7 +164,8 @@ export function RecommendationButton({
         {(customLabel || activeLabel) && (
           <span
             className={cn(
-              "text-[11px] sm:text-xs font-bold uppercase text-gray-500",
+              "text-[11px] sm:text-xs font-bold uppercase",
+              isRecommended ? "text-gray-950" : "text-gray-500",
               !vertical && "ml-2",
             )}
           >
