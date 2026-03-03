@@ -7,6 +7,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { createClient } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { RecommendationModal } from "./RecommendationModal";
+import { cn } from "@/lib/utils";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,8 +21,10 @@ interface RecommendationButtonProps {
   variant?: "default" | "outline" | "ghost";
   showCount?: boolean;
   className?: string;
-  label?: string;
+  customLabel?: string;
+  activeLabel?: string;
   vertical?: boolean;
+  onStatusChange?: (isRecommended: boolean) => void;
 }
 
 export function RecommendationButton({
@@ -31,8 +34,10 @@ export function RecommendationButton({
   variant = "outline",
   showCount = true,
   className = "",
-  label,
+  customLabel,
+  activeLabel,
   vertical = false,
+  onStatusChange,
 }: RecommendationButtonProps) {
   const { user } = useAuthContext();
   const [isRecommended, setIsRecommended] = useState(false);
@@ -121,6 +126,12 @@ export function RecommendationButton({
     }, 100);
   };
 
+  useEffect(() => {
+    if (onStatusChange) {
+      onStatusChange(isRecommended);
+    }
+  }, [isRecommended, onStatusChange]);
+
   return (
     <>
       <Button
@@ -128,22 +139,41 @@ export function RecommendationButton({
         size={size}
         onClick={handleShowRecommendationModal}
         disabled={isLoading || user?.id === userId}
-        className={`${className} ${isRecommended ? "bg-brand hover:opacity-90 text-white" : ""} ${vertical ? "flex-col h-auto py-1 px-2 gap-0 min-h-[32px]" : ""}`}
-      >
-        <ThumbsUp
-          className={`${vertical ? "h-3 w-3" : "h-4 w-4"} ${isRecommended ? "fill-current" : ""}`}
-        />
-        {showCount && recommendationCount > 0 && !label && (
-          <span className="ml-1 text-xs">{recommendationCount}</span>
+        className={cn(
+          "bg-transparent hover:bg-transparent shadow-none border-none p-0 h-auto transition-all ring-0 focus-visible:ring-0",
+          vertical ? "flex-col gap-1.5" : "flex-row gap-2 items-center",
+          isRecommended ? "text-[#00b0b0]" : "text-gray-400",
+          className,
         )}
-        {label && (
+      >
+        <div className="h-4 w-4 relative inline-flex items-center justify-center">
+          <ThumbsUp
+            className={cn(
+              "h-4 w-4 transition-colors",
+              isRecommended ? "fill-[#00b0b0] text-[#00b0b0]" : "",
+            )}
+          />
+          {showCount && recommendationCount > 0 && (
+            <span
+              className={cn(
+                "absolute -top-2.5 -right-3 font-bold text-gray-950 dark:text-white",
+                vertical ? "text-[10px]" : "text-[11px]",
+              )}
+            >
+              {recommendationCount}
+            </span>
+          )}
+        </div>
+        {(customLabel || activeLabel) && (
           <span
-            className={`text-[9px] leading-tight ${vertical ? "mt-0.5" : "ml-2"} ${showCount && recommendationCount > 0 ? "font-medium" : ""}`}
+            className={cn(
+              "text-[8px] sm:text-[9px] font-bold uppercase text-gray-500",
+              !vertical && "ml-2",
+            )}
           >
-            {label}
-            {showCount &&
-              recommendationCount > 0 &&
-              ` (${recommendationCount})`}
+            {isRecommended
+              ? activeLabel || "Indicado"
+              : customLabel || "Ver/Indicar"}
           </span>
         )}
       </Button>

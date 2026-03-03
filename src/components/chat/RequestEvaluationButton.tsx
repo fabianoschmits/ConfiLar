@@ -10,17 +10,22 @@ import { useEvaluationRequests } from "@/hooks/useEvaluationRequests";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { EvaluationModal } from "./EvaluationModal";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface RequestEvaluationButtonProps {
   targetUserId: string;
   targetUserName: string;
   className?: string;
+  evaluationCount?: number;
+  showCount?: boolean;
 }
 
 export function RequestEvaluationButton({
   targetUserId,
   targetUserName,
   className,
+  evaluationCount = 0,
+  showCount = true,
 }: RequestEvaluationButtonProps) {
   const { user } = useAuthContext();
   const [isLoading, setIsLoading] = useState(false);
@@ -105,7 +110,7 @@ export function RequestEvaluationButton({
     if (!existingRequest) {
       return {
         text: "Avaliar",
-        icon: <Star className="h-3 w-3" />,
+        icon: <Star className="h-4 w-4" />,
         onClick: () => setShowDialog(true),
         variant: "ghost" as const,
         disabled: isLoading,
@@ -117,7 +122,7 @@ export function RequestEvaluationButton({
         // Usuário recebeu uma solicitação pendente
         return {
           text: "Aceitar",
-          icon: <CheckCircle className="h-3 w-3" />,
+          icon: <CheckCircle className="h-4 w-4" />,
           onClick: handleAcceptRequest,
           variant: "default" as const,
           disabled: isLoading,
@@ -126,7 +131,7 @@ export function RequestEvaluationButton({
         // Usuário enviou uma solicitação pendente
         return {
           text: "Pendente",
-          icon: <Clock className="h-3 w-3" />,
+          icon: <Clock className="h-4 w-4" />,
           onClick: () => {},
           variant: "ghost" as const,
           disabled: true,
@@ -139,7 +144,7 @@ export function RequestEvaluationButton({
       if (hasReviewed) {
         return {
           text: "Avaliado",
-          icon: <CheckCircle className="h-3 w-3" />,
+          icon: <CheckCircle className="h-4 w-4" />,
           onClick: () => {},
           variant: "ghost" as const,
           disabled: true,
@@ -148,7 +153,7 @@ export function RequestEvaluationButton({
 
       return {
         text: "Avaliar",
-        icon: <Star className="h-3 w-3" />,
+        icon: <Star className="h-4 w-4" />,
         onClick: () => {
           setCurrentRequest(existingRequest);
           setShowEvaluationModal(true);
@@ -161,7 +166,7 @@ export function RequestEvaluationButton({
     if (existingRequest.status === "completed") {
       return {
         text: "Concluída",
-        icon: <CheckCircle className="h-3 w-3" />,
+        icon: <CheckCircle className="h-4 w-4" />,
         onClick: () => {},
         variant: "ghost" as const,
         disabled: true,
@@ -170,7 +175,7 @@ export function RequestEvaluationButton({
 
     return {
       text: "Avaliar",
-      icon: <Star className="h-3 w-3" />,
+      icon: <Star className="h-4 w-4" />,
       onClick: () => setShowDialog(true),
       variant: "ghost" as const,
       disabled: isLoading,
@@ -185,15 +190,31 @@ export function RequestEvaluationButton({
         variant={buttonState.variant}
         size="sm"
         onClick={buttonState.onClick}
-        className={`flex items-center gap-1 px-1 py-0.5 h-5 text-xs transition-opacity ${className} ${
+        className={cn(
+          "bg-transparent hover:bg-transparent shadow-none border-none p-0 h-auto transition-all ring-0 focus-visible:ring-0",
+          "flex flex-col items-center gap-1.5 group/eval",
           buttonState.variant === "ghost"
-            ? "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 opacity-70 hover:opacity-100"
-            : "text-white bg-blue-600 hover:bg-blue-700"
-        }`}
+            ? "text-gray-400 group-hover/eval:text-yellow-500"
+            : "text-blue-600 group-hover/eval:text-blue-700",
+          className,
+        )}
         disabled={buttonState.disabled}
       >
-        {buttonState.icon}
-        <span className="text-xs">{buttonState.text}</span>
+        <div className="h-4 w-4 relative inline-flex items-center justify-center">
+          {buttonState.icon}
+          {showCount && evaluationCount > 0 && (
+            <span
+              className={cn(
+                "absolute -top-2.5 -right-3 font-bold text-gray-950 dark:text-white text-[10px]",
+              )}
+            >
+              {evaluationCount}
+            </span>
+          )}
+        </div>
+        <span className="text-[8px] sm:text-[9px] font-bold uppercase text-gray-500">
+          {buttonState.text}
+        </span>
       </Button>
 
       {/* Modal para solicitar avaliação */}

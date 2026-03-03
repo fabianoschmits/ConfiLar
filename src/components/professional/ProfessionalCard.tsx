@@ -277,50 +277,56 @@ export function ProfessionalCard({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 mt-auto pt-2">
-            <div onClick={(e) => e.stopPropagation()} className="flex gap-1.5">
+          <div className="flex items-center justify-center mt-auto pt-3 px-1 border-t border-gray-100 dark:border-gray-800/50 overflow-x-auto scrollbar-hide">
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center justify-center gap-1.5 sm:gap-4 flex-nowrap min-w-max pb-1"
+            >
               <FavoriteButton
                 userId={profile.id}
                 userName={profile.full_name || "Usuário"}
                 size="sm"
                 variant="ghost"
-                className="h-9 w-9 p-0 hover:bg-red-50 dark:hover:bg-red-950/20"
+                className="p-0 flex items-center justify-center hover:bg-transparent shadow-none border-none h-auto"
+                customLabel="Favoritar"
+                activeLabel="Favoritado"
+                vertical={true}
               />
+
               <RecommendationButton
                 userId={profile.id}
                 userName={profile.full_name || "Usuário"}
                 size="sm"
                 variant="ghost"
-                showCount={false}
-                className="h-9 w-9 p-0 hover:bg-green-50 dark:hover:bg-green-950/20"
+                showCount={true}
+                className="p-0 flex items-center justify-center hover:bg-transparent shadow-none border-none h-auto"
                 vertical={true}
+                customLabel="Ver/Indicar"
+                activeLabel="Indicado"
               />
-            </div>
 
-            <div className="flex-1 flex justify-center">
               {!isOwner && !isGuest && (
                 <RequestEvaluationButton
                   targetUserId={profile.id}
-                  targetUserName={profile.full_name}
+                  targetUserName={profile.full_name || "Usuário"}
+                  evaluationCount={stats.reviewCount}
                 />
               )}
-            </div>
 
-            <div className="flex gap-2">
               <Button
                 size="sm"
                 variant="outline"
-                className="h-9 px-4 text-xs font-bold border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/5"
+                className="h-9 px-2 sm:px-3 text-[10px] sm:text-xs font-bold border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/5 whitespace-nowrap shrink-0"
                 onClick={() => handleProfileClick(profile.id)}
               >
-                {t?.("viewProfile") || "Ver Perfil"}
+                Perfil
               </Button>
 
               {!isOwner && profile.user_type === "professional" && (
                 <Button
                   size="sm"
                   onClick={handleContactClick}
-                  className="h-9 w-9 p-0 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md transition-all active:scale-95"
+                  className="h-9 w-9 min-w-[36px] p-0 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md transition-all active:scale-95 flex items-center justify-center shrink-0"
                   title={t?.("contact") || "Contatar"}
                 >
                   <MessageCircle className="h-4.5 w-4.5" />
