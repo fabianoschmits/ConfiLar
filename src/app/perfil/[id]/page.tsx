@@ -3,7 +3,7 @@
 export const dynamic = "force-dynamic";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuthContext } from "@/contexts/AuthContext";
 import {
   useProfileData,
@@ -74,10 +74,12 @@ export default function ProfilePage() {
   const tNav = useTranslations("navigation");
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuthContext();
   const { openChat } = useFloatingChat();
   const userId = params.id as string;
   const [mounted, setMounted] = useState(false);
+  const initialTab = searchParams.get("tab") || "recommendations";
 
   const { profile, loading, error } = useProfileData(userId);
   const {
@@ -390,7 +392,7 @@ export default function ProfilePage() {
 
           {/* Tabs - Classic Scrollable */}
           <Tabs
-            defaultValue="recommendations"
+            defaultValue={initialTab}
             className="space-y-6 w-full max-w-4xl mx-auto"
           >
             <div className="relative w-full group/tabs">
