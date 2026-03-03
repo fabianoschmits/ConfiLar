@@ -278,17 +278,17 @@ export function ProfessionalCard({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-center mt-auto pt-3 px-1 border-t border-gray-100 dark:border-gray-800/50 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center justify-center mt-auto pt-4 px-2 border-t border-gray-100 dark:border-gray-800/50 overflow-x-auto scrollbar-hide">
             <div
               onClick={(e) => e.stopPropagation()}
-              className="flex items-center justify-center gap-2 sm:gap-5 flex-nowrap min-w-max pb-1"
+              className="flex items-center justify-between w-full gap-1 sm:gap-2 flex-nowrap min-w-max pb-1"
             >
               <FavoriteButton
                 userId={profile.id}
                 userName={profile.full_name || "Usuário"}
                 size="sm"
                 variant="ghost"
-                className="p-0 flex items-center justify-center hover:bg-transparent shadow-none border-none h-auto"
+                className="flex-1 min-w-0 p-0 flex items-center justify-center hover:bg-transparent shadow-none border-none h-auto"
                 customLabel="Favoritar"
                 activeLabel="Favoritado"
                 vertical={true}
@@ -300,7 +300,7 @@ export function ProfessionalCard({
                 size="sm"
                 variant="ghost"
                 showCount={true}
-                className="p-0 flex items-center justify-center hover:bg-transparent shadow-none border-none h-auto"
+                className="flex-1 min-w-0 p-0 flex items-center justify-center hover:bg-transparent shadow-none border-none h-auto"
                 vertical={true}
                 customLabel="Ver/Indicar"
                 activeLabel="Indicado"
@@ -311,13 +311,14 @@ export function ProfessionalCard({
                   targetUserId={profile.id}
                   targetUserName={profile.full_name || "Usuário"}
                   evaluationCount={stats.reviewCount}
+                  className="flex-1 min-w-0"
                 />
               )}
 
               <Button
                 size="sm"
                 variant="outline"
-                className="h-9 px-2 sm:px-3 text-[11px] sm:text-xs font-bold border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/5 whitespace-nowrap shrink-0"
+                className="h-9 flex-1 min-w-0 px-2 text-[11px] sm:text-xs font-bold border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/5 whitespace-nowrap shrink-0"
                 onClick={() => handleProfileClick(profile.id)}
               >
                 Perfil

@@ -110,7 +110,7 @@ export function RequestEvaluationButton({
     if (!existingRequest) {
       return {
         text: "Avaliar",
-        icon: <Star className="h-5 w-5" />,
+        icon: <Star className="h-6 w-6" />,
         onClick: () => setShowDialog(true),
         variant: "ghost" as const,
         disabled: isLoading,
@@ -122,7 +122,7 @@ export function RequestEvaluationButton({
         // Usuário recebeu uma solicitação pendente
         return {
           text: "Aceitar",
-          icon: <CheckCircle className="h-5 w-5" />,
+          icon: <CheckCircle className="h-6 w-6" />,
           onClick: handleAcceptRequest,
           variant: "default" as const,
           disabled: isLoading,
@@ -131,7 +131,7 @@ export function RequestEvaluationButton({
         // Usuário enviou uma solicitação pendente
         return {
           text: "Pendente",
-          icon: <Clock className="h-5 w-5" />,
+          icon: <Clock className="h-6 w-6" />,
           onClick: () => {},
           variant: "ghost" as const,
           disabled: true,
@@ -144,7 +144,7 @@ export function RequestEvaluationButton({
       if (hasReviewed) {
         return {
           text: "Avaliado",
-          icon: <CheckCircle className="h-5 w-5" />,
+          icon: <CheckCircle className="h-6 w-6" />,
           onClick: () => {},
           variant: "ghost" as const,
           disabled: true,
@@ -153,7 +153,7 @@ export function RequestEvaluationButton({
 
       return {
         text: "Avaliar",
-        icon: <Star className="h-5 w-5" />,
+        icon: <Star className="h-6 w-6" />,
         onClick: () => {
           setCurrentRequest(existingRequest);
           setShowEvaluationModal(true);
@@ -166,7 +166,7 @@ export function RequestEvaluationButton({
     if (existingRequest.status === "completed") {
       return {
         text: "Concluída",
-        icon: <CheckCircle className="h-5 w-5" />,
+        icon: <CheckCircle className="h-6 w-6" />,
         onClick: () => {},
         variant: "ghost" as const,
         disabled: true,
@@ -175,7 +175,7 @@ export function RequestEvaluationButton({
 
     return {
       text: "Avaliar",
-      icon: <Star className="h-5 w-5" />,
+      icon: <Star className="h-6 w-6" />,
       onClick: () => setShowDialog(true),
       variant: "ghost" as const,
       disabled: isLoading,
@@ -200,19 +200,19 @@ export function RequestEvaluationButton({
         )}
         disabled={buttonState.disabled}
       >
-        <div className="h-5 w-5 relative inline-flex items-center justify-center">
+        <div className="h-6 w-6 relative inline-flex items-center justify-center">
           {buttonState.icon}
           {showCount && evaluationCount > 0 && (
             <span
               className={cn(
-                "absolute -top-3 -right-3.5 font-bold text-gray-950 dark:text-white text-[11px]",
+                "absolute -top-3.5 -right-4 font-bold text-gray-950 dark:text-white text-xs",
               )}
             >
               {evaluationCount}
             </span>
           )}
         </div>
-        <span className="text-[10px] sm:text-[11px] font-bold uppercase text-gray-500">
+        <span className="text-[11px] sm:text-xs font-bold uppercase text-gray-500">
           {buttonState.text}
         </span>
       </Button>

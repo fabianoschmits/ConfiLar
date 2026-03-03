@@ -142,17 +142,17 @@ export function FavoriteButton({
         className,
       )}
     >
-      <div className="h-5 w-5 relative inline-flex items-center justify-center">
+      <div className="h-6 w-6 relative inline-flex items-center justify-center">
         {isFavorited ? (
-          <HeartFilled className="h-5 w-5 fill-current" />
+          <HeartFilled className="h-6 w-6 fill-current" />
         ) : (
-          <Heart className="h-5 w-5" />
+          <Heart className="h-6 w-6" />
         )}
         {showCount && favoriteCount > 0 && (
           <span
             className={cn(
-              "absolute -top-3 -right-3.5 font-bold text-gray-950 dark:text-white",
-              vertical ? "text-[11px]" : "text-[12px]",
+              "absolute -top-3.5 -right-4 font-bold text-gray-950 dark:text-white",
+              vertical ? "text-xs" : "text-[13px]",
             )}
           >
             {favoriteCount}
@@ -162,7 +162,7 @@ export function FavoriteButton({
       {(showText || customLabel || activeLabel) && (
         <span
           className={cn(
-            "text-[10px] sm:text-[11px] font-bold uppercase text-gray-500",
+            "text-[11px] sm:text-xs font-bold uppercase text-gray-500",
             !vertical && "ml-2",
           )}
         >
