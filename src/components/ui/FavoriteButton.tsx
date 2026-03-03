@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Heart, HeartFilled } from "@/components/ui/icons";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -45,10 +45,10 @@ export function FavoriteButton({
   const [favoriteCount, setFavoriteCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
-  const [hasLoaded, setHasLoaded] = useState(false);
 
   // Carregar contagem de favoritos
-  const loadFavoriteCount = async () => {
+  const loadFavoriteCount = useCallback(async () => {
+    if (!userId) return;
     try {
       const { count, error } = await supabase
         .from("favorites")
@@ -61,27 +61,26 @@ export function FavoriteButton({
     } catch (error) {
       console.error("Erro ao carregar contagem de favoritos:", error);
     }
-  };
+  }, [userId]);
 
-  // Verificar se está nos favoritos e carregar contagem
+  // Sincronizar estado com o hook useFavorites
   useEffect(() => {
-    if (userId && !hasLoaded) {
-      const checkFavoriteStatus = () => {
-        try {
-          const favoriteStatus = isFavorite(userId);
-          setIsFavorited(favoriteStatus);
-          loadFavoriteCount();
-          setHasLoaded(true);
-        } catch (error) {
-          console.error("Erro ao verificar favorito:", error);
-        } finally {
-          setChecking(false);
-        }
-      };
-
-      checkFavoriteStatus();
+    if (userId) {
+      const status = isFavorite(userId);
+      setIsFavorited(status);
+      // Uma vez que tenhamos o status (mesmo que falso inicialmente),
+      // podemos parar de mostrar o estado de checking inicial se desejado,
+      // mas aqui o checking é mais para evitar saltos visuais.
+      setChecking(false);
     }
-  }, [userId, isFavorite, hasLoaded]);
+  }, [userId, isFavorite]);
+
+  // Carregar contagem inicial e quando o userId mudar
+  useEffect(() => {
+    if (userId) {
+      loadFavoriteCount();
+    }
+  }, [userId, loadFavoriteCount]);
 
   const handleToggleFavorite = async () => {
     if (loading) return;
@@ -95,6 +94,9 @@ export function FavoriteButton({
       setFavoriteCount((prev) =>
         newStatus ? prev + 1 : Math.max(0, prev - 1),
       );
+
+      // Recarregar contagem do banco para sincronizar em background
+      setTimeout(loadFavoriteCount, 500);
 
       if (newStatus) {
         toast.success(`${userName.toUpperCase()} ADICIONADO AOS FAVORITOS!`);
