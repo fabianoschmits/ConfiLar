@@ -224,10 +224,10 @@ export function ClassifiedsCard({
                 />
               </div>
             </Link>
-            <p className="text-[13px] text-[var(--cl-muted)] truncate mt-0.5">
+            <p className="text-[13px] text-[var(--cl-ink-secondary)] truncate mt-0.5">
               {subtitle}
             </p>
-            <p className="text-xs text-[var(--cl-muted)] mt-0.5 flex items-center gap-1 truncate">
+            <p className="text-xs text-[var(--cl-ink-muted)] mt-0.5 flex items-center gap-1 truncate">
               {locationLabel && (
                 <>
                   <MapPin className="h-3 w-3 shrink-0 opacity-70" />
@@ -269,7 +269,7 @@ export function ClassifiedsCard({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 text-[var(--cl-muted)] hover:text-[var(--cl-ink)]"
+                  className="h-8 w-8 p-0 text-[var(--cl-ink-muted)] hover:text-[var(--cl-ink)]"
                 >
                   <MoreVertical className="h-4 w-4" />
                 </Button>
@@ -389,7 +389,7 @@ export function ClassifiedsCard({
             </h3>
             <p
               className={cn(
-                "mt-1 text-[13px] text-[var(--cl-muted)] leading-relaxed whitespace-pre-wrap",
+                "mt-1 text-[13px] text-[var(--cl-ink-secondary)] leading-relaxed whitespace-pre-wrap",
                 !showFullDescription && "line-clamp-2 sm:line-clamp-3",
               )}
             >
@@ -436,7 +436,7 @@ export function ClassifiedsCard({
                 setLiked((v) => !v);
               }}
               className={cn(
-                "inline-flex items-center gap-1.5 text-[13px] text-[var(--cl-muted)] transition-colors",
+                "inline-flex items-center gap-1.5 text-[13px] text-[var(--cl-ink-muted)] transition-colors",
                 liked && "text-[var(--cl-heart)]",
               )}
               aria-label="Curtir"
@@ -455,7 +455,7 @@ export function ClassifiedsCard({
               type="button"
               onClick={handleContactClick}
               disabled={isOwner}
-              className="inline-flex items-center gap-1.5 text-[13px] text-[var(--cl-muted)] hover:text-[var(--cl-request)] transition-colors disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 text-[13px] text-[var(--cl-ink-muted)] hover:text-[var(--cl-request)] transition-colors disabled:opacity-40"
               aria-label="Conversar"
             >
               <MessageCircle className="h-4 w-4" />
@@ -467,7 +467,7 @@ export function ClassifiedsCard({
 
           <div className="flex items-center gap-2 min-w-0">
             {priceLabel && (
-              <span className="hidden sm:inline-flex items-center gap-1 text-[12px] font-medium text-[var(--cl-muted)] truncate max-w-[160px]">
+              <span className="hidden sm:inline-flex items-center gap-1 text-[12px] font-medium text-[var(--cl-ink-secondary)] truncate max-w-[160px]">
                 <Tag className="h-3.5 w-3.5 shrink-0" />
                 {priceLabel}
               </span>
@@ -489,7 +489,7 @@ export function ClassifiedsCard({
 
         {priceLabel && (
           <div className="sm:hidden px-4 pb-3 -mt-1">
-            <span className="inline-flex items-center gap-1 text-[13px] font-medium text-[var(--cl-muted)]">
+            <span className="inline-flex items-center gap-1 text-[13px] font-medium text-[var(--cl-ink-secondary)]">
               <Tag className="h-3.5 w-3.5" />
               {priceLabel}
             </span>

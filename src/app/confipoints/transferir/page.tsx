@@ -128,7 +128,7 @@ export default function TransferirConfiPointsPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-gray-50 dark:bg-black">
+      <div className="min-h-screen bg-[var(--cl-paper)]">
         <div className="container py-4">
           <div className="mx-auto max-w-4xl">
             {/* Header */}

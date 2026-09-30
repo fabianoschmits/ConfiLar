@@ -138,7 +138,7 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="color-scheme" content="light dark" />
       </head>
-      <body className="font-sans bg-gray-50 dark:bg-black">
+      <body className="font-sans bg-[var(--cl-paper)]">
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

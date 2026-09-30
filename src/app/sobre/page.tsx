@@ -40,7 +40,7 @@ export default function SobrePage() {
   if (user) {
     return (
       <MainLayout requireAuth={false}>
-        <div className="min-h-screen bg-gray-50 dark:bg-black">
+        <div className="min-h-screen bg-[var(--cl-paper)]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Header da Página */}
             <div className="text-center mb-12">
@@ -215,7 +215,7 @@ export default function SobrePage() {
 
   // Se o usuário não estiver logado, mostrar página pública
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black">
+    <div className="min-h-screen bg-[var(--cl-paper)]">
       {/* Header Moderno */}
       <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

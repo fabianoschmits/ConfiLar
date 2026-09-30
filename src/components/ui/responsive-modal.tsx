@@ -71,8 +71,8 @@ export function ResponsiveModal({
                   "md:bottom-auto md:left-1/2 md:top-1/2 md:right-auto md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:max-w-2xl md:max-h-[85vh]",
                   "md:data-[state=open]:zoom-in-95 md:data-[state=closed]:zoom-out-95 md:data-[state=open]:slide-in-from-bottom-0 md:data-[state=closed]:slide-out-to-bottom-0",
                 ],
-            // Background & Effects
-            "bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 overflow-hidden",
+            // Background & Effects — surface sólido (padrão ConfiLar)
+            "bg-[var(--cl-surface)] border border-[var(--cl-border)] overflow-hidden",
             // Height logic
             fullContent
               ? centered

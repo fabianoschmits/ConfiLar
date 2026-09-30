@@ -153,7 +153,7 @@ export default function ComprasPage() {
   if (loading) {
     return (
       <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-gray-50 dark:bg-black p-4 sm:p-6">
+        <div className="min-h-screen bg-[var(--cl-paper)] p-4 sm:p-6">
           <div className="max-w-7xl mx-auto">
             <div className="animate-pulse space-y-6">
               <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-1/4"></div>
@@ -175,7 +175,7 @@ export default function ComprasPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-gray-50 dark:bg-black p-4 sm:p-6">
+      <div className="min-h-screen bg-[var(--cl-paper)] p-4 sm:p-6">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header */}
           <div className="mb-8">

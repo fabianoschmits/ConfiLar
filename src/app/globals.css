@@ -359,31 +359,51 @@
   animation: ripple 0.6s ease-out;
 }
 
-/* Modern Design System Variables */
+/* Modern Design System Variables — ConfiLar (mock Classificados) */
 :root {
-  /* Colors - Primary */
-  --primary-50: #eff6ff;
-  --primary-100: #dbeafe;
-  --primary-200: #bfdbfe;
-  --primary-300: #93c5fd;
-  --primary-400: #60a5fa;
-  --primary-500: #3b82f6;
-  --primary-600: #2563eb;
-  --primary-700: #1d4ed8;
-  --primary-800: #1e40af;
-  --primary-900: #1e3a8a;
+  /* ConfiLar canonical tokens — fiel ao mock */
+  --cl-ink: #1a202c; /* títulos, nomes, CTAs */
+  --cl-ink-secondary: #4a5568; /* subtítulos, categorias */
+  --cl-ink-muted: #718096; /* meta, placeholders, localidade */
+  --cl-paper: #f5f7f9; /* fundo da tela */
+  --cl-surface: #ffffff; /* cards / modais */
+  --cl-mist: #f0f2f5; /* busca, chips idle, inputs soft */
+  --cl-border: #e8edf2;
+  --cl-muted: #718096;
+  --cl-teal: #00b0b0;
+  --cl-service: #2f855a;
+  --cl-service-bg: #e6f6ed;
+  --cl-request: #2b6cb0;
+  --cl-request-bg: #e8f1fb;
+  --cl-heart: #e53e3e;
+  --cl-shadow: 0 2px 14px rgba(26, 32, 44, 0.06);
+  --cl-radius-card: 18px;
+  --cl-radius-pill: 9999px;
+  --cl-radius-control: 16px;
 
-  /* Colors - Secondary (Gray) */
-  --gray-50: #f9fafb;
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-  --gray-300: #d1d5db;
-  --gray-400: #9ca3af;
-  --gray-500: #6b7280;
-  --gray-600: #4b5563;
-  --gray-700: #374151;
-  --gray-800: #1f2937;
-  --gray-900: #111827;
+  /* Colors - Primary (navy ink #1A202C) */
+  --primary-50: #f5f7f9;
+  --primary-100: #e8edf2;
+  --primary-200: #cbd5e0;
+  --primary-300: #a0aec0;
+  --primary-400: #718096;
+  --primary-500: #1a202c;
+  --primary-600: #171923;
+  --primary-700: #12141c;
+  --primary-800: #0d0f14;
+  --primary-900: #08090c;
+
+  /* Colors - Secondary (Gray aligned to mock) */
+  --gray-50: #f5f7f9;
+  --gray-100: #f0f2f5;
+  --gray-200: #e8edf2;
+  --gray-300: #cbd5e0;
+  --gray-400: #a0aec0;
+  --gray-500: #718096;
+  --gray-600: #4a5568;
+  --gray-700: #2d3748;
+  --gray-800: #1a202c;
+  --gray-900: #1a202c;
 
   /* Colors - Success */
   --success-50: #ecfdf5;
@@ -447,16 +467,17 @@
   --spacing-4xl: 6rem;
   /* 96px */
 
-  /* Border Radius */
-  --radius-sm: 0.375rem;
-  /* 6px */
-  --radius-md: 0.5rem;
+  /* Border Radius — hierarquia do mock */
+  --radius-sm: 0.5rem;
   /* 8px */
-  --radius-lg: 0.75rem;
+  --radius-md: 0.75rem;
   /* 12px */
-  --radius-xl: 1rem;
+  --radius-lg: 1rem;
   /* 16px */
+  --radius-xl: 1.125rem;
+  /* 18px cards */
   --radius-2xl: 1.5rem;
+  /* 24px modais */
   /* 24px */
   --radius-full: 9999px;
 
@@ -504,31 +525,31 @@ html {
 
 /* Modern Design System Components */
 @layer components {
-  /* Modern Card */
+  /* Modern Card — padrão ConfiLar */
   .modern-card {
-    @apply bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200;
+    @apply bg-[var(--cl-surface)] rounded-[var(--cl-radius-card)] border border-[var(--cl-border)] shadow-[var(--cl-shadow)];
   }
 
   /* Modern Button */
   .modern-button {
-    @apply inline-flex items-center justify-center rounded-lg border border-transparent font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center rounded-xl border border-transparent font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
   }
 
   .modern-button-primary {
-    @apply modern-button bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+    @apply modern-button bg-[var(--cl-ink)] text-white hover:brightness-110 focus:ring-[var(--cl-ink)];
   }
 
   .modern-button-secondary {
-    @apply modern-button bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500;
+    @apply modern-button bg-[var(--cl-mist)] text-[var(--cl-ink)] hover:brightness-95 focus:ring-[var(--cl-mist)];
   }
 
   .modern-button-outline {
-    @apply modern-button border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-blue-500;
+    @apply modern-button border-[var(--cl-border)] bg-[var(--cl-surface)] text-[var(--cl-ink)] hover:bg-[var(--cl-mist)] focus:ring-[var(--cl-teal)];
   }
 
   /* Modern Input */
   .modern-input {
-    @apply block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder-gray-400 transition-colors duration-200;
+    @apply block w-full rounded-xl border border-[var(--cl-border)] bg-[var(--cl-surface)] px-3 py-2 text-sm placeholder-[var(--cl-muted)] transition-colors duration-200;
   }
 
   .modern-input:focus {
@@ -1041,32 +1062,30 @@ textarea {
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    /* Branco */
-    --foreground: 222.2 84% 4.9%;
-    /* Quase preto */
+    /* Fundo paper (#F5F7F9) */
+    --background: 210 20% 97%;
+    --foreground: 220 26% 14%; /* #1A202C */
+    /* Surface branco */
     --card: 0 0% 100%;
-    /* Branco */
-    --card-foreground: 222.2 84% 4.9%;
-    /* Quase preto */
+    --card-foreground: 220 26% 14%;
     --popover: 0 0% 100%;
-    /* Branco */
-    --popover-foreground: 222.2 84% 4.9%;
-    /* Quase preto */
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
+    --popover-foreground: 220 26% 14%;
+    /* Ink navy CTA #1A202C */
+    --primary: 220 26% 14%;
+    --primary-foreground: 0 0% 100%;
+    /* Mist #F0F2F5 */
+    --secondary: 210 14% 95%;
+    --secondary-foreground: 220 26% 14%;
+    --muted: 210 14% 95%;
+    --muted-foreground: 215 16% 47%; /* #718096 */
+    --accent: 210 14% 95%;
+    --accent-foreground: 220 26% 14%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 20% 92%;
+    --input: 210 20% 92%;
+    --ring: 220 26% 14%;
+    --radius: 0.75rem;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
@@ -1075,31 +1094,40 @@ textarea {
   }
 
   .dark {
-    --background: 0 0% 0%;
-    /* Preto puro */
-    --foreground: 0 0% 100%;
-    /* Branco */
-    --card: 222.2 47.4% 11.2%;
-    /* Cinza escuro */
-    --card-foreground: 0 0% 100%;
-    /* Branco */
-    --popover: 222.2 47.4% 11.2%;
-    /* Cinza escuro */
-    --popover-foreground: 0 0% 100%;
-    /* Branco */
+    /* Escuro alinhado ao mock slate */
+    --cl-ink: #f7fafc;
+    --cl-ink-secondary: #cbd5e0;
+    --cl-ink-muted: #94a3b8;
+    --cl-paper: #0f172a;
+    --cl-surface: #1e293b;
+    --cl-mist: #334155;
+    --cl-border: #334155;
+    --cl-muted: #94a3b8;
+    --cl-service: #68d391;
+    --cl-service-bg: rgba(72, 187, 120, 0.18);
+    --cl-request: #63b3ed;
+    --cl-request-bg: rgba(66, 153, 225, 0.18);
+    --cl-shadow: 0 2px 14px rgba(0, 0, 0, 0.4);
+
+    --background: 222 47% 11%; /* #0F172A */
+    --foreground: 210 40% 98%;
+    --card: 217 33% 17%; /* #1E293B */
+    --card-foreground: 210 40% 98%;
+    --popover: 217 33% 17%;
+    --popover-foreground: 210 40% 98%;
     --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
+    --primary-foreground: 220 26% 14%;
+    --secondary: 215 25% 27%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
+    --muted: 215 25% 27%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 215 25% 27%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 215 25% 27%;
+    --input: 215 25% 27%;
+    --ring: 215 20% 65%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -1137,15 +1165,17 @@ textarea {
   body {
     font-family: "Gilroy", system-ui, sans-serif;
     font-weight: 400;
-    background-color: white;
+    background-color: var(--cl-paper);
+    color: var(--cl-ink);
   }
 
   .dark body {
-    background-color: black;
+    background-color: var(--cl-paper);
+    color: var(--cl-ink);
   }
 
   .dark html {
-    background-color: black;
+    background-color: var(--cl-paper);
   }
 
   /* Mapeamento de font-weight para os pesos disponíveis da Gilroy */
@@ -1349,47 +1379,18 @@ textarea {
 }
 
 /* =====================================================
-   Classificados — tokens do mock ConfiLar (frontend-design)
-   Brief: marketplace local de confiança; navy + névoa; Gilroy
+   Classificados — utilitários (usa tokens globais --cl-*)
    ===================================================== */
 .classifieds-page {
-  --cl-ink: #1a2332;
-  --cl-paper: #f3f4f6;
-  --cl-surface: #ffffff;
-  --cl-mist: #eef0f3;
-  --cl-border: #e8eaed;
-  --cl-muted: #6b7280;
-  --cl-service: #15803d;
-  --cl-service-bg: #dcfce7;
-  --cl-request: #1d4ed8;
-  --cl-request-bg: #dbeafe;
-  --cl-heart: #ef4444;
-  --cl-teal: #00b0b0;
-  --cl-shadow: 0 2px 12px rgba(26, 35, 50, 0.06);
-  --cl-radius-card: 18px;
-  --cl-radius-pill: 9999px;
-  --cl-radius-control: 16px;
   background: var(--cl-paper);
   color: var(--cl-ink);
   font-family: "Gilroy", system-ui, sans-serif;
 }
 
-.dark .classifieds-page {
-  --cl-ink: #f3f4f6;
-  --cl-paper: #000000;
-  --cl-surface: #18181b;
-  --cl-mist: #27272a;
-  --cl-border: #3f3f46;
-  --cl-muted: #a1a1aa;
-  --cl-service: #4ade80;
-  --cl-service-bg: rgba(34, 197, 94, 0.15);
-  --cl-request: #60a5fa;
-  --cl-request-bg: rgba(59, 130, 246, 0.15);
-  --cl-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
-}
-
 .classifieds-card {
   border-radius: var(--cl-radius-card);
+  background: var(--cl-surface);
+  color: var(--cl-ink);
 }
 
 .classifieds-chip {
@@ -1414,13 +1415,13 @@ textarea {
 }
 
 .dark .classifieds-chip--active {
-  background: #f4f4f5;
-  color: #18181b;
+  background: #f7fafc;
+  color: #1a202c;
 }
 
 .classifieds-chip--idle {
   background: var(--cl-mist);
-  color: var(--cl-ink);
+  color: var(--cl-ink-secondary);
 }
 
 .classifieds-chip--idle:hover {
@@ -1432,7 +1433,7 @@ textarea {
   align-items: center;
   border-radius: var(--cl-radius-pill);
   background: var(--cl-mist);
-  color: var(--cl-muted);
+  color: var(--cl-ink-secondary);
   font-size: 0.6875rem;
   font-weight: 500;
   padding: 0.25rem 0.625rem;
@@ -1450,8 +1451,8 @@ textarea {
 }
 
 .dark .classifieds-cta {
-  background: #f4f4f5 !important;
-  color: #18181b !important;
+  background: #f7fafc !important;
+  color: #1a202c !important;
 }
 
 .classifieds-cta:hover {
@@ -1462,12 +1463,12 @@ textarea {
   border-radius: var(--cl-radius-pill);
   background: var(--cl-ink);
   color: #fff;
-  box-shadow: 0 8px 24px rgba(26, 35, 50, 0.28);
+  box-shadow: 0 8px 24px rgba(26, 32, 44, 0.28);
 }
 
 .dark .classifieds-fab {
-  background: #f4f4f5;
-  color: #18181b;
+  background: #f7fafc;
+  color: #1a202c;
 }
 
 @media (prefers-reduced-motion: reduce) {

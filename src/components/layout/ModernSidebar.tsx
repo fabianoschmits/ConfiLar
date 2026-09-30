@@ -367,8 +367,8 @@ export function ModernSidebar() {
       {/* Sidebar — flat, full-height, fixed */}
       <div
         className={cn(
-          "fixed left-0 top-0 h-full z-[60] bg-white dark:bg-gray-950",
-          "border-r border-gray-200 dark:border-gray-800 shadow-sm",
+          "fixed left-0 top-0 h-full z-[60] bg-[var(--cl-surface)]",
+          "border-r border-[var(--cl-border)] shadow-sm",
           "transition-all duration-300 ease-in-out",
           "hidden lg:flex flex-col",
           isCollapsed ? "w-16" : "w-56",

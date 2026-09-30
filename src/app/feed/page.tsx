@@ -245,10 +245,10 @@ export default function FeedPage() {
         />
       )}
 
-      <div className="min-h-screen bg-gray-50 dark:bg-black">
-        <header className="bg-gray-50 dark:bg-black border-b border-gray-200 dark:border-gray-900">
+      <div className="min-h-screen bg-[var(--cl-paper)]">
+        <header className="bg-[var(--cl-paper)] border-b border-gray-200 dark:border-gray-900">
           <div className="max-w-2xl mx-auto">
-            <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-black">
+            <div className="flex items-center justify-between px-4 py-3 bg-[var(--cl-paper)]">
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                 ConfiLar
               </h1>

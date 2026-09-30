@@ -31,7 +31,7 @@ export default function IndicacoesPage() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="min-h-screen bg-gray-50 dark:bg-black p-6">
+        <div className="min-h-screen bg-[var(--cl-paper)] p-6">
           <div className="max-w-7xl mx-auto">
             <ReferralDashboardSkeleton />
           </div>
@@ -43,7 +43,7 @@ export default function IndicacoesPage() {
   if (!user) {
     return (
       <MainLayout>
-        <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center p-6">
+        <div className="min-h-screen bg-[var(--cl-paper)] flex items-center justify-center p-6">
           <EmptyState
             icon={
               <Users className="h-16 w-16 text-gray-400 dark:text-gray-600" />
@@ -63,7 +63,7 @@ export default function IndicacoesPage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gray-50 dark:bg-black p-4 md:p-6">
+      <div className="min-h-screen bg-[var(--cl-paper)] p-4 md:p-6">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header */}
           <div className="text-center space-y-4">

@@ -320,7 +320,7 @@ export function ModernHeader({
           // All screen sizes: flat bar at top, full-width on mobile, sidebar-offset on desktop
           "top-0 left-0 right-0 w-auto",
           isCollapsed ? "lg:left-16" : "lg:left-56",
-          "rounded-none border-b border-gray-100 dark:border-gray-900 bg-white dark:bg-black shadow-sm",
+          "rounded-none border-b border-[var(--cl-border)] bg-[var(--cl-surface)] shadow-sm",
         )}
       >
         <div className="px-3 sm:px-4 lg:px-4">
@@ -373,7 +373,7 @@ export function ModernHeader({
 
               {/* Dynamic Page Title - Desktop only */}
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-xl font-bold text-[var(--cl-ink)]">
                   {getPageTitle()}
                 </h1>
               </div>
@@ -432,7 +432,7 @@ export function ModernHeader({
 
                 {/* Menu Expandido */}
                 {isMenuExpanded && (
-                  <div className="absolute top-full right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 max-h-[75vh] overflow-hidden animate-slide-down">
+                  <div className="absolute top-full right-0 mt-2 w-72 sm:w-80 bg-[var(--cl-surface)] dark:bg-zinc-900 border border-[var(--cl-border)] rounded-2xl shadow-[var(--cl-shadow)] z-50 max-h-[75vh] overflow-hidden animate-slide-down">
                     <div className="p-3 sm:p-4 overflow-y-auto max-h-[75vh]">
                       {/* Header do Perfil */}
                       <div className="flex items-center space-x-2 sm:space-x-3 pb-3 sm:pb-4 border-b border-gray-200 dark:border-gray-700 -mx-3 sm:-mx-4 px-3 sm:px-4">

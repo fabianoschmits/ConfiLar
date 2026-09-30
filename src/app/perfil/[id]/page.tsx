@@ -204,7 +204,7 @@ export default function ProfilePage() {
   if (error || !profile) {
     return (
       <MainLayout requireAuth={false}>
-        <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
+        <div className="min-h-screen bg-[var(--cl-paper)] flex items-center justify-center">
           <Card className="max-w-md mx-auto">
             <CardContent className="p-8 text-center">
               <User className="w-16 h-16 text-red-600 mx-auto mb-4" />
@@ -227,7 +227,7 @@ export default function ProfilePage() {
   return (
     <MainLayout requireAuth={false}>
       {profile && <AIProfileSchema profile={profile} />}
-      <div className="min-h-screen bg-gray-50 dark:bg-black text-foreground transition-colors duration-300">
+      <div className="min-h-screen bg-[var(--cl-paper)] text-foreground transition-colors duration-300">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           {/* Header Minimalista */}
           {/* Header Minimalista Unificado */}

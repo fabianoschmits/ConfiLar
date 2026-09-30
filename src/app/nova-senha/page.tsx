@@ -273,7 +273,7 @@ export default function NovaSenhaPage() {
   if (!isAuthenticated) {
     return (
       <LightModeLayout>
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-[var(--cl-paper)] flex items-center justify-center p-4">
           <Card className="max-w-md w-full text-center bg-white/80 backdrop-blur-md border-0 shadow-xl">
             <CardContent className="p-8">
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-6"></div>
@@ -294,7 +294,7 @@ export default function NovaSenhaPage() {
   if (passwordUpdated) {
     return (
       <LightModeLayout>
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-[var(--cl-paper)] flex items-center justify-center p-4">
           <Card className="max-w-md w-full text-center bg-white/80 backdrop-blur-md border-0 shadow-xl">
             <CardContent className="p-8">
               <div className="mx-auto w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
@@ -333,7 +333,7 @@ export default function NovaSenhaPage() {
 
   return (
     <LightModeLayout>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen bg-[var(--cl-paper)]">
         {/* Header moderno */}
         <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
           <div className="container flex h-16 items-center justify-between px-4">

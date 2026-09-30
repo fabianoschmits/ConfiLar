@@ -56,7 +56,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
       <main
         className={cn(
-          "min-h-screen bg-gray-50 dark:bg-black transition-all duration-300 ease-in-out pb-24 lg:pb-0 pt-16 sm:pt-20 lg:pt-24",
+          "min-h-screen bg-[var(--cl-paper)] transition-all duration-300 ease-in-out pb-24 lg:pb-0 pt-16 sm:pt-20 lg:pt-24",
           isCollapsed ? "lg:ml-16" : "lg:ml-56",
         )}
       >

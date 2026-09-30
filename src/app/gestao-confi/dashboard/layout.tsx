@@ -15,7 +15,7 @@ export default function AdminDashboardLayout({
   return (
     <MainLayout requireAuth={true}>
       <AdminGuard>
-        <div className="flex min-h-screen bg-[#F8FAFC] dark:bg-black pb-32 md:pb-0">
+        <div className="flex min-h-screen bg-[var(--cl-paper)] pb-32 md:pb-0">
           {/* Desktop Sidebar - Hidden on Mobile */}
           <aside className="hidden md:flex flex-col w-72 border-r bg-white dark:bg-gray-900 sticky top-0 h-screen max-h-screen overflow-y-auto z-30 shadow-sm transition-all">
             <AdminSidebar />

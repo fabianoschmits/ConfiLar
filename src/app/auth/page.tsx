@@ -88,7 +88,7 @@ export default function AuthPage() {
 
   return (
     <LightModeLayout>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen bg-[var(--cl-paper)]">
         {/* Header Moderno */}
         <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 shadow-sm">
           <div className="container flex h-16 items-center justify-between px-4">

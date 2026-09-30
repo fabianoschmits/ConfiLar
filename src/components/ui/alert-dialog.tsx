@@ -54,13 +54,13 @@ function AlertDialogContent({
       <AlertDialogPrimitive.Content
         data-slot="alert-dialog-content"
         className={cn(
-          "bg-background fixed z-[101] grid w-full gap-4 shadow-lg duration-500 ease-in-out",
+          "bg-[var(--cl-surface)] fixed z-[101] grid w-full gap-4 shadow-lg duration-500 ease-in-out border-[var(--cl-border)]",
           // Mobile (Bottom Sheet)
           "bottom-0 left-0 right-0 top-auto translate-x-0 translate-y-0 rounded-t-3xl border-t p-6",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full",
           // Desktop (Centered)
-          "sm:top-[50%] sm:left-[50%] sm:bottom-auto sm:right-auto sm:max-w-lg sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-lg sm:border sm:zoom-in-95 sm:zoom-out-95",
+          "sm:top-[50%] sm:left-[50%] sm:bottom-auto sm:right-auto sm:max-w-lg sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-3xl sm:border sm:zoom-in-95 sm:zoom-out-95",
           "sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:slide-out-to-bottom-0",
           className,
         )}

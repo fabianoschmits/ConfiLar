@@ -44,7 +44,7 @@ export default function ConfiPointsRankingPage() {
   if (loading) {
     return (
       <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-gray-50 dark:bg-black">
+        <div className="min-h-screen bg-[var(--cl-paper)]">
           <div className="container py-4">
             <div className="mx-auto max-w-4xl">
               <div className="mb-8">
@@ -74,7 +74,7 @@ export default function ConfiPointsRankingPage() {
   if (error) {
     return (
       <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
+        <div className="min-h-screen bg-[var(--cl-paper)] flex items-center justify-center">
           <Card className="w-full max-w-md">
             <CardContent className="p-8 text-center">
               <Trophy className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
@@ -93,7 +93,7 @@ export default function ConfiPointsRankingPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-gray-50 dark:bg-black">
+      <div className="min-h-screen bg-[var(--cl-paper)]">
         <div className="container py-4">
           <div className="mx-auto max-w-4xl">
             {/* Header */}

@@ -72,7 +72,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
     return (
       <MainLayout requireAuth={false}>
-        <div className="bg-gray-50 dark:bg-black min-h-screen py-20">
+        <div className="bg-[var(--cl-paper)] min-h-screen py-20">
           <div className="max-w-7xl mx-auto px-4 text-center">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               Categoria "{serviceId}" não encontrada
@@ -207,7 +207,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="bg-gray-50 dark:bg-black min-h-screen py-12">
+      <div className="bg-[var(--cl-paper)] min-h-screen py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
             <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
