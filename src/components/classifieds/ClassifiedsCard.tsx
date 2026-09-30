@@ -213,7 +213,7 @@ export function ClassifiedsCard({
           <div className="min-w-0 flex-1">
             <Link href={`/perfil/${ad.user_id}`}>
               <div className="flex items-center gap-1.5 min-w-0">
-                <span className="font-semibold text-[15px] text-[var(--cl-ink)] dark:text-white truncate hover:underline">
+                <span className="font-semibold text-[15px] text-[var(--cl-ink)] truncate hover:underline">
                   {ad.user_name}
                 </span>
                 <ProVerifiedBadge
@@ -384,7 +384,7 @@ export function ClassifiedsCard({
               images.length > 0 && isImageExpanded && "col-span-2",
             )}
           >
-            <h3 className="text-[15px] sm:text-base font-bold text-[var(--cl-ink)] dark:text-white leading-snug line-clamp-2">
+            <h3 className="text-[15px] sm:text-base font-bold text-[var(--cl-ink)] leading-snug line-clamp-2">
               {ad.title}
             </h3>
             <p

@@ -409,7 +409,7 @@ export function SmartSearchBar({
         <div
           className={
             isClassifieds
-              ? "flex-1 relative min-w-0 bg-[var(--cl-mist,#eef0f3)] dark:bg-zinc-900 rounded-full border-0"
+              ? "flex-1 relative min-w-0 bg-[var(--cl-mist)] rounded-full border-0"
               : "flex-1 relative min-w-0"
           }
         >
@@ -420,7 +420,7 @@ export function SmartSearchBar({
                 : "flex items-center px-3 h-10"
             }
           >
-            <Search className="text-slate-400 dark:text-zinc-500 h-5 w-5 mr-3 shrink-0" />
+            <Search className="text-[var(--cl-ink-muted)] h-5 w-5 mr-3 shrink-0" />
             <Input
               ref={inputRef}
               value={query}
@@ -428,7 +428,7 @@ export function SmartSearchBar({
               onKeyDown={handleKeyPress}
               onFocus={() => setShowSuggestions(true)}
               placeholder={searchPlaceholder}
-              className="border-none focus-visible:ring-0 bg-transparent p-0 text-base h-full placeholder:text-slate-400 w-full"
+              className="border-none focus-visible:ring-0 bg-transparent p-0 text-base h-full placeholder:text-[var(--cl-ink-muted)] text-[var(--cl-ink)] w-full"
             />
             {query && (
               <button
@@ -473,7 +473,7 @@ export function SmartSearchBar({
               onClick={handleOpenFilters}
               className={
                 isClassifieds
-                  ? "h-12 w-12 p-0 rounded-[16px] border-0 bg-[var(--cl-mist,#eef0f3)] dark:bg-zinc-900 text-slate-600 dark:text-zinc-300 hover:brightness-95"
+                  ? "h-12 w-12 p-0 rounded-[16px] border-0 bg-[var(--cl-mist)] text-[var(--cl-ink-muted)] hover:brightness-95"
                   : "h-10 px-3 flex items-center gap-2 shrink-0 border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
               }
               aria-label="Filtros"

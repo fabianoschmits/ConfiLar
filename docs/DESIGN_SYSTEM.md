@@ -11,16 +11,16 @@
 
 | Token | Claro | Escuro | Uso |
 |-------|-------|--------|-----|
-| `--cl-ink` | `#1A202C` | `#F7FAFC` | Títulos, nomes, CTAs |
-| `--cl-ink-secondary` | `#4A5568` | `#CBD5E0` | Subtítulos, categorias |
-| `--cl-ink-muted` | `#718096` | `#94A3B8` | Meta, placeholders |
-| `--cl-paper` | `#F5F7F9` | `#0F172A` | Fundo da tela |
-| `--cl-surface` | `#FFFFFF` | `#1E293B` | Cards / modais |
-| `--cl-mist` | `#F0F2F5` | `#334155` | Busca, chips idle |
+| `--cl-ink` | `#1D2633` | `#F8FAFC` | Títulos, nomes, CTAs |
+| `--cl-ink-secondary` | `#4A5568` | `#CBD5E1` | Descrições, categorias |
+| `--cl-ink-muted` | `#718096` | `#94A3B8` | Meta, placeholders, localidade |
+| `--cl-paper` | `#F8F9FA` | `#000000` | Fundo da tela |
+| `--cl-surface` | `#FFFFFF` | `#18181B` | Cards / header / modais |
+| `--cl-mist` | `#F1F5F9` | `#27272A` | Busca, chips idle, tags |
 | `--cl-teal` | `#00B0B0` | `#00B0B0` | Brand / premium / ativo nav |
 | `--cl-service` / bg | verde | verde soft | Badge Serviço |
 | `--cl-request` / bg | azul | azul soft | Badge Pedido |
-| `--cl-shadow` | soft navy 6% | soft black 35% | Cards |
+| `--cl-shadow` | soft navy 6% | soft black 45% | Cards |
 
 ### Raios (hierarquia)
 

@@ -286,8 +286,8 @@ export function ModernSidebar() {
     const baseClass = cn(
       "group flex items-center px-4 py-2.5 text-sm transition-all duration-150 w-full text-left relative",
       active
-        ? "bg-[#00b0b0] text-white font-semibold"
-        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800",
+        ? "bg-[var(--cl-teal)] text-white font-semibold"
+        : "text-[var(--cl-ink-secondary)] hover:bg-[var(--cl-mist)]",
       isCollapsed ? "justify-center px-0" : "justify-between",
     );
 
@@ -304,7 +304,7 @@ export function ModernSidebar() {
               "flex-shrink-0",
               active
                 ? "text-white"
-                : "text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200",
+                : "text-[var(--cl-ink-muted)] group-hover:text-[var(--cl-ink)]",
             )}
           >
             {item.icon}
@@ -380,7 +380,7 @@ export function ModernSidebar() {
         {/* Logo area */}
         <div
           className={cn(
-            "flex items-center h-16 border-b border-gray-200 dark:border-gray-800 flex-shrink-0 relative",
+            "flex items-center h-16 border-b border-[var(--cl-border)] flex-shrink-0 relative",
             isCollapsed ? "justify-center" : "justify-between px-4",
           )}
         >

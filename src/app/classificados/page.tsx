@@ -704,7 +704,7 @@ export default function ClassificadosPage() {
   return (
     <ClientOnly>
       <MainLayout requireAuth={false}>
-        <div className="classifieds-page min-h-screen dark:bg-black">
+        <div className="classifieds-page min-h-screen">
           <div className="max-w-[720px] mx-auto px-3 sm:px-4 py-3 sm:py-4 pb-28">
             {/* Localidade — topo direita, como no mock */}
             <div className="flex items-center justify-end mb-3">
@@ -1171,14 +1171,14 @@ export default function ClassificadosPage() {
               open={showDeleteDialog}
               onOpenChange={setShowDeleteDialog}
             >
-              <AlertDialogContent className="bg-white dark:bg-black border border-gray-200 dark:border-gray-900">
+              <AlertDialogContent className="bg-[var(--cl-surface)] border border-[var(--cl-border)]">
                 <AlertDialogHeader>
-                  <AlertDialogTitle className="text-gray-900 dark:text-white">
+                  <AlertDialogTitle className="text-[var(--cl-ink)]">
                     {isSuperAdmin && !deletingAdIsOwner
                       ? "Deletar Anúncio (Super Admin)"
                       : "Deletar Anúncio"}
                   </AlertDialogTitle>
-                  <AlertDialogDescription className="text-gray-600 dark:text-gray-400">
+                  <AlertDialogDescription className="text-[var(--cl-ink-secondary)]">
                     {isSuperAdmin && !deletingAdIsOwner ? (
                       <>
                         Você está deletando este anúncio como{" "}
