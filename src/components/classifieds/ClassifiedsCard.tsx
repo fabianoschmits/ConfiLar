@@ -18,7 +18,6 @@ import {
   CheckCircle2,
   Megaphone,
   Tag,
-  Eye,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -123,12 +122,20 @@ export function ClassifiedsCard({
     .filter(Boolean)
     .join(" - ");
 
-  const timeLabel = ad.created_at
-    ? formatDistanceToNow(new Date(ad.created_at), {
-        addSuffix: true,
-        locale: ptBR,
-      })
-    : "";
+  const timeLabel = (() => {
+    if (!ad.created_at) return "";
+    const diffMs = Date.now() - new Date(ad.created_at).getTime();
+    const mins = Math.max(1, Math.floor(diffMs / 60000));
+    if (mins < 60) return `${mins}min atrás`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h atrás`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d atrás`;
+    return formatDistanceToNow(new Date(ad.created_at), {
+      addSuffix: true,
+      locale: ptBR,
+    });
+  })();
 
   const priceLabel = ad.price_range
     ? isOffer
@@ -182,7 +189,7 @@ export function ClassifiedsCard({
   return (
     <article
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-zinc-900 border border-transparent shadow-[0_2px_12px_rgba(15,23,42,0.06)] transition-all duration-300",
+        "group relative flex flex-col overflow-hidden rounded-[20px] bg-white dark:bg-zinc-900 border border-slate-100/80 dark:border-zinc-800 shadow-[0_2px_14px_rgba(15,23,42,0.06)] transition-all duration-300",
         isHighlighted &&
           "ring-2 ring-blue-400 dark:ring-blue-600 z-10 shadow-md",
         isActivePremium &&
@@ -273,7 +280,7 @@ export function ClassifiedsCard({
             {/* Type badge */}
             <span
               className={cn(
-                "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold",
+                "inline-flex items-center gap-1 rounded-xl px-2.5 py-1 text-[11px] font-semibold",
                 isOffer
                   ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
                   : "bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400",
@@ -356,22 +363,22 @@ export function ClassifiedsCard({
           </div>
         </div>
 
-        {/* Body: image + content */}
+        {/* Body: image + content (lado a lado como no mock) */}
         <div
           className={cn(
             "px-4 pb-3",
             images.length > 0
-              ? "grid grid-cols-1 sm:grid-cols-[minmax(0,42%)_1fr] gap-3 sm:gap-4"
+              ? "grid grid-cols-[118px_1fr] sm:grid-cols-[minmax(0,40%)_1fr] gap-3"
               : "",
           )}
         >
           {images.length > 0 && (
             <div
               className={cn(
-                "relative overflow-hidden rounded-xl bg-slate-100 dark:bg-zinc-800 cursor-pointer group/media",
+                "relative overflow-hidden rounded-2xl bg-slate-100 dark:bg-zinc-800 cursor-pointer group/media",
                 isImageExpanded
-                  ? "sm:col-span-2 aspect-auto"
-                  : "aspect-[4/3] sm:aspect-square",
+                  ? "col-span-2 aspect-auto"
+                  : "aspect-[4/3] sm:aspect-[5/4]",
               )}
               onClick={toggleImageExpand}
             >
@@ -403,7 +410,7 @@ export function ClassifiedsCard({
                   >
                     <ChevronRight className="w-7 h-7" />
                   </button>
-                  <div className="absolute bottom-2 right-2 bg-slate-900/70 text-white text-[11px] font-semibold px-2 py-0.5 rounded-md pointer-events-none">
+                  <div className="absolute bottom-2 right-2 bg-slate-900/70 text-white text-[11px] font-semibold px-2 py-0.5 rounded-lg pointer-events-none">
                     +{images.length - 1}
                   </div>
                 </>
@@ -414,25 +421,25 @@ export function ClassifiedsCard({
           <div
             className={cn(
               "flex flex-col min-w-0",
-              images.length > 0 && isImageExpanded && "sm:col-span-2",
+              images.length > 0 && isImageExpanded && "col-span-2",
             )}
           >
-            <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug line-clamp-2">
+            <h3 className="text-[15px] sm:text-lg font-bold text-slate-900 dark:text-white leading-snug line-clamp-2">
               {ad.title}
             </h3>
 
-            <div className="mt-1.5">
+            <div className="mt-1">
               <p
                 className={cn(
-                  "text-sm text-slate-600 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap",
-                  !showFullDescription && "line-clamp-3",
+                  "text-sm text-slate-500 dark:text-zinc-400 leading-relaxed whitespace-pre-wrap",
+                  !showFullDescription && "line-clamp-2 sm:line-clamp-3",
                 )}
               >
                 <MentionText text={description} />
               </p>
               {!showFullDescription &&
-                (description.length > 120 ||
-                  description.split("\n").length > 3) && (
+                (description.length > 100 ||
+                  description.split("\n").length > 2) && (
                   <button
                     onClick={(e) => {
                       e.preventDefault();
@@ -459,17 +466,17 @@ export function ClassifiedsCard({
             </div>
 
             {(tags.length > 0 || isActivePremium) && (
-              <div className="flex flex-wrap gap-1.5 mt-3">
+              <div className="flex flex-wrap gap-1.5 mt-2.5">
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 text-[11px] font-medium px-2.5 py-1"
+                    className="inline-flex items-center rounded-xl bg-[#eef0f3] dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 text-[11px] font-medium px-2.5 py-1"
                   >
                     {tag}
                   </span>
                 ))}
                 {isActivePremium && (
-                  <span className="inline-flex items-center rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-[11px] font-medium px-2.5 py-1">
+                  <span className="inline-flex items-center rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-[11px] font-medium px-2.5 py-1">
                     Destaque
                   </span>
                 )}
@@ -479,45 +486,44 @@ export function ClassifiedsCard({
         </div>
 
         {/* Footer */}
-        <div className="mt-auto px-4 py-3 flex items-center justify-between gap-2 border-t border-slate-100 dark:border-zinc-800">
-          <div className="flex items-center gap-3 text-slate-500 dark:text-zinc-400">
+        <div className="mt-auto px-4 py-3 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3.5 text-slate-500 dark:text-zinc-400">
             <button
               type="button"
               onClick={handleLikeClick}
               className={cn(
-                "inline-flex items-center gap-1 text-sm transition-colors",
+                "inline-flex items-center gap-1.5 text-sm transition-colors",
                 liked ? "text-rose-500" : "hover:text-rose-500",
               )}
               aria-label="Curtir"
             >
-              <Heart className={cn("h-4 w-4", liked && "fill-current")} />
-              <span className="tabular-nums">
-                {likesCount || viewsCount || 0}
+              <Heart
+                className={cn(
+                  "h-4 w-4",
+                  liked ? "fill-current text-rose-500" : "text-rose-400",
+                )}
+              />
+              <span className="tabular-nums text-slate-600 dark:text-zinc-300">
+                {likesCount}
               </span>
             </button>
             <button
               type="button"
               onClick={handleContactClick}
               disabled={isOwner}
-              className="inline-flex items-center gap-1 text-sm hover:text-sky-600 transition-colors disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 text-sm hover:text-sky-600 transition-colors disabled:opacity-40"
               aria-label="Conversar"
             >
               <MessageCircle className="h-4 w-4" />
-              <span className="tabular-nums hidden xs:inline">
-                {viewsCount > 0 ? viewsCount : ""}
-              </span>
-            </button>
-            {viewsCount > 0 && (
-              <span className="inline-flex items-center gap-1 text-xs text-slate-400">
-                <Eye className="h-3.5 w-3.5" />
+              <span className="tabular-nums text-slate-600 dark:text-zinc-300">
                 {viewsCount}
               </span>
-            )}
+            </button>
           </div>
 
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0">
             {priceLabel && (
-              <span className="hidden sm:inline-flex items-center gap-1 text-xs sm:text-sm font-medium text-slate-600 dark:text-zinc-300 truncate max-w-[140px] lg:max-w-[180px]">
+              <span className="hidden sm:inline-flex items-center gap-1 text-xs sm:text-sm font-medium text-slate-600 dark:text-zinc-300 truncate max-w-[150px] lg:max-w-[190px]">
                 <Tag className="h-3.5 w-3.5 shrink-0 text-slate-400" />
                 {priceLabel}
               </span>
@@ -528,8 +534,8 @@ export function ClassifiedsCard({
               disabled={isOwner}
               size="sm"
               className={cn(
-                "rounded-full px-4 h-9 font-semibold shadow-sm transition-all active:scale-[0.98]",
-                "bg-slate-800 hover:bg-slate-900 text-white dark:bg-zinc-100 dark:hover:bg-white dark:text-slate-900",
+                "rounded-xl px-4 h-9 font-semibold shadow-sm transition-all active:scale-[0.98]",
+                "bg-[#1e293b] hover:bg-slate-900 text-white dark:bg-zinc-100 dark:hover:bg-white dark:text-slate-900",
                 isOwner && "opacity-50 cursor-not-allowed",
               )}
             >
@@ -539,7 +545,6 @@ export function ClassifiedsCard({
           </div>
         </div>
 
-        {/* Price on mobile */}
         {priceLabel && (
           <div className="sm:hidden px-4 pb-3 -mt-1">
             <span className="inline-flex items-center gap-1 text-sm font-medium text-slate-600 dark:text-zinc-300">

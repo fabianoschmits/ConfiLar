@@ -124,6 +124,7 @@ import { PremiumTimeRemaining } from "@/components/classifieds/PremiumTimeRemain
 import { ReportButton } from "@/components/ReportButton";
 import { useTranslations } from "next-intl";
 import { UnifiedCreateAdForm } from "@/components/classifieds/UnifiedCreateAdForm";
+import { ClassifiedsLocationSelector } from "@/components/classifieds/ClassifiedsLocationSelector";
 import { useIsSuperAdmin } from "@/hooks/useAdmin";
 
 type AdType = "all" | "offers" | "requests";
@@ -703,9 +704,20 @@ export default function ClassificadosPage() {
   return (
     <ClientOnly>
       <MainLayout requireAuth={false}>
-        <div className="min-h-screen bg-[#f4f5f7] dark:bg-black">
-          <div className="max-w-3xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 pb-28">
-            <div className="mb-4">
+        <div className="min-h-screen bg-[#f3f4f6] dark:bg-black">
+          <div className="max-w-3xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-5 pb-28">
+            {/* Localidade — posição do mock (topo, à direita) */}
+            <div className="flex items-center justify-end mb-3 px-0.5">
+              <ClassifiedsLocationSelector
+                location={filters.location}
+                onChange={(next) => {
+                  setLocationFilter(next);
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
+
+            <div className="mb-3">
               <SmartSearchBar
                 onSearch={(query, newFilters) => {
                   updateFilters({
@@ -769,8 +781,9 @@ export default function ClassificadosPage() {
               />
             </div>
 
-            <div className="mb-5 -mx-1 px-1">
-              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
+            {/* Pills — cantos arredondados (não círculos) */}
+            <div className="mb-4 -mx-1 px-1">
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-0.5">
                 {[
                   { id: "all" as const, label: "Todos" },
                   { id: "offers" as const, label: "Serviços" },
@@ -790,10 +803,10 @@ export default function ClassificadosPage() {
                         setActiveTab(tab.id);
                         setCurrentPage(1);
                       }}
-                      className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all shrink-0 ${
+                      className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-medium whitespace-nowrap transition-all shrink-0 ${
                         isActive
-                          ? "bg-slate-800 text-white dark:bg-zinc-100 dark:text-slate-900 shadow-sm"
-                          : "bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-300 border border-slate-100 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800"
+                          ? "bg-[#1e293b] text-white dark:bg-zinc-100 dark:text-slate-900 shadow-sm"
+                          : "bg-[#e8eaed] dark:bg-zinc-800/80 text-slate-700 dark:text-zinc-300 hover:bg-[#dde0e4] dark:hover:bg-zinc-800"
                       }`}
                     >
                       {tab.label}
@@ -822,7 +835,7 @@ export default function ClassificadosPage() {
                         setItemsPerPage(parseInt(value))
                       }
                     >
-                      <SelectTrigger className="w-14 h-8 text-xs rounded-full bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-700">
+                      <SelectTrigger className="w-14 h-8 text-xs rounded-xl bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-700">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -1075,7 +1088,7 @@ export default function ClassificadosPage() {
                     size="sm"
                     onClick={() => goToPage(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="px-3 rounded-full"
+                    className="px-3 rounded-xl"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
@@ -1113,7 +1126,7 @@ export default function ClassificadosPage() {
                           }
                           size="sm"
                           onClick={() => goToPage(pageNumber)}
-                          className={`px-3 rounded-full ${
+                          className={`px-3 rounded-xl ${
                             currentPage === pageNumber
                               ? "bg-slate-800 text-white hover:bg-slate-900"
                               : ""
@@ -1130,7 +1143,7 @@ export default function ClassificadosPage() {
                     size="sm"
                     onClick={() => goToPage(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="px-3 rounded-full"
+                    className="px-3 rounded-xl"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
