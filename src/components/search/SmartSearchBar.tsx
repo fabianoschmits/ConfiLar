@@ -126,6 +126,22 @@ export function SmartSearchBar({
     return () => clearTimeout(timer);
   }, [query]);
 
+  const skipAutoSearchRef = useRef(true);
+  // Em classificados, aplica a busca automaticamente (sem botão Buscar)
+  useEffect(() => {
+    if (!isClassifieds) return;
+    if (skipAutoSearchRef.current) {
+      skipAutoSearchRef.current = false;
+      return;
+    }
+    setFilters((prev) => {
+      const searchFilters = { ...prev, searchTerm: debouncedQuery };
+      onSearch(debouncedQuery, searchFilters);
+      onFiltersChange(searchFilters);
+      return searchFilters;
+    });
+  }, [debouncedQuery, isClassifieds]);
+
   // Gerar sugestões baseadas na query
   useEffect(() => {
     if (!debouncedQuery || debouncedQuery.length < 2) {
@@ -376,37 +392,57 @@ export function SmartSearchBar({
     return chips;
   };
 
+  const searchPlaceholder = isClassifieds
+    ? placeholder || "O que você precisa?"
+    : placeholder || "Encontre serviços ou profissionais...";
+
   return (
     <div className={`relative ${className}`}>
-      {/* Barra de busca principal - Estilo Marketplace */}
-      <div className="flex flex-row items-center gap-2 bg-white dark:bg-gray-900 p-2 rounded-xl shadow-md border border-gray-200 dark:border-gray-800">
-        {/* Campo Único: Busca (Serviços, Profissionais, Localização indireta) */}
-        <div className="flex-1 relative min-w-0">
-          <div className="flex items-center px-3 h-10">
-            <Search className="text-gray-400 dark:text-gray-500 h-5 w-5 mr-3 shrink-0" />
+      {/* Barra de busca principal */}
+      <div
+        className={
+          isClassifieds
+            ? "flex flex-row items-center gap-2"
+            : "flex flex-row items-center gap-2 bg-white dark:bg-gray-900 p-2 rounded-xl shadow-md border border-gray-200 dark:border-gray-800"
+        }
+      >
+        <div
+          className={
+            isClassifieds
+              ? "flex-1 relative min-w-0 bg-white dark:bg-zinc-900 rounded-full shadow-[0_2px_10px_rgba(15,23,42,0.06)] border border-slate-100 dark:border-zinc-800"
+              : "flex-1 relative min-w-0"
+          }
+        >
+          <div
+            className={
+              isClassifieds
+                ? "flex items-center px-4 h-12"
+                : "flex items-center px-3 h-10"
+            }
+          >
+            <Search className="text-slate-400 dark:text-zinc-500 h-5 w-5 mr-3 shrink-0" />
             <Input
               ref={inputRef}
               value={query}
               onChange={(e) => handleInputChange(e.target.value)}
               onKeyDown={handleKeyPress}
               onFocus={() => setShowSuggestions(true)}
-              placeholder="Encontre serviços ou profissionais..."
-              className="border-none focus-visible:ring-0 bg-transparent p-0 text-base h-full placeholder:text-gray-400 w-full"
+              placeholder={searchPlaceholder}
+              className="border-none focus-visible:ring-0 bg-transparent p-0 text-base h-full placeholder:text-slate-400 w-full"
             />
             {query && (
               <button
                 onClick={() => setQuery("")}
-                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+                className="p-1 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-full"
               >
-                <X className="h-4 w-4 text-gray-400" />
+                <X className="h-4 w-4 text-slate-400" />
               </button>
             )}
           </div>
 
-          {/* Sugestões de Serviço */}
           {showSuggestions &&
             suggestions.filter((s) => s.type === "service").length > 0 && (
-              <Card className="absolute top-full left-0 right-0 mt-3 z-50 shadow-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 max-h-60 overflow-y-auto">
+              <Card className="absolute top-full left-0 right-0 mt-3 z-50 shadow-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 max-h-60 overflow-y-auto rounded-2xl overflow-hidden">
                 <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
                   Serviços Recomendados
                 </div>
@@ -430,25 +466,33 @@ export function SmartSearchBar({
             )}
         </div>
 
-        {/* Botão de Busca e Filtros Avançados */}
-        <div className="flex items-center gap-2 px-1">
+        <div className="flex items-center gap-2 shrink-0">
           {showAdvancedFilters && (
             <Button
               variant="outline"
               onClick={handleOpenFilters}
-              className={`h-10 px-3 flex items-center gap-2 shrink-0 border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400`}
+              className={
+                isClassifieds
+                  ? "h-12 w-12 p-0 rounded-2xl border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-300 shadow-[0_2px_10px_rgba(15,23,42,0.06)] hover:bg-slate-50 dark:hover:bg-zinc-800"
+                  : "h-10 px-3 flex items-center gap-2 shrink-0 border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
+              }
+              aria-label="Filtros"
             >
               <SlidersHorizontal className="h-4 w-4" />
-              <span className="hidden sm:inline">Filtros</span>
+              {!isClassifieds && (
+                <span className="hidden sm:inline">Filtros</span>
+              )}
             </Button>
           )}
-          <Button
-            onClick={handleSearch}
-            className="h-10 px-3 sm:px-6 bg-[#00b0b0] hover:bg-[#009090] text-white font-bold rounded-lg shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] shrink-0"
-          >
-            <Search className="h-4 w-4 sm:hidden" />
-            <span className="hidden sm:inline">Buscar</span>
-          </Button>
+          {!isClassifieds && (
+            <Button
+              onClick={handleSearch}
+              className="h-10 px-3 sm:px-6 bg-[#00b0b0] hover:bg-[#009090] text-white font-bold rounded-lg shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] shrink-0"
+            >
+              <Search className="h-4 w-4 sm:hidden" />
+              <span className="hidden sm:inline">Buscar</span>
+            </Button>
+          )}
         </div>
       </div>
 

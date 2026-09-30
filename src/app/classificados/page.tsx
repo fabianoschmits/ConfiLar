@@ -97,6 +97,8 @@ import {
   Sparkles,
   Loader2,
   MessageCircle,
+  Pencil,
+  ArrowUpDown,
 } from "lucide-react";
 import { FeedFilterModal } from "@/components/feed/FeedFilterModal";
 import { useIBGE } from "@/hooks/useIBGE";
@@ -143,15 +145,14 @@ export default function ClassificadosPage() {
   const [selectedAd, setSelectedAd] = useState<any>(null);
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [expandedUserProfiles, setExpandedUserProfiles] = useState<
     Record<string, boolean>
   >({});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(9);
-  const [activeTab, setActiveTab] = useState<"all" | "offers" | "requests">(
-    "all",
-  );
+  const [activeTab, setActiveTab] = useState<
+    "all" | "offers" | "requests" | "featured" | "recent"
+  >("all");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletingAdId, setDeletingAdId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -233,7 +234,15 @@ export default function ClassificadosPage() {
   };
 
   useEffect(() => {
-    setAdTypeFilter(activeTab);
+    if (
+      activeTab === "offers" ||
+      activeTab === "requests" ||
+      activeTab === "all"
+    ) {
+      setAdTypeFilter(activeTab);
+    } else {
+      setAdTypeFilter("all");
+    }
   }, [activeTab, setAdTypeFilter]);
 
   const { user, profile } = useAuthContext();
@@ -284,11 +293,31 @@ export default function ClassificadosPage() {
     return null;
   }
 
+  // Ordenação / abas extras (Destaques, Mais recentes)
+  const displayAds = (() => {
+    let ads = [...filteredAds];
+    if (activeTab === "featured") {
+      ads = ads.filter((ad) => {
+        const premiumExpired = ad.premium_expires_at
+          ? new Date(ad.premium_expires_at) < new Date()
+          : false;
+        return (ad.is_premium && !premiumExpired) || ad.is_featured;
+      });
+    }
+    if (activeTab === "recent") {
+      ads.sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+    }
+    return ads;
+  })();
+
   // Paginação
-  const totalPages = Math.ceil(filteredAds.length / itemsPerPage);
+  const totalPages = Math.ceil(displayAds.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedAds = filteredAds.slice(startIndex, endIndex);
+  const paginatedAds = displayAds.slice(startIndex, endIndex);
 
   // Função para atualizar filtros (compatibilidade)
   const updateFilters = (
@@ -674,13 +703,9 @@ export default function ClassificadosPage() {
   return (
     <ClientOnly>
       <MainLayout requireAuth={false}>
-        <div className="min-h-screen bg-gray-50 dark:bg-black">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            {/* Estatísticas Compactas */}
-            {/* Estatísticas - Card Compacto */}
-
-            {/* Barra de Busca Marketplace */}
-            <div className="mb-8">
+        <div className="min-h-screen bg-[#f4f5f7] dark:bg-black">
+          <div className="max-w-3xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 pb-28">
+            <div className="mb-4">
               <SmartSearchBar
                 onSearch={(query, newFilters) => {
                   updateFilters({
@@ -740,80 +765,54 @@ export default function ClassificadosPage() {
                 }}
                 showAdvancedFilters={true}
                 mode="classifieds"
+                placeholder="O que você precisa?"
               />
             </div>
 
-            {/* Abas de Filtro por Tipo de Anúncio */}
-            <div className="bg-gray-50 dark:bg-black py-3 mb-6 rounded-xl px-4 border-b border-gray-200 dark:border-gray-900">
-              <div className="flex justify-center w-full">
-                {/* Abas */}
-                <div className="flex items-center justify-center gap-1 sm:gap-2 overflow-x-auto w-full sm:w-auto scrollbar-hide">
-                  <button
-                    onClick={() => setActiveTab("all")}
-                    className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
-                      activeTab === "all"
-                        ? "bg-white dark:bg-gray-700 text-[#00b0b0] dark:text-[#00b0b0] shadow-sm"
-                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                    }`}
-                  >
-                    <Grid3X3 className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="text-xs sm:text-sm">Todos</span>
-                    <Badge
-                      variant="secondary"
-                      className="ml-0.5 sm:ml-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0"
+            <div className="mb-5 -mx-1 px-1">
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
+                {[
+                  { id: "all" as const, label: "Todos" },
+                  { id: "offers" as const, label: "Serviços" },
+                  { id: "requests" as const, label: "Pedidos" },
+                  { id: "featured" as const, label: "Destaques" },
+                  {
+                    id: "recent" as const,
+                    label: "Mais recentes",
+                    sort: true,
+                  },
+                ].map((tab) => {
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        setActiveTab(tab.id);
+                        setCurrentPage(1);
+                      }}
+                      className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all shrink-0 ${
+                        isActive
+                          ? "bg-slate-800 text-white dark:bg-zinc-100 dark:text-slate-900 shadow-sm"
+                          : "bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-300 border border-slate-100 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800"
+                      }`}
                     >
-                      {stats.total}
-                    </Badge>
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab("offers")}
-                    className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
-                      activeTab === "offers"
-                        ? "bg-white dark:bg-gray-700 text-[#00b0b0] dark:text-[#00b0b0] shadow-sm"
-                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                    }`}
-                  >
-                    <HandHeart className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="text-xs sm:text-sm">{t("offers")}</span>
-                    <Badge
-                      variant="secondary"
-                      className="ml-0.5 sm:ml-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0"
-                    >
-                      {stats.offers}
-                    </Badge>
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab("requests")}
-                    className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
-                      activeTab === "requests"
-                        ? "bg-white dark:bg-gray-700 text-[#00b0b0] dark:text-[#00b0b0] shadow-sm"
-                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                    }`}
-                  >
-                    <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="text-xs sm:text-sm">{t("requests")}</span>
-                    <Badge
-                      variant="secondary"
-                      className="ml-0.5 sm:ml-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0"
-                    >
-                      {stats.requests}
-                    </Badge>
-                  </button>
-                </div>
+                      {tab.label}
+                      {"sort" in tab && tab.sort && (
+                        <ArrowUpDown className="h-3.5 w-3.5 opacity-70" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Controles de Visualização e Botão Novo Anúncio */}
-            <div className="flex justify-between items-center mb-6 gap-1 sm:gap-4">
-              <div className="flex items-center gap-1 sm:gap-4">
-                {/* Seletor de itens por página - Mobile e Desktop */}
-                {!loading && filteredAds.length > 0 && (
-                  <div className="flex items-center gap-1 sm:gap-2">
+            <div className="flex justify-between items-center mb-4 gap-2">
+              <div className="flex items-center gap-2">
+                {!loading && displayAds.length > 0 && (
+                  <div className="flex items-center gap-1.5">
                     <label
                       htmlFor="itemsPerPage"
-                      className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap"
+                      className="text-xs text-slate-500 dark:text-zinc-400 whitespace-nowrap"
                     >
                       {t("porPagina")}
                     </label>
@@ -823,7 +822,7 @@ export default function ClassificadosPage() {
                         setItemsPerPage(parseInt(value))
                       }
                     >
-                      <SelectTrigger className="w-14 sm:w-20 h-7 sm:h-8 text-xs sm:text-sm">
+                      <SelectTrigger className="w-14 h-8 text-xs rounded-full bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-700">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -835,209 +834,173 @@ export default function ClassificadosPage() {
                     </Select>
                   </div>
                 )}
-              </div>
-
-              <div className="flex items-center gap-1 sm:gap-4">
-                {/* Botões Grid/List - Apenas Desktop */}
-                <div className="hidden sm:flex border border-gray-200 dark:border-gray-700 rounded-lg">
-                  <Button
-                    variant={viewMode === "grid" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setViewMode("grid")}
-                    className="rounded-r-none h-8 w-8 p-0"
-                  >
-                    <Grid3X3 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === "list" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setViewMode("list")}
-                    className="rounded-l-none h-8 w-8 p-0"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
-                {user && (
-                  <>
-                    <Button
-                      id="create-ad-button"
-                      size="sm"
-                      variant="outline"
-                      className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 text-[10px] sm:text-xs px-2 py-1.5 sm:px-3 sm:py-2 h-7 sm:h-8 whitespace-nowrap"
-                      onClick={handleOpenCreateDialog}
-                    >
-                      <Plus className="h-3 w-3 sm:mr-1 text-gray-700 dark:text-gray-300" />
-                      <span className="hidden sm:inline text-gray-900 dark:text-gray-100">
-                        Novo Anúncio
-                      </span>
-                      <span className="sm:hidden ml-0.5 text-gray-900 dark:text-gray-100">
-                        Novo
-                      </span>
-                    </Button>
-                    <ResponsiveModal
-                      isOpen={showCreateDialog}
-                      onOpenChange={setShowCreateDialog}
-                      fullContent={true}
-                      showCloseButton={false}
-                    >
-                      <UnifiedCreateAdForm
-                        onSubmit={handleCreateUnifiedAd}
-                        onCancel={() => setShowCreateDialog(false)}
-                        isLoading={isCreatingAd}
-                      />
-                    </ResponsiveModal>
-
-                    {/* Modal de Renovar Premium */}
-                    <ResponsiveModal
-                      isOpen={showRenewPremiumDialog}
-                      onOpenChange={setShowRenewPremiumDialog}
-                      title={
-                        <div className="flex items-center gap-2">
-                          <Crown className="h-5 w-5 text-yellow-600 dark:text-yellow-500" />
-                          <span>Renovar Anúncio Premium</span>
-                        </div>
-                      }
-                    >
-                      {renewingAdId && (
-                        <RenewPremiumAdForm
-                          adId={renewingAdId}
-                          adTitle={
-                            selectedAd?.title ||
-                            classifiedAds.find((ad) => ad.id === renewingAdId)
-                              ?.title ||
-                            "Anúncio"
-                          }
-                          onSubmit={() => {
-                            setShowRenewPremiumDialog(false);
-                            setRenewingAdId(null);
-                            setSelectedAd(null);
-                            // Recarregar anúncios
-                            loadClassifiedAds();
-                          }}
-                          onCancel={() => {
-                            setShowRenewPremiumDialog(false);
-                            setRenewingAdId(null);
-                          }}
-                        />
-                      )}
-                    </ResponsiveModal>
-
-                    {/* Dialog de Edição */}
-                    <ResponsiveModal
-                      isOpen={showEditDialog}
-                      onOpenChange={setShowEditDialog}
-                      fullContent={true}
-                      showCloseButton={false}
-                    >
-                      <UnifiedCreateAdForm
-                        initialData={{
-                          title: selectedAd?.title,
-                          description: selectedAd?.description,
-                          category: selectedAd?.category,
-                          ad_type:
-                            selectedAd?.ad_type === "oferecer"
-                              ? "offer"
-                              : "request",
-                          price: selectedAd?.price_range,
-                          images: selectedAd?.images,
-                          location_state: selectedAd?.location_state,
-                          location_city: selectedAd?.location_city,
-                          isPremium: selectedAd?.is_premium,
-                        }}
-                        onSubmit={async (data) => {
-                          if (!user || !editingAdId) return;
-                          try {
-                            setIsEditingAd(true);
-
-                            if (data.isPremium && !selectedAd?.is_premium) {
-                              // Caso o usuário esteja transformando um anúncio comum em premium (Upgrade)
-                              const response = await fetch(
-                                "/api/classifieds/premium",
-                                {
-                                  method: "POST",
-                                  headers: {
-                                    "Content-Type": "application/json",
-                                  },
-                                  credentials: "include",
-                                  body: JSON.stringify({
-                                    adId: editingAdId,
-                                    title: data.title,
-                                    description: data.description,
-                                    category: data.category,
-                                    ad_type: data.ad_type,
-                                    price: data.price,
-                                    images: data.images,
-                                    durationDays: data.durationDays,
-                                    pointsToSpend: data.pointsToSpend || 0,
-                                    useCreditType: data.useCreditType,
-                                    location_country: "BR",
-                                    location_state: data.location_state,
-                                    location_city: data.location_city,
-                                  }),
-                                },
-                              );
-
-                              const result = await response.json();
-
-                              if (!response.ok) {
-                                throw new Error(
-                                  result.error ||
-                                    "Erro ao fazer upgrade para premium",
-                                );
-                              }
-
-                              toast.success("Upgrade para Premium concluído!");
-                            } else {
-                              // Edição normal (ou já era premium e está apenas editando dados básicos)
-                              const updateData = {
-                                title: data.title,
-                                description: data.description,
-                                category: data.category,
-                                location_state: data.location_state,
-                                location_city: data.location_city,
-                                ad_type:
-                                  data.ad_type === "offer"
-                                    ? "oferecer"
-                                    : "procurar",
-                                images: data.images,
-                                price_range: data.price
-                                  ? data.price.toString()
-                                  : null,
-                              };
-
-                              const { error } = await supabase
-                                .from("classified_ads")
-                                .update(updateData)
-                                .eq("id", editingAdId)
-                                .eq("user_id", user.id);
-
-                              if (error) throw error;
-                              toast.success("Anúncio atualizado com sucesso!");
-                            }
-
-                            setShowEditDialog(false);
-                            setEditingAdId(null);
-                            setSelectedAd(null);
-                            await loadClassifiedAds();
-                          } catch (error: any) {
-                            console.error("Erro ao editar anúncio:", error);
-                            toast.error("Erro ao editar anúncio", {
-                              description: error?.message,
-                            });
-                          } finally {
-                            setIsEditingAd(false);
-                          }
-                        }}
-                        onCancel={() => setShowEditDialog(false)}
-                        isLoading={isEditingAd}
-                      />
-                    </ResponsiveModal>
-                  </>
+                {!loading && (
+                  <span className="text-xs text-slate-400 dark:text-zinc-500">
+                    {displayAds.length}{" "}
+                    {displayAds.length === 1 ? "anúncio" : "anúncios"}
+                  </span>
                 )}
               </div>
+
+              {user && (
+                <>
+                  <ResponsiveModal
+                    isOpen={showCreateDialog}
+                    onOpenChange={setShowCreateDialog}
+                    fullContent={true}
+                    showCloseButton={false}
+                  >
+                    <UnifiedCreateAdForm
+                      onSubmit={handleCreateUnifiedAd}
+                      onCancel={() => setShowCreateDialog(false)}
+                      isLoading={isCreatingAd}
+                    />
+                  </ResponsiveModal>
+
+                  <ResponsiveModal
+                    isOpen={showRenewPremiumDialog}
+                    onOpenChange={setShowRenewPremiumDialog}
+                    title={
+                      <div className="flex items-center gap-2">
+                        <Crown className="h-5 w-5 text-yellow-600 dark:text-yellow-500" />
+                        <span>Renovar Anúncio Premium</span>
+                      </div>
+                    }
+                  >
+                    {renewingAdId && (
+                      <RenewPremiumAdForm
+                        adId={renewingAdId}
+                        adTitle={
+                          selectedAd?.title ||
+                          classifiedAds.find((ad) => ad.id === renewingAdId)
+                            ?.title ||
+                          "Anúncio"
+                        }
+                        onSubmit={() => {
+                          setShowRenewPremiumDialog(false);
+                          setRenewingAdId(null);
+                          setSelectedAd(null);
+                          loadClassifiedAds();
+                        }}
+                        onCancel={() => {
+                          setShowRenewPremiumDialog(false);
+                          setRenewingAdId(null);
+                        }}
+                      />
+                    )}
+                  </ResponsiveModal>
+
+                  <ResponsiveModal
+                    isOpen={showEditDialog}
+                    onOpenChange={setShowEditDialog}
+                    fullContent={true}
+                    showCloseButton={false}
+                  >
+                    <UnifiedCreateAdForm
+                      initialData={{
+                        title: selectedAd?.title,
+                        description: selectedAd?.description,
+                        category: selectedAd?.category,
+                        ad_type:
+                          selectedAd?.ad_type === "oferecer"
+                            ? "offer"
+                            : "request",
+                        price: selectedAd?.price_range,
+                        images: selectedAd?.images,
+                        location_state: selectedAd?.location_state,
+                        location_city: selectedAd?.location_city,
+                        isPremium: selectedAd?.is_premium,
+                      }}
+                      onSubmit={async (data) => {
+                        if (!user || !editingAdId) return;
+                        try {
+                          setIsEditingAd(true);
+
+                          if (data.isPremium && !selectedAd?.is_premium) {
+                            const response = await fetch(
+                              "/api/classifieds/premium",
+                              {
+                                method: "POST",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                },
+                                credentials: "include",
+                                body: JSON.stringify({
+                                  adId: editingAdId,
+                                  title: data.title,
+                                  description: data.description,
+                                  category: data.category,
+                                  ad_type: data.ad_type,
+                                  price: data.price,
+                                  images: data.images,
+                                  durationDays: data.durationDays,
+                                  pointsToSpend: data.pointsToSpend || 0,
+                                  useCreditType: data.useCreditType,
+                                  location_country: "BR",
+                                  location_state: data.location_state,
+                                  location_city: data.location_city,
+                                }),
+                              },
+                            );
+
+                            const result = await response.json();
+
+                            if (!response.ok) {
+                              throw new Error(
+                                result.error ||
+                                  "Erro ao fazer upgrade para premium",
+                              );
+                            }
+
+                            toast.success("Upgrade para Premium concluído!");
+                          } else {
+                            const updateData = {
+                              title: data.title,
+                              description: data.description,
+                              category: data.category,
+                              location_state: data.location_state,
+                              location_city: data.location_city,
+                              ad_type:
+                                data.ad_type === "offer"
+                                  ? "oferecer"
+                                  : "procurar",
+                              images: data.images,
+                              price_range: data.price
+                                ? data.price.toString()
+                                : null,
+                            };
+
+                            const { error } = await supabase
+                              .from("classified_ads")
+                              .update(updateData)
+                              .eq("id", editingAdId)
+                              .eq("user_id", user.id);
+
+                            if (error) throw error;
+                            toast.success("Anúncio atualizado com sucesso!");
+                          }
+
+                          setShowEditDialog(false);
+                          setEditingAdId(null);
+                          setSelectedAd(null);
+                          await loadClassifiedAds();
+                        } catch (error: any) {
+                          console.error("Erro ao editar anúncio:", error);
+                          toast.error("Erro ao editar anúncio", {
+                            description: error?.message,
+                          });
+                        } finally {
+                          setIsEditingAd(false);
+                        }
+                      }}
+                      onCancel={() => setShowEditDialog(false)}
+                      isLoading={isEditingAd}
+                    />
+                  </ResponsiveModal>
+                </>
+              )}
             </div>
 
-            {/* Grid de Anúncios */}
             <div
               ref={(el) => {
                 // @ts-ignore
@@ -1055,7 +1018,7 @@ export default function ClassificadosPage() {
               />
 
               {loading ? (
-                <ClassifiedsListSkeleton viewMode={viewMode} />
+                <ClassifiedsListSkeleton viewMode="list" />
               ) : paginatedAds.length === 0 ? (
                 <EmptyState
                   icon={<Search className="h-12 w-12 text-gray-400" />}
@@ -1064,7 +1027,8 @@ export default function ClassificadosPage() {
                     filters.searchTerm ||
                     filters.location.state ||
                     filters.location.city ||
-                    filters.category !== "all"
+                    filters.category !== "all" ||
+                    activeTab === "featured"
                       ? t("noResultsDescription")
                       : t("noAdsDescription")
                   }
@@ -1081,10 +1045,8 @@ export default function ClassificadosPage() {
                   }
                 />
               ) : (
-                <div
-                  className={`grid gap-5 sm:gap-6 ${viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}
-                >
-                  {paginatedAds.map((ad, index) => (
+                <div className="flex flex-col gap-4">
+                  {paginatedAds.map((ad) => (
                     <div key={ad.id} id={`ad-${ad.id}`}>
                       <ClassifiedsCard
                         ad={ad}
@@ -1096,8 +1058,8 @@ export default function ClassificadosPage() {
                         }}
                         isDeleting={isDeleting && deletingAdId === ad.id}
                         isHighlighted={ad.id === highlightAdId}
-                        onShare={(ad) => {
-                          setAdToShare(ad);
+                        onShare={(sharedAd) => {
+                          setAdToShare(sharedAd);
                           setShareModalOpen(true);
                         }}
                       />
@@ -1106,21 +1068,18 @@ export default function ClassificadosPage() {
                 </div>
               )}
 
-              {/* Paginação */}
               {!loading && totalPages > 1 && (
                 <div className="flex items-center justify-center mt-8 space-x-1">
-                  {/* Botão Anterior */}
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => goToPage(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="px-3"
+                    className="px-3 rounded-full"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
 
-                  {/* Números das páginas */}
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                     (pageNumber) => {
                       const shouldShow =
@@ -1154,9 +1113,9 @@ export default function ClassificadosPage() {
                           }
                           size="sm"
                           onClick={() => goToPage(pageNumber)}
-                          className={`px-3 ${
+                          className={`px-3 rounded-full ${
                             currentPage === pageNumber
-                              ? "bg-blue-600 text-white hover:bg-blue-700"
+                              ? "bg-slate-800 text-white hover:bg-slate-900"
                               : ""
                           }`}
                         >
@@ -1166,30 +1125,39 @@ export default function ClassificadosPage() {
                     },
                   )}
 
-                  {/* Botão Próximo */}
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => goToPage(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="px-3"
+                    className="px-3 rounded-full"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
               )}
 
-              {/* Info da paginação */}
-              {!loading && filteredAds.length > 0 && (
-                <div className="text-center mt-4 text-sm text-gray-600">
+              {!loading && displayAds.length > 0 && (
+                <div className="text-center mt-4 text-sm text-slate-500 dark:text-zinc-400">
                   {t("mostrando")} {startIndex + 1} a{" "}
-                  {Math.min(endIndex, filteredAds.length)} {t("de")}{" "}
-                  {filteredAds.length} {t("resultadosPlural")}
+                  {Math.min(endIndex, displayAds.length)} {t("de")}{" "}
+                  {displayAds.length} {t("resultadosPlural")}
                 </div>
               )}
             </div>
 
-            {/* Modais de controle */}
+            {user && (
+              <button
+                id="create-ad-button"
+                type="button"
+                onClick={handleOpenCreateDialog}
+                className="fixed bottom-24 right-4 sm:bottom-8 sm:right-8 z-40 h-14 w-14 rounded-full bg-slate-800 hover:bg-slate-900 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-slate-900 shadow-lg shadow-slate-900/25 flex items-center justify-center transition-transform active:scale-95"
+                aria-label="Novo anúncio"
+              >
+                <Pencil className="h-5 w-5" />
+              </button>
+            )}
+
             <AlertDialog
               open={showDeleteDialog}
               onOpenChange={setShowDeleteDialog}

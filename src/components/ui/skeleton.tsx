@@ -298,52 +298,42 @@ export function PackageSkeleton() {
 // Skeleton para card de anúncio classificado
 export function ClassifiedsCardSkeleton() {
   return (
-    <div className="border border-gray-100 dark:border-gray-800 rounded-[2.5rem] overflow-hidden shadow-sm animate-fade-in bg-white dark:bg-gray-900 border-2">
-      {/* 1. Header: Avatar + User Info */}
-      <div className="px-5 py-4">
-        <div className="flex items-center gap-3">
-          <Skeleton variant="circle" width={44} height={44} />
-          <div className="space-y-1.5 flex-1">
-            <div className="flex items-center gap-1">
-              <Skeleton width="60%" height={20} className="rounded" />
-              <Skeleton width={12} height={12} variant="circle" />
-            </div>
+    <div className="rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(15,23,42,0.06)] animate-fade-in bg-white dark:bg-zinc-900">
+      <div className="px-4 pt-4 pb-3 flex items-start gap-3">
+        <Skeleton variant="circle" width={44} height={44} />
+        <div className="space-y-1.5 flex-1">
+          <Skeleton width="45%" height={16} className="rounded" />
+          <Skeleton width="35%" height={12} className="rounded" />
+          <Skeleton width="55%" height={10} className="rounded" />
+        </div>
+        <Skeleton width={70} height={24} className="rounded-full" />
+      </div>
+
+      <div className="px-4 pb-3 grid grid-cols-1 sm:grid-cols-[42%_1fr] gap-3">
+        <Skeleton width="100%" height={160} className="rounded-xl" />
+        <div className="space-y-2 py-1">
+          <Skeleton width="80%" height={20} className="rounded" />
+          <Skeleton width="100%" height={12} />
+          <Skeleton width="90%" height={12} />
+          <Skeleton width="60%" height={12} />
+          <div className="flex gap-1.5 pt-2">
+            <Skeleton width={56} height={22} className="rounded-full" />
+            <Skeleton width={56} height={22} className="rounded-full" />
           </div>
         </div>
       </div>
 
-      {/* 2. Content Info: Tags & Time */}
-      <div className="px-5 py-3 flex flex-wrap items-center gap-2">
-        <Skeleton width={60} height={24} className="rounded-full" />
-        <Skeleton width={100} height={24} className="rounded-full" />
-        <Skeleton width={80} height={24} className="rounded-full" />
-        <Skeleton width={60} height={14} className="ml-auto" />
-      </div>
-
-      {/* 3. Main Content: Title & Media */}
-      <div className="px-5 pb-4 space-y-3">
-        <Skeleton width="70%" height={28} className="rounded" />
-        <div className="aspect-[4/3] w-full rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800">
-          <Skeleton width="100%" height="100%" className="rounded-none" />
+      <div className="px-4 py-3 border-t border-slate-100 dark:border-zinc-800 flex justify-between">
+        <div className="flex gap-3">
+          <Skeleton width={40} height={20} className="rounded" />
+          <Skeleton width={40} height={20} className="rounded" />
         </div>
-
-        {/* Description */}
-        <div className="space-y-2 py-2">
-          <Skeleton width="100%" height={14} />
-          <Skeleton width="90%" height={14} />
-          <Skeleton width="60%" height={14} />
-        </div>
-      </div>
-
-      {/* 4. Footer: Call to action */}
-      <div className="px-5 py-6 border-t border-gray-100 dark:border-gray-800 flex justify-end">
-        <Skeleton width={130} height={48} className="rounded-full" />
+        <Skeleton width={96} height={36} className="rounded-full" />
       </div>
     </div>
   );
 }
 
-// Skeleton para lista de anúncios classificados
 export function ClassifiedsListSkeleton({
   viewMode = "grid",
 }: {
@@ -352,7 +342,7 @@ export function ClassifiedsListSkeleton({
   const count = viewMode === "grid" ? 6 : 4;
   return (
     <div
-      className={`grid gap-6 ${viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}
+      className={`grid gap-4 ${viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}
     >
       {Array.from({ length: count }).map((_, i) => (
         <ClassifiedsCardSkeleton key={i} />
