@@ -106,11 +106,11 @@ export function PremiumPostForm({
       ...(isRenewal
         ? {}
         : {
-          title: formData.title,
-          description: formData.description,
-          images: formData.images,
-          service: formData.service,
-        }),
+            title: formData.title,
+            description: formData.description,
+            images: formData.images,
+            service: formData.service,
+          }),
       pointsToSpend: formData.pointsToSpend,
       durationDays: formData.durationDays,
     });
@@ -209,10 +209,11 @@ export function PremiumPostForm({
             {premiumOptions.map((option) => (
               <Card
                 key={option.points}
-                className={`cursor-pointer transition-all ${formData.pointsToSpend === option.points
+                className={`cursor-pointer transition-all ${
+                  formData.pointsToSpend === option.points
                     ? "ring-2 ring-[var(--cl-teal)] bg-[var(--cl-teal)]/5 dark:bg-[var(--cl-teal)]/10 border-[var(--cl-teal)]/30 dark:border-[var(--cl-teal)]/50 shadow-[0_0_15px_rgba(0,176,176,0.1)]"
                     : "hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-700"
-                  } ${!canAfford && option.points > (balance?.balance || 0) ? "opacity-50" : ""}`}
+                } ${!canAfford && option.points > (balance?.balance || 0) ? "opacity-50" : ""}`}
                 onClick={() => {
                   if (canAfford || option.points <= (balance?.balance || 0)) {
                     setFormData((prev) => ({

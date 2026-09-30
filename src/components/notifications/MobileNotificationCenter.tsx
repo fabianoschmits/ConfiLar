@@ -247,11 +247,19 @@ function SwipeableNotificationItem({
 
 // Ícones e cores otimizados para mobile
 const NOTIFICATION_CONFIG = {
-  message: { icon: MessageCircle, color: "bg-blue-500", bg: "bg-[var(--cl-mist)]" },
+  message: {
+    icon: MessageCircle,
+    color: "bg-blue-500",
+    bg: "bg-[var(--cl-mist)]",
+  },
   review: { icon: Star, color: "bg-yellow-500", bg: "bg-yellow-50" },
   booking: { icon: Calendar, color: "bg-green-500", bg: "bg-green-50" },
   system: { icon: Settings, color: "bg-gray-500", bg: "bg-gray-50" },
-  achievement: { icon: Trophy, color: "bg-[var(--cl-teal)]", bg: "bg-[var(--cl-mist)]" },
+  achievement: {
+    icon: Trophy,
+    color: "bg-[var(--cl-teal)]",
+    bg: "bg-[var(--cl-mist)]",
+  },
   verification: { icon: Shield, color: "bg-indigo-500", bg: "bg-indigo-50" },
   success: { icon: Check, color: "bg-emerald-500", bg: "bg-emerald-50" },
   warning: { icon: AlertCircle, color: "bg-orange-500", bg: "bg-orange-50" },

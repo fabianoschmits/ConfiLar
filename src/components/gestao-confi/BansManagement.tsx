@@ -1100,7 +1100,9 @@ export function BansManagement() {
                       <div>
                         <p>
                           <strong className="text-blue-800">Status:</strong>{" "}
-                          <span className="text-[var(--cl-teal)]">Em Revisão</span>
+                          <span className="text-[var(--cl-teal)]">
+                            Em Revisão
+                          </span>
                         </p>
                       </div>
                     </div>

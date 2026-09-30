@@ -279,7 +279,11 @@ export const FloatingProfile: React.FC = () => {
                       setIsExpanded(false);
                     }}
                   >
-                    <Gear size={14} weight="light" className="text-[var(--cl-teal)]" />
+                    <Gear
+                      size={14}
+                      weight="light"
+                      className="text-[var(--cl-teal)]"
+                    />
                     <span className="font-semibold text-[var(--cl-teal)]">
                       Gerenciar Perfil
                     </span>

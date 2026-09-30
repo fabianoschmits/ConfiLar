@@ -143,7 +143,8 @@ export function AdminSidebar({ onNavigate }: AdminSidebarProps) {
                         <Icon
                           className={cn(
                             "mr-2.5 h-4 w-4",
-                            isActive && "text-[var(--cl-teal)] dark:text-blue-400",
+                            isActive &&
+                              "text-[var(--cl-teal)] dark:text-blue-400",
                           )}
                         />
                         <span className="flex-1 truncate">{item.label}</span>

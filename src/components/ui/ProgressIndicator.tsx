@@ -39,7 +39,10 @@ export function ProgressIndicator({
         )}
       >
         <Loader2
-          className={cn("animate-spin text-[var(--cl-teal)]", sizeClasses[size])}
+          className={cn(
+            "animate-spin text-[var(--cl-teal)]",
+            sizeClasses[size],
+          )}
         />
         {message && (
           <p

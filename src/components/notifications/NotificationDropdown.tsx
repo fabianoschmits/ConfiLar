@@ -73,7 +73,10 @@ const getNotificationIcon = (type: string) => {
     case "verification":
       return (
         <Shield
-          className={cn(iconClass, "text-purple-500 dark:text-[var(--cl-teal)]")}
+          className={cn(
+            iconClass,
+            "text-purple-500 dark:text-[var(--cl-teal)]",
+          )}
         />
       );
     case "support":

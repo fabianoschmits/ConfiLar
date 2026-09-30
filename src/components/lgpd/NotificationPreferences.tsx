@@ -122,7 +122,9 @@ export function NotificationPreferences() {
                       className="flex items-center justify-between p-3 border rounded-lg"
                     >
                       <div className="flex items-center space-x-3">
-                        <div className="text-[var(--cl-teal)]">{option.icon}</div>
+                        <div className="text-[var(--cl-teal)]">
+                          {option.icon}
+                        </div>
                         <div>
                           <h5 className="font-medium text-gray-900">
                             {option.title}

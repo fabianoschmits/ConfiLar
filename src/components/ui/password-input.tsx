@@ -4,8 +4,7 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface PasswordInputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+interface PasswordInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
 }
 

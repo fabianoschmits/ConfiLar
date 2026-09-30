@@ -44,7 +44,9 @@ export function AdminPageHeader({
               </Button>
             )}
             <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
-              {Icon && <Icon className="sm:hidden h-5 w-5 text-[var(--cl-teal)]" />}
+              {Icon && (
+                <Icon className="sm:hidden h-5 w-5 text-[var(--cl-teal)]" />
+              )}
               {title}
             </h2>
             {description && (

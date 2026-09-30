@@ -188,12 +188,12 @@ export function PostCard({
   const youtubeVideoId = (post.metadata as any)?.youtube_video_id || null;
   const youtubeVideos = youtubeVideoId
     ? [
-      {
-        id: youtubeVideoId,
-        url: (post.metadata as any)?.youtube_video_url || "",
-        thumbnail: `https://img.youtube.com/vi/${youtubeVideoId}/maxresdefault.jpg`,
-      },
-    ]
+        {
+          id: youtubeVideoId,
+          url: (post.metadata as any)?.youtube_video_url || "",
+          thumbnail: `https://img.youtube.com/vi/${youtubeVideoId}/maxresdefault.jpg`,
+        },
+      ]
     : detectYouTubeUrls(post.description || "");
   const cleanDescription = removeYouTubeUrls(post.description || "");
 
@@ -245,12 +245,13 @@ export function PostCard({
   return (
     <article
       id={`post-${post.id}`}
-      className={`relative bg-[var(--cl-surface)] border rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 scroll-mt-24 ${isHighlighted
-        ? "border-blue-400 dark:border-blue-700 z-10 shadow-lg shadow-blue-500/20"
-        : isActivePremium
-          ? "ring-2 ring-[var(--cl-teal)]/50 dark:ring-[var(--cl-teal)]/40 border-[var(--cl-teal)]/30 dark:border-[var(--cl-teal)]/20 bg-gradient-to-br from-[var(--cl-teal)]/5 to-transparent dark:from-[var(--cl-teal)]/10 dark:to-transparent shadow-[0_15px_40px_-15px_rgba(0,176,176,0.4)] dark:shadow-[0_15px_40px_-15px_rgba(0,176,176,0.2)] premium-border-shine"
-          : "border-gray-200 dark:border-gray-800"
-        }`}
+      className={`relative bg-[var(--cl-surface)] border rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 scroll-mt-24 ${
+        isHighlighted
+          ? "border-blue-400 dark:border-blue-700 z-10 shadow-lg shadow-blue-500/20"
+          : isActivePremium
+            ? "ring-2 ring-[var(--cl-teal)]/50 dark:ring-[var(--cl-teal)]/40 border-[var(--cl-teal)]/30 dark:border-[var(--cl-teal)]/20 bg-gradient-to-br from-[var(--cl-teal)]/5 to-transparent dark:from-[var(--cl-teal)]/10 dark:to-transparent shadow-[0_15px_40px_-15px_rgba(0,176,176,0.4)] dark:shadow-[0_15px_40px_-15px_rgba(0,176,176,0.2)] premium-border-shine"
+            : "border-gray-200 dark:border-gray-800"
+      }`}
     >
       {isHighlighted && (
         <div className="absolute inset-0 rounded-xl ring-4 ring-blue-500 dark:ring-blue-600 animate-pulse pointer-events-none z-10 shadow-[0_0_20px_rgba(59,130,246,0.5)]" />
@@ -427,10 +428,11 @@ export function PostCard({
               className="min-h-[44px] min-w-[44px] p-2 transition-transform active:scale-125 disabled:opacity-50 flex items-center gap-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <Heart
-                className={`h-5 w-5 transition-all ${isLikedByUser
-                  ? "text-red-500 fill-red-500"
-                  : "text-gray-700 dark:text-gray-300"
-                  }`}
+                className={`h-5 w-5 transition-all ${
+                  isLikedByUser
+                    ? "text-red-500 fill-red-500"
+                    : "text-gray-700 dark:text-gray-300"
+                }`}
               />
               <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
                 {likesCount > 0 ? likesCount.toLocaleString("pt-BR") : "0"}
@@ -457,10 +459,11 @@ export function PostCard({
               className="min-h-[44px] min-w-[44px] p-2 transition-transform active:scale-125 flex items-center gap-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <MessageCircle
-                className={`h-5 w-5 transition-all ${showComments
-                  ? "text-primary-600 dark:text-primary-400"
-                  : "text-gray-700 dark:text-gray-300"
-                  }`}
+                className={`h-5 w-5 transition-all ${
+                  showComments
+                    ? "text-primary-600 dark:text-primary-400"
+                    : "text-gray-700 dark:text-gray-300"
+                }`}
               />
               <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
                 {(commentsCount ?? 0).toLocaleString("pt-BR")}
