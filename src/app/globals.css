@@ -9,7 +9,6 @@
 }
 
 @layer base {
-
   h1,
   h2,
   h3,
@@ -55,7 +54,6 @@
 
 /* Animações customizadas para cards de classificados */
 @keyframes glow-blue {
-
   0%,
   100% {
     box-shadow:
@@ -75,7 +73,6 @@
 }
 
 @keyframes glow-emerald {
-
   0%,
   100% {
     box-shadow:
@@ -245,19 +242,23 @@
 }
 
 .skeleton-shimmer {
-  background: linear-gradient(90deg,
-      rgba(229, 231, 235, 1) 25%,
-      rgba(243, 244, 246, 1) 37%,
-      rgba(229, 231, 235, 1) 63%);
+  background: linear-gradient(
+    90deg,
+    rgba(229, 231, 235, 1) 25%,
+    rgba(243, 244, 246, 1) 37%,
+    rgba(229, 231, 235, 1) 63%
+  );
   background-size: 200% 100%;
   animation: shimmer-modern 1.5s infinite linear;
 }
 
 .dark .skeleton-shimmer {
-  background: linear-gradient(90deg,
-      rgba(39, 39, 42, 1) 25%,
-      rgba(51, 51, 56, 1) 37%,
-      rgba(39, 39, 42, 1) 63%);
+  background: linear-gradient(
+    90deg,
+    rgba(39, 39, 42, 1) 25%,
+    rgba(51, 51, 56, 1) 37%,
+    rgba(39, 39, 42, 1) 63%
+  );
   background-size: 200% 100%;
 }
 
@@ -281,12 +282,14 @@
   inset: 0;
   border-radius: inherit;
   padding: 3.5px;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(0, 176, 176, 0.4) 30%,
-      rgba(255, 255, 255, 1) 50%,
-      rgba(0, 176, 176, 0.4) 70%,
-      transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 176, 176, 0.4) 30%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(0, 176, 176, 0.4) 70%,
+    transparent 100%
+  );
   background-size: 200% 100%;
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
@@ -501,7 +504,6 @@ html {
 
 /* Modern Design System Components */
 @layer components {
-
   /* Modern Card */
   .modern-card {
     @apply bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200;
@@ -649,15 +651,15 @@ textarea {
   }
 
   /* Better spacing for mobile */
-  .space-y-4>*+* {
+  .space-y-4 > * + * {
     margin-top: 1rem;
   }
 
-  .space-y-6>*+* {
+  .space-y-6 > * + * {
     margin-top: 1.5rem;
   }
 
-  .space-y-8>*+* {
+  .space-y-8 > * + * {
     margin-top: 2rem;
   }
 
@@ -1344,4 +1346,134 @@ textarea {
   transition:
     opacity 300ms,
     transform 300ms;
+}
+
+/* =====================================================
+   Classificados — tokens do mock ConfiLar (frontend-design)
+   Brief: marketplace local de confiança; navy + névoa; Gilroy
+   ===================================================== */
+.classifieds-page {
+  --cl-ink: #1a2332;
+  --cl-paper: #f3f4f6;
+  --cl-surface: #ffffff;
+  --cl-mist: #eef0f3;
+  --cl-border: #e8eaed;
+  --cl-muted: #6b7280;
+  --cl-service: #15803d;
+  --cl-service-bg: #dcfce7;
+  --cl-request: #1d4ed8;
+  --cl-request-bg: #dbeafe;
+  --cl-heart: #ef4444;
+  --cl-teal: #00b0b0;
+  --cl-shadow: 0 2px 12px rgba(26, 35, 50, 0.06);
+  --cl-radius-card: 18px;
+  --cl-radius-pill: 9999px;
+  --cl-radius-control: 16px;
+  background: var(--cl-paper);
+  color: var(--cl-ink);
+  font-family: "Gilroy", system-ui, sans-serif;
+}
+
+.dark .classifieds-page {
+  --cl-ink: #f3f4f6;
+  --cl-paper: #000000;
+  --cl-surface: #18181b;
+  --cl-mist: #27272a;
+  --cl-border: #3f3f46;
+  --cl-muted: #a1a1aa;
+  --cl-service: #4ade80;
+  --cl-service-bg: rgba(34, 197, 94, 0.15);
+  --cl-request: #60a5fa;
+  --cl-request-bg: rgba(59, 130, 246, 0.15);
+  --cl-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+
+.classifieds-card {
+  border-radius: var(--cl-radius-card);
+}
+
+.classifieds-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 2.25rem;
+  padding: 0 1rem;
+  border-radius: var(--cl-radius-pill);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.classifieds-chip--active {
+  background: var(--cl-ink);
+  color: #fff;
+}
+
+.dark .classifieds-chip--active {
+  background: #f4f4f5;
+  color: #18181b;
+}
+
+.classifieds-chip--idle {
+  background: var(--cl-mist);
+  color: var(--cl-ink);
+}
+
+.classifieds-chip--idle:hover {
+  filter: brightness(0.97);
+}
+
+.classifieds-tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--cl-radius-pill);
+  background: var(--cl-mist);
+  color: var(--cl-muted);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  padding: 0.25rem 0.625rem;
+}
+
+.classifieds-cta {
+  border-radius: var(--cl-radius-pill) !important;
+  height: 2.25rem !important;
+  padding-left: 1rem !important;
+  padding-right: 0.875rem !important;
+  background: var(--cl-ink) !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+
+.dark .classifieds-cta {
+  background: #f4f4f5 !important;
+  color: #18181b !important;
+}
+
+.classifieds-cta:hover {
+  filter: brightness(1.08);
+}
+
+.classifieds-fab {
+  border-radius: var(--cl-radius-pill);
+  background: var(--cl-ink);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(26, 35, 50, 0.28);
+}
+
+.dark .classifieds-fab {
+  background: #f4f4f5;
+  color: #18181b;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .classifieds-chip,
+  .classifieds-cta,
+  .classifieds-fab {
+    transition: none;
+  }
 }

@@ -409,7 +409,7 @@ export function SmartSearchBar({
         <div
           className={
             isClassifieds
-              ? "flex-1 relative min-w-0 bg-[#eef0f3] dark:bg-zinc-900 rounded-2xl border border-transparent dark:border-zinc-800"
+              ? "flex-1 relative min-w-0 bg-[var(--cl-mist,#eef0f3)] dark:bg-zinc-900 rounded-full border-0"
               : "flex-1 relative min-w-0"
           }
         >
@@ -473,7 +473,7 @@ export function SmartSearchBar({
               onClick={handleOpenFilters}
               className={
                 isClassifieds
-                  ? "h-12 w-12 p-0 rounded-2xl border-0 bg-[#eef0f3] dark:bg-zinc-900 text-slate-600 dark:text-zinc-300 hover:bg-[#e2e5ea] dark:hover:bg-zinc-800"
+                  ? "h-12 w-12 p-0 rounded-[16px] border-0 bg-[var(--cl-mist,#eef0f3)] dark:bg-zinc-900 text-slate-600 dark:text-zinc-300 hover:brightness-95"
                   : "h-10 px-3 flex items-center gap-2 shrink-0 border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
               }
               aria-label="Filtros"

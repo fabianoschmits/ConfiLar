@@ -14,7 +14,6 @@ import {
   Heart,
   ChevronLeft,
   ChevronRight,
-  ChevronRight as ChevronRightIcon,
   CheckCircle2,
   Megaphone,
   Tag,
@@ -50,24 +49,31 @@ interface ClassifiedsCardProps {
   onShare?: (ad: any) => void;
 }
 
-function parseTags(category?: string, title?: string): string[] {
-  const tags: string[] = [];
-  if (category) {
-    tags.push(
-      ...category
+function parseTags(category?: string): string[] {
+  if (!category) return [];
+  return [
+    ...new Set(
+      category
         .split(/[,|/·•]/)
         .map((t) => t.trim())
         .filter(Boolean),
-    );
-  }
-  if (tags.length === 0 && title) {
-    const words = title
-      .split(/\s+/)
-      .filter((w) => w.length > 4)
-      .slice(0, 2);
-    tags.push(...words);
-  }
-  return [...new Set(tags)].slice(0, 4);
+    ),
+  ].slice(0, 4);
+}
+
+function relativeTime(iso?: string): string {
+  if (!iso) return "";
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.max(1, Math.floor(diffMs / 60000));
+  if (mins < 60) return `${mins}min atrás`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h atrás`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d atrás`;
+  return formatDistanceToNow(new Date(iso), {
+    addSuffix: true,
+    locale: ptBR,
+  });
 }
 
 export function ClassifiedsCard({
@@ -93,9 +99,8 @@ export function ClassifiedsCard({
 
   let images: string[] = [];
   try {
-    if (Array.isArray(ad.images)) {
-      images = ad.images;
-    } else if (typeof ad.images === "string") {
+    if (Array.isArray(ad.images)) images = ad.images;
+    else if (typeof ad.images === "string") {
       const parsed = JSON.parse(ad.images);
       if (Array.isArray(parsed)) images = parsed;
     }
@@ -105,43 +110,27 @@ export function ClassifiedsCard({
 
   const isOwner = user?.id === ad.user_id;
   const isOffer = ad.ad_type === "oferecer";
-  const isPremiumAd = ad.is_premium || false;
+  const isPremiumAd = Boolean(ad.is_premium);
   const premiumExpired = ad.premium_expires_at
     ? new Date(ad.premium_expires_at) < new Date()
     : false;
   const isActivePremium = isPremiumAd && !premiumExpired;
-
-  const tags = parseTags(ad.category, ad.title);
+  const tags = parseTags(ad.category);
   const likesCount = (ad.likes_count || 0) + (liked ? 1 : 0);
-  const viewsCount = ad.views_count ?? ad.views ?? 0;
+  const commentsCount = ad.comments_count ?? ad.views_count ?? ad.views ?? 0;
   const subtitle = isOffer
     ? ad.category || "Profissional"
     : "Preciso de um profissional";
-
   const locationLabel = [ad.location_city, ad.location_state]
     .filter(Boolean)
     .join(" - ");
-
-  const timeLabel = (() => {
-    if (!ad.created_at) return "";
-    const diffMs = Date.now() - new Date(ad.created_at).getTime();
-    const mins = Math.max(1, Math.floor(diffMs / 60000));
-    if (mins < 60) return `${mins}min atrás`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h atrás`;
-    const days = Math.floor(hours / 24);
-    if (days < 7) return `${days}d atrás`;
-    return formatDistanceToNow(new Date(ad.created_at), {
-      addSuffix: true,
-      locale: ptBR,
-    });
-  })();
-
+  const timeLabel = relativeTime(ad.created_at);
   const priceLabel = ad.price_range
     ? isOffer
       ? `A partir de R$ ${ad.price_range}`
       : `Tenho até R$ ${ad.price_range}`
     : null;
+  const description = ad.description || "";
 
   const nextImage = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -161,12 +150,6 @@ export function ClassifiedsCard({
     }
   };
 
-  const toggleImageExpand = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsImageExpanded(!isImageExpanded);
-  };
-
   const handleContactClick = () => {
     if (isOwner) {
       toast.info("Este é o seu próprio anúncio!");
@@ -176,49 +159,35 @@ export function ClassifiedsCard({
     toast.success(`Abrindo chat com ${ad.user_name}...`);
   };
 
-  const handleLikeClick = () => {
-    if (!user) {
-      toast.info("Faça login para curtir anúncios");
-      return;
-    }
-    setLiked((prev) => !prev);
-  };
-
-  const description = ad.description || "";
-
   return (
     <article
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-[20px] bg-white dark:bg-zinc-900 border border-slate-100/80 dark:border-zinc-800 shadow-[0_2px_14px_rgba(15,23,42,0.06)] transition-all duration-300",
-        isHighlighted &&
-          "ring-2 ring-blue-400 dark:ring-blue-600 z-10 shadow-md",
+        "classifieds-card group relative flex flex-col overflow-hidden bg-[var(--cl-surface)] border border-[var(--cl-border)] shadow-[var(--cl-shadow)]",
+        isHighlighted && "ring-2 ring-sky-400 z-10",
         isActivePremium &&
-          "ring-2 ring-[#00b0b0]/35 border-[#00b0b0]/30 premium-border-shine shadow-[0_8px_24px_-8px_rgba(0,176,176,0.25)]",
-        !isHighlighted &&
-          !isActivePremium &&
-          "hover:shadow-[0_8px_24px_rgba(15,23,42,0.1)]",
+          "ring-2 ring-[var(--cl-teal)]/35 border-[var(--cl-teal)]/40 premium-border-shine",
       )}
     >
       {!user && (
-        <div className="absolute top-0 left-0 right-0 z-30 px-4 pt-4 pb-2 pointer-events-none">
+        <div className="absolute top-0 left-0 right-0 z-30 px-4 pt-4 pointer-events-none">
           <div className="flex items-center gap-3">
             <Link
               href={`/perfil/${ad.user_id}`}
               className="pointer-events-auto"
             >
-              <Avatar className="h-10 w-10 border border-gray-100">
+              <Avatar className="h-10 w-10">
                 <AvatarImage
                   src={ad.user_avatar || ad.user_avatar_url || ""}
                   alt={ad.user_name || "Usuário"}
                 />
-                <AvatarFallback className="bg-slate-100 text-slate-700 font-bold uppercase">
+                <AvatarFallback className="bg-[var(--cl-mist)] text-[var(--cl-ink)] font-bold uppercase">
                   {(ad.user_name || "U").charAt(0)}
                 </AvatarFallback>
               </Avatar>
             </Link>
             <Link
               href={`/perfil/${ad.user_id}`}
-              className="text-sm font-semibold text-slate-900 dark:text-white hover:underline pointer-events-auto"
+              className="text-sm font-semibold text-[var(--cl-ink)] hover:underline pointer-events-auto"
             >
               {ad.user_name}
             </Link>
@@ -227,63 +196,58 @@ export function ClassifiedsCard({
       )}
 
       <GuestBlurOverlay isGuest={!user} className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-3">
-          <div className="flex items-start gap-3 min-w-0 flex-1">
-            <Link href={`/perfil/${ad.user_id}`} className="shrink-0">
-              <Avatar className="h-11 w-11 border border-slate-100 dark:border-zinc-700">
-                <AvatarImage
-                  src={ad.user_avatar || ad.user_avatar_url || ""}
-                  alt={ad.user_name || "Usuário"}
-                />
-                <AvatarFallback className="bg-slate-100 text-slate-700 font-bold uppercase">
-                  {(ad.user_name || "U").charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-            </Link>
+        {/* Header: avatar | identity | badge + menu */}
+        <div className="flex items-start gap-3 px-4 pt-4 pb-3">
+          <Link href={`/perfil/${ad.user_id}`} className="shrink-0">
+            <Avatar className="h-11 w-11 border border-[var(--cl-border)]">
+              <AvatarImage
+                src={ad.user_avatar || ad.user_avatar_url || ""}
+                alt={ad.user_name || "Usuário"}
+              />
+              <AvatarFallback className="bg-[var(--cl-mist)] text-[var(--cl-ink)] font-bold uppercase">
+                {(ad.user_name || "U").charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
 
-            <div className="min-w-0 flex-1">
-              <Link href={`/perfil/${ad.user_id}`}>
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="font-semibold text-[15px] text-slate-900 dark:text-white truncate hover:underline">
-                    {ad.user_name}
-                  </span>
-                  <ProVerifiedBadge
-                    isVerified={ad.user_profile?.is_verified}
-                    isPro={ad.user_profile?.is_pro}
-                    proExpiresAt={ad.user_profile?.pro_expires_at}
-                    iconSize={2.5}
-                  />
-                </div>
-              </Link>
-              <p className="text-sm text-slate-500 dark:text-zinc-400 truncate mt-0.5">
-                {subtitle}
-              </p>
-              <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5 flex items-center gap-1 truncate">
-                {locationLabel && (
-                  <>
-                    <MapPin className="h-3 w-3 shrink-0" />
-                    <span className="truncate">{locationLabel}</span>
-                  </>
-                )}
-                {locationLabel && timeLabel && (
-                  <span className="shrink-0">·</span>
-                )}
-                {timeLabel && (
-                  <span className="capitalize shrink-0">{timeLabel}</span>
-                )}
-              </p>
-            </div>
+          <div className="min-w-0 flex-1">
+            <Link href={`/perfil/${ad.user_id}`}>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="font-semibold text-[15px] text-[var(--cl-ink)] dark:text-white truncate hover:underline">
+                  {ad.user_name}
+                </span>
+                <ProVerifiedBadge
+                  isVerified={ad.user_profile?.is_verified}
+                  isPro={ad.user_profile?.is_pro}
+                  proExpiresAt={ad.user_profile?.pro_expires_at}
+                  iconSize={2.5}
+                />
+              </div>
+            </Link>
+            <p className="text-[13px] text-[var(--cl-muted)] truncate mt-0.5">
+              {subtitle}
+            </p>
+            <p className="text-xs text-[var(--cl-muted)] mt-0.5 flex items-center gap-1 truncate">
+              {locationLabel && (
+                <>
+                  <MapPin className="h-3 w-3 shrink-0 opacity-70" />
+                  <span className="truncate">{locationLabel}</span>
+                </>
+              )}
+              {locationLabel && timeLabel && (
+                <span className="shrink-0 opacity-60">·</span>
+              )}
+              {timeLabel && <span className="shrink-0">{timeLabel}</span>}
+            </p>
           </div>
 
-          <div className="flex items-start gap-1.5 shrink-0">
-            {/* Type badge */}
+          <div className="flex items-start gap-1.5 shrink-0 pt-0.5">
             <span
               className={cn(
-                "inline-flex items-center gap-1 rounded-xl px-2.5 py-1 text-[11px] font-semibold",
+                "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold",
                 isOffer
-                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                  : "bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400",
+                  ? "bg-[var(--cl-service-bg)] text-[var(--cl-service)]"
+                  : "bg-[var(--cl-request-bg)] text-[var(--cl-request)]",
               )}
             >
               {isOffer ? (
@@ -295,7 +259,7 @@ export function ClassifiedsCard({
             </span>
 
             {isActivePremium && (
-              <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-bold bg-[#00b0b0] text-white">
+              <span className="inline-flex items-center rounded-full px-2 py-1 text-[11px] font-bold bg-[var(--cl-teal)] text-white">
                 <Crown className="h-3 w-3" />
               </span>
             )}
@@ -305,12 +269,12 @@ export function ClassifiedsCard({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 text-slate-400 hover:text-slate-700 dark:hover:text-white"
+                  className="h-8 w-8 p-0 text-[var(--cl-muted)] hover:text-[var(--cl-ink)]"
                 >
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="rounded-xl">
                 {isOwner && (
                   <DropdownMenuItem onClick={() => onEdit?.(ad)}>
                     <Edit className="h-4 w-4 mr-2" />
@@ -320,7 +284,7 @@ export function ClassifiedsCard({
                 {isOwner && isActivePremium && premiumExpired && (
                   <DropdownMenuItem
                     onClick={() => onRenewPremium?.(ad.id)}
-                    className="text-yellow-600 dark:text-yellow-400"
+                    className="text-amber-600"
                   >
                     <Crown className="h-4 w-4 mr-2" />
                     Renovar Premium
@@ -329,7 +293,7 @@ export function ClassifiedsCard({
                 {(isOwner || isAdmin) && (
                   <DropdownMenuItem
                     onClick={() => onDelete?.(ad.id)}
-                    className="text-red-600 dark:text-red-400"
+                    className="text-red-600"
                     disabled={isDeleting}
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
@@ -363,54 +327,50 @@ export function ClassifiedsCard({
           </div>
         </div>
 
-        {/* Body: image + content (lado a lado como no mock) */}
+        {/* Body: image left + copy right */}
         <div
           className={cn(
             "px-4 pb-3",
-            images.length > 0
-              ? "grid grid-cols-[118px_1fr] sm:grid-cols-[minmax(0,40%)_1fr] gap-3"
-              : "",
+            images.length > 0 &&
+              "grid grid-cols-[112px_1fr] sm:grid-cols-[minmax(0,38%)_1fr] gap-3",
           )}
         >
           {images.length > 0 && (
             <div
               className={cn(
-                "relative overflow-hidden rounded-2xl bg-slate-100 dark:bg-zinc-800 cursor-pointer group/media",
-                isImageExpanded
-                  ? "col-span-2 aspect-auto"
-                  : "aspect-[4/3] sm:aspect-[5/4]",
+                "relative overflow-hidden rounded-[14px] bg-[var(--cl-mist)] cursor-pointer group/media",
+                isImageExpanded ? "col-span-2 aspect-auto" : "aspect-[4/3]",
               )}
-              onClick={toggleImageExpand}
+              onClick={() => setIsImageExpanded((v) => !v)}
             >
               <img
                 key={currentImageIndex}
                 src={images[currentImageIndex]}
                 alt={`${ad.title} - Foto ${currentImageIndex + 1}`}
                 className={cn(
-                  "w-full h-full animate-in fade-in duration-300",
+                  "w-full h-full",
                   isImageExpanded
                     ? "max-h-[560px] object-contain"
-                    : "object-cover group-hover/media:scale-[1.02] transition-transform duration-500",
+                    : "object-cover",
                 )}
               />
-
               {images.length > 1 && (
                 <>
                   <button
                     onClick={prevImage}
-                    className="absolute left-1.5 top-1/2 -translate-y-1/2 text-white drop-shadow-md opacity-0 group-hover/media:opacity-100 transition-opacity z-10"
+                    className="absolute left-1 top-1/2 -translate-y-1/2 text-white drop-shadow opacity-0 group-hover/media:opacity-100 transition-opacity z-10"
                     aria-label="Foto anterior"
                   >
                     <ChevronLeft className="w-7 h-7" />
                   </button>
                   <button
                     onClick={nextImage}
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white drop-shadow-md opacity-0 group-hover/media:opacity-100 transition-opacity z-10"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 text-white drop-shadow opacity-0 group-hover/media:opacity-100 transition-opacity z-10"
                     aria-label="Próxima foto"
                   >
                     <ChevronRight className="w-7 h-7" />
                   </button>
-                  <div className="absolute bottom-2 right-2 bg-slate-900/70 text-white text-[11px] font-semibold px-2 py-0.5 rounded-lg pointer-events-none">
+                  <div className="absolute bottom-2 right-2 bg-[var(--cl-ink)]/75 text-white text-[11px] font-semibold px-2 py-0.5 rounded-lg pointer-events-none">
                     +{images.length - 1}
                   </div>
                 </>
@@ -424,59 +384,37 @@ export function ClassifiedsCard({
               images.length > 0 && isImageExpanded && "col-span-2",
             )}
           >
-            <h3 className="text-[15px] sm:text-lg font-bold text-slate-900 dark:text-white leading-snug line-clamp-2">
+            <h3 className="text-[15px] sm:text-base font-bold text-[var(--cl-ink)] dark:text-white leading-snug line-clamp-2">
               {ad.title}
             </h3>
-
-            <div className="mt-1">
-              <p
-                className={cn(
-                  "text-sm text-slate-500 dark:text-zinc-400 leading-relaxed whitespace-pre-wrap",
-                  !showFullDescription && "line-clamp-2 sm:line-clamp-3",
-                )}
-              >
-                <MentionText text={description} />
-              </p>
-              {!showFullDescription &&
-                (description.length > 100 ||
-                  description.split("\n").length > 2) && (
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setShowFullDescription(true);
-                    }}
-                    className="text-slate-800 dark:text-zinc-200 mt-1 font-semibold hover:underline text-sm"
-                  >
-                    ler mais
-                  </button>
-                )}
-              {showFullDescription && (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setShowFullDescription(false);
-                  }}
-                  className="text-slate-800 dark:text-zinc-200 mt-1 font-semibold hover:underline text-sm"
-                >
-                  ver menos
-                </button>
+            <p
+              className={cn(
+                "mt-1 text-[13px] text-[var(--cl-muted)] leading-relaxed whitespace-pre-wrap",
+                !showFullDescription && "line-clamp-2 sm:line-clamp-3",
               )}
-            </div>
+            >
+              <MentionText text={description} />
+            </p>
+            {(description.length > 100 ||
+              description.split("\n").length > 2) && (
+              <button
+                type="button"
+                onClick={() => setShowFullDescription((v) => !v)}
+                className="mt-1 self-start text-[13px] font-semibold text-[var(--cl-ink)] hover:underline"
+              >
+                {showFullDescription ? "ver menos" : "ler mais"}
+              </button>
+            )}
 
             {(tags.length > 0 || isActivePremium) && (
               <div className="flex flex-wrap gap-1.5 mt-2.5">
                 {tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center rounded-xl bg-[#eef0f3] dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 text-[11px] font-medium px-2.5 py-1"
-                  >
+                  <span key={tag} className="classifieds-tag">
                     {tag}
                   </span>
                 ))}
                 {isActivePremium && (
-                  <span className="inline-flex items-center rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-[11px] font-medium px-2.5 py-1">
+                  <span className="classifieds-tag bg-amber-50 text-amber-700">
                     Destaque
                   </span>
                 )}
@@ -486,24 +424,30 @@ export function ClassifiedsCard({
         </div>
 
         {/* Footer */}
-        <div className="mt-auto px-4 py-3 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-3.5 text-slate-500 dark:text-zinc-400">
+        <div className="mt-auto px-4 pb-4 pt-1 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3.5">
             <button
               type="button"
-              onClick={handleLikeClick}
+              onClick={() => {
+                if (!user) {
+                  toast.info("Faça login para curtir anúncios");
+                  return;
+                }
+                setLiked((v) => !v);
+              }}
               className={cn(
-                "inline-flex items-center gap-1.5 text-sm transition-colors",
-                liked ? "text-rose-500" : "hover:text-rose-500",
+                "inline-flex items-center gap-1.5 text-[13px] text-[var(--cl-muted)] transition-colors",
+                liked && "text-[var(--cl-heart)]",
               )}
               aria-label="Curtir"
             >
               <Heart
                 className={cn(
-                  "h-4 w-4",
-                  liked ? "fill-current text-rose-500" : "text-rose-400",
+                  "h-4 w-4 text-[var(--cl-heart)]",
+                  liked && "fill-current",
                 )}
               />
-              <span className="tabular-nums text-slate-600 dark:text-zinc-300">
+              <span className="tabular-nums text-[var(--cl-ink)]/80">
                 {likesCount}
               </span>
             </button>
@@ -511,44 +455,42 @@ export function ClassifiedsCard({
               type="button"
               onClick={handleContactClick}
               disabled={isOwner}
-              className="inline-flex items-center gap-1.5 text-sm hover:text-sky-600 transition-colors disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 text-[13px] text-[var(--cl-muted)] hover:text-[var(--cl-request)] transition-colors disabled:opacity-40"
               aria-label="Conversar"
             >
               <MessageCircle className="h-4 w-4" />
-              <span className="tabular-nums text-slate-600 dark:text-zinc-300">
-                {viewsCount}
+              <span className="tabular-nums text-[var(--cl-ink)]/80">
+                {commentsCount}
               </span>
             </button>
           </div>
 
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             {priceLabel && (
-              <span className="hidden sm:inline-flex items-center gap-1 text-xs sm:text-sm font-medium text-slate-600 dark:text-zinc-300 truncate max-w-[150px] lg:max-w-[190px]">
-                <Tag className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+              <span className="hidden sm:inline-flex items-center gap-1 text-[12px] font-medium text-[var(--cl-muted)] truncate max-w-[160px]">
+                <Tag className="h-3.5 w-3.5 shrink-0" />
                 {priceLabel}
               </span>
             )}
-
             <Button
               onClick={handleContactClick}
               disabled={isOwner}
               size="sm"
               className={cn(
-                "rounded-xl px-4 h-9 font-semibold shadow-sm transition-all active:scale-[0.98]",
-                "bg-[#1e293b] hover:bg-slate-900 text-white dark:bg-zinc-100 dark:hover:bg-white dark:text-slate-900",
+                "classifieds-cta",
                 isOwner && "opacity-50 cursor-not-allowed",
               )}
             >
               Ver mais
-              <ChevronRightIcon className="h-4 w-4 ml-0.5" />
+              <ChevronRight className="h-4 w-4 ml-0.5" />
             </Button>
           </div>
         </div>
 
         {priceLabel && (
           <div className="sm:hidden px-4 pb-3 -mt-1">
-            <span className="inline-flex items-center gap-1 text-sm font-medium text-slate-600 dark:text-zinc-300">
-              <Tag className="h-3.5 w-3.5 text-slate-400" />
+            <span className="inline-flex items-center gap-1 text-[13px] font-medium text-[var(--cl-muted)]">
+              <Tag className="h-3.5 w-3.5" />
               {priceLabel}
             </span>
           </div>

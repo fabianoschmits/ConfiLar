@@ -92,12 +92,12 @@ export function ClassifiedsLocationSelector({
         <button
           type="button"
           className={cn(
-            "inline-flex items-center gap-1.5 max-w-[220px] sm:max-w-[280px] text-sm font-medium text-slate-700 dark:text-zinc-200 hover:text-slate-900 dark:hover:text-white transition-colors",
+            "inline-flex items-center gap-1.5 max-w-[220px] sm:max-w-[280px] text-sm font-medium text-[var(--cl-ink,#334155)] dark:text-zinc-200 hover:opacity-80 transition-opacity",
             className,
           )}
           aria-label="Selecionar localidade"
         >
-          <MapPin className="h-4 w-4 text-slate-500 dark:text-zinc-400 shrink-0" />
+          <MapPin className="h-4 w-4 text-[var(--cl-muted,#6b7280)] shrink-0" />
           <span className="truncate">{displayLabel}</span>
           <ChevronDown className="h-4 w-4 text-slate-400 shrink-0" />
         </button>

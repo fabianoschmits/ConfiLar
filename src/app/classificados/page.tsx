@@ -704,10 +704,10 @@ export default function ClassificadosPage() {
   return (
     <ClientOnly>
       <MainLayout requireAuth={false}>
-        <div className="min-h-screen bg-[#f3f4f6] dark:bg-black">
-          <div className="max-w-3xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-5 pb-28">
-            {/* Localidade — posição do mock (topo, à direita) */}
-            <div className="flex items-center justify-end mb-3 px-0.5">
+        <div className="classifieds-page min-h-screen dark:bg-black">
+          <div className="max-w-[720px] mx-auto px-3 sm:px-4 py-3 sm:py-4 pb-28">
+            {/* Localidade — topo direita, como no mock */}
+            <div className="flex items-center justify-end mb-3">
               <ClassifiedsLocationSelector
                 location={filters.location}
                 onChange={(next) => {
@@ -781,9 +781,9 @@ export default function ClassificadosPage() {
               />
             </div>
 
-            {/* Pills — cantos arredondados (não círculos) */}
+            {/* Chips cápsula — elongated pills (não círculos) */}
             <div className="mb-4 -mx-1 px-1">
-              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-0.5">
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
                 {[
                   { id: "all" as const, label: "Todos" },
                   { id: "offers" as const, label: "Serviços" },
@@ -799,15 +799,16 @@ export default function ClassificadosPage() {
                   return (
                     <button
                       key={tab.id}
+                      type="button"
                       onClick={() => {
                         setActiveTab(tab.id);
                         setCurrentPage(1);
                       }}
-                      className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-medium whitespace-nowrap transition-all shrink-0 ${
+                      className={
                         isActive
-                          ? "bg-[#1e293b] text-white dark:bg-zinc-100 dark:text-slate-900 shadow-sm"
-                          : "bg-[#e8eaed] dark:bg-zinc-800/80 text-slate-700 dark:text-zinc-300 hover:bg-[#dde0e4] dark:hover:bg-zinc-800"
-                      }`}
+                          ? "classifieds-chip classifieds-chip--active"
+                          : "classifieds-chip classifieds-chip--idle"
+                      }
                     >
                       {tab.label}
                       {"sort" in tab && tab.sort && (
@@ -819,13 +820,14 @@ export default function ClassificadosPage() {
               </div>
             </div>
 
-            <div className="flex justify-between items-center mb-4 gap-2">
+            {/* Controles secundários discretos */}
+            <div className="flex justify-between items-center mb-3 gap-2">
               <div className="flex items-center gap-2">
                 {!loading && displayAds.length > 0 && (
                   <div className="flex items-center gap-1.5">
                     <label
                       htmlFor="itemsPerPage"
-                      className="text-xs text-slate-500 dark:text-zinc-400 whitespace-nowrap"
+                      className="text-xs text-[var(--cl-muted)] whitespace-nowrap"
                     >
                       {t("porPagina")}
                     </label>
@@ -835,7 +837,7 @@ export default function ClassificadosPage() {
                         setItemsPerPage(parseInt(value))
                       }
                     >
-                      <SelectTrigger className="w-14 h-8 text-xs rounded-xl bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-700">
+                      <SelectTrigger className="w-14 h-8 text-xs rounded-[12px] bg-[var(--cl-surface)] border-[var(--cl-border)]">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -846,12 +848,6 @@ export default function ClassificadosPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                )}
-                {!loading && (
-                  <span className="text-xs text-slate-400 dark:text-zinc-500">
-                    {displayAds.length}{" "}
-                    {displayAds.length === 1 ? "anúncio" : "anúncios"}
-                  </span>
                 )}
               </div>
 
@@ -1058,7 +1054,7 @@ export default function ClassificadosPage() {
                   }
                 />
               ) : (
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3.5">
                   {paginatedAds.map((ad) => (
                     <div key={ad.id} id={`ad-${ad.id}`}>
                       <ClassifiedsCard
@@ -1164,7 +1160,7 @@ export default function ClassificadosPage() {
                 id="create-ad-button"
                 type="button"
                 onClick={handleOpenCreateDialog}
-                className="fixed bottom-24 right-4 sm:bottom-8 sm:right-8 z-40 h-14 w-14 rounded-full bg-slate-800 hover:bg-slate-900 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-slate-900 shadow-lg shadow-slate-900/25 flex items-center justify-center transition-transform active:scale-95"
+                className="classifieds-fab fixed bottom-24 right-4 sm:bottom-8 sm:right-8 z-40 h-14 w-14 flex items-center justify-center active:scale-95 transition-transform"
                 aria-label="Novo anúncio"
               >
                 <Pencil className="h-5 w-5" />
