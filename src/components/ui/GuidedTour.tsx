@@ -125,7 +125,7 @@ export function GuidedTour({
 
       {/* Tour Card */}
       <div
-        className="fixed z-[201] w-80 bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800 animate-in fade-in zoom-in-95 duration-300"
+        className="fixed z-[201] w-80 bg-[var(--cl-surface)] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800 animate-in fade-in zoom-in-95 duration-300"
         style={{
           top: `${position.top}px`,
           left: `${position.left}px`,

@@ -184,7 +184,7 @@ export function UnifiedUpload({
         className={cn(
           "border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer",
           dragActive
-            ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/20"
+            ? "border-blue-500 bg-[var(--cl-mist)]/50 dark:bg-blue-900/20"
             : "border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/30 hover:border-blue-400 dark:hover:border-blue-500",
           isLoading || isCompressing ? "opacity-50 cursor-not-allowed" : "",
         )}
@@ -245,7 +245,7 @@ export function UnifiedUpload({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-blue-50 dark:bg-blue-900/20 p-2">
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-[var(--cl-mist)] dark:bg-blue-900/20 p-2">
                       <FileText className="w-6 h-6 text-blue-500 mb-1" />
                       <span className="text-[10px] font-medium text-gray-500 truncate w-full text-center px-1">
                         {file.name}
@@ -284,7 +284,7 @@ export function UnifiedUpload({
               {isCompressing ? (
                 <div className="relative">
                   <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-                  <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-blue-600">
+                  <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-[var(--cl-teal)]">
                     {compressionProgress}%
                   </span>
                 </div>
@@ -292,7 +292,7 @@ export function UnifiedUpload({
                 <UploadCloud
                   className={cn(
                     "w-8 h-8",
-                    dragActive ? "text-blue-600" : "text-blue-500",
+                    dragActive ? "text-[var(--cl-teal)]" : "text-blue-500",
                   )}
                 />
               )}

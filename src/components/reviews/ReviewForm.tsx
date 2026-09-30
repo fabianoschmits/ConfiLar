@@ -356,7 +356,7 @@ export function ReviewForm({
       case 5:
         return "text-green-600";
       case 4:
-        return "text-blue-600";
+        return "text-[var(--cl-teal)]";
       case 3:
         return "text-yellow-600";
       case 2:
@@ -574,7 +574,7 @@ export function ReviewForm({
             htmlFor="service_date"
             className="modern-heading-3 text-gray-900 flex items-center gap-2"
           >
-            <Calendar className="h-4 w-4 text-blue-600" />
+            <Calendar className="h-4 w-4 text-[var(--cl-teal)]" />
             Data do Serviço
           </Label>
           <Input
@@ -595,7 +595,7 @@ export function ReviewForm({
               type="checkbox"
               id="is_recommended"
               {...register("is_recommended")}
-              className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="w-5 h-5 rounded border-gray-300 text-[var(--cl-teal)] focus:ring-[var(--cl-teal)]"
             />
             <Label
               htmlFor="is_recommended"

@@ -423,7 +423,7 @@ export function ReportsManagement() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--cl-teal)]"></div>
       </div>
     );
   }
@@ -442,7 +442,7 @@ export function ReportsManagement() {
                     {reportStats.total}
                   </p>
                 </div>
-                <Flag className="h-8 w-8 text-blue-600" />
+                <Flag className="h-8 w-8 text-[var(--cl-teal)]" />
               </div>
             </CardContent>
           </Card>
@@ -484,11 +484,11 @@ export function ReportsManagement() {
                   <p className="text-sm font-medium text-gray-600">
                     Últimas 24h
                   </p>
-                  <p className="text-2xl font-bold text-blue-600">
+                  <p className="text-2xl font-bold text-[var(--cl-teal)]">
                     {reportStats.last24h}
                   </p>
                 </div>
-                <Eye className="h-8 w-8 text-blue-600" />
+                <Eye className="h-8 w-8 text-[var(--cl-teal)]" />
               </div>
             </CardContent>
           </Card>
@@ -691,7 +691,7 @@ export function ReportsManagement() {
                         {/* Contexto específico baseado no tipo */}
                         {report.type === "other" &&
                           report.conversation_messages && (
-                            <div className="bg-blue-50 p-3 rounded-lg mb-2">
+                            <div className="bg-[var(--cl-mist)] p-3 rounded-lg mb-2">
                               <p className="text-xs font-medium text-blue-800 mb-1">
                                 💬 Conversa Denunciada:
                               </p>
@@ -746,11 +746,11 @@ export function ReportsManagement() {
                         )}
 
                         {report.classified_ad && (
-                          <div className="bg-purple-50 p-3 rounded-lg mb-2">
+                          <div className="bg-[var(--cl-mist)] p-3 rounded-lg mb-2">
                             <p className="text-xs font-medium text-purple-800 mb-1">
                               📢 Anúncio Classificado Denunciado:
                             </p>
-                            <div className="text-xs text-purple-700">
+                            <div className="text-xs text-[var(--cl-teal)]">
                               <p>
                                 <strong>Título:</strong>{" "}
                                 {report.classified_ad.title}
@@ -859,9 +859,9 @@ export function ReportsManagement() {
         showCloseButton={false}
         className="max-w-2xl"
       >
-        <div className="flex flex-col h-full bg-white dark:bg-black overflow-hidden">
+        <div className="flex flex-col h-full bg-[var(--cl-surface)] overflow-hidden">
           {/* HEADER FIXO */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0 z-10">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-[var(--cl-surface)] flex-shrink-0 z-10">
             <button
               onClick={() => setShowReportModal(false)}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
@@ -878,7 +878,7 @@ export function ReportsManagement() {
                     handleReportAction(selectedReport.id, "review")
                   }
                   size="sm"
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  className="bg-[var(--cl-ink)] hover:brightness-110 text-white"
                 >
                   Revisar
                 </Button>
@@ -1036,7 +1036,7 @@ export function ReportsManagement() {
                     <Label className="text-sm font-medium">
                       💬 Comentário Denunciado
                     </Label>
-                    <div className="bg-blue-50 p-4 rounded-lg mt-2">
+                    <div className="bg-[var(--cl-mist)] p-4 rounded-lg mt-2">
                       <p className="text-sm text-gray-600">
                         {selectedReport.reported_comment.content}
                       </p>
@@ -1053,7 +1053,7 @@ export function ReportsManagement() {
                     <Label className="text-sm font-medium">
                       📢 Anúncio Classificado Denunciado
                     </Label>
-                    <div className="bg-purple-50 p-4 rounded-lg mt-2">
+                    <div className="bg-[var(--cl-mist)] p-4 rounded-lg mt-2">
                       <div className="space-y-2">
                         <div>
                           <p className="text-sm font-medium">Título:</p>

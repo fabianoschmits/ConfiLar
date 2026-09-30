@@ -300,7 +300,7 @@ function FloatingNotificationContent({
   }
 
   return (
-    <div className="flex flex-col bg-white dark:bg-gray-900">
+    <div className="flex flex-col bg-[var(--cl-surface)]">
       {/* Header */}
       <div className="p-2 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
         <div className="flex items-center justify-between">
@@ -345,7 +345,7 @@ function FloatingNotificationContent({
 
       {/* Filtros e Limpar todas - mesma linha */}
       {notifications.length > 0 && (
-        <div className="p-2 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900">
+        <div className="p-2 border-b border-gray-100 dark:border-gray-700 bg-[var(--cl-surface)]">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5">
               <button
@@ -392,7 +392,7 @@ function FloatingNotificationContent({
       )}
 
       {/* Lista de Notificações */}
-      <div className="divide-y divide-gray-100 dark:divide-gray-700 overflow-y-auto max-h-[400px] md:max-h-[500px] bg-white dark:bg-gray-900">
+      <div className="divide-y divide-gray-100 dark:divide-gray-700 overflow-y-auto max-h-[400px] md:max-h-[500px] bg-[var(--cl-surface)]">
         {filteredNotifications.map((notification) => (
           <DesktopNotificationItem
             key={notification.id}
@@ -412,7 +412,7 @@ function FloatingNotificationContent({
 
       {/* Estado vazio */}
       {filteredNotifications.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-8 text-center bg-white dark:bg-gray-900">
+        <div className="flex flex-col items-center justify-center py-8 text-center bg-[var(--cl-surface)]">
           <Bell className="h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" />
           <p className="text-gray-500 dark:text-gray-400">
             Nenhuma notificação

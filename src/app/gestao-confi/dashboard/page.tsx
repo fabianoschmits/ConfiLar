@@ -323,7 +323,7 @@ export default function AdminDashboardPage() {
                             className="h-8 w-8 rounded-full mt-0.5 shrink-0 object-cover border border-border shadow-sm group-hover:scale-110 transition-transform"
                           />
                         ) : (
-                          <div className="bg-muted p-2 rounded-full mt-0.5 shrink-0 group-hover:bg-blue-600/10 group-hover:text-blue-600 transition-colors">
+                          <div className="bg-muted p-2 rounded-full mt-0.5 shrink-0 group-hover:bg-[var(--cl-ink)]/10 group-hover:text-[var(--cl-teal)] transition-colors">
                             <Activity className="h-3.5 w-3.5" />
                           </div>
                         )}
@@ -333,7 +333,7 @@ export default function AdminDashboardPage() {
                           </p>
                           <div className="flex items-center gap-2">
                             {log.userName && (
-                              <span className="text-[8px] sm:text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                              <span className="text-[8px] sm:text-[10px] font-bold text-[var(--cl-teal)] dark:text-blue-400">
                                 {log.userName}
                               </span>
                             )}
@@ -342,7 +342,7 @@ export default function AdminDashboardPage() {
                                 "text-[7px] sm:text-[9px] font-black uppercase px-1.5 rounded-md",
                                 log.action === "ERROR"
                                   ? "bg-red-100 text-red-600"
-                                  : "bg-blue-100 text-blue-600",
+                                  : "bg-blue-100 text-[var(--cl-teal)]",
                               )}
                             >
                               {log.action}

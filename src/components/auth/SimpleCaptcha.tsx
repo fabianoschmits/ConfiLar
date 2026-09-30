@@ -117,13 +117,13 @@ export function SimpleCaptcha({ onValidate, className }: SimpleCaptchaProps) {
           <span className="text-xs text-gray-600 dark:text-gray-400 mr-1">
             Verificação:
           </span>
-          <div className="text-sm font-bold text-blue-600 dark:text-blue-400 w-6 text-center bg-white dark:bg-gray-900 rounded px-1">
+          <div className="text-sm font-bold text-[var(--cl-teal)] dark:text-blue-400 w-6 text-center bg-[var(--cl-surface)] rounded px-1">
             {num1}
           </div>
           <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
             {getOperationSymbol()}
           </span>
-          <div className="text-sm font-bold text-blue-600 dark:text-blue-400 w-6 text-center bg-white dark:bg-gray-900 rounded px-1">
+          <div className="text-sm font-bold text-[var(--cl-teal)] dark:text-blue-400 w-6 text-center bg-[var(--cl-surface)] rounded px-1">
             {num2}
           </div>
           <span className="text-sm font-bold text-gray-700 dark:text-gray-300">

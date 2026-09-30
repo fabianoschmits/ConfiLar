@@ -279,7 +279,7 @@ export default function AdminLogsPage() {
     let colorClass = 'bg-gray-100 text-gray-800'
 
     if (s === 'api') colorClass = 'bg-blue-100 text-blue-800 border-blue-200'
-    if (s === 'auth') colorClass = 'bg-purple-100 text-purple-800 border-purple-200'
+    if (s === 'auth') colorClass = 'bg-[var(--cl-mist)] text-purple-800 border-purple-200'
     if (s === 'database' || s === 'postgres') colorClass = 'bg-emerald-100 text-emerald-800 border-emerald-200'
     if (s === 'storage') colorClass = 'bg-amber-100 text-amber-800 border-amber-200'
     if (s === 'realtime') colorClass = 'bg-rose-100 text-rose-800 border-rose-200'
@@ -572,7 +572,7 @@ export default function AdminLogsPage() {
                       {(metadata.user_id || metadata.user_name) && (
                         <Link
                           href={`/gestao-confi/dashboard/users?search=${metadata.user_id || metadata.user_name}`}
-                          className="flex items-center gap-2 sm:gap-3 p-1.5 sm:p-2 bg-white/80 dark:bg-white/5 rounded-xl sm:rounded-2xl border border-slate-200/60 dark:border-white/10 hover:border-blue-500/40 hover:bg-blue-50/30 dark:hover:bg-blue-500/10 transition-all group/user shadow-sm"
+                          className="flex items-center gap-2 sm:gap-3 p-1.5 sm:p-2 bg-white/80 dark:bg-white/5 rounded-xl sm:rounded-2xl border border-slate-200/60 dark:border-white/10 hover:border-blue-500/40 hover:bg-[var(--cl-mist)]/30 dark:hover:bg-blue-500/10 transition-all group/user shadow-sm"
                         >
                           <div className="relative">
                             {metadata.user_avatar ? (
@@ -582,7 +582,7 @@ export default function AdminLogsPage() {
                                 className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl object-cover border border-white dark:border-slate-800 shadow-md group-hover/user:scale-105 transition-transform"
                               />
                             ) : (
-                              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 border border-white dark:border-slate-800 shadow-md group-hover/user:scale-105 transition-transform">
+                              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-[var(--cl-teal)] dark:text-blue-400 border border-white dark:border-slate-800 shadow-md group-hover/user:scale-105 transition-transform">
                                 <span className="text-[10px] sm:text-[12px] font-black uppercase">
                                   {(metadata.user_name || 'U').substring(0, 1)}
                                 </span>
@@ -590,7 +590,7 @@ export default function AdminLogsPage() {
                             )}
                           </div>
                           <div className="flex flex-col min-w-0 flex-1">
-                            <span className="text-[10px] sm:text-[12px] font-black text-slate-800 dark:text-white truncate group-hover/user:text-blue-600 transition-colors">
+                            <span className="text-[10px] sm:text-[12px] font-black text-slate-800 dark:text-white truncate group-hover/user:text-[var(--cl-teal)] transition-colors">
                               {metadata.user_name || 'Usuário Desconhecido'}
                             </span>
                             <span className="text-[8px] sm:text-[9px] font-bold text-muted-foreground font-mono truncate select-all">

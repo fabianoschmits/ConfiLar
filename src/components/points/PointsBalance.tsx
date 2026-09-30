@@ -148,7 +148,7 @@ export function PointsBalance({
               </div>
 
               <div className="text-center">
-                <div className="flex items-center justify-center gap-1 text-blue-600 dark:text-blue-400">
+                <div className="flex items-center justify-center gap-1 text-[var(--cl-teal)] dark:text-blue-400">
                   <Star className="w-4 h-4" />
                   <span className="text-sm font-medium">
                     {formatPoints(balance.total_earned)}

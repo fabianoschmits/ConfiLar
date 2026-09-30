@@ -167,7 +167,7 @@ export function AvatarSelectionForm({ onSuccess }: { onSuccess?: () => void }) {
           <Button
             type="submit"
             disabled={isLoading || !preview}
-            className="w-full h-12 bg-purple-600 hover:bg-purple-700"
+            className="w-full h-12 bg-[var(--cl-teal)] hover:brightness-95"
           >
             {isLoading ? "Salvando..." : "Salvar Foto"}
           </Button>

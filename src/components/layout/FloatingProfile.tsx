@@ -176,11 +176,11 @@ export const FloatingProfile: React.FC = () => {
               </div>
 
               {/* Estatísticas Rápidas */}
-              <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+              <Card className="bg-gradient-to-r from-[var(--cl-mist)] to-[var(--cl-mist)] border-blue-200">
                 <CardContent className="p-3">
                   <div className="grid grid-cols-2 gap-3 text-center">
                     <div>
-                      <div className="text-lg font-bold text-blue-600">
+                      <div className="text-lg font-bold text-[var(--cl-teal)]">
                         {accountStats.totalServices}
                       </div>
                       <div className="text-xs text-gray-600">Serviços</div>
@@ -216,7 +216,7 @@ export const FloatingProfile: React.FC = () => {
                     <ChatTeardrop
                       size={16}
                       weight="light"
-                      className="text-blue-600 mb-1"
+                      className="text-[var(--cl-teal)] mb-1"
                     />
                     <span className="text-xs font-medium">Mensagens</span>
                     {unreadCount > 0 && (
@@ -233,7 +233,7 @@ export const FloatingProfile: React.FC = () => {
                     <BellPhosphor
                       size={16}
                       weight="light"
-                      className="text-purple-600 mb-1"
+                      className="text-[var(--cl-teal)] mb-1"
                     />
                     <span className="text-xs font-medium">Notificações</span>
                     {unreadCount > 0 && (
@@ -279,8 +279,8 @@ export const FloatingProfile: React.FC = () => {
                       setIsExpanded(false);
                     }}
                   >
-                    <Gear size={14} weight="light" className="text-[#00b0b0]" />
-                    <span className="font-semibold text-[#00b0b0]">
+                    <Gear size={14} weight="light" className="text-[var(--cl-teal)]" />
+                    <span className="font-semibold text-[var(--cl-teal)]">
                       Gerenciar Perfil
                     </span>
                   </button>
@@ -294,7 +294,7 @@ export const FloatingProfile: React.FC = () => {
                         <BriefcasePhosphor
                           size={14}
                           weight="light"
-                          className="text-purple-600"
+                          className="text-[var(--cl-teal)]"
                         />
                         <span>Meu Portfólio</span>
                       </Link>
@@ -322,7 +322,7 @@ export const FloatingProfile: React.FC = () => {
                     <Question
                       size={14}
                       weight="light"
-                      className="text-blue-600"
+                      className="text-[var(--cl-teal)]"
                     />
                     <span>Central de Ajuda</span>
                   </Link>
@@ -346,7 +346,7 @@ export const FloatingProfile: React.FC = () => {
                     <InfoPhosphor
                       size={14}
                       weight="light"
-                      className="text-purple-600"
+                      className="text-[var(--cl-teal)]"
                     />
                     <span>Sobre a ConfiLar</span>
                   </Link>

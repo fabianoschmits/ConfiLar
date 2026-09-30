@@ -266,7 +266,7 @@ export default function ProfilePage() {
                         {profile.full_name || "Usuário"}
                       </h1>
                       {profile.is_verified && (
-                        <Badge className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-1 rounded-full px-3 py-1 border-0 shadow-sm">
+                        <Badge className="bg-blue-500 hover:bg-[var(--cl-ink)] text-white flex items-center gap-1 rounded-full px-3 py-1 border-0 shadow-sm">
                           <CheckCircle className="w-3.5 h-3.5" />
                           <span className="text-[10px] uppercase tracking-wider font-bold">
                             Verificado
@@ -354,7 +354,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-3 sm:p-4 shadow-sm transition-all flex flex-col items-center justify-center">
-                  <div className="p-1.5 sm:p-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl mb-1 sm:mb-2">
+                  <div className="p-1.5 sm:p-2 bg-[var(--cl-mist)] dark:bg-blue-900/20 rounded-xl mb-1 sm:mb-2">
                     <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
                   </div>
                   <span className="text-base sm:text-lg font-bold text-foreground">
@@ -366,7 +366,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-3 sm:p-4 shadow-sm transition-all flex flex-col items-center justify-center">
-                  <div className="p-1.5 sm:p-2 bg-purple-50 dark:bg-purple-900/20 rounded-xl mb-1 sm:mb-2">
+                  <div className="p-1.5 sm:p-2 bg-[var(--cl-mist)] dark:bg-purple-900/20 rounded-xl mb-1 sm:mb-2">
                     <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500" />
                   </div>
                   <span className="text-base sm:text-lg font-bold text-foreground">
@@ -428,35 +428,35 @@ export default function ProfilePage() {
                   <TabsList className="flex w-max min-w-full h-12 items-center justify-start gap-1.5 bg-muted/40 p-1.5 rounded-xl border border-border/50 backdrop-blur-sm">
                     <TabsTrigger
                       value="recommendations"
-                      className="px-4 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-md"
+                      className="px-4 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[var(--cl-teal)] data-[state=active]:text-white data-[state=active]:shadow-md"
                     >
                       Recomendações
                     </TabsTrigger>
                     {isProfessional && (
                       <TabsTrigger
                         value="services"
-                        className="px-6 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-md"
+                        className="px-6 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[var(--cl-teal)] data-[state=active]:text-white data-[state=active]:shadow-md"
                       >
                         {t("services")}
                       </TabsTrigger>
                     )}
                     <TabsTrigger
                       value="reviews"
-                      className="px-6 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-md"
+                      className="px-6 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[var(--cl-teal)] data-[state=active]:text-white data-[state=active]:shadow-md"
                     >
                       {t("reviews")}
                     </TabsTrigger>
                     {isProfessional && (
                       <TabsTrigger
                         value="portfolio"
-                        className="px-6 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-md"
+                        className="px-6 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[var(--cl-teal)] data-[state=active]:text-white data-[state=active]:shadow-md"
                       >
                         {t("portfolio")}
                       </TabsTrigger>
                     )}
                     <TabsTrigger
                       value="about"
-                      className="px-6 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[#00b0b0] data-[state=active]:text-white data-[state=active]:shadow-md"
+                      className="px-6 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all data-[state=active]:bg-[var(--cl-teal)] data-[state=active]:text-white data-[state=active]:shadow-md"
                     >
                       Sobre
                     </TabsTrigger>

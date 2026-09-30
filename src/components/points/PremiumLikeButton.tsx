@@ -144,7 +144,7 @@ export function PremiumLikeButton({
                 <Coins
                   className={cn(
                     "h-[1.1rem] w-[1.1rem] absolute inset-0 transition-all",
-                    "text-[#00b0b0]",
+                    "text-[var(--cl-teal)]",
                     isAnimating && "animate-[heartBeat_0.6s_ease-in-out]",
                     !hasEnoughPoints && "opacity-50",
                   )}
@@ -206,7 +206,7 @@ export function PremiumLikeButton({
             )}
 
             {premiumLikesCount > 0 && (
-              <p className="text-xs text-[#00b0b0] mt-1">
+              <p className="text-xs text-[var(--cl-teal)] mt-1">
                 ⚡ {premiumLikesCount} curtidas premium neste post
               </p>
             )}
@@ -244,7 +244,7 @@ export function PremiumLikesRanking() {
   return (
     <div className="space-y-2">
       <h3 className="font-semibold text-lg flex items-center gap-2">
-        <Zap className="text-[#00b0b0]" size={20} />
+        <Zap className="text-[var(--cl-teal)]" size={20} />
         Posts Mais Curtidos Premium
       </h3>
 

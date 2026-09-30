@@ -89,13 +89,13 @@ export default function FavoritesPage() {
       case "bronze":
         return "bg-amber-50 text-amber-700 border-amber-200";
       case "silver":
-        return "bg-gray-50 text-gray-700 border-gray-200";
+        return "bg-[var(--cl-mist)] text-[var(--cl-ink-secondary)] border-[var(--cl-border)]";
       case "gold":
         return "bg-yellow-50 text-yellow-700 border-yellow-200";
       case "platinum":
-        return "bg-blue-50 text-blue-700 border-blue-200";
+        return "bg-[var(--cl-mist)] text-blue-700 border-blue-200";
       default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
+        return "bg-[var(--cl-mist)] text-[var(--cl-ink-secondary)] border-[var(--cl-border)]";
     }
   };
 
@@ -141,11 +141,13 @@ export default function FavoritesPage() {
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <Card>
             <CardContent className="p-8 text-center">
-              <Heart className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              <Heart className="h-16 w-16 mx-auto text-[var(--cl-ink-muted)] mb-4" />
+              <h2 className="text-2xl font-bold text-[var(--cl-ink)] mb-2">
                 {t("loginRequired")}
               </h2>
-              <p className="text-gray-600 mb-6">{t("loginDescription")}</p>
+              <p className="text-[var(--cl-ink-secondary)] mb-6">
+                {t("loginDescription")}
+              </p>
               <Button asChild>
                 <a href="/auth">{tCommon("login")}</a>
               </Button>
@@ -165,11 +167,11 @@ export default function FavoritesPage() {
             <div className="text-center mb-4">
               <div className="flex items-center justify-center gap-3 mb-4">
                 <Heart className="h-8 w-8 text-red-500" />
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-3xl font-bold text-[var(--cl-ink)]">
                   {t("title")}
                 </h1>
               </div>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-[var(--cl-ink-secondary)]">
                 {t("description")}
               </p>
             </div>
@@ -242,13 +244,13 @@ export default function FavoritesPage() {
           {/* Abas de Filtro */}
           {!loading && !error && favorites.length > 0 && (
             <div className="mb-6">
-              <div className="flex flex-wrap items-center gap-2 p-1 bg-gray-100 dark:bg-gray-900 rounded-lg">
+              <div className="flex flex-wrap items-center gap-2 p-1 bg-[var(--cl-mist)] rounded-lg">
                 <button
                   onClick={() => setActiveTab("all")}
                   className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all duration-200 ${
                     activeTab === "all"
-                      ? "bg-white dark:bg-gray-700 text-red-600 dark:text-red-400 shadow-sm"
-                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      ? "bg-[var(--cl-surface)] text-[var(--cl-heart)] shadow-sm"
+                      : "text-[var(--cl-ink-secondary)] hover:text-[var(--cl-ink)] hover:bg-[var(--cl-surface)]/60"
                   }`}
                 >
                   <Users className="h-4 w-4" />
@@ -262,8 +264,8 @@ export default function FavoritesPage() {
                   onClick={() => setActiveTab("professionals")}
                   className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all duration-200 ${
                     activeTab === "professionals"
-                      ? "bg-white dark:bg-gray-700 text-red-600 dark:text-red-400 shadow-sm"
-                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      ? "bg-[var(--cl-surface)] text-[var(--cl-heart)] shadow-sm"
+                      : "text-[var(--cl-ink-secondary)] hover:text-[var(--cl-ink)] hover:bg-[var(--cl-surface)]/60"
                   }`}
                 >
                   <Briefcase className="h-4 w-4" />
@@ -277,8 +279,8 @@ export default function FavoritesPage() {
                   onClick={() => setActiveTab("clients")}
                   className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all duration-200 ${
                     activeTab === "clients"
-                      ? "bg-white dark:bg-gray-700 text-red-600 dark:text-red-400 shadow-sm"
-                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      ? "bg-[var(--cl-surface)] text-[var(--cl-heart)] shadow-sm"
+                      : "text-[var(--cl-ink-secondary)] hover:text-[var(--cl-ink)] hover:bg-[var(--cl-surface)]/60"
                   }`}
                 >
                   <User className="h-4 w-4" />
@@ -309,10 +311,10 @@ export default function FavoritesPage() {
                   {getFilteredFavorites().map((favorite) => (
                     <Card
                       key={favorite.id}
-                      className={`hover:shadow-lg transition-all duration-300 hover:scale-105 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 ${
+                      className={`hover:shadow-lg transition-all duration-300 hover:scale-105 bg-[var(--cl-surface)] border-[var(--cl-border)] rounded-[var(--cl-radius-card)] shadow-[var(--cl-shadow)] ${
                         favorite.professional?.user_type === "professional"
                           ? "hover:shadow-blue-100 dark:hover:shadow-blue-900/20"
-                          : "hover:shadow-gray-100 dark:hover:shadow-gray-900/20"
+                          : "hover:shadow-[var(--cl-shadow)]"
                       }`}
                     >
                       <CardContent className="p-3 sm:p-4">
@@ -337,7 +339,7 @@ export default function FavoritesPage() {
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                            <h3 className="font-semibold text-[var(--cl-ink)] truncate">
                               {favorite.professional?.full_name}
                             </h3>
                             <div className="flex items-center gap-2 mt-1">
@@ -347,7 +349,7 @@ export default function FavoritesPage() {
                                   favorite.professional?.user_type ===
                                   "professional"
                                     ? "border-gray-400 dark:border-gray-600 text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-700"
-                                    : "border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-700"
+                                    : "border-[var(--cl-border)] text-[var(--cl-ink-secondary)] bg-[var(--cl-mist)]"
                                 }`}
                               >
                                 {favorite.professional?.user_type ===
@@ -373,7 +375,7 @@ export default function FavoritesPage() {
                         {/* Conteúdo do Card */}
                         <div className="mb-3">
                           {favorite.professional?.bio && (
-                            <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 mb-2">
+                            <p className="text-[var(--cl-ink-secondary)] text-sm line-clamp-2 mb-2">
                               {favorite.professional.bio}
                             </p>
                           )}
@@ -422,14 +424,14 @@ export default function FavoritesPage() {
                         </div>
 
                         {/* Footer do Card */}
-                        <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+                        <div className="flex items-center justify-between pt-3 border-t border-[var(--cl-border)]">
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() =>
                               handleViewProfile(favorite.professional?.id || "")
                             }
-                            className="bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-300"
+                            className="bg-[var(--cl-mist)] hover:brightness-95 text-[var(--cl-ink-secondary)] border-[var(--cl-border)]"
                           >
                             <Eye className="h-4 w-4 mr-1" />
                             {tProfile("viewProfile")}
@@ -445,8 +447,8 @@ export default function FavoritesPage() {
                             className={`${
                               favorite.professional?.user_type ===
                               "professional"
-                                ? "bg-gray-700 hover:bg-gray-800"
-                                : "bg-gray-500 hover:bg-gray-600"
+                                ? "bg-[var(--cl-ink)] hover:brightness-110"
+                                : "bg-[var(--cl-ink-muted)] hover:brightness-110"
                             } text-white`}
                             title={tProfile("contact")}
                           >

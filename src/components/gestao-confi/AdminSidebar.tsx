@@ -108,7 +108,7 @@ export function AdminSidebar({ onNavigate }: AdminSidebarProps) {
     <div className="flex flex-col h-full py-6 space-y-6">
       <div className="px-6">
         <div className="flex items-center gap-2 mb-8">
-          <div className="bg-blue-600 p-1.5 rounded-lg shadow-lg shadow-blue-500/20">
+          <div className="bg-[var(--cl-ink)] p-1.5 rounded-lg shadow-lg shadow-blue-500/20">
             <Shield className="h-5 w-5 text-white" />
           </div>
           <h2 className="text-xl font-bold tracking-tight">Admin</h2>
@@ -133,7 +133,7 @@ export function AdminSidebar({ onNavigate }: AdminSidebarProps) {
                       className={cn(
                         "w-full justify-start h-9 px-3 rounded-xl transition-all",
                         isActive
-                          ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 font-semibold"
+                          ? "bg-[var(--cl-mist)] text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 font-semibold"
                           : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
                       )}
                       asChild
@@ -143,7 +143,7 @@ export function AdminSidebar({ onNavigate }: AdminSidebarProps) {
                         <Icon
                           className={cn(
                             "mr-2.5 h-4 w-4",
-                            isActive && "text-blue-600 dark:text-blue-400",
+                            isActive && "text-[var(--cl-teal)] dark:text-blue-400",
                           )}
                         />
                         <span className="flex-1 truncate">{item.label}</span>

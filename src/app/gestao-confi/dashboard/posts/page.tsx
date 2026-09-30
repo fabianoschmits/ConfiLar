@@ -254,7 +254,7 @@ export default function AdminPostsPage() {
   ];
 
   const renderMobileCard = (item: ContentItem) => (
-    <div className="bg-white dark:bg-gray-900 border border-border/40 rounded-2xl p-3 shadow-sm space-y-3 group transition-all border-b-2 border-b-muted">
+    <div className="bg-[var(--cl-surface)] border border-border/40 rounded-2xl p-3 shadow-sm space-y-3 group transition-all border-b-2 border-b-muted">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8 border border-border/50">
@@ -319,8 +319,8 @@ export default function AdminPostsPage() {
 
       {/* Hero Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-        <div className="bg-white dark:bg-gray-900 border border-border/50 p-3 sm:p-6 rounded-2xl sm:rounded-[32px] shadow-sm flex items-center gap-2 sm:gap-4">
-          <div className="h-8 w-8 sm:h-12 sm:w-12 rounded-lg sm:rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+        <div className="bg-[var(--cl-surface)] border border-border/50 p-3 sm:p-6 rounded-2xl sm:rounded-[32px] shadow-sm flex items-center gap-2 sm:gap-4">
+          <div className="h-8 w-8 sm:h-12 sm:w-12 rounded-lg sm:rounded-2xl bg-[var(--cl-mist)] text-[var(--cl-teal)] flex items-center justify-center shrink-0">
             <FileText className="h-4 w-4 sm:h-6 sm:w-6" />
           </div>
           <div className="min-w-0">
@@ -330,7 +330,7 @@ export default function AdminPostsPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-gray-900 border border-border/50 p-3 sm:p-6 rounded-2xl sm:rounded-[32px] shadow-sm flex items-center gap-2 sm:gap-4">
+        <div className="bg-[var(--cl-surface)] border border-border/50 p-3 sm:p-6 rounded-2xl sm:rounded-[32px] shadow-sm flex items-center gap-2 sm:gap-4">
           <div className="h-8 w-8 sm:h-12 sm:w-12 rounded-lg sm:rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
             <Star className="h-4 w-4 sm:h-6 sm:w-6" />
           </div>
@@ -343,7 +343,7 @@ export default function AdminPostsPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-gray-900 border border-border/50 p-3 sm:p-6 rounded-2xl sm:rounded-[32px] shadow-sm flex items-center gap-2 sm:gap-4 col-span-2 sm:col-span-1">
+        <div className="bg-[var(--cl-surface)] border border-border/50 p-3 sm:p-6 rounded-2xl sm:rounded-[32px] shadow-sm flex items-center gap-2 sm:gap-4 col-span-2 sm:col-span-1">
           <div className="h-8 w-8 sm:h-12 sm:w-12 rounded-lg sm:rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
             <TrendingUp className="h-4 w-4 sm:h-6 sm:w-6" />
           </div>

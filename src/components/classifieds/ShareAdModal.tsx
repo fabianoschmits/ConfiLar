@@ -296,13 +296,13 @@ export function ShareAdModal({
                 setSearchQuery(e.target.value);
                 searchUsers(e.target.value);
               }}
-              className="pl-10 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 border border-gray-300 dark:border-gray-600"
+              className="pl-10 bg-[var(--cl-surface)] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 border border-gray-300 dark:border-gray-600"
             />
           </div>
         </div>
 
         {searchQuery && (
-          <div className="border border-gray-200 dark:border-gray-700 rounded-lg max-h-60 overflow-y-auto bg-white dark:bg-gray-900">
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg max-h-60 overflow-y-auto bg-[var(--cl-surface)]">
             {isSearching ? (
               <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                 <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
@@ -395,7 +395,7 @@ export function ShareAdModal({
             placeholder="Adicione uma mensagem..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="min-h-[80px] bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 border border-gray-300 dark:border-gray-600"
+            className="min-h-[80px] bg-[var(--cl-surface)] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 border border-gray-300 dark:border-gray-600"
           />
         </div>
 
@@ -428,7 +428,7 @@ export function ShareAdModal({
             <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="bg-white dark:bg-black px-2 text-gray-500 dark:text-gray-400">
+            <span className="bg-[var(--cl-surface)] px-2 text-gray-500 dark:text-gray-400">
               ou compartilhe via link
             </span>
           </div>

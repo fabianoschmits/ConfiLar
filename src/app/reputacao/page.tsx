@@ -514,7 +514,7 @@ export default function ReputacaoPage() {
             <div className="text-center mb-8">
               <div className="flex justify-center mb-4">
                 <div className="p-4 bg-blue-100 rounded-full">
-                  <Award className="h-12 w-12 text-blue-600" />
+                  <Award className="h-12 w-12 text-[var(--cl-teal)]" />
                 </div>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
@@ -802,7 +802,7 @@ export default function ReputacaoPage() {
                                 }
                                 alt={`Avatar de ${reviewsSubTab === "received" ? review.reviewer.full_name : review.reviewed.full_name}`}
                               />
-                              <AvatarFallback className="bg-blue-100 text-blue-600">
+                              <AvatarFallback className="bg-blue-100 text-[var(--cl-teal)]">
                                 {(reviewsSubTab === "received"
                                   ? review.reviewer.full_name
                                   : review.reviewed.full_name

@@ -216,7 +216,7 @@ export function EditPostModal({
       showCloseButton={false}
     >
       {/* HEADER FIXO */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0 z-10">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-[var(--cl-surface)] flex-shrink-0 z-10">
         <button
           onClick={onClose}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
@@ -253,7 +253,7 @@ export function EditPostModal({
                   : "Conte sua experiência, o que mais gostou..."
               }
               disabled={isLoading}
-              className="pr-16 min-h-24 resize-none text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="pr-16 min-h-24 resize-none text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-[var(--cl-surface)] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               minHeight="96px"
             />
             <div className="absolute bottom-2 right-2 flex items-center gap-1">
@@ -421,7 +421,7 @@ export function EditPostModal({
                       Escolha a duração
                     </span>
                   </div>
-                  <div className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-700 dark:text-gray-300 bg-white dark:bg-black px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800 shadow-sm">
+                  <div className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-700 dark:text-gray-300 bg-[var(--cl-surface)] px-2 py-1 rounded-full border border-gray-200 dark:border-gray-800 shadow-sm">
                     <Coins className="h-3 w-3 text-warning-500" />
                     <span className="font-medium">
                       {balance?.balance || 0} pts saldo
@@ -456,7 +456,7 @@ export function EditPostModal({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-1/3 h-8 text-[11px] px-2 bg-white dark:bg-black"
+                    className="w-1/3 h-8 text-[11px] px-2 bg-[var(--cl-surface)]"
                     onClick={(e) => {
                       e.preventDefault();
                       setShowPremiumOptions(false);

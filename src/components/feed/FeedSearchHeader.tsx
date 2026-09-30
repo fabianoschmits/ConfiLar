@@ -51,16 +51,16 @@ export function FeedSearchHeader({
   };
 
   return (
-    <div className="w-full space-y-3 bg-white dark:bg-black p-4 pb-2 border-b border-gray-100 dark:border-gray-900">
+    <div className="w-full space-y-3 bg-[var(--cl-paper)] p-4 pb-2">
       <div className="flex items-center gap-2">
         <form onSubmit={handleSearchSubmit} className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--cl-ink-muted)]" />
           <Input
             ref={inputRef}
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
             placeholder="Buscar posts, serviços, pessoas..."
-            className="pl-9 bg-gray-100 dark:bg-gray-900 border-none h-11 w-full rounded-full"
+            className="pl-9 bg-[var(--cl-mist)] border-none h-11 w-full rounded-full text-[var(--cl-ink)] placeholder:text-[var(--cl-ink-muted)]"
           />
           {localSearch && (
             <button
@@ -69,9 +69,9 @@ export function FeedSearchHeader({
                 setLocalSearch("");
                 onSearch("");
               }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-[var(--cl-mist)] rounded-full transition-colors"
             >
-              <X className="h-4 w-4 text-gray-400" />
+              <X className="h-4 w-4 text-[var(--cl-ink-muted)]" />
             </button>
           )}
         </form>
@@ -80,9 +80,9 @@ export function FeedSearchHeader({
           variant="outline"
           size="icon"
           className={cn(
-            "h-11 w-11 shrink-0 rounded-full border-gray-200 dark:border-gray-800 transition-all",
+            "h-11 w-11 shrink-0 rounded-[16px] border-0 bg-[var(--cl-mist)] text-[var(--cl-ink-muted)] transition-all",
             currentFilter.type !== "all" &&
-              "border-primary-500 text-primary-500 bg-primary-50 dark:bg-primary-900/10",
+              "text-[var(--cl-teal)] bg-[var(--cl-mist)] ring-1 ring-[var(--cl-teal)]/40",
           )}
           onClick={() => setShowFilters(true)}
         >
@@ -97,15 +97,13 @@ export function FeedSearchHeader({
           className={cn(
             "flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-colors",
             currentFilter.type === "all"
-              ? "bg-gray-100 dark:bg-gray-800 border-transparent text-gray-600 dark:text-gray-400"
-              : "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300",
+              ? "bg-[var(--cl-mist)] border-transparent text-[var(--cl-ink-muted)]"
+              : "bg-[var(--cl-mist)] border-[var(--cl-teal)]/30 text-[var(--cl-teal)]",
           )}
         >
           <MapPin className="h-3 w-3" />
           <span className="max-w-[150px] truncate">{getLocationLabel()}</span>
         </button>
-
-        {/* Helper text if "All Locations" is set but search is empty, maybe prompt user? */}
       </div>
 
       <FeedFilterModal

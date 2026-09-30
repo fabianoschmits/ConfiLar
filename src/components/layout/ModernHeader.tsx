@@ -417,7 +417,7 @@ export function ModernHeader({
                       userId={userId}
                       showReferralBadge={false}
                     />
-                    <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                    <ChevronDown className="h-4 w-4 text-[var(--cl-ink-muted)]" />
                   </Button>
                 ) : (
                   <Button
@@ -432,10 +432,10 @@ export function ModernHeader({
 
                 {/* Menu Expandido */}
                 {isMenuExpanded && (
-                  <div className="absolute top-full right-0 mt-2 w-72 sm:w-80 bg-[var(--cl-surface)] dark:bg-zinc-900 border border-[var(--cl-border)] rounded-2xl shadow-[var(--cl-shadow)] z-50 max-h-[75vh] overflow-hidden animate-slide-down">
+                  <div className="absolute top-full right-0 mt-2 w-72 sm:w-80 bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-2xl shadow-[var(--cl-shadow)] z-50 max-h-[75vh] overflow-hidden animate-slide-down">
                     <div className="p-3 sm:p-4 overflow-y-auto max-h-[75vh]">
                       {/* Header do Perfil */}
-                      <div className="flex items-center space-x-2 sm:space-x-3 pb-3 sm:pb-4 border-b border-gray-200 dark:border-gray-700 -mx-3 sm:-mx-4 px-3 sm:px-4">
+                      <div className="flex items-center space-x-2 sm:space-x-3 pb-3 sm:pb-4 border-b border-[var(--cl-border)] -mx-3 sm:-mx-4 px-3 sm:px-4">
                         {/* Link para o perfil - apenas foto e nome */}
                         <Link
                           href={profileId ? `/perfil/${profileId}` : "/auth"}
@@ -474,13 +474,13 @@ export function ModernHeader({
                       </div>
 
                       {/* Estatísticas de Reputação */}
-                      <div className="py-2 sm:py-3 border-b border-gray-200 dark:border-gray-700">
+                      <div className="py-2 sm:py-3 border-b border-[var(--cl-border)]">
                         <h4 className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">
                           {t("myReputation")}
                         </h4>
                         <div className="flex justify-between gap-1">
                           <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-primary-50 dark:bg-primary-900/30 rounded-md">
-                            <Eye className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-600 dark:text-blue-400 mb-0.5" />
+                            <Eye className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-[var(--cl-teal)] mb-0.5" />
                             <div className="text-xs font-semibold text-gray-900 dark:text-white">
                               {reputationStats.totalViews}
                             </div>
@@ -499,7 +499,7 @@ export function ModernHeader({
                           </div>
                           {profile?.user_type === "professional" &&
                             reputationStats.averageRating > 0 && (
-                              <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-gray-50 dark:bg-gray-700 rounded-md">
+                              <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-[var(--cl-mist)] rounded-md">
                                 <div className="mb-0.5">
                                   <StarRating
                                     rating={reputationStats.averageRating}
@@ -544,10 +544,10 @@ export function ModernHeader({
                       </div>
 
                       {/* Principal */}
-                      <div className="border-b border-gray-200 dark:border-gray-700">
+                      <div className="border-b border-[var(--cl-border)]">
                         <button
                           onClick={() => toggleSection("principal")}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-[var(--cl-mist)] rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
                             <Home className="h-3 w-3" />
@@ -572,7 +572,7 @@ export function ModernHeader({
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation("/feed")}
-                              className="flex items-center gap-1 text-xs py-1 h-7 text-[#00b0b0]"
+                              className="flex items-center gap-1 text-xs py-1 h-7 text-[var(--cl-teal)]"
                             >
                               <Users className="h-3 w-3" />
                               <span className="truncate">
@@ -606,10 +606,10 @@ export function ModernHeader({
                       </div>
 
                       {/* Gestão */}
-                      <div className="border-b border-gray-200 dark:border-gray-700">
+                      <div className="border-b border-[var(--cl-border)]">
                         <button
                           onClick={() => toggleSection("gestao")}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-[var(--cl-mist)] rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
                             <Calendar className="h-3 w-3" />
@@ -675,10 +675,10 @@ export function ModernHeader({
                       </div>
 
                       {/* ConfiPoints */}
-                      <div className="border-b border-gray-200 dark:border-gray-700">
+                      <div className="border-b border-[var(--cl-border)]">
                         <button
                           onClick={() => toggleSection("confipoints")}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-[var(--cl-mist)] rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
                             <Coins className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
@@ -709,10 +709,10 @@ export function ModernHeader({
                               onClick={() =>
                                 handleNavigation("/confipoints/comprar")
                               }
-                              className="flex items-center gap-1 text-xs py-1 h-7 bg-purple-50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+                              className="flex items-center gap-1 text-xs py-1 h-7 bg-[var(--cl-teal)]/10 hover:bg-[var(--cl-teal)]/20"
                             >
-                              <Crown className="h-3 w-3 text-purple-600 dark:text-purple-400" />
-                              <span className="truncate text-purple-700 dark:text-purple-300">
+                              <Crown className="h-3 w-3 text-[var(--cl-teal)]" />
+                              <span className="truncate text-[var(--cl-teal)]">
                                 Loja Premium
                               </span>
                             </Button>
@@ -735,10 +735,10 @@ export function ModernHeader({
                               onClick={() =>
                                 handleNavigation("/confipoints/transferir")
                               }
-                              className="flex items-center gap-1 text-xs py-1 h-7 bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                              className="flex items-center gap-1 text-xs py-1 h-7 bg-[var(--cl-mist)] hover:brightness-95"
                             >
-                              <Send className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-                              <span className="truncate text-blue-700 dark:text-blue-300">
+                              <Send className="h-3 w-3 text-[var(--cl-teal)]" />
+                              <span className="truncate text-[var(--cl-ink)]">
                                 Transferir
                               </span>
                             </Button>
@@ -763,10 +763,10 @@ export function ModernHeader({
 
                       {/* Profissional */}
                       {profile?.user_type === "professional" && (
-                        <div className="border-b border-gray-200 dark:border-gray-700">
+                        <div className="border-b border-[var(--cl-border)]">
                           <button
                             onClick={() => toggleSection("profissional")}
-                            className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
+                            className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-[var(--cl-mist)] rounded-md px-2"
                           >
                             <div className="flex items-center gap-2">
                               <Briefcase className="h-3 w-3" />
@@ -806,10 +806,10 @@ export function ModernHeader({
                       )}
 
                       {/* Meu Perfil */}
-                      <div className="border-b border-gray-200 dark:border-gray-700">
+                      <div className="border-b border-[var(--cl-border)]">
                         <button
                           onClick={() => toggleSection("meu-perfil")}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-[var(--cl-mist)] rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
                             <User className="h-3 w-3" />
@@ -825,7 +825,7 @@ export function ModernHeader({
                               variant="ghost"
                               size="sm"
                               onClick={() => openProfileModal("account")}
-                              className="flex items-center gap-2 text-xs py-2.5 h-auto w-full justify-start font-semibold text-[#00b0b0] bg-[#00b0b0]/5 hover:bg-[#00b0b0]/10 rounded-lg transition-colors"
+                              className="flex items-center gap-2 text-xs py-2.5 h-auto w-full justify-start font-semibold text-[var(--cl-teal)] bg-[var(--cl-teal)]/5 hover:bg-[var(--cl-teal)]/10 rounded-lg transition-colors"
                             >
                               <Settings className="h-4 w-4" />
                               <div className="flex flex-col items-start">
@@ -854,10 +854,10 @@ export function ModernHeader({
                       </div>
 
                       {/* Acessibilidade - Moving above Support for better visibility */}
-                      <div className="border-b border-gray-200 dark:border-gray-700">
+                      <div className="border-b border-[var(--cl-border)]">
                         <button
                           onClick={() => toggleSection("acessibilidade")}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-[var(--cl-mist)] rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
                             <Settings className="h-3 w-3" />
@@ -881,10 +881,10 @@ export function ModernHeader({
                       </div>
 
                       {/* Suporte */}
-                      <div className="border-b border-gray-200 dark:border-gray-700">
+                      <div className="border-b border-[var(--cl-border)]">
                         <button
                           onClick={() => toggleSection("suporte")}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-[var(--cl-mist)] rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
                             <HelpCircle className="h-3 w-3" />
@@ -962,10 +962,10 @@ export function ModernHeader({
 
                       {/* Administração - Apenas para Admin */}
                       {isAdmin && (
-                        <div className="border-b border-gray-200 dark:border-gray-700">
+                        <div className="border-b border-[var(--cl-border)]">
                           <button
                             onClick={() => toggleSection("administracao")}
-                            className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
+                            className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-[var(--cl-mist)] rounded-md px-2"
                           >
                             <div className="flex items-center gap-2">
                               <ShieldCheck className="h-3 w-3" />
@@ -996,7 +996,7 @@ export function ModernHeader({
                       )}
 
                       {/* Botão de Sair */}
-                      <div className="pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <div className="pt-3 sm:pt-4 border-t border-[var(--cl-border)]">
                         <Button
                           variant="destructive"
                           size="sm"

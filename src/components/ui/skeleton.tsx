@@ -125,7 +125,7 @@ export function ProfileSkeleton() {
 // Skeleton para a seção de Stories
 export function StoriesSkeleton() {
   return (
-    <div className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-900">
+    <div className="bg-[var(--cl-surface)] border-b border-gray-200 dark:border-gray-900">
       <div className="max-w-2xl mx-auto px-4 py-3">
         <div className="flex gap-4 overflow-x-auto scrollbar-hide">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -148,7 +148,7 @@ export function StoriesSkeleton() {
 // Skeleton para um post do feed (estilo Instagram)
 export function InstagramPostSkeleton() {
   return (
-    <article className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm">
+    <article className="bg-[var(--cl-surface)] border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm">
       {/* Header do post */}
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center space-x-3">
@@ -525,7 +525,7 @@ export function ProfilePageSkeleton() {
 // Skeleton para card de avaliação
 export function ReviewCardSkeleton() {
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3 animate-fade-in bg-white dark:bg-gray-900">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3 animate-fade-in bg-[var(--cl-surface)]">
       <div className="flex items-start space-x-3">
         {/* Avatar do revisor */}
         <Skeleton variant="circle" width={48} height={48} />
@@ -585,7 +585,7 @@ export function ReviewListSkeleton({ count = 5 }: { count?: number }) {
 // Skeleton para card de favorito
 export function FavoriteCardSkeleton() {
   return (
-    <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 animate-fade-in">
+    <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-[var(--cl-surface)] border-gray-200 dark:border-gray-700 animate-fade-in">
       <CardContent className="p-3 sm:p-4">
         {/* Header do Card com Avatar e Info do Usuário */}
         <div className="flex items-start space-x-3 mb-3">
@@ -917,7 +917,7 @@ export function LandingPageSkeleton() {
       </section>
 
       {/* Sections Skeleton */}
-      <section className="py-24 bg-white dark:bg-gray-900">
+      <section className="py-24 bg-[var(--cl-surface)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <Skeleton

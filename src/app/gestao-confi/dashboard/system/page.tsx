@@ -89,7 +89,7 @@ export default function AdminSystemPage() {
       />
 
       <div className="grid grid-cols-2 md:grid-cols-2 gap-3 sm:gap-6">
-        <div className="bg-white dark:bg-gray-900 border border-border/50 rounded-2xl sm:rounded-[32px] p-3 sm:p-6 shadow-sm flex flex-col justify-between">
+        <div className="bg-[var(--cl-surface)] border border-border/50 rounded-2xl sm:rounded-[32px] p-3 sm:p-6 shadow-sm flex flex-col justify-between">
           <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-3 mb-3 sm:mb-4">
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center sm:text-left">
               <div
@@ -143,9 +143,9 @@ export default function AdminSystemPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-900 border border-border/50 rounded-2xl sm:rounded-[32px] p-3 sm:p-6 shadow-sm flex flex-col justify-between">
+        <div className="bg-[var(--cl-surface)] border border-border/50 rounded-2xl sm:rounded-[32px] p-3 sm:p-6 shadow-sm flex flex-col justify-between">
           <div className="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
-            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-2xl bg-[var(--cl-mist)] text-[var(--cl-teal)] flex items-center justify-center shrink-0">
               <Database className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div className="min-w-0">
@@ -183,7 +183,7 @@ export default function AdminSystemPage() {
         </TabsList>
 
         <TabsContent value="infra">
-          <div className="bg-white dark:bg-gray-900 border border-border/40 rounded-2xl sm:rounded-[32px] p-4 sm:p-8 space-y-4 sm:space-y-6 shadow-sm">
+          <div className="bg-[var(--cl-surface)] border border-border/40 rounded-2xl sm:rounded-[32px] p-4 sm:p-8 space-y-4 sm:space-y-6 shadow-sm">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
               <div className="space-y-1">
                 <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest opacity-40 flex items-center gap-2">
@@ -214,7 +214,7 @@ export default function AdminSystemPage() {
         </TabsContent>
 
         <TabsContent value="security">
-          <div className="bg-white dark:bg-gray-900 border border-border/40 rounded-2xl sm:rounded-[32px] p-4 sm:p-8 space-y-3 sm:space-y-4 shadow-sm">
+          <div className="bg-[var(--cl-surface)] border border-border/40 rounded-2xl sm:rounded-[32px] p-4 sm:p-8 space-y-3 sm:space-y-4 shadow-sm">
             <div className="flex items-center gap-3 mb-2 sm:mb-4">
               <Shield className="h-4 w-4 sm:h-5 w-5 text-emerald-600" />
               <h4 className="text-[11px] sm:text-sm font-black uppercase tracking-tighter">

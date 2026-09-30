@@ -715,7 +715,7 @@ export function FloatingChat() {
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           onFocus={() => setShowFavoritesSearch(true)}
-                          className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[var(--cl-teal)] focus:border-transparent"
                         />
                       </div>
 
@@ -763,7 +763,7 @@ export function FloatingChat() {
                                     onClick={() =>
                                       startConversationWithFavorite(favorite)
                                     }
-                                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-xs py-1.5 h-auto"
+                                    className="flex-1 bg-blue-500 hover:bg-[var(--cl-ink)] text-white text-xs py-1.5 h-auto"
                                   >
                                     <MessageCircle className="h-3 w-3 mr-1" />
                                     Chat
@@ -831,7 +831,7 @@ export function FloatingChat() {
                               }
                               className={`bg-white dark:bg-gray-800 border rounded-xl p-3 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all duration-200 ${
                                 unreadCount > 0
-                                  ? "border-blue-200 bg-blue-50/30 dark:bg-blue-900/20 dark:border-blue-800"
+                                  ? "border-blue-200 bg-[var(--cl-mist)]/30 dark:bg-blue-900/20 dark:border-blue-800"
                                   : "border-gray-200 dark:border-gray-700"
                               }`}
                             >
@@ -896,7 +896,7 @@ export function FloatingChat() {
                                     </span>
                                   )}
                                   {unreadCount > 0 && (
-                                    <Badge className="bg-blue-600 text-white font-medium text-[10px] h-5 min-w-[20px] rounded-full flex items-center justify-center px-1 shadow-sm">
+                                    <Badge className="bg-[var(--cl-ink)] text-white font-medium text-[10px] h-5 min-w-[20px] rounded-full flex items-center justify-center px-1 shadow-sm">
                                       {unreadCount}
                                     </Badge>
                                   )}
@@ -916,7 +916,7 @@ export function FloatingChat() {
                   /* Chat da Conversa */
                   <div className="flex flex-col h-full">
                     {/* Header da Conversa */}
-                    <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-3 rounded-t-2xl">
+                    <div className="bg-gradient-to-r from-blue-500 to-[var(--cl-ink)] p-3 rounded-t-2xl">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 ml-4">
                           <MessageCircle className="h-4 w-4 text-white" />
@@ -1103,7 +1103,7 @@ export function FloatingChat() {
                             <div
                               className={`max-w-[80%] rounded-2xl relative ${
                                 isOwn
-                                  ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white p-2"
+                                  ? "bg-gradient-to-r from-blue-500 to-[var(--cl-ink)] text-white p-2"
                                   : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-3"
                               }`}
                             >
@@ -1153,7 +1153,7 @@ export function FloatingChat() {
                                           editingContent.trim() ===
                                             message.content
                                         }
-                                        className="h-6 px-2 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
+                                        className="h-6 px-2 text-xs bg-blue-500 hover:bg-[var(--cl-ink)] text-white rounded-lg"
                                       >
                                         <Check className="h-3 w-3" />
                                       </Button>
@@ -1234,7 +1234,7 @@ export function FloatingChat() {
                         <Button
                           onClick={handleSendMessage}
                           disabled={!newMessage.trim() || sending}
-                          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                          className="bg-gradient-to-r from-blue-500 to-[var(--cl-ink)] hover:from-[var(--cl-ink)] hover:to-[var(--cl-ink)] text-white px-4 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
                         >
                           <Send className="h-4 w-4" />
                         </Button>
@@ -1298,7 +1298,7 @@ export function FloatingChat() {
             {hasUnreadMessageNotifications || totalUnread > 0 ? (
               <Button
                 onClick={() => setIsExpanded(true)}
-                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-xl hover:shadow-2xl transition-all duration-200 p-4 rounded-full relative"
+                className="bg-gradient-to-r from-blue-500 to-[var(--cl-ink)] hover:from-[var(--cl-ink)] hover:to-[var(--cl-ink)] text-white shadow-xl hover:shadow-2xl transition-all duration-200 p-4 rounded-full relative"
               >
                 <MessageCircle className="h-6 w-6" />
                 {(totalUnread > 0 || hasUnreadMessageNotifications) && (

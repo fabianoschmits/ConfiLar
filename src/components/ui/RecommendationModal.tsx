@@ -289,7 +289,7 @@ export function RecommendationModal({
             }
             disabled={recommending || user?.id === userId}
             variant={hasRecommended ? "outline" : "default"}
-            className={`w-full ${!hasRecommended && "bg-[#00b0b0] hover:bg-[#009999] text-white"}`}
+            className={`w-full ${!hasRecommended && "bg-[var(--cl-teal)] hover:brightness-95 text-white"}`}
           >
             {recommending ? (
               <>
@@ -298,7 +298,7 @@ export function RecommendationModal({
               </>
             ) : hasRecommended ? (
               <>
-                <ThumbsUp className="h-4 w-4 mr-2 fill-[#00b0b0] text-[#00b0b0]" />
+                <ThumbsUp className="h-4 w-4 mr-2 fill-[#00b0b0] text-[var(--cl-teal)]" />
                 Cancelar Recomendação
               </>
             ) : (
@@ -337,7 +337,7 @@ export function RecommendationModal({
               {recommendations.map((rec) => (
                 <div
                   key={rec.id}
-                  className="flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
+                  className="flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-[var(--cl-surface)]"
                 >
                   <Link href={`/perfil/${rec.recommender.id}`}>
                     <Avatar className="h-8 w-8 md:h-12 md:w-12 cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all">

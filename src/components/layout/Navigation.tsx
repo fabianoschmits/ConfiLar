@@ -56,7 +56,7 @@ export function Navigation() {
           <div className="flex items-center">
             <button
               onClick={() => handleNavigation("/home")}
-              className="text-2xl font-bold text-blue-600 hover:text-blue-800 transition-colors"
+              className="text-2xl font-bold text-[var(--cl-teal)] hover:text-blue-800 transition-colors"
             >
               Confilar
             </button>

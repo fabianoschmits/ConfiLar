@@ -211,10 +211,10 @@ export function IdentityVerificationForm() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl p-6">
+      <div className="bg-[var(--cl-mist)] dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl p-6">
         <div className="flex items-start gap-4">
           <div className="p-3 bg-blue-100 dark:bg-blue-800 rounded-xl">
-            <ShieldCheck className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <ShieldCheck className="w-6 h-6 text-[var(--cl-teal)] dark:text-blue-400" />
           </div>
           <div>
             <h4 className="text-lg font-bold text-gray-900 dark:text-white">
@@ -320,7 +320,7 @@ export function IdentityVerificationForm() {
                 onClick={handleUpload}
                 isLoading={loading}
                 disabled={selectedFiles.length === 0}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-12 text-base font-bold shadow-lg shadow-blue-200 dark:shadow-none transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white rounded-xl h-12 text-base font-bold shadow-lg shadow-blue-200 dark:shadow-none transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 {loading ? "Enviando..." : "Enviar para Verificação"}
               </LoadingButton>

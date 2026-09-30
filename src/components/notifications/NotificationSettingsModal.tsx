@@ -99,7 +99,7 @@ const NOTIFICATION_TYPES = [
     value: "achievement",
     label: "Conquista",
     icon: Trophy,
-    color: "bg-purple-500",
+    color: "bg-[var(--cl-teal)]",
   },
   {
     value: "verification",
@@ -543,7 +543,7 @@ export function NotificationSettingsModal({
                           key={notification.id}
                           className={`transition-all duration-200 hover:shadow-md ${
                             !notification.is_read
-                              ? "bg-blue-50/50 border-blue-200"
+                              ? "bg-[var(--cl-mist)]/50 border-blue-200"
                               : "bg-white"
                           }`}
                         >
@@ -878,7 +878,7 @@ export function NotificationSettingsModal({
               <Card>
                 <CardHeader className="p-4 sm:p-6">
                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                    <Send className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                    <Send className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--cl-teal)]" />
                     Criar Notificação
                   </CardTitle>
                 </CardHeader>
@@ -1081,7 +1081,7 @@ export function NotificationSettingsModal({
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Filter className="w-5 h-5 text-purple-600" />
+                      <Filter className="w-5 h-5 text-[var(--cl-teal)]" />
                       Tipos de Notificação
                     </CardTitle>
                     <CardDescription>
@@ -1303,7 +1303,7 @@ export function NotificationSettingsModal({
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Mail className="w-5 h-5 text-blue-600" />
+                      <Mail className="w-5 h-5 text-[var(--cl-teal)]" />
                       Notificações por Email
                     </CardTitle>
                     <CardDescription>
@@ -1563,7 +1563,7 @@ export function NotificationSettingsModal({
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Zap className="w-5 h-5 text-blue-600" />
+                      <Zap className="w-5 h-5 text-[var(--cl-teal)]" />
                       Status do Sistema
                     </CardTitle>
                   </CardHeader>
@@ -1615,8 +1615,8 @@ export function NotificationSettingsModal({
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="text-center p-3 bg-blue-50 rounded-lg">
-                        <div className="text-2xl font-bold text-blue-600">
+                      <div className="text-center p-3 bg-[var(--cl-mist)] rounded-lg">
+                        <div className="text-2xl font-bold text-[var(--cl-teal)]">
                           {notifications.length}
                         </div>
                         <div className="text-sm text-blue-800">Total</div>

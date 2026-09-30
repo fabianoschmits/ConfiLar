@@ -167,7 +167,7 @@ export function ReferralHistory({ userId, className }: ReferralHistoryProps) {
         {/* Lista de Indicações */}
         <div className="space-y-3">
           <div className="flex items-center gap-2 mb-3">
-            <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <User className="w-5 h-5 text-[var(--cl-teal)] dark:text-blue-400" />
             <h3 className="font-semibold text-gray-900 dark:text-white">
               Pessoas que Você Indicou
             </h3>
@@ -190,7 +190,7 @@ export function ReferralHistory({ userId, className }: ReferralHistoryProps) {
               >
                 <Avatar className="w-10 h-10">
                   <AvatarImage src={referral.referredAvatar || undefined} />
-                  <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400">
+                  <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-[var(--cl-teal)] dark:text-blue-400">
                     {referral.referredName.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -258,7 +258,7 @@ export function ReferralHistory({ userId, className }: ReferralHistoryProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowAllReferrals(!showAllReferrals)}
-                className="text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+                className="text-[var(--cl-teal)] dark:text-blue-400 border-blue-200 dark:border-blue-800 hover:bg-[var(--cl-mist)] dark:hover:bg-blue-950/20"
               >
                 {showAllReferrals ? (
                   <>
@@ -301,7 +301,7 @@ function MilestoneIcon({
       <span
         className={cn(
           "text-[7px] font-bold uppercase tracking-wider",
-          active ? "text-blue-600 dark:text-blue-400" : "text-gray-400",
+          active ? "text-[var(--cl-teal)] dark:text-blue-400" : "text-gray-400",
         )}
       >
         {label}

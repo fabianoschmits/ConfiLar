@@ -51,9 +51,9 @@ export default function MinhasDenunciasPage() {
 
               {/* Tips Section */}
               <div className="mt-8 grid sm:grid-cols-2 gap-4">
-                <Card className="p-4 bg-white dark:bg-gray-900 border-none shadow-sm flex items-start gap-3">
-                  <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <Info className="w-5 h-5 text-blue-600" />
+                <Card className="p-4 bg-[var(--cl-surface)] border-none shadow-sm flex items-start gap-3">
+                  <div className="p-2 bg-[var(--cl-mist)] dark:bg-blue-900/20 rounded-lg">
+                    <Info className="w-5 h-5 text-[var(--cl-teal)]" />
                   </div>
                   <div>
                     <h4 className="font-bold text-sm">Transparência</h4>
@@ -63,7 +63,7 @@ export default function MinhasDenunciasPage() {
                     </p>
                   </div>
                 </Card>
-                <Card className="p-4 bg-white dark:bg-gray-900 border-none shadow-sm flex items-start gap-3">
+                <Card className="p-4 bg-[var(--cl-surface)] border-none shadow-sm flex items-start gap-3">
                   <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
                     <Flag className="w-5 h-5 text-amber-600" />
                   </div>

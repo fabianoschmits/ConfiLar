@@ -1450,7 +1450,7 @@ export function ConfiPointsAdminDashboard() {
                                                   ) || "U"}
                                                 </AvatarFallback>
                                               </Avatar>
-                                              <span className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 truncate">
+                                              <span className="text-xs sm:text-sm text-[var(--cl-teal)] dark:text-blue-400 truncate">
                                                 {transaction.related_user_name}
                                               </span>
                                             </Link>
@@ -1670,7 +1670,7 @@ export function ConfiPointsAdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <div className="bg-[var(--cl-mist)] dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                   <p className="text-sm text-blue-800 dark:text-blue-200">
                     <strong>Como usar:</strong> Selecione um usuário da lista
                     abaixo e clique em "Gerenciar Pontos" para adicionar ou

@@ -510,7 +510,7 @@ export default function AdminReportDetailPage() {
                   <Link href={preview.link} className="self-center">
                     <Button
                       variant="outline"
-                      className="rounded-xl border-blue-600/30 text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-900/20 bg-background shadow-sm h-8 px-3 gap-1.5 font-bold text-[11px] sm:text-xs transition-all"
+                      className="rounded-xl border-[var(--cl-teal)]/30 text-[var(--cl-teal)] hover:bg-[var(--cl-mist)] hover:text-[var(--cl-teal)] dark:hover:bg-blue-900/20 bg-background shadow-sm h-8 px-3 gap-1.5 font-bold text-[11px] sm:text-xs transition-all"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                       Ver Post Original
@@ -527,7 +527,7 @@ export default function AdminReportDetailPage() {
                   <Link href={preview.link} className="self-center mt-2">
                     <Button
                       variant="outline"
-                      className="rounded-xl border-blue-600/30 text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-900/20 bg-background shadow-sm h-8 px-3 gap-1.5 font-bold text-[11px] sm:text-xs transition-all"
+                      className="rounded-xl border-[var(--cl-teal)]/30 text-[var(--cl-teal)] hover:bg-[var(--cl-mist)] hover:text-[var(--cl-teal)] dark:hover:bg-blue-900/20 bg-background shadow-sm h-8 px-3 gap-1.5 font-bold text-[11px] sm:text-xs transition-all"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                       Ver Anúncio Original
@@ -579,7 +579,7 @@ export default function AdminReportDetailPage() {
                     <Link href={preview.link}>
                       <Button
                         variant="outline"
-                        className="rounded-xl border-blue-600/30 text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-900/20 bg-background shadow-sm h-8 px-3 gap-1.5 font-bold text-[11px] sm:text-xs transition-all"
+                        className="rounded-xl border-[var(--cl-teal)]/30 text-[var(--cl-teal)] hover:bg-[var(--cl-mist)] hover:text-[var(--cl-teal)] dark:hover:bg-blue-900/20 bg-background shadow-sm h-8 px-3 gap-1.5 font-bold text-[11px] sm:text-xs transition-all"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                         Ver Conteúdo Original

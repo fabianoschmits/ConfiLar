@@ -99,7 +99,7 @@ export function RealtimeNotification() {
         onClick={handleOpenChatWithConversation}
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-md animate-pulse">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-[var(--cl-ink)] rounded-full flex items-center justify-center shadow-md animate-pulse">
             <MessageCircle className="h-5 w-5 text-white" />
           </div>
           <div className="flex-1 min-w-0">

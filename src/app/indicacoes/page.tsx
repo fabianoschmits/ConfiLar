@@ -152,7 +152,7 @@ export default function IndicacoesPage() {
           </Card>
 
           {/* Como Funciona */}
-          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
+          <Card className="bg-gradient-to-r from-[var(--cl-mist)] to-[var(--cl-mist)] dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
             <CardContent className="p-0">
               <Button
                 variant="ghost"
@@ -160,7 +160,7 @@ export default function IndicacoesPage() {
                 className="w-full flex items-center justify-between hover:bg-blue-100 dark:hover:bg-blue-900/30 px-3 py-2 h-auto rounded-lg"
               >
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <Sparkles className="w-4 h-4 text-[var(--cl-teal)] dark:text-blue-400" />
                   <h3 className="font-semibold text-sm text-gray-900 dark:text-white">
                     Como Funciona
                   </h3>
@@ -175,7 +175,7 @@ export default function IndicacoesPage() {
               {showHowItWorks && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 px-6 pb-6 pt-4 border-t border-blue-200 dark:border-blue-800">
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                    <div className="w-8 h-8 bg-[var(--cl-ink)] dark:bg-blue-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
                       1
                     </div>
                     <div>
@@ -189,7 +189,7 @@ export default function IndicacoesPage() {
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                    <div className="w-8 h-8 bg-[var(--cl-ink)] dark:bg-blue-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
                       2
                     </div>
                     <div>
@@ -204,7 +204,7 @@ export default function IndicacoesPage() {
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                    <div className="w-8 h-8 bg-[var(--cl-ink)] dark:bg-blue-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
                       3
                     </div>
                     <div>
@@ -230,7 +230,7 @@ export default function IndicacoesPage() {
                 className="w-full flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-800 p-3"
               >
                 <div className="flex items-center gap-2">
-                  <Award className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <Award className="w-5 h-5 text-[var(--cl-teal)] dark:text-[var(--cl-teal)]" />
                   <h3 className="font-semibold text-base md:text-lg text-gray-900 dark:text-white">
                     Níveis e Benefícios
                   </h3>

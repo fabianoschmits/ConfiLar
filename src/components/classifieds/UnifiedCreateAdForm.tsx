@@ -452,10 +452,10 @@ export function UnifiedCreateAdForm({
   return (
     <div
       ref={textareaWrapperRef}
-      className="flex flex-col h-full bg-white dark:bg-black overflow-hidden"
+      className="flex flex-col h-full bg-[var(--cl-surface)] overflow-hidden"
     >
       {/* HEADER FIXO */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0 z-10">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-[var(--cl-surface)] flex-shrink-0 z-10">
         <button
           onClick={onCancel}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
@@ -511,7 +511,7 @@ export function UnifiedCreateAdForm({
             onClick={() => toggleType("request")}
             className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
               formData.ad_type === "request"
-                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400"
+                ? "border-blue-500 bg-[var(--cl-mist)] dark:bg-blue-900/20 text-blue-700 dark:text-blue-400"
                 : "border-gray-200 dark:border-gray-800 hover:border-blue-200 dark:hover:border-blue-800 text-gray-600"
             }`}
           >
@@ -538,7 +538,7 @@ export function UnifiedCreateAdForm({
                   ? "Ex: Instalação Elétrica Residencial"
                   : "Ex: Preciso de Encanador Urgente"
               }
-              className="bg-white dark:bg-gray-900"
+              className="bg-[var(--cl-surface)]"
             />
           </div>
 
@@ -554,7 +554,7 @@ export function UnifiedCreateAdForm({
               }
               placeholder="Descreva detalhadamente os serviços que você realiza ou o que você precisa..."
               rows={4}
-              className="bg-white dark:bg-gray-900 resize-none"
+              className="bg-[var(--cl-surface)] resize-none"
               maxLength={2000}
             />
             <div className="flex justify-end">
@@ -573,7 +573,7 @@ export function UnifiedCreateAdForm({
                   value={formData.price}
                   onChange={handlePriceChange}
                   placeholder="0,00"
-                  className="pl-9 bg-white dark:bg-gray-900"
+                  className="pl-9 bg-[var(--cl-surface)]"
                 />
               </div>
             </div>
@@ -689,11 +689,11 @@ export function UnifiedCreateAdForm({
         </div>
 
         {/* PREMIUM SECTION */}
-        <div className="p-4 rounded-xl border border-[#00b0b0]/20 dark:border-[#00b0b0]/40 bg-[#00b0b0]/5 dark:bg-[#00b0b0]/10 space-y-4">
+        <div className="p-4 rounded-xl border border-[var(--cl-teal)]/20 dark:border-[var(--cl-teal)]/40 bg-[var(--cl-teal)]/5 dark:bg-[var(--cl-teal)]/10 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-[#00b0b0]/10 dark:bg-[#00b0b0]/20">
-                <Crown className="h-5 w-5 text-[#00b0b0]" />
+              <div className="p-2 rounded-lg bg-[var(--cl-teal)]/10 dark:bg-[var(--cl-teal)]/20">
+                <Crown className="h-5 w-5 text-[var(--cl-teal)]" />
               </div>
               <div>
                 <h4 className="font-semibold text-gray-900 dark:text-white">
@@ -753,7 +753,7 @@ export function UnifiedCreateAdForm({
                                     relative p-3 rounded-lg border-2 text-left transition-all
                                     ${
                                       formData.durationDays === opt.days
-                                        ? "border-[#00b0b0] bg-white dark:bg-gray-800 shadow-[0_0_10px_rgba(0,176,176,0.1)]"
+                                        ? "border-[var(--cl-teal)] bg-white dark:bg-gray-800 shadow-[0_0_10px_rgba(0,176,176,0.1)]"
                                         : "border-transparent bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800"
                                     }
                                     ${!isFreeCredit && currentBalance < opt.points ? "opacity-50 cursor-not-allowed" : ""}

@@ -259,9 +259,9 @@ export function EvaluationModal({
       showCloseButton={false}
       className="max-sm:max-h-[96vh]"
     >
-      <div className="flex flex-col h-full bg-white dark:bg-black overflow-hidden">
+      <div className="flex flex-col h-full bg-[var(--cl-surface)] overflow-hidden">
         {/* HEADER FIXO */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0 z-10">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-[var(--cl-surface)] flex-shrink-0 z-10">
           <button
             onClick={handleClose}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"

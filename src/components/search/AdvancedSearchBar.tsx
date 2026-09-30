@@ -325,7 +325,7 @@ export function AdvancedSearchBar({
             </Button>
             <Button
               onClick={handleSearch}
-              className="h-8 px-4 bg-blue-600 hover:bg-blue-700"
+              className="h-8 px-4 bg-[var(--cl-ink)] hover:brightness-110"
             >
               Buscar
             </Button>
@@ -457,7 +457,7 @@ export function AdvancedSearchBar({
                 onChange={(e) =>
                   setFilters((prev) => ({ ...prev, service: e.target.value }))
                 }
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--cl-teal)] focus:border-blue-500"
               >
                 <option value="all">Todos os serviços</option>
                 {services.map((service) => (
@@ -478,7 +478,7 @@ export function AdvancedSearchBar({
                 onChange={(e) =>
                   setFilters((prev) => ({ ...prev, rating: e.target.value }))
                 }
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--cl-teal)] focus:border-blue-500"
               >
                 <option value="all">Qualquer avaliação</option>
                 <option value="4">4+ estrelas</option>
@@ -500,7 +500,7 @@ export function AdvancedSearchBar({
                     availability: e.target.value,
                   }))
                 }
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--cl-teal)] focus:border-blue-500"
               >
                 <option value="all">Todos</option>
                 <option value="available">Disponível agora</option>
@@ -519,7 +519,7 @@ export function AdvancedSearchBar({
                 onChange={(e) =>
                   setFilters((prev) => ({ ...prev, userType: e.target.value }))
                 }
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--cl-teal)] focus:border-blue-500"
               >
                 <option value="all">Todos</option>
                 <option value="professional">Profissionais</option>
@@ -544,7 +544,7 @@ export function AdvancedSearchBar({
                 handleSearch();
                 setShowAdvancedFilters(false);
               }}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-[var(--cl-ink)] hover:brightness-110"
             >
               Aplicar Filtros
             </Button>

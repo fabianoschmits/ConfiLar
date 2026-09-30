@@ -140,12 +140,12 @@ export function RenewPremiumAdForm({
 
   return (
     <div className="space-y-4">
-      <Card className="border-[#00b0b0]/20 dark:border-[#00b0b0]/40 bg-[#00b0b0]/5 dark:bg-[#00b0b0]/10">
+      <Card className="border-[var(--cl-teal)]/20 dark:border-[var(--cl-teal)]/40 bg-[var(--cl-teal)]/5 dark:bg-[var(--cl-teal)]/10">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <Crown className="h-5 w-5 text-[#00b0b0] mt-0.5" />
+            <Crown className="h-5 w-5 text-[var(--cl-teal)] mt-0.5" />
             <div className="flex-1">
-              <h3 className="font-semibold text-[#008080] dark:text-[#00b0b0] mb-1">
+              <h3 className="font-semibold text-[#008080] dark:text-[var(--cl-teal)] mb-1">
                 Renovar Anúncio Premium
               </h3>
               <p className="text-sm text-gray-700 dark:text-gray-300">
@@ -184,7 +184,7 @@ export function RenewPremiumAdForm({
                   key={option.days}
                   className={`relative cursor-pointer transition-all ${
                     isSelected
-                      ? "ring-2 ring-[#00b0b0] bg-[#00b0b0]/5 dark:bg-[#00b0b0]/10 border-[#00b0b0]/30 dark:border-[#00b0b0]/50 shadow-[0_0_15px_rgba(0,176,176,0.1)]"
+                      ? "ring-2 ring-[var(--cl-teal)] bg-[var(--cl-teal)]/5 dark:bg-[var(--cl-teal)]/10 border-[var(--cl-teal)]/30 dark:border-[var(--cl-teal)]/50 shadow-[0_0_15px_rgba(0,176,176,0.1)]"
                       : "hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-700"
                   } ${!isCreditAvailable && !hasBalance ? "opacity-50 cursor-not-allowed" : ""}`}
                   onClick={() => {
@@ -231,7 +231,7 @@ export function RenewPremiumAdForm({
                       </div>
                     ) : (
                       <div className="flex items-center gap-1 text-sm font-medium text-gray-900 dark:text-gray-100">
-                        <Coins className="h-4 w-4 text-[#00b0b0]" />
+                        <Coins className="h-4 w-4 text-[var(--cl-teal)]" />
                         <span>
                           {option.points.toLocaleString("pt-BR")} pontos
                         </span>
@@ -263,7 +263,7 @@ export function RenewPremiumAdForm({
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600 dark:text-gray-400">Custo:</span>
             <span
-              className={`font-semibold ${formData.useCreditType ? "text-emerald-600 dark:text-emerald-400" : "text-[#008080] dark:text-[#00b0b0]"}`}
+              className={`font-semibold ${formData.useCreditType ? "text-emerald-600 dark:text-emerald-400" : "text-[#008080] dark:text-[var(--cl-teal)]"}`}
             >
               {formData.useCreditType
                 ? "Crédito Premium"
@@ -307,7 +307,7 @@ export function RenewPremiumAdForm({
             disabled={!canAfford || isProcessing}
             isLoading={isProcessing}
             loadingText="Renovando..."
-            className="flex-1 bg-[#00b0b0] hover:bg-[#008a8a] text-white shadow-[0_4px_14px_rgba(0,176,176,0.3)] transition-all"
+            className="flex-1 bg-[var(--cl-teal)] hover:bg-[#008a8a] text-white shadow-[0_4px_14px_rgba(0,176,176,0.3)] transition-all"
           >
             <Crown className="h-4 w-4 mr-2" />
             Renovar Premium

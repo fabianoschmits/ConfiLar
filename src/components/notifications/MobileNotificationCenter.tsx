@@ -155,7 +155,7 @@ function SwipeableNotificationItem({
                         }}
                         className="h-8 w-8 p-0 rounded-full bg-blue-100 hover:bg-blue-200"
                       >
-                        <Check className="w-4 h-4 text-blue-600" />
+                        <Check className="w-4 h-4 text-[var(--cl-teal)]" />
                       </Button>
                     )}
                   </div>
@@ -247,11 +247,11 @@ function SwipeableNotificationItem({
 
 // Ícones e cores otimizados para mobile
 const NOTIFICATION_CONFIG = {
-  message: { icon: MessageCircle, color: "bg-blue-500", bg: "bg-blue-50" },
+  message: { icon: MessageCircle, color: "bg-blue-500", bg: "bg-[var(--cl-mist)]" },
   review: { icon: Star, color: "bg-yellow-500", bg: "bg-yellow-50" },
   booking: { icon: Calendar, color: "bg-green-500", bg: "bg-green-50" },
   system: { icon: Settings, color: "bg-gray-500", bg: "bg-gray-50" },
-  achievement: { icon: Trophy, color: "bg-purple-500", bg: "bg-purple-50" },
+  achievement: { icon: Trophy, color: "bg-[var(--cl-teal)]", bg: "bg-[var(--cl-mist)]" },
   verification: { icon: Shield, color: "bg-indigo-500", bg: "bg-indigo-50" },
   success: { icon: Check, color: "bg-emerald-500", bg: "bg-emerald-50" },
   warning: { icon: AlertCircle, color: "bg-orange-500", bg: "bg-orange-50" },
@@ -299,7 +299,7 @@ export function MobileNotificationCenter({
         <SheetHeader className="p-4 pb-3 border-b border-gray-100 bg-white/90 backdrop-blur-sm sticky top-0 z-10 rounded-tl-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-[var(--cl-ink)] rounded-full flex items-center justify-center">
                 <Bell className="w-4 h-4 text-white" />
               </div>
               <div>

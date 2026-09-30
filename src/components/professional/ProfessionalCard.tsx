@@ -76,7 +76,7 @@ export function ProfessionalCard({
   };
 
   return (
-    <Card className="group h-full flex flex-col relative border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden bg-white dark:bg-black">
+    <Card className="group h-full flex flex-col relative border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden bg-[var(--cl-surface)]">
       {/* Badge de Serviços - Canto Superior Direito */}
       {profile.user_type === "professional" &&
         profile.professional_services &&
@@ -94,7 +94,7 @@ export function ProfessionalCard({
                 </Button>
               </PopoverTrigger>
               <PopoverContent
-                className="w-72 sm:w-80 bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-800 shadow-2xl p-0 overflow-hidden"
+                className="w-72 sm:w-80 bg-[var(--cl-surface)] border-gray-200 dark:border-gray-800 shadow-2xl p-0 overflow-hidden"
                 align="end"
                 sideOffset={5}
               >
@@ -181,7 +181,7 @@ export function ProfessionalCard({
                   "text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 uppercase tracking-wider h-5",
                   profile.user_type === "professional"
                     ? "bg-primary-50 text-primary-700 border-primary-100 dark:bg-primary-950/30 dark:text-primary-400 dark:border-primary-900"
-                    : "bg-purple-50 text-purple-700 border-purple-100 dark:bg-purple-950/30 dark:text-purple-400 dark:border-purple-900",
+                    : "bg-[var(--cl-mist)] text-[var(--cl-teal)] border-purple-100 dark:bg-purple-950/30 dark:text-[var(--cl-teal)] dark:border-purple-900",
                 )}
               >
                 {profile.user_type === "professional" ? (

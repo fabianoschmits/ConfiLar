@@ -129,7 +129,7 @@ export function BanNotification({ children }: BanNotificationProps) {
                     <p className="text-sm font-medium text-gray-700 mb-1">
                       Notas do Administrador:
                     </p>
-                    <p className="text-gray-900 bg-blue-50 p-2 rounded border border-blue-200">
+                    <p className="text-gray-900 bg-[var(--cl-mist)] p-2 rounded border border-blue-200">
                       {banInfo.admin_notes}
                     </p>
                   </div>

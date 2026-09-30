@@ -57,8 +57,8 @@ export function CompactUserBadges({
         <button
           className={`p-0 m-0 transition-smooth hover:scale-125 flex items-center justify-center ${
             userType === "professional"
-              ? "text-blue-600 hover:text-blue-700"
-              : "text-purple-600 hover:text-purple-700"
+              ? "text-[var(--cl-teal)] hover:text-[var(--cl-teal)]"
+              : "text-[var(--cl-teal)] hover:text-[var(--cl-teal)]"
           }`}
           onClick={() => setShowUserTypeTooltip(!showUserTypeTooltip)}
         >
@@ -75,8 +75,8 @@ export function CompactUserBadges({
             <Badge
               className={`text-xs font-medium px-2 py-1 shadow-lg ${
                 userType === "professional"
-                  ? "bg-blue-600 hover:bg-blue-700"
-                  : "bg-purple-600 hover:bg-purple-700"
+                  ? "bg-[var(--cl-ink)] hover:brightness-110"
+                  : "bg-[var(--cl-teal)] hover:brightness-95"
               }`}
             >
               {userType === "professional" ? "Profissional" : "Cliente"}
@@ -161,7 +161,7 @@ export function CompactUserBadges({
             onClick={() => setShowReferralTooltip(!showReferralTooltip)}
           >
             {referralStats.tier === "diamond" && (
-              <Sparkles className="h-2 w-2 sm:h-3.5 sm:w-3.5 text-purple-500 hover:text-purple-600" />
+              <Sparkles className="h-2 w-2 sm:h-3.5 sm:w-3.5 text-purple-500 hover:text-[var(--cl-teal)]" />
             )}
             {referralStats.tier === "platinum" && (
               <Gem className="h-2 w-2 sm:h-3.5 sm:w-3.5 text-cyan-500 hover:text-cyan-600" />
@@ -180,7 +180,7 @@ export function CompactUserBadges({
           {/* Tooltip */}
           {showReferralTooltip && (
             <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 whitespace-nowrap">
-              <Badge className="text-xs font-medium px-2 py-1 shadow-lg bg-gradient-to-r from-purple-500 to-pink-500">
+              <Badge className="text-xs font-medium px-2 py-1 shadow-lg bg-gradient-to-r from-[var(--cl-teal)] to-[var(--cl-teal)]">
                 {referralStats.tier === "diamond" && "💠 Super Embaixador"}
                 {referralStats.tier === "platinum" && "💎 Embaixador Premium"}
                 {referralStats.tier === "gold" && "🥇 Embaixador Gold"}

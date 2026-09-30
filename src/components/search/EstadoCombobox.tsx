@@ -119,7 +119,7 @@ export function EstadoCombobox({
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           placeholder={placeholder}
-          className="pl-10 pr-10 h-9 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+          className="pl-10 pr-10 h-9 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-[var(--cl-teal)] focus:border-blue-500"
         />
         <Button
           type="button"

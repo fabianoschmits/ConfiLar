@@ -348,7 +348,7 @@ export function ChangeEmailForm({
       <Card className={className}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <Shield className="w-5 h-5 text-[var(--cl-teal)] dark:text-blue-400" />
             Verificar Novo Email
           </CardTitle>
         </CardHeader>
@@ -414,13 +414,13 @@ export function ChangeEmailForm({
     <Card className={className}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <Mail className="w-5 h-5 text-[var(--cl-teal)] dark:text-blue-400" />
           Alterar Email
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-          <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+        <div className="flex items-center gap-2 p-3 bg-[var(--cl-mist)] dark:bg-blue-950/20 rounded-lg">
+          <Mail className="w-4 h-4 text-[var(--cl-teal)] dark:text-blue-400" />
           <span className="text-sm text-blue-800 dark:text-blue-200">
             Email atual: <strong>{currentEmail}</strong>
           </span>

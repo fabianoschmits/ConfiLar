@@ -124,14 +124,14 @@ export function UsersChart({ timeRange }: UsersChartProps) {
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        <div className="bg-blue-50/30 border border-blue-100 dark:bg-blue-950/20 dark:border-blue-900/40 p-3 sm:p-5 rounded-2xl sm:rounded-[24px] group hover:scale-[1.02] transition-transform">
+        <div className="bg-[var(--cl-mist)]/30 border border-blue-100 dark:bg-blue-950/20 dark:border-blue-900/40 p-3 sm:p-5 rounded-2xl sm:rounded-[24px] group hover:scale-[1.02] transition-transform">
           <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-            <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600" />
-            <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-blue-600/80">
+            <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[var(--cl-teal)]" />
+            <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[var(--cl-teal)]/80">
               Base Total
             </span>
           </div>
-          <div className="text-xl sm:text-3xl font-black text-blue-600">
+          <div className="text-xl sm:text-3xl font-black text-[var(--cl-teal)]">
             {data[data.length - 1]?.total || 0}
           </div>
           <p className="text-[8px] sm:text-[10px] font-bold opacity-60 mt-1 uppercase tracking-tight">
@@ -168,7 +168,7 @@ export function UsersChart({ timeRange }: UsersChartProps) {
         </div>
       </div>
 
-      <div className="w-full h-[300px] sm:h-[350px] bg-white dark:bg-black/20 border border-border/50 rounded-2xl sm:rounded-[32px] p-3 sm:p-6 shadow-sm">
+      <div className="w-full h-[300px] sm:h-[350px] bg-[var(--cl-surface)]/20 border border-border/50 rounded-2xl sm:rounded-[32px] p-3 sm:p-6 shadow-sm">
         <ChartContainer config={chartConfig} className="h-full w-full">
           <AreaChart data={data}>
             <defs>

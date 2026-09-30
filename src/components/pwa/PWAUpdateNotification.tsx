@@ -39,13 +39,13 @@ export function PWAUpdateNotification() {
 
   return (
     <div className="fixed bottom-4 right-4 z-50 animate-in slide-in-from-bottom-5 duration-300">
-      <Card className="w-80 sm:w-96 shadow-lg border-blue-200 bg-blue-50">
+      <Card className="w-80 sm:w-96 shadow-lg border-blue-200 bg-[var(--cl-mist)]">
         <div className="p-4 space-y-3">
           {/* Header */}
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <RefreshCw className="w-4 h-4 text-blue-600" />
+                <RefreshCw className="w-4 h-4 text-[var(--cl-teal)]" />
               </div>
               <div>
                 <h4 className="font-semibold text-sm text-blue-900">
@@ -60,7 +60,7 @@ export function PWAUpdateNotification() {
               variant="ghost"
               size="icon"
               onClick={handleDismiss}
-              className="h-6 w-6 text-blue-600 hover:bg-blue-100"
+              className="h-6 w-6 text-[var(--cl-teal)] hover:bg-blue-100"
             >
               <X className="w-4 h-4" />
             </Button>
@@ -78,7 +78,7 @@ export function PWAUpdateNotification() {
             <Button
               onClick={handleUpdate}
               disabled={isUpdating}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              className="flex-1 bg-[var(--cl-ink)] hover:brightness-110 text-white"
               size="sm"
             >
               {isUpdating ? (
@@ -104,7 +104,7 @@ export function PWAUpdateNotification() {
           </div>
 
           {/* Aviso */}
-          <p className="text-xs text-blue-600 text-center">
+          <p className="text-xs text-[var(--cl-teal)] text-center">
             A página será recarregada automaticamente
           </p>
         </div>

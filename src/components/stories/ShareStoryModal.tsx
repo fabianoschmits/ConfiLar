@@ -300,7 +300,7 @@ export function ShareStoryModal({
       {/* Modal Content */}
       <div
         ref={elementRef}
-        className="relative w-full max-w-2xl flex flex-col h-full max-h-[90vh] bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200"
+        className="relative w-full max-w-2xl flex flex-col h-full max-h-[90vh] bg-[var(--cl-surface)] border border-gray-300 dark:border-gray-700 rounded-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
         style={{
           transform:
@@ -312,7 +312,7 @@ export function ShareStoryModal({
         {/* HEADER FIXO */}
         <div
           {...dragHandleProps}
-          className="sticky top-0 z-10 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800"
+          className="sticky top-0 z-10 bg-[var(--cl-surface)] border-b border-gray-200 dark:border-gray-800"
         >
           <div className="flex items-center justify-between p-4">
             <button
@@ -358,14 +358,14 @@ export function ShareStoryModal({
                     setSearchQuery(e.target.value);
                     searchUsers(e.target.value);
                   }}
-                  className="pl-10 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 border border-gray-300 dark:border-gray-600"
+                  className="pl-10 bg-[var(--cl-surface)] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 border border-gray-300 dark:border-gray-600"
                 />
               </div>
             </div>
 
             {/* Lista de usuários encontrados */}
             {searchQuery && (
-              <div className="border border-gray-200 dark:border-gray-700 rounded-lg max-h-60 overflow-y-auto bg-white dark:bg-gray-900">
+              <div className="border border-gray-200 dark:border-gray-700 rounded-lg max-h-60 overflow-y-auto bg-[var(--cl-surface)]">
                 {isSearching ? (
                   <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                     <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
@@ -379,7 +379,7 @@ export function ShareStoryModal({
                         onClick={() => toggleUserSelection(user)}
                         className={`w-full flex items-center space-x-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
                           selectedUsers.find((u) => u.id === user.id)
-                            ? "bg-blue-50 dark:bg-blue-900/30"
+                            ? "bg-[var(--cl-mist)] dark:bg-blue-900/30"
                             : ""
                         }`}
                       >
@@ -403,7 +403,7 @@ export function ShareStoryModal({
                           </div>
                         </div>
                         {selectedUsers.find((u) => u.id === user.id) && (
-                          <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                          <div className="w-5 h-5 bg-[var(--cl-ink)] rounded-full flex items-center justify-center">
                             <svg
                               className="w-3 h-3 text-white"
                               fill="currentColor"
@@ -464,7 +464,7 @@ export function ShareStoryModal({
                 placeholder="Adicione uma mensagem..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="min-h-[80px] bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 border border-gray-300 dark:border-gray-600"
+                className="min-h-[80px] bg-[var(--cl-surface)] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 border border-gray-300 dark:border-gray-600"
               />
             </div>
 
@@ -520,7 +520,7 @@ export function ShareStoryModal({
                 <Button
                   onClick={handleShare}
                   disabled={selectedUsers.length === 0 || isSharing}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  className="bg-[var(--cl-ink)] hover:brightness-110 text-white"
                 >
                   {isSharing ? (
                     <>
@@ -542,7 +542,7 @@ export function ShareStoryModal({
                 <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="bg-white dark:bg-black px-2 text-gray-500 dark:text-gray-400">
+                <span className="bg-[var(--cl-surface)] px-2 text-gray-500 dark:text-gray-400">
                   ou compartilhe via link
                 </span>
               </div>
@@ -602,7 +602,7 @@ export function ShareStoryModal({
                 </Button>
                 <Button
                   onClick={handleShareMessenger}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white justify-center"
+                  className="flex-1 bg-[var(--cl-ink)] hover:brightness-110 text-white justify-center"
                   size="sm"
                 >
                   <svg

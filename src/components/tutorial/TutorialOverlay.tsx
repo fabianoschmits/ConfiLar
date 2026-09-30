@@ -150,7 +150,7 @@ export function TutorialOverlay() {
         >
           {/* Header */}
           <div className="flex justify-between items-start mb-3">
-            <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <h3 className="text-xl font-bold bg-gradient-to-r from-[var(--cl-ink)] to-indigo-600 bg-clip-text text-transparent">
               {step.title}
             </h3>
             <button
@@ -178,7 +178,7 @@ export function TutorialOverlay() {
                   className={cn(
                     "h-1.5 w-1.5 rounded-full transition-colors",
                     i === currentStepIndex
-                      ? "bg-blue-600"
+                      ? "bg-[var(--cl-ink)]"
                       : "bg-gray-300 dark:bg-gray-700",
                   )}
                 />
@@ -200,7 +200,7 @@ export function TutorialOverlay() {
               <Button
                 size="sm"
                 onClick={nextStep}
-                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20"
+                className="bg-[var(--cl-ink)] hover:brightness-110 text-white shadow-lg shadow-blue-500/20"
               >
                 {isLast ? (
                   <span className="flex items-center gap-1">

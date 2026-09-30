@@ -87,7 +87,7 @@ export function PostOptionsMenu({
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="w-48 bg-white dark:bg-black border border-gray-200 dark:border-gray-900"
+          className="w-48 bg-[var(--cl-surface)] border border-gray-200 dark:border-gray-900"
         >
           {isOwner ? (
             // Opções para o dono do post

@@ -35,7 +35,7 @@ export function MobileNotificationItem({
   const getNotificationColor = (type: string) => {
     switch (type) {
       case "message":
-        return "text-blue-600";
+        return "text-[var(--cl-teal)]";
       case "favorite":
         return "text-red-600";
       case "recommendation":
@@ -83,8 +83,8 @@ export function MobileNotificationItem({
         <div
           className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-sm active:scale-[0.98] relative ${
             !notification.is_read
-              ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 shadow-[inset_4px_0_0_0_#3b82f6]"
-              : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700"
+              ? "bg-[var(--cl-mist)] dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 shadow-[inset_4px_0_0_0_#3b82f6]"
+              : "bg-[var(--cl-surface)] border-gray-200 dark:border-gray-700"
           }`}
           onClick={() => onClick(notification)}
         >
@@ -142,7 +142,7 @@ export function MobileNotificationItem({
                     e.stopPropagation();
                     onMarkAsRead(notification.id);
                   }}
-                  className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 bg-blue-50/50"
+                  className="h-8 w-8 p-0 text-[var(--cl-teal)] hover:text-[var(--cl-teal)] hover:bg-[var(--cl-mist)] bg-[var(--cl-mist)]/50"
                   title="Marcar como lida"
                 >
                   <Check className="h-4 w-4" />

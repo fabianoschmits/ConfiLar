@@ -61,7 +61,7 @@ function AjudaContent() {
       id: "general",
       label: "Geral",
       icon: LifeBuoy,
-      color: "bg-purple-500",
+      color: "bg-[var(--cl-teal)]",
     },
     {
       id: "account",

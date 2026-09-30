@@ -123,7 +123,7 @@ export function PointsDashboard({ className }: PointsDashboardProps) {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-blue-600" />
+                <Calendar className="w-5 h-5 text-[var(--cl-teal)]" />
                 Este Mês
               </CardTitle>
             </CardHeader>
@@ -163,7 +163,7 @@ export function PointsDashboard({ className }: PointsDashboardProps) {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-purple-600" />
+                  <Target className="w-5 h-5 text-[var(--cl-teal)]" />
                   Próximo Nível
                 </CardTitle>
               </CardHeader>
@@ -358,7 +358,7 @@ function StatsTab({ dashboard }: StatsTabProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Star className="w-5 h-5 text-blue-600" />
+            <Star className="w-5 h-5 text-[var(--cl-teal)]" />
             Estatísticas Gerais
           </CardTitle>
         </CardHeader>
@@ -397,12 +397,12 @@ function StatsTab({ dashboard }: StatsTabProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-purple-600" />
+            <Users className="w-5 h-5 text-[var(--cl-teal)]" />
             Posição no Ranking
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center">
-          <div className="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+          <div className="text-4xl font-bold text-[var(--cl-teal)] dark:text-[var(--cl-teal)] mb-2">
             #{dashboard.leaderboard_position}
           </div>
           <p className="text-gray-600 dark:text-gray-400">Posição global</p>

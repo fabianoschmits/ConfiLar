@@ -142,7 +142,7 @@ export function RecommendationButton({
         className={cn(
           "bg-transparent hover:bg-transparent shadow-none border-none p-0 h-auto transition-all ring-0 focus-visible:ring-0",
           vertical ? "flex-col gap-1.5" : "flex-row gap-2 items-center",
-          isRecommended ? "text-[#00b0b0]" : "text-gray-400",
+          isRecommended ? "text-[var(--cl-teal)]" : "text-gray-400",
           className,
         )}
       >

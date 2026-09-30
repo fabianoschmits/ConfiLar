@@ -19,7 +19,7 @@ export function WhoReferredMe({
   referrerAvatar,
 }: WhoReferredMeProps) {
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 shadow-sm">
+    <div className="bg-gradient-to-r from-[var(--cl-mist)] to-[var(--cl-mist)] dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 shadow-sm">
       <div className="flex items-center gap-3">
         <Link
           href={`/perfil/${referrerId}`}
@@ -33,7 +33,7 @@ export function WhoReferredMe({
               size="sm"
               showReferralBadge={false}
             />
-            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-blue-500 dark:bg-blue-600 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900">
+            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-blue-500 dark:bg-[var(--cl-ink)] rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900">
               <UserCheck className="w-2.5 h-2.5 text-white" />
             </div>
           </div>
@@ -55,7 +55,7 @@ export function WhoReferredMe({
           <p className="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-wider font-medium">
             Código
           </p>
-          <p className="text-xs font-bold text-blue-600 dark:text-blue-400 tracking-wide">
+          <p className="text-xs font-bold text-[var(--cl-teal)] dark:text-blue-400 tracking-wide">
             {referrerCode}
           </p>
         </div>

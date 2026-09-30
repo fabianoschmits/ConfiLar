@@ -93,7 +93,7 @@ export function LocationDataSettings() {
               className="flex items-center justify-between p-4 border rounded-lg"
             >
               <div className="flex items-center space-x-3">
-                <div className="text-blue-600">{option.icon}</div>
+                <div className="text-[var(--cl-teal)]">{option.icon}</div>
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-1">
                     <h4 className="font-medium text-gray-900">
@@ -165,7 +165,7 @@ export function LocationDataSettings() {
         </div>
 
         {/* Recomendações */}
-        <div className="bg-blue-50 p-4 rounded-lg">
+        <div className="bg-[var(--cl-mist)] p-4 rounded-lg">
           <h4 className="font-semibold text-blue-800 mb-2">
             💡 Recomendações de Segurança:
           </h4>
@@ -193,7 +193,7 @@ export function LocationDataSettings() {
           <Button
             onClick={handleSaveSettings}
             disabled={isSaving}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-[var(--cl-ink)] hover:brightness-110"
           >
             {isSaving ? (
               <>

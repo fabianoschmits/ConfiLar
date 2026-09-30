@@ -134,14 +134,14 @@ export default function TransferirConfiPointsPage() {
             {/* Header */}
             <div className="mb-8">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center">
-                  <Send className="h-6 w-6 text-[#00b0b0]" />
+                <div className="w-12 h-12 bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-[var(--cl-radius-card)] flex items-center justify-center">
+                  <Send className="h-6 w-6 text-[var(--cl-teal)]" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <h1 className="text-2xl font-bold text-[var(--cl-ink)]">
                     {t("transferPoints")}
                   </h1>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-[var(--cl-ink-secondary)]">
                     {t("sendPointsToUsers")}
                   </p>
                 </div>
@@ -150,11 +150,11 @@ export default function TransferirConfiPointsPage() {
 
             {/* Saldo Atual */}
             {balance && (
-              <Card className="mb-8 border-gray-200 dark:border-gray-800 shadow-none">
+              <Card className="mb-8 border-[var(--cl-border)] shadow-none">
                 <CardContent className="p-3">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <Coins className="w-5 h-5 text-[#00b0b0]" />
+                    <div className="p-2 bg-[var(--cl-mist)] rounded-lg">
+                      <Coins className="w-5 h-5 text-[var(--cl-teal)]" />
                     </div>
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
@@ -264,7 +264,7 @@ export default function TransferirConfiPointsPage() {
 
                     {/* Resumo */}
                     {pointsValue > 0 && searchedUser && (
-                      <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                      <div className="p-4 bg-[var(--cl-mist)] rounded-lg">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm text-gray-600 dark:text-gray-400">
                             {t("youWillSend")}:
@@ -282,11 +282,11 @@ export default function TransferirConfiPointsPage() {
                             {t("points")}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-800">
+                        <div className="flex items-center justify-between pt-2 border-t border-[var(--cl-border)]">
                           <span className="text-sm font-semibold text-gray-900 dark:text-white">
                             {searchedUser.full_name} vai receber:
                           </span>
-                          <span className="font-bold text-purple-600 dark:text-purple-400 text-lg">
+                          <span className="font-bold text-[var(--cl-teal)] text-lg">
                             {(
                               pointsValue - Math.floor(pointsValue * 0.25)
                             ).toLocaleString()}{" "}
@@ -304,7 +304,7 @@ export default function TransferirConfiPointsPage() {
                         !balance ||
                         balance.balance < pointsValue
                       }
-                      className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                      className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white rounded-xl"
                     >
                       {isCreating ? (
                         <>
@@ -324,9 +324,9 @@ export default function TransferirConfiPointsPage() {
 
               {/* Informações */}
               <div className="space-y-6">
-                <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-                  <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  <AlertDescription className="text-blue-800 dark:text-blue-200">
+                <Alert className="bg-[var(--cl-mist)] border-[var(--cl-border)]">
+                  <Info className="h-4 w-4 text-[var(--cl-teal)]" />
+                  <AlertDescription className="text-[var(--cl-ink-secondary)]">
                     <strong className="block mb-2">Como funciona:</strong>
                     <ul className="list-disc list-inside space-y-1 text-sm">
                       <li>Transferências são instantâneas</li>
@@ -366,7 +366,7 @@ export default function TransferirConfiPointsPage() {
             <Card className="mt-8">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <ArrowLeftRight className="w-5 h-5 text-purple-600" />
+                  <ArrowLeftRight className="w-5 h-5 text-[var(--cl-teal)]" />
                   {t("transferHistory")}
                 </CardTitle>
               </CardHeader>
@@ -384,7 +384,7 @@ export default function TransferirConfiPointsPage() {
                       return (
                         <div
                           key={transfer.id}
-                          className="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-gray-800 hover:bg-gray-50/50 transition-colors"
+                          className="flex items-center justify-between p-3 rounded-lg border border-[var(--cl-border)] hover:bg-[var(--cl-mist)]/50 transition-colors"
                         >
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <div
@@ -408,7 +408,7 @@ export default function TransferirConfiPointsPage() {
                                 {otherUser?.id ? (
                                   <Link
                                     href={`/perfil/${otherUser.id}`}
-                                    className="text-purple-600 dark:text-purple-400 hover:underline"
+                                    className="text-[var(--cl-teal)] hover:underline"
                                   >
                                     {otherUser.full_name || tCommon("user")}
                                   </Link>

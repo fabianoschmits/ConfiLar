@@ -61,9 +61,9 @@ export function LoadingOverlay({
       case "minimal":
         return "bg-white/40 dark:bg-black/40 backdrop-blur-md";
       case "navigation":
-        return "bg-[#00b0b0]/10 backdrop-blur-lg";
+        return "bg-[var(--cl-teal)]/10 backdrop-blur-lg";
       case "auth":
-        return "bg-[#00b0b0]/10 backdrop-blur-lg";
+        return "bg-[var(--cl-teal)]/10 backdrop-blur-lg";
       case "data":
         return "bg-green-500/10 backdrop-blur-lg";
       default:
@@ -75,11 +75,11 @@ export function LoadingOverlay({
     switch (variant) {
       case "navigation":
       case "auth":
-        return "text-[#00b0b0]";
+        return "text-[var(--cl-teal)]";
       case "data":
         return "text-green-600";
       default:
-        return "text-[#00b0b0]";
+        return "text-[var(--cl-teal)]";
     }
   };
 
@@ -97,7 +97,7 @@ export function LoadingOverlay({
         {/* Logo/Spinner Moderno */}
         <div className="relative">
           {/* Logo ConfiLar - vertical branco */}
-          <div className="w-24 h-24 bg-[#00b0b0] rounded-2xl flex items-center justify-center shadow-lg shadow-[#00b0b0]/30">
+          <div className="w-24 h-24 bg-[var(--cl-teal)] rounded-2xl flex items-center justify-center shadow-lg shadow-[#00b0b0]/30">
             <Image
               src="/imagens/logo/Logo branco - sem fundo - Vertical.png"
               alt="ConfiLar"
@@ -122,7 +122,7 @@ export function LoadingOverlay({
           </div>
 
           {/* Pulse effect */}
-          <div className="absolute inset-0 w-24 h-24 bg-[#00b0b0]/20 rounded-2xl animate-pulse"></div>
+          <div className="absolute inset-0 w-24 h-24 bg-[var(--cl-teal)]/20 rounded-2xl animate-pulse"></div>
         </div>
 
         {/* Texto Principal */}
@@ -134,7 +134,7 @@ export function LoadingOverlay({
         {/* Barra de Progresso Moderna */}
         <div className="w-full bg-gray-200/50 dark:bg-gray-700/50 rounded-full h-1.5 overflow-hidden">
           <div
-            className="h-full bg-[#00b0b0] rounded-full transition-all duration-500 ease-out shadow-[0_0_8px_rgba(0,176,176,0.5)]"
+            className="h-full bg-[var(--cl-teal)] rounded-full transition-all duration-500 ease-out shadow-[0_0_8px_rgba(0,176,176,0.5)]"
             style={{ width: `${Math.min(progress, 100)}%` }}
           />
         </div>
@@ -214,7 +214,7 @@ export function MinimalLoadingOverlay({ isLoading }: { isLoading: boolean }) {
     <div className="fixed inset-0 z-[100] bg-white/40 dark:bg-black/40 backdrop-blur-md flex items-center justify-center transition-all duration-150">
       <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 shadow-xl border border-white/20 animate-in fade-in-0 zoom-in-95 duration-150">
         <Loader2
-          className="w-8 h-8 text-[#00b0b0] animate-spin"
+          className="w-8 h-8 text-[var(--cl-teal)] animate-spin"
           strokeWidth={2}
         />
       </div>
@@ -249,11 +249,11 @@ export function PageLoadingOverlay({
       <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-white/40 dark:border-white/20 shadow-2xl p-8 flex flex-col items-center space-y-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-300">
         {/* Spinner com logo */}
         <div className="relative">
-          <div className="w-16 h-16 bg-[#00b0b0] rounded-2xl flex items-center justify-center shadow-lg shadow-[#00b0b0]/20">
+          <div className="w-16 h-16 bg-[var(--cl-teal)] rounded-2xl flex items-center justify-center shadow-lg shadow-[#00b0b0]/20">
             <BrandLogo width={48} height={48} />
           </div>
           <Loader2
-            className="absolute -inset-2 w-20 h-20 text-[#00b0b0]/20 animate-spin"
+            className="absolute -inset-2 w-20 h-20 text-[var(--cl-teal)]/20 animate-spin"
             strokeWidth={1}
           />
         </div>
@@ -268,7 +268,7 @@ export function PageLoadingOverlay({
           {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
-              className="w-2 h-2 bg-[#00b0b0] rounded-full animate-bounce"
+              className="w-2 h-2 bg-[var(--cl-teal)] rounded-full animate-bounce"
               style={{ animationDelay: `${i * 0.15}s` }}
             />
           ))}
@@ -316,7 +316,7 @@ export function InlineLoading({
       )}
     >
       <Loader2
-        className={cn("text-[#00b0b0] animate-spin", getSpinnerSize())}
+        className={cn("text-[var(--cl-teal)] animate-spin", getSpinnerSize())}
       />
       <span className="text-gray-700 dark:text-gray-200 font-medium">
         {message}

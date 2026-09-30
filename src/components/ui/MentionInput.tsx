@@ -215,7 +215,7 @@ export const MentionInput = React.forwardRef<any, MentionInputProps>(
           return (
             <span
               key={index}
-              className="text-blue-600 font-medium bg-blue-50 px-1 rounded"
+              className="text-[var(--cl-teal)] font-medium bg-[var(--cl-mist)] px-1 rounded"
             >
               {part}
             </span>
@@ -248,12 +248,12 @@ export const MentionInput = React.forwardRef<any, MentionInputProps>(
       return createPortal(
         <div
           ref={suggestionsRef}
-          className="fixed bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg max-h-60 overflow-y-auto z-[99999]"
+          className="fixed bg-[var(--cl-surface)] border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg max-h-60 overflow-y-auto z-[99999]"
           style={position}
         >
           {isLoading ? (
             <div className="p-3 text-center text-gray-500 dark:text-gray-400">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--cl-teal)] dark:border-blue-400 mx-auto"></div>
               <span className="text-xs ml-2">Buscando usuários...</span>
             </div>
           ) : suggestions.length > 0 ? (
@@ -263,7 +263,7 @@ export const MentionInput = React.forwardRef<any, MentionInputProps>(
                 onClick={() => handleUserSelect(user)}
                 className={`w-full flex items-center space-x-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors ${
                   index === selectedIndex
-                    ? "bg-blue-50 dark:bg-blue-900/30"
+                    ? "bg-[var(--cl-mist)] dark:bg-blue-900/30"
                     : ""
                 }`}
               >

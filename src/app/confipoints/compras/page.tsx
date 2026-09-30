@@ -75,7 +75,7 @@ const statusConfig: Record<
   refunded: {
     label: "Reembolsado",
     color:
-      "bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400",
+      "bg-[var(--cl-mist)] text-purple-800 dark:bg-purple-900/20 dark:text-[var(--cl-teal)]",
     icon: <AlertCircle className="w-4 h-4" />,
   },
 };
@@ -181,8 +181,8 @@ export default function ComprasPage() {
           <div className="mb-8">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center">
-                  <ShoppingBag className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                <div className="w-12 h-12 bg-[var(--cl-surface)] border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center">
+                  <ShoppingBag className="h-6 w-6 text-[var(--cl-teal)] dark:text-[var(--cl-teal)]" />
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -208,11 +208,11 @@ export default function ComprasPage() {
 
           {/* Estatísticas - Ajustadas com Detalhe da Marca */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+            <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-[var(--cl-surface)]">
               <CardContent className="p-3">
                 <div className="flex items-center gap-3">
                   <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <ShoppingBag className="w-5 h-5 text-[#00b0b0]" />
+                    <ShoppingBag className="w-5 h-5 text-[var(--cl-teal)]" />
                   </div>
                   <div>
                     <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
@@ -226,11 +226,11 @@ export default function ComprasPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+            <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-[var(--cl-surface)]">
               <CardContent className="p-3">
                 <div className="flex items-center gap-3">
                   <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <CheckCircle2 className="w-5 h-5 text-[#00b0b0]" />
+                    <CheckCircle2 className="w-5 h-5 text-[var(--cl-teal)]" />
                   </div>
                   <div>
                     <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
@@ -244,11 +244,11 @@ export default function ComprasPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+            <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-[var(--cl-surface)]">
               <CardContent className="p-3">
                 <div className="flex items-center gap-3">
                   <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <Clock className="w-5 h-5 text-[#00b0b0]" />
+                    <Clock className="w-5 h-5 text-[var(--cl-teal)]" />
                   </div>
                   <div>
                     <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
@@ -262,11 +262,11 @@ export default function ComprasPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+            <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-[var(--cl-surface)]">
               <CardContent className="p-3">
                 <div className="flex items-center gap-3">
                   <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <CreditCard className="w-5 h-5 text-[#00b0b0]" />
+                    <CreditCard className="w-5 h-5 text-[var(--cl-teal)]" />
                   </div>
                   <div>
                     <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
@@ -331,8 +331,8 @@ export default function ComprasPage() {
                   <CardContent className="p-3">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center">
-                          <Coins className="h-5 w-5 text-purple-600" />
+                        <div className="w-10 h-10 bg-[var(--cl-surface)] border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center">
+                          <Coins className="h-5 w-5 text-[var(--cl-teal)]" />
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -394,7 +394,7 @@ export default function ComprasPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-gray-400 hover:text-purple-600 transition-colors"
+                            className="h-8 w-8 text-gray-400 hover:text-[var(--cl-teal)] transition-colors"
                             onClick={() => {
                               setSelectedPurchase(purchase);
                               setIsCheckoutOpen(true);

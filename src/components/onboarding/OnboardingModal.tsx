@@ -702,8 +702,8 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
                             ConfiLar.
                           </p>
                           <div className="grid grid-cols-2 gap-3 pt-2">
-                            <div className="p-3 bg-blue-50 rounded-xl text-left border-l-4 border-blue-500">
-                              <Shield className="w-4 h-4 text-blue-600 mb-1" />
+                            <div className="p-3 bg-[var(--cl-mist)] rounded-xl text-left border-l-4 border-blue-500">
+                              <Shield className="w-4 h-4 text-[var(--cl-teal)] mb-1" />
                               <p className="text-xs font-bold">Seguro</p>
                             </div>
                             <div className="p-3 bg-green-50 rounded-xl text-left border-l-4 border-green-500">

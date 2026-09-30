@@ -246,33 +246,33 @@ export default function FeedPage() {
       )}
 
       <div className="min-h-screen bg-[var(--cl-paper)]">
-        <header className="bg-[var(--cl-paper)] border-b border-gray-200 dark:border-gray-900">
+        <header className="bg-[var(--cl-paper)] border-b border-[var(--cl-border)]">
           <div className="max-w-2xl mx-auto">
             <div className="flex items-center justify-between px-4 py-3 bg-[var(--cl-paper)]">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-xl font-bold text-[var(--cl-ink)]">
                 ConfiLar
               </h1>
               <div className="flex items-center gap-2">
                 {profile && (
                   <button
                     onClick={() => setShowNewPost(true)}
-                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full"
+                    className="p-2 hover:bg-[var(--cl-mist)] rounded-full"
                   >
-                    <Plus className="h-5 w-5 text-gray-900 dark:text-white" />
+                    <Plus className="h-5 w-5 text-[var(--cl-ink)]" />
                   </button>
                 )}
                 <button
                   onClick={() => setShowSearch(!showSearch)}
-                  className={`p-2 rounded-full ${showSearch || searchQuery ? "text-primary-600" : ""}`}
+                  className={`p-2 rounded-full ${showSearch || searchQuery ? "text-[var(--cl-teal)]" : ""}`}
                 >
                   <Search className="h-5 w-5" />
                 </button>
                 {profile && (
                   <button
                     onClick={() => openChat()}
-                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full"
+                    className="p-2 hover:bg-[var(--cl-mist)] rounded-full"
                   >
-                    <MessageCircle className="h-5 w-5 text-gray-900 dark:text-white" />
+                    <MessageCircle className="h-5 w-5 text-[var(--cl-ink)]" />
                   </button>
                 )}
               </div>
@@ -296,8 +296,8 @@ export default function FeedPage() {
                     onClick={() => setActiveTab(tab)}
                     className={`mr-6 pb-2 border-b-2 transition-all font-medium text-sm capitalize ${
                       activeTab === tab
-                        ? "border-brand text-gray-900 dark:text-white"
-                        : "border-transparent text-gray-500 dark:text-gray-400"
+                        ? "border-[var(--cl-teal)] text-[var(--cl-ink)]"
+                        : "border-transparent text-[var(--cl-ink-muted)]"
                     }`}
                   >
                     {t(tab)}
@@ -308,7 +308,7 @@ export default function FeedPage() {
         </header>
 
         {/* Stories Section */}
-        <div className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-900 overflow-hidden">
+        <div className="bg-[var(--cl-surface)] border-b border-[var(--cl-border)] overflow-hidden">
           <div className="max-w-2xl mx-auto py-4">
             <div className="flex gap-4 overflow-x-auto px-4 pb-2 scrollbar-none no-scrollbar">
               {displayStories.map((group, index) => (
@@ -331,15 +331,15 @@ export default function FeedPage() {
                       className={cn(
                         "absolute inset-0 rounded-full",
                         group.hasNew
-                          ? "p-[2.5px] bg-gradient-to-tr from-brand via-blue-400 to-blue-500"
+                          ? "p-[2.5px] bg-gradient-to-tr from-[var(--cl-teal)] via-[var(--cl-teal)] to-[var(--cl-ink)]"
                           : group.stories.length > 0
-                            ? "border-2 border-gray-300 dark:border-gray-700"
-                            : "border-2 border-dashed border-gray-300 dark:border-gray-800",
+                            ? "border-2 border-[var(--cl-border)]"
+                            : "border-2 border-dashed border-[var(--cl-border)]",
                       )}
                     />
 
                     {/* Avatar background to separate from ring */}
-                    <div className="relative bg-white dark:bg-black p-[2px] rounded-full">
+                    <div className="relative bg-[var(--cl-surface)] p-[2px] rounded-full">
                       <div className="relative w-14 h-14">
                         <UserAvatar
                           src={group.userAvatar}
@@ -352,14 +352,14 @@ export default function FeedPage() {
                         {/* Plus button for your own story if empty */}
                         {group.id === "my-story" &&
                           group.stories.length === 0 && (
-                            <div className="absolute bottom-0 right-0 bg-brand text-white rounded-full p-0.5 border-2 border-white dark:border-black">
+                            <div className="absolute bottom-0 right-0 bg-[var(--cl-teal)] text-white rounded-full p-0.5 border-2 border-[var(--cl-surface)]">
                               <Plus className="h-3.5 w-3.5" />
                             </div>
                           )}
                       </div>
                     </div>
                   </div>
-                  <span className="text-[11px] font-medium text-gray-700 dark:text-gray-300 truncate w-16 text-center">
+                  <span className="text-[11px] font-medium text-[var(--cl-ink-secondary)] truncate w-16 text-center">
                     {group.id === "my-story" ? "Seu story" : group.userName}
                   </span>
                 </div>
@@ -385,7 +385,9 @@ export default function FeedPage() {
             </div>
           ) : filteredItems.length === 0 ? (
             <div className="text-center py-20 px-4">
-              <p className="text-gray-500">Nenhum post encontrado</p>
+              <p className="text-[var(--cl-ink-muted)]">
+                Nenhum post encontrado
+              </p>
             </div>
           ) : (
             <div className="space-y-4 px-4 sm:px-0">

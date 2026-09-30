@@ -99,8 +99,8 @@ export default function ConfiPointsRankingPage() {
             {/* Header */}
             <div className="mb-8">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center">
-                  <Trophy className="h-6 w-6 text-[#00b0b0]" />
+                <div className="w-12 h-12 bg-[var(--cl-surface)] border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center">
+                  <Trophy className="h-6 w-6 text-[var(--cl-teal)]" />
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -115,11 +115,11 @@ export default function ConfiPointsRankingPage() {
 
             {/* Estatísticas do Ranking - Padronizadas */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-[var(--cl-surface)]">
                 <CardContent className="p-3">
                   <div className="flex items-center gap-3">
                     <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <Users className="w-5 h-5 text-[#00b0b0]" />
+                      <Users className="w-5 h-5 text-[var(--cl-teal)]" />
                     </div>
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
@@ -133,11 +133,11 @@ export default function ConfiPointsRankingPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-[var(--cl-surface)]">
                 <CardContent className="p-3">
                   <div className="flex items-center gap-3">
                     <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <Trophy className="w-5 h-5 text-[#00b0b0]" />
+                      <Trophy className="w-5 h-5 text-[var(--cl-teal)]" />
                     </div>
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
@@ -153,11 +153,11 @@ export default function ConfiPointsRankingPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-[var(--cl-surface)]">
                 <CardContent className="p-3">
                   <div className="flex items-center gap-3">
                     <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <Medal className="w-5 h-5 text-[#00b0b0]" />
+                      <Medal className="w-5 h-5 text-[var(--cl-teal)]" />
                     </div>
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
@@ -171,11 +171,11 @@ export default function ConfiPointsRankingPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-[var(--cl-surface)]">
                 <CardContent className="p-3">
                   <div className="flex items-center gap-3">
                     <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <Star className="w-5 h-5 text-[#00b0b0]" />
+                      <Star className="w-5 h-5 text-[var(--cl-teal)]" />
                     </div>
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">

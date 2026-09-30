@@ -1248,7 +1248,7 @@ export function BasicSignupForm() {
       <div className="pt-4">
         <LoadingButton
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+          className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white py-3"
           disabled={
             !isMounted ||
             isLoading ||
@@ -1306,7 +1306,7 @@ export function BasicSignupForm() {
           Já tem uma conta?{" "}
           <a
             href="/auth"
-            className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
+            className="text-[var(--cl-teal)] hover:text-[var(--cl-teal)] hover:underline font-medium"
           >
             Faça login
           </a>

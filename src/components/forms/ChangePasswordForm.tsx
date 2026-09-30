@@ -215,7 +215,7 @@ export function ChangePasswordForm({
       <Card className={className}>
         <CardHeader>
           <div className="flex items-center gap-2 mb-2">
-            <Key className="h-5 w-5 text-blue-600" />
+            <Key className="h-5 w-5 text-[var(--cl-teal)]" />
             <CardTitle>Alterar Senha</CardTitle>
           </div>
           <CardDescription>
@@ -225,9 +225,9 @@ export function ChangePasswordForm({
         <CardContent className="space-y-6">
           {!otpSent ? (
             <>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="bg-[var(--cl-mist)] border border-blue-200 rounded-lg p-4">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
-                  <Shield className="h-4 w-4 mr-2 text-blue-600" />
+                  <Shield className="h-4 w-4 mr-2 text-[var(--cl-teal)]" />
                   Verificação de segurança
                 </h3>
                 <p className="text-sm text-gray-600">
@@ -238,7 +238,7 @@ export function ChangePasswordForm({
               <Button
                 onClick={handleRequestOTP}
                 disabled={isReauthLoading}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white"
               >
                 {isReauthLoading
                   ? "Enviando..."
@@ -270,19 +270,19 @@ export function ChangePasswordForm({
                 disabled={isReauthLoading}
                 isLoading={isReauthLoading}
                 loadingText="Verificando..."
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white"
               >
                 Verificar código
               </LoadingButton>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="bg-[var(--cl-mist)] border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-gray-600">
                   Não recebeu o código?{" "}
                   <button
                     type="button"
                     onClick={handleRequestOTP}
                     disabled={isReauthLoading}
-                    className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
+                    className="text-[var(--cl-teal)] hover:text-[var(--cl-teal)] hover:underline font-medium"
                   >
                     Reenviar código
                   </button>
@@ -305,7 +305,7 @@ export function ChangePasswordForm({
     <Card className={className}>
       <CardHeader>
         <div className="flex items-center gap-2 mb-2">
-          <Key className="h-5 w-5 text-blue-600" />
+          <Key className="h-5 w-5 text-[var(--cl-teal)]" />
           <CardTitle>Nova Senha</CardTitle>
         </div>
         <CardDescription>
@@ -313,9 +313,9 @@ export function ChangePasswordForm({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-[var(--cl-mist)] border border-blue-200 rounded-lg p-4">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-            <Shield className="h-4 w-4 mr-2 text-blue-600" />
+            <Shield className="h-4 w-4 mr-2 text-[var(--cl-teal)]" />
             Critérios de segurança
           </h3>
           <div className="space-y-2 text-sm text-gray-600">
@@ -441,7 +441,7 @@ export function ChangePasswordForm({
             <LoadingButton
               type="submit"
               disabled={isLoading || passwordStrength.strength === "weak"}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              className="flex-1 bg-[var(--cl-ink)] hover:brightness-110 text-white"
               isLoading={isLoading}
               loadingText="Atualizando..."
             >

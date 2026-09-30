@@ -68,14 +68,14 @@ export function EditProfileModal({
       label: "Dados da Conta",
       icon: User,
       color: "text-blue-500",
-      bgColor: "bg-blue-50",
+      bgColor: "bg-[var(--cl-mist)]",
     },
     {
       id: "avatar",
       label: "Foto de Perfil",
       icon: Camera,
       color: "text-purple-500",
-      bgColor: "bg-purple-50",
+      bgColor: "bg-[var(--cl-mist)]",
     },
     {
       id: "social",
@@ -113,8 +113,8 @@ export function EditProfileModal({
       id: "verification",
       label: "Confirmar Identidade",
       icon: Shield,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
+      color: "text-[var(--cl-teal)]",
+      bgColor: "bg-[var(--cl-mist)]",
     },
     {
       id: "security",
@@ -127,8 +127,8 @@ export function EditProfileModal({
       id: "privacy",
       label: "Privacidade e IA",
       icon: Bot,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
+      color: "text-[var(--cl-teal)]",
+      bgColor: "bg-[var(--cl-mist)]",
     },
   ];
 
@@ -198,9 +198,9 @@ export function EditProfileModal({
           </div>
 
           {/* Main Content Area */}
-          <div className="flex-1 flex flex-col min-h-0 min-w-0 bg-white dark:bg-black overflow-x-hidden">
+          <div className="flex-1 flex flex-col min-h-0 min-w-0 bg-[var(--cl-surface)] overflow-x-hidden">
             {/* Mobile Navigation */}
-            <div className="sm:hidden border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black p-4 pt-12 flex-shrink-0">
+            <div className="sm:hidden border-b border-gray-100 dark:border-gray-800 bg-[var(--cl-surface)] p-4 pt-12 flex-shrink-0">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className="text-lg font-bold text-gray-900 dark:text-white">
@@ -223,7 +223,7 @@ export function EditProfileModal({
                         "flex-none flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold border transition-all",
                         isActive
                           ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white"
-                          : "bg-white dark:bg-gray-900 text-gray-500 border-gray-200 dark:border-gray-800",
+                          : "bg-[var(--cl-surface)] text-gray-500 border-gray-200 dark:border-gray-800",
                       )}
                     >
                       <Icon className="w-3.5 h-3.5" />

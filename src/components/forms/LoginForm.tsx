@@ -247,7 +247,7 @@ export function LoginForm() {
 
           <LoadingButton
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+            className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white py-3"
             disabled={
               !isMounted || isLoading || authLoading || !executeRecaptcha
             }
@@ -301,7 +301,7 @@ export function LoginForm() {
           <div className="text-center">
             <Link
               href="/recuperar-senha"
-              className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium"
+              className="text-sm text-[var(--cl-teal)] hover:text-[var(--cl-teal)] hover:underline font-medium"
             >
               Esqueci minha senha
             </Link>
@@ -312,7 +312,7 @@ export function LoginForm() {
             <button
               type="button"
               onClick={() => router.push("/auth?tab=register")}
-              className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
+              className="text-[var(--cl-teal)] hover:text-[var(--cl-teal)] hover:underline font-medium"
             >
               Cadastre-se
             </button>

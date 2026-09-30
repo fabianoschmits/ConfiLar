@@ -17,7 +17,7 @@ export function LoginPrompt() {
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 lg:left-auto lg:right-4 lg:w-80">
-      <Card className="bg-gradient-to-r from-blue-600 to-blue-700 text-white border-0 shadow-xl">
+      <Card className="bg-gradient-to-r from-[var(--cl-ink)] to-[var(--cl-ink)] text-white border-0 shadow-xl">
         <CardContent className="p-4">
           <div className="flex items-center space-x-3">
             <div className="flex-shrink-0">
@@ -39,7 +39,7 @@ export function LoginPrompt() {
               <Link href="/auth">
                 <Button
                   size="sm"
-                  className="bg-white text-blue-600 hover:bg-blue-50 text-xs font-medium px-3 py-2 h-8"
+                  className="bg-white text-[var(--cl-teal)] hover:bg-[var(--cl-mist)] text-xs font-medium px-3 py-2 h-8"
                 >
                   Entrar
                   <ArrowRight className="w-3 h-3 ml-1" />

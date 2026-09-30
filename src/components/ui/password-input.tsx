@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface PasswordInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface PasswordInputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
 }
 
@@ -20,7 +21,7 @@ export function PasswordInput({
       <input
         type={showPassword ? "text" : "password"}
         className={cn(
-          "w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors",
+          "w-full h-10 px-3 py-2 pr-10 border border-[var(--cl-border)] rounded-xl bg-[var(--cl-surface)] text-[var(--cl-ink)] placeholder:text-[var(--cl-ink-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cl-teal)]/30 focus:border-[var(--cl-teal)] transition-colors",
           error && "border-red-500 focus:ring-red-500 focus:border-red-500",
           className,
         )}
@@ -28,7 +29,7 @@ export function PasswordInput({
       />
       <button
         type="button"
-        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--cl-ink-muted)] hover:text-[var(--cl-ink)] transition-colors"
         onClick={() => setShowPassword(!showPassword)}
       >
         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}

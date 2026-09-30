@@ -255,7 +255,7 @@ export function CommentSection({
     return (
       <div key={comment.id} className={`${isReply ? "relative" : ""}`}>
         <Card
-          className={`${isReply ? "px-3 pt-1 pb-0 border-l-2 border-blue-200 bg-blue-50/30" : "px-3 pt-1 pb-0"}`}
+          className={`${isReply ? "px-3 pt-1 pb-0 border-l-2 border-blue-200 bg-[var(--cl-mist)]/30" : "px-3 pt-1 pb-0"}`}
         >
           <div className="flex items-start space-x-3">
             <Link href={`/perfil/${comment.user.id}`}>
@@ -298,7 +298,7 @@ export function CommentSection({
                     <span className="text-xs text-gray-400 dark:text-gray-500">
                       •
                     </span>
-                    <span className="text-xs text-blue-600 dark:text-blue-400 font-medium flex items-center gap-1">
+                    <span className="text-xs text-[var(--cl-teal)] dark:text-blue-400 font-medium flex items-center gap-1">
                       <Reply className="w-3 h-3" />
                       Resposta
                     </span>
@@ -402,7 +402,7 @@ export function CommentSection({
       <div className="space-y-3 w-full">
         {isLoading ? (
           <div className="text-center py-4">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--cl-teal)] mx-auto"></div>
           </div>
         ) : (
           <>
@@ -414,13 +414,13 @@ export function CommentSection({
             {visibleComments < comments.length && (
               <div ref={observerRef} className="text-center py-4">
                 {isLoadingMore ? (
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--cl-teal)] mx-auto"></div>
                 ) : (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={loadMoreComments}
-                    className="text-blue-600 hover:text-blue-700"
+                    className="text-[var(--cl-teal)] hover:text-[var(--cl-teal)]"
                   >
                     <ChevronDown className="h-4 w-4 mr-2" />
                     Carregar mais comentários (
@@ -436,7 +436,7 @@ export function CommentSection({
       {/* Formulário de novo comentário */}
       <div className="mt-4 w-full">
         {replyTo && (
-          <div className="mb-2 p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-100 dark:border-blue-800">
+          <div className="mb-2 p-2 bg-[var(--cl-mist)] dark:bg-blue-900/30 rounded-lg border border-blue-100 dark:border-blue-800">
             <div className="flex items-center justify-between">
               <span className="text-sm text-blue-700 dark:text-blue-300">
                 Respondendo a{" "}
@@ -451,7 +451,7 @@ export function CommentSection({
                   cancelReply();
                   setReplyingToUser(null);
                 }}
-                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                className="text-[var(--cl-teal)] dark:text-blue-400 hover:text-[var(--cl-teal)] dark:hover:text-blue-300"
               >
                 Cancelar
               </Button>

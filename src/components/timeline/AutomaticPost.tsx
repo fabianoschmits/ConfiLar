@@ -67,14 +67,14 @@ export function AutomaticPost({
             {getPostIcon(type)}{" "}
             <Link
               href={`/perfil/${post.user_id || ""}`}
-              className="text-blue-600 hover:text-blue-800 font-medium"
+              className="text-[var(--cl-teal)] hover:text-blue-800 font-medium"
             >
               {user}
             </Link>{" "}
             favoritou{" "}
             <Link
               href={`/perfil/${post.professional_id || ""}`}
-              className="text-blue-600 hover:text-blue-800 font-medium"
+              className="text-[var(--cl-teal)] hover:text-blue-800 font-medium"
             >
               {favorited}
             </Link>
@@ -86,14 +86,14 @@ export function AutomaticPost({
             {getPostIcon(type)}{" "}
             <Link
               href={`/perfil/${post.user_id || ""}`}
-              className="text-blue-600 hover:text-blue-800 font-medium"
+              className="text-[var(--cl-teal)] hover:text-blue-800 font-medium"
             >
               {from_user}
             </Link>{" "}
             recomendou{" "}
             <Link
               href={`/perfil/${post.professional_id || ""}`}
-              className="text-blue-600 hover:text-blue-800 font-medium"
+              className="text-[var(--cl-teal)] hover:text-blue-800 font-medium"
             >
               {to_user}
             </Link>
@@ -105,14 +105,14 @@ export function AutomaticPost({
             {getPostIcon(type)}{" "}
             <Link
               href={`/perfil/${post.user_id || ""}`}
-              className="text-blue-600 hover:text-blue-800 font-medium"
+              className="text-[var(--cl-teal)] hover:text-blue-800 font-medium"
             >
               {reviewer}
             </Link>{" "}
             avaliou{" "}
             <Link
               href={`/perfil/${post.professional_id || ""}`}
-              className="text-blue-600 hover:text-blue-800 font-medium"
+              className="text-[var(--cl-teal)] hover:text-blue-800 font-medium"
             >
               {reviewed}
             </Link>
@@ -124,7 +124,7 @@ export function AutomaticPost({
             {getPostIcon(type)}{" "}
             <Link
               href={`/perfil/${post.user_id || ""}`}
-              className="text-blue-600 hover:text-blue-800 font-medium"
+              className="text-[var(--cl-teal)] hover:text-blue-800 font-medium"
             >
               {user}
             </Link>{" "}

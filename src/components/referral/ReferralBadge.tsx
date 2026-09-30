@@ -141,7 +141,7 @@ export function ReferralBadge({
           className={cn(
             sizes.count,
             "absolute -bottom-1 -right-1",
-            "bg-blue-600 dark:bg-blue-500 rounded-full",
+            "bg-[var(--cl-ink)] dark:bg-blue-500 rounded-full",
             "border border-white dark:border-gray-900",
             "text-white font-bold",
             "flex items-center justify-center",
@@ -261,7 +261,7 @@ export function ReferralTierProgress({
         {remaining > 0 ? (
           <>
             Faltam{" "}
-            <span className="font-semibold text-blue-600 dark:text-blue-400">
+            <span className="font-semibold text-[var(--cl-teal)] dark:text-blue-400">
               {remaining}
             </span>{" "}
             {remaining === 1 ? "indicação" : "indicações"} para o próximo nível

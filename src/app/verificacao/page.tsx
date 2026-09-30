@@ -101,7 +101,7 @@ export default function EmailVerificationSuccess() {
         return (
           <Card className="max-w-md w-full bg-white/80 backdrop-blur-md border-0 shadow-xl">
             <CardContent className="p-8 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-6"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-[var(--cl-teal)] border-t-transparent mx-auto mb-6"></div>
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                 Verificando conta...
               </h1>
@@ -133,7 +133,7 @@ export default function EmailVerificationSuccess() {
               <div className="space-y-3">
                 <Button
                   onClick={handleGoToLogin}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+                  className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white py-3"
                 >
                   <Shield className="w-4 h-4 mr-2" />
                   Fazer Login
@@ -177,7 +177,7 @@ export default function EmailVerificationSuccess() {
                   <Button
                     onClick={handleResendEmail}
                     disabled={isResending}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+                    className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white py-3"
                   >
                     {isResending ? (
                       <>
@@ -223,7 +223,7 @@ export default function EmailVerificationSuccess() {
         <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
           <div className="container flex h-16 items-center justify-between px-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 bg-[var(--cl-ink)] rounded-lg flex items-center justify-center shadow-lg">
                 <span className="text-white font-semibold text-lg">C</span>
               </div>
               <span className="text-xl font-semibold text-gray-900 dark:text-white">

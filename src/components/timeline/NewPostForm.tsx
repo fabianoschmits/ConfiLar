@@ -380,11 +380,11 @@ export function NewPostForm({
   return (
     <div
       ref={textareaWrapperRef}
-      className="flex flex-col h-full bg-white dark:bg-black overflow-hidden"
+      className="flex flex-col h-full bg-[var(--cl-surface)] overflow-hidden"
     >
       {/* HEADER FIXO */}
       {/* HEADER FIXO */}
-      <div className="flex-shrink-0 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800">
+      <div className="flex-shrink-0 bg-[var(--cl-surface)] border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-center justify-between p-3 sm:p-4">
           <button
             onClick={() => {
@@ -403,7 +403,7 @@ export function NewPostForm({
             disabled={!post.description.trim() || isLoading}
             isLoading={isLoading}
             size="sm"
-            className="text-xs sm:text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4"
+            className="text-xs sm:text-sm font-medium bg-[var(--cl-ink)] hover:brightness-110 text-white px-3 sm:px-4"
           >
             {isLoading ? "Publicando..." : "Publicar"}
           </LoadingButton>
@@ -411,7 +411,7 @@ export function NewPostForm({
       </div>
 
       {/* SCROLL CONTENT */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4 pb-4 sm:pb-6 bg-white dark:bg-black">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4 pb-4 sm:pb-6 bg-[var(--cl-surface)]">
         <div className="space-y-4 sm:space-y-5 pt-3 sm:pt-4">
           {/* DESCRIÇÃO COM CONTADOR */}
           <div className="relative">
@@ -425,7 +425,7 @@ export function NewPostForm({
                   : "Conte sua experiência, o que mais gostou..."
               }
               disabled={isLoading}
-              className="pr-16 min-h-32 resize-none text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="pr-16 min-h-32 resize-none text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-[var(--cl-surface)] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-[var(--cl-teal)] focus:border-blue-500"
               minHeight="120px"
             />
             <div className="absolute bottom-2 right-2 flex items-center gap-1">
@@ -445,14 +445,14 @@ export function NewPostForm({
 
             {/* Aviso sobre vídeos do YouTube */}
             {firstVideo && (
-              <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="mt-2 p-2 bg-[var(--cl-mist)] dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <div className="flex items-start gap-2">
-                  <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                  <Info className="h-4 w-4 text-[var(--cl-teal)] dark:text-blue-400 mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
                     <p className="text-xs text-blue-800 dark:text-blue-300 font-medium">
                       Vídeo do YouTube detectado
                     </p>
-                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                    <p className="text-xs text-[var(--cl-teal)] dark:text-blue-400 mt-0.5">
                       O vídeo será exibido acima da descrição no post
                     </p>
                   </div>
@@ -545,7 +545,7 @@ export function NewPostForm({
               className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors w-full"
             >
               <MapPin
-                className={`h-4 w-4 flex-shrink-0 ${showLocation ? "text-blue-600 dark:text-blue-400" : ""}`}
+                className={`h-4 w-4 flex-shrink-0 ${showLocation ? "text-[var(--cl-teal)] dark:text-blue-400" : ""}`}
               />
               <span className="font-medium">
                 {showLocation ? "Ocultar" : "Alterar"} localização
@@ -686,7 +686,7 @@ export function NewPostForm({
                         isSelected
                           ? "bg-yellow-500 text-white border-yellow-500"
                           : canAfford
-                            ? "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-yellow-500"
+                            ? "bg-[var(--cl-surface)] text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-yellow-500"
                             : "bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 border-gray-200 dark:border-gray-900 cursor-not-allowed"
                       }`}
                     >
@@ -716,13 +716,13 @@ export function NewPostForm({
             <div
               className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all ${
                 postStatus === "sending"
-                  ? "bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800"
+                  ? "bg-[var(--cl-mist)] dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800"
                   : "bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800"
               }`}
             >
               {postStatus === "sending" ? (
                 <>
-                  <Loader2 className="h-5 w-5 animate-spin text-blue-600 dark:text-blue-400" />
+                  <Loader2 className="h-5 w-5 animate-spin text-[var(--cl-teal)] dark:text-blue-400" />
                   <span className="text-sm font-medium text-blue-700 dark:text-blue-400">
                     Enviando seu post...
                   </span>

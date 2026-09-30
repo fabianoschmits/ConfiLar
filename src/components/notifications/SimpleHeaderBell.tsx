@@ -75,7 +75,7 @@ export function SimpleHeaderBell({ className = "" }: SimpleHeaderBellProps) {
           {/* Header */}
           <div className="p-2 border-b border-gray-100 dark:border-gray-700">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+              <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-[var(--cl-ink)] rounded-full flex items-center justify-center">
                 <Bell className="w-3 h-3 text-white" />
               </div>
               <div className="flex-1">

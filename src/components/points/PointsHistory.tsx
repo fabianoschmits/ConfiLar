@@ -57,7 +57,7 @@ export function PointsHistory({ className, limit = 10 }: PointsHistoryProps) {
       <Card className={className}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <History className="w-5 h-5 text-blue-600" />
+            <History className="w-5 h-5 text-[var(--cl-teal)]" />
             Histórico de Pontos
           </CardTitle>
         </CardHeader>
@@ -84,7 +84,7 @@ export function PointsHistory({ className, limit = 10 }: PointsHistoryProps) {
       <Card className={className}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <History className="w-5 h-5 text-blue-600" />
+            <History className="w-5 h-5 text-[var(--cl-teal)]" />
             Histórico de Pontos
           </CardTitle>
         </CardHeader>
@@ -99,7 +99,7 @@ export function PointsHistory({ className, limit = 10 }: PointsHistoryProps) {
     <Card className={className}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <History className="w-5 h-5 text-blue-600" />
+          <History className="w-5 h-5 text-[var(--cl-teal)]" />
           Histórico de Pontos
         </CardTitle>
       </CardHeader>
@@ -167,7 +167,7 @@ export function PointsHistory({ className, limit = 10 }: PointsHistoryProps) {
               variant="outline"
               size="sm"
               onClick={() => setShowAll(!showAll)}
-              className="text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+              className="text-[var(--cl-teal)] dark:text-blue-400 border-blue-200 dark:border-blue-800 hover:bg-[var(--cl-mist)] dark:hover:bg-blue-950/20"
             >
               {showAll ? (
                 <>

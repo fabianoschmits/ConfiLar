@@ -57,7 +57,7 @@ export function ReferralDashboard({
       title: "Total de Indicações",
       value: stats.totalReferrals,
       icon: Users,
-      color: "text-blue-600 dark:text-blue-400",
+      color: "text-[var(--cl-teal)] dark:text-blue-400",
       bgColor: "bg-blue-100 dark:bg-blue-950/30",
       description: `${stats.activeReferrals} ativas`,
     },
@@ -73,8 +73,8 @@ export function ReferralDashboard({
       title: "Nível Atual",
       value: stats.tier === "none" ? "Iniciante" : getTierName(stats.tier),
       icon: Award,
-      color: "text-purple-600 dark:text-purple-400",
-      bgColor: "bg-purple-100 dark:bg-purple-950/30",
+      color: "text-[var(--cl-teal)] dark:text-[var(--cl-teal)]",
+      bgColor: "bg-[var(--cl-mist)] dark:bg-purple-950/30",
       description: getTierDescription(stats.tier),
     },
     {
@@ -158,7 +158,7 @@ export function ReferralDashboard({
 
       {/* Ranking */}
       {stats.rank && (
-        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
+        <Card className="bg-gradient-to-r from-[var(--cl-mist)] to-[var(--cl-mist)] dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -174,7 +174,7 @@ export function ReferralDashboard({
                   </p>
                 </div>
               </div>
-              <Award className="w-12 h-12 text-blue-600 dark:text-blue-400 opacity-50" />
+              <Award className="w-12 h-12 text-[var(--cl-teal)] dark:text-blue-400 opacity-50" />
             </div>
           </CardContent>
         </Card>

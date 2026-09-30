@@ -39,11 +39,11 @@ export function LikesModal({ isOpen, onClose, postId }: LikesModalProps) {
 
       {/* Modal Content */}
       <div
-        className="relative w-full max-w-md max-h-[80vh] flex flex-col bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-300 ease-out"
+        className="relative w-full max-w-md max-h-[80vh] flex flex-col bg-[var(--cl-surface)] border border-gray-300 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-300 ease-out"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex-none z-10 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between">
+        <div className="flex-none z-10 bg-[var(--cl-surface)] border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between">
           <h3 className="text-base font-semibold text-gray-900 dark:text-white">
             Curtidas
           </h3>
@@ -97,7 +97,7 @@ export function LikesModal({ isOpen, onClose, postId }: LikesModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex-none bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800 p-3">
+        <div className="flex-none bg-[var(--cl-surface)] border-t border-gray-200 dark:border-gray-800 p-3">
           <button
             onClick={onClose}
             className="w-full py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-semibold rounded-xl text-sm transition-colors"

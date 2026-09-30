@@ -73,7 +73,7 @@ const NOTIFICATION_COLORS = {
   review: "bg-yellow-500",
   booking: "bg-green-500",
   system: "bg-gray-50 dark:bg-gray-9000",
-  achievement: "bg-purple-500",
+  achievement: "bg-[var(--cl-teal)]",
   verification: "bg-indigo-500",
   success: "bg-emerald-500",
   warning: "bg-orange-500",
@@ -158,13 +158,13 @@ export function ModernNotificationCenter({
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-md p-0 bg-white dark:bg-gray-900/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-xl rounded-l-2xl"
+        className="w-full sm:max-w-md p-0 bg-[var(--cl-surface)]/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-xl rounded-l-2xl"
       >
         <SheetHeader className="p-6 pb-4 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
               <SheetTitle className="flex items-center gap-2 text-lg font-semibold">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-[var(--cl-ink)] rounded-full flex items-center justify-center">
                   <Bell className="w-4 h-4 text-white" />
                 </div>
                 Notificações
@@ -351,8 +351,8 @@ export function ModernNotificationCenter({
                       key={notification.id}
                       className={`transition-all duration-200 hover:shadow-md ${
                         !notification.is_read
-                          ? "bg-blue-50/50 border-blue-200"
-                          : "bg-white dark:bg-gray-900"
+                          ? "bg-[var(--cl-mist)]/50 border-blue-200"
+                          : "bg-[var(--cl-surface)]"
                       }`}
                     >
                       <CardContent className="p-4">

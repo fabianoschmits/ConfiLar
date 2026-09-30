@@ -84,7 +84,7 @@ export function WelcomePost({
 
   return (
     <>
-      <Card className="hover:shadow-md transition-shadow duration-200 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+      <Card className="hover:shadow-md transition-shadow duration-200 bg-[var(--cl-surface)] border border-gray-200 dark:border-gray-700">
         <CardContent className="p-6">
           {/* Header do Post */}
           <div className="flex items-start justify-between mb-4">
@@ -102,7 +102,7 @@ export function WelcomePost({
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 cursor-pointer transition-colors">
+                  <h3 className="font-semibold text-gray-900 dark:text-white hover:text-[var(--cl-teal)] cursor-pointer transition-colors">
                     <Link href={`/perfil/${post.user_id || ""}`}>
                       {post.metadata?.user}
                     </Link>
@@ -172,7 +172,7 @@ export function WelcomePost({
             <div className="flex items-center gap-2 mb-4">
               <Badge
                 variant="outline"
-                className="text-xs font-medium px-2 py-1 rounded-full border-blue-200 text-blue-700 bg-blue-50"
+                className="text-xs font-medium px-2 py-1 rounded-full border-blue-200 text-blue-700 bg-[var(--cl-mist)]"
               >
                 {post.metadata?.user_type === "professional" ? (
                   <>

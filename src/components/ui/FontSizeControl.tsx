@@ -86,7 +86,7 @@ export function FontSizeControl() {
               "[&::-webkit-slider-thumb]:w-5",
               "[&::-webkit-slider-thumb]:h-5",
               "[&::-webkit-slider-thumb]:rounded-full",
-              "[&::-webkit-slider-thumb]:bg-[#00b0b0]",
+              "[&::-webkit-slider-thumb]:bg-[var(--cl-teal)]",
               "[&::-webkit-slider-thumb]:border-2",
               "[&::-webkit-slider-thumb]:border-white",
               "[&::-webkit-slider-thumb]:dark:border-gray-900",
@@ -99,7 +99,7 @@ export function FontSizeControl() {
               "[&::-moz-range-thumb]:w-5",
               "[&::-moz-range-thumb]:h-5",
               "[&::-moz-range-thumb]:rounded-full",
-              "[&::-moz-range-thumb]:bg-[#00b0b0]",
+              "[&::-moz-range-thumb]:bg-[var(--cl-teal)]",
               "[&::-moz-range-thumb]:border-2",
               "[&::-moz-range-thumb]:border-white",
               "[&::-moz-range-thumb]:dark:border-gray-900",
@@ -145,7 +145,7 @@ export function FontSizeControl() {
         className={cn(
           "w-full py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2",
           hasChanges
-            ? "bg-[#00b0b0] text-white hover:bg-[#009090] shadow-sm"
+            ? "bg-[var(--cl-teal)] text-white hover:brightness-95 shadow-sm"
             : "bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed",
           isSaving && "opacity-80",
         )}

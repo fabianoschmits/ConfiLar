@@ -220,7 +220,7 @@ export function SupportAnalytics() {
         <Card className="bg-white/50 dark:bg-gray-950/50 backdrop-blur-sm border-border/50 shadow-sm rounded-2xl sm:rounded-3xl overflow-hidden flex flex-col">
           <CardHeader className="p-4 sm:p-6 pb-2">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-purple-500/10 border border-purple-500/20">
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-[var(--cl-teal)]/10 border border-purple-500/20">
                 <LifeBuoy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-500" />
               </div>
               <CardTitle className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest opacity-60">

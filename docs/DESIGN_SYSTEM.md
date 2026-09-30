@@ -87,7 +87,13 @@
 
 | Fase | Status |
 |------|--------|
-| Documento + tokens | em andamento |
-| Shell + UI base + overlays | pendente |
-| Pages batch fundos | pendente |
-| Commit/push | pendente |
+| Documento + tokens | feito |
+| Shell + UI base + overlays | feito |
+| Batch tokens (162 arquivos: blue/purple/#00b0b0 → cl-*) | feito |
+| Busca unificada (SmartSearch + FeedSearch) | feito |
+| Auth / Confipoints / Admin accents | feito (visual) |
+| QA visual claro+escuro página a página | contínuo |
+
+### Observação
+Padronização visual **não altera** handlers, APIs, formulários ou permissões.
+Checklist das seções 3–5 marca-se conforme revisão visual em ambiente rodando.

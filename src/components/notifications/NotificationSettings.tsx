@@ -170,9 +170,9 @@ export function NotificationSettings() {
           ) : (
             <div className="space-y-4">
               {!isGranted && (
-                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-[var(--cl-mist)] rounded-lg">
                   <div className="flex items-center gap-3">
-                    <Bell className="w-5 h-5 text-blue-600" />
+                    <Bell className="w-5 h-5 text-[var(--cl-teal)]" />
                     <div>
                       <p className="font-medium text-blue-900">
                         Ativar Notificações
@@ -185,7 +185,7 @@ export function NotificationSettings() {
                   <Button
                     onClick={handleRequestPermission}
                     disabled={isLoading}
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-[var(--cl-ink)] hover:brightness-110"
                   >
                     {isLoading ? "Solicitando..." : "Solicitar Permissão"}
                   </Button>

@@ -84,7 +84,7 @@ export function ProposalModal({
       onOpenChange={onClose}
       title={
         <div className="flex items-center gap-3 text-gray-900 font-semibold text-lg sm:text-xl">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-[var(--cl-ink)] rounded-lg flex items-center justify-center shadow-md">
             <Handshake className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
           </div>
           Nova proposta de acordo
@@ -123,10 +123,10 @@ export function ProposalModal({
     >
       <div className="space-y-4 sm:space-y-6">
         {/* Informações do Proponente */}
-        <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 shadow-sm rounded-lg">
+        <Card className="bg-gradient-to-r from-[var(--cl-mist)] to-blue-100 border border-blue-200 shadow-sm rounded-lg">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center gap-3 sm:gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-md flex-shrink-0">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-[var(--cl-ink)] rounded-lg flex items-center justify-center shadow-md flex-shrink-0">
                 <User className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -184,8 +184,8 @@ export function ProposalModal({
                   <label className="block text-gray-700 font-medium text-sm mb-2">
                     Data proposta
                   </label>
-                  <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <Calendar className="h-4 w-4 text-blue-600" />
+                  <div className="flex items-center gap-2 bg-[var(--cl-mist)] border border-blue-200 rounded-lg p-3">
+                    <Calendar className="h-4 w-4 text-[var(--cl-teal)]" />
                     <span className="text-blue-800 font-medium text-sm sm:text-base">
                       {formatDate(agreement.proposed_date)}
                     </span>
@@ -195,8 +195,8 @@ export function ProposalModal({
                   <label className="block text-gray-700 font-medium text-sm mb-2">
                     Horário
                   </label>
-                  <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <Clock className="h-4 w-4 text-blue-600" />
+                  <div className="flex items-center gap-2 bg-[var(--cl-mist)] border border-blue-200 rounded-lg p-3">
+                    <Clock className="h-4 w-4 text-[var(--cl-teal)]" />
                     <span className="text-blue-800 font-medium text-sm sm:text-base">
                       {formatTime(agreement.proposed_time)}
                     </span>
@@ -210,8 +210,8 @@ export function ProposalModal({
                   <label className="block text-gray-700 font-medium text-sm mb-2">
                     Duração estimada
                   </label>
-                  <div className="flex items-center gap-2 bg-purple-50 border border-purple-200 rounded-lg p-3">
-                    <Clock className="h-4 w-4 text-purple-600" />
+                  <div className="flex items-center gap-2 bg-[var(--cl-mist)] border border-purple-200 rounded-lg p-3">
+                    <Clock className="h-4 w-4 text-[var(--cl-teal)]" />
                     <span className="text-purple-800 font-medium">
                       {agreement.estimated_duration} horas
                     </span>

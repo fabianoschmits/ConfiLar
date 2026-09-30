@@ -86,7 +86,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
                 {recommendations.map((prof) => (
                   <Link key={prof.id} href={`/perfil/${prof.id}`}>
-                    <Card className="h-full hover:shadow-xl transition-all border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+                    <Card className="h-full hover:shadow-xl transition-all border-gray-100 dark:border-gray-800 bg-[var(--cl-surface)]">
                       <CardContent className="p-6">
                         <div className="flex items-center gap-4">
                           <UserAvatar
@@ -221,7 +221,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
           {!professionals || professionals.length === 0 ? (
             <div className="space-y-12">
-              <div className="bg-white dark:bg-gray-900 rounded-3xl p-12 text-center border border-gray-100 dark:border-gray-800 shadow-sm">
+              <div className="bg-[var(--cl-surface)] rounded-3xl p-12 text-center border border-gray-100 dark:border-gray-800 shadow-sm">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                   Ainda não temos profissionais nesta categoria com indexação
                   ativa.
@@ -232,7 +232,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                 </p>
                 <Link
                   href="/buscar"
-                  className="mt-6 inline-block font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                  className="mt-6 inline-block font-medium text-[var(--cl-teal)] dark:text-blue-400 hover:underline"
                 >
                   Ir para a busca avançada →
                 </Link>
@@ -250,7 +250,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {recommendedProfessionals.map((prof) => (
                       <Link key={prof.id} href={`/perfil/${prof.id}`}>
-                        <Card className="h-full hover:shadow-2xl transition-all duration-300 border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden group">
+                        <Card className="h-full hover:shadow-2xl transition-all duration-300 border-gray-100 dark:border-gray-800 bg-[var(--cl-surface)] overflow-hidden group">
                           <CardContent className="p-0">
                             <div className="p-6">
                               <div className="flex items-start gap-4">
@@ -325,7 +325,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {professionals.map((prof) => (
                 <Link key={prof.id} href={`/perfil/${prof.id}`}>
-                  <Card className="h-full hover:shadow-2xl transition-all duration-300 border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden group">
+                  <Card className="h-full hover:shadow-2xl transition-all duration-300 border-gray-100 dark:border-gray-800 bg-[var(--cl-surface)] overflow-hidden group">
                     <CardContent className="p-0">
                       <div className="p-6">
                         <div className="flex items-start gap-4">

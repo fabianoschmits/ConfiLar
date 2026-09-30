@@ -118,10 +118,10 @@ export function DataPortabilityModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-black border-gray-200 dark:border-gray-900">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[var(--cl-surface)] border-gray-200 dark:border-gray-900">
         <CardHeader>
           <CardTitle className="flex items-center text-gray-900 dark:text-white">
-            <Download className="h-6 w-6 mr-2 text-blue-600 dark:text-blue-400" />
+            <Download className="h-6 w-6 mr-2 text-[var(--cl-teal)] dark:text-blue-400" />
             Portabilidade de Dados
           </CardTitle>
           <p className="text-gray-600 dark:text-gray-400 text-sm">
@@ -131,7 +131,7 @@ export function DataPortabilityModal({
 
         <CardContent className="space-y-6">
           {/* Informações sobre Portabilidade */}
-          <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div className="bg-[var(--cl-mist)] dark:bg-blue-900/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
             <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">
               O que é Portabilidade de Dados?
             </h3>
@@ -154,7 +154,7 @@ export function DataPortabilityModal({
                   className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700"
                 >
                   <div className="flex items-center space-x-3">
-                    <div className="text-blue-600 dark:text-blue-400">
+                    <div className="text-[var(--cl-teal)] dark:text-blue-400">
                       {dataType.icon}
                     </div>
                     <div>
@@ -248,7 +248,7 @@ export function DataPortabilityModal({
             <Button
               onClick={handleExportData}
               disabled={isExporting}
-              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+              className="bg-[var(--cl-ink)] hover:brightness-110 dark:bg-blue-500 dark:hover:bg-[var(--cl-ink)]"
             >
               {isExporting ? (
                 <>
@@ -274,7 +274,7 @@ export function DataPortabilityModal({
               Dúvidas sobre portabilidade de dados? Entre em contato:
               <a
                 href="mailto:privacidade@appconfilar.com.br"
-                className="text-blue-600 hover:underline ml-1"
+                className="text-[var(--cl-teal)] hover:underline ml-1"
               >
                 privacidade@appconfilar.com.br
               </a>

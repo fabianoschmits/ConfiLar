@@ -180,9 +180,9 @@ export function ReferralLinkCard({ userId, className }: ReferralLinkCardProps) {
     <Card
       className={cn("border-2 border-blue-200 dark:border-blue-800", className)}
     >
-      <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30">
+      <CardHeader className="bg-gradient-to-r from-[var(--cl-mist)] to-[var(--cl-mist)] dark:from-blue-950/30 dark:to-indigo-950/30">
         <CardTitle className="flex items-center gap-2 text-lg">
-          <Share2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <Share2 className="w-5 h-5 text-[var(--cl-teal)] dark:text-blue-400" />
           Seu Link Exclusivo de Indicação
         </CardTitle>
       </CardHeader>
@@ -207,8 +207,8 @@ export function ReferralLinkCard({ userId, className }: ReferralLinkCardProps) {
           </div>
 
           {!isEditing ? (
-            <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-              <code className="flex-1 text-lg font-bold text-blue-600 dark:text-blue-400 tracking-wider">
+            <div className="flex items-center gap-2 p-3 bg-[var(--cl-mist)] dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <code className="flex-1 text-lg font-bold text-[var(--cl-teal)] dark:text-blue-400 tracking-wider">
                 {referralCode}
               </code>
             </div>
@@ -313,7 +313,7 @@ export function ReferralLinkCard({ userId, className }: ReferralLinkCardProps) {
             <Input
               value={referralLink || ""}
               readOnly
-              className="font-mono text-sm bg-white dark:bg-gray-900"
+              className="font-mono text-sm bg-[var(--cl-surface)]"
             />
             <Button
               onClick={handleCopy}
@@ -354,18 +354,18 @@ export function ReferralLinkCard({ userId, className }: ReferralLinkCardProps) {
             <Button
               onClick={shareViaTelegram}
               variant="outline"
-              className="flex flex-col items-center gap-1 h-auto py-3 hover:bg-blue-50 dark:hover:bg-blue-950/20 hover:border-blue-500"
+              className="flex flex-col items-center gap-1 h-auto py-3 hover:bg-[var(--cl-mist)] dark:hover:bg-blue-950/20 hover:border-blue-500"
             >
-              <Send className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <Send className="w-5 h-5 text-[var(--cl-teal)] dark:text-blue-400" />
               <span className="text-xs">Telegram</span>
             </Button>
 
             <Button
               onClick={shareViaEmail}
               variant="outline"
-              className="flex flex-col items-center gap-1 h-auto py-3 hover:bg-purple-50 dark:hover:bg-purple-950/20 hover:border-purple-500"
+              className="flex flex-col items-center gap-1 h-auto py-3 hover:bg-[var(--cl-mist)] dark:hover:bg-purple-950/20 hover:border-purple-500"
             >
-              <Mail className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <Mail className="w-5 h-5 text-[var(--cl-teal)] dark:text-[var(--cl-teal)]" />
               <span className="text-xs">E-mail</span>
             </Button>
           </div>

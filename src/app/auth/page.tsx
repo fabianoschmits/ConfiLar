@@ -90,7 +90,7 @@ export default function AuthPage() {
     <LightModeLayout>
       <div className="min-h-screen bg-[var(--cl-paper)]">
         {/* Header Moderno */}
-        <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 shadow-sm">
+        <header className="bg-[var(--cl-surface)]/80 backdrop-blur-md border-b border-[var(--cl-border)] sticky top-0 z-50 shadow-sm">
           <div className="container flex h-16 items-center justify-between px-4">
             <div className="flex items-center space-x-3">
               <BrandLogo width={160} height={40} className="object-contain" />
@@ -101,7 +101,7 @@ export default function AuthPage() {
                 onClick={handleBackToHome}
                 variant="ghost"
                 size="sm"
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 transition-colors flex items-center gap-2"
+                className="text-[var(--cl-ink-secondary)] hover:text-[var(--cl-ink)] transition-colors flex items-center gap-2"
               >
                 <ArrowLeft size={16} />
                 <span>{tNav("backToHome")}</span>
@@ -114,11 +114,11 @@ export default function AuthPage() {
         <div className="container py-12 md:py-24">
           <div className="mx-auto max-w-md">
             {/* Auth Forms Modernas */}
-            <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-0 shadow-xl">
+            <Card className="bg-[var(--cl-surface)]/70 backdrop-blur-sm border border-[var(--cl-border)] shadow-[var(--cl-shadow)] rounded-[var(--cl-radius-card)]">
               <CardContent className="p-6">
                 {/* Título de Boas-vindas */}
                 <div className="text-center mb-6">
-                  <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                  <h1 className="text-2xl font-semibold text-[var(--cl-ink)]">
                     {t("welcome")}
                   </h1>
                 </div>
@@ -128,16 +128,16 @@ export default function AuthPage() {
                   onValueChange={setActiveTab}
                   className="w-full"
                 >
-                  <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                  <TabsList className="grid w-full grid-cols-2 mb-6 bg-[var(--cl-mist)] rounded-xl">
                     <TabsTrigger
                       value="login"
-                      className="text-sm font-medium data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-sm"
+                      className="text-sm font-medium data-[state=active]:bg-[var(--cl-surface)] data-[state=active]:text-[var(--cl-ink)] data-[state=active]:shadow-sm rounded-lg"
                     >
                       {t("login")}
                     </TabsTrigger>
                     <TabsTrigger
                       value="register"
-                      className="text-sm font-medium data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-sm"
+                      className="text-sm font-medium data-[state=active]:bg-[var(--cl-surface)] data-[state=active]:text-[var(--cl-ink)] data-[state=active]:shadow-sm rounded-lg"
                     >
                       {tNav("createAccountTab")}
                     </TabsTrigger>
@@ -147,8 +147,8 @@ export default function AuthPage() {
                     <Suspense
                       fallback={
                         <div className="text-center py-8">
-                          <div className="w-8 h-8 bg-blue-600 rounded-lg mx-auto animate-pulse"></div>
-                          <p className="text-gray-600 dark:text-gray-300 font-medium mt-2">
+                          <div className="w-8 h-8 bg-[var(--cl-ink)] rounded-xl mx-auto animate-pulse"></div>
+                          <p className="text-[var(--cl-ink-secondary)] font-medium mt-2">
                             {tCommon("loading")}
                           </p>
                         </div>
@@ -162,8 +162,8 @@ export default function AuthPage() {
                     <Suspense
                       fallback={
                         <div className="text-center py-8">
-                          <div className="w-8 h-8 bg-blue-600 rounded-lg mx-auto animate-pulse"></div>
-                          <p className="text-gray-600 dark:text-gray-300 font-medium mt-2">
+                          <div className="w-8 h-8 bg-[var(--cl-ink)] rounded-xl mx-auto animate-pulse"></div>
+                          <p className="text-[var(--cl-ink-secondary)] font-medium mt-2">
                             {tCommon("loading")}
                           </p>
                         </div>
@@ -175,19 +175,19 @@ export default function AuthPage() {
                 </Tabs>
 
                 <div className="mt-6">
-                  <div className="h-px bg-gray-200 my-4"></div>
-                  <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+                  <div className="h-px bg-[var(--cl-border)] my-4"></div>
+                  <div className="text-center text-sm text-[var(--cl-ink-secondary)]">
                     {tNav("termsAgreement")}{" "}
                     <a
                       href="/termos"
-                      className="text-blue-600 underline hover:text-blue-700 font-medium"
+                      className="text-[var(--cl-teal)] underline hover:brightness-90 font-medium"
                     >
                       {tNav("termsOfUse")}
                     </a>{" "}
                     {tNav("and")}{" "}
                     <a
                       href="/privacidade"
-                      className="text-blue-600 underline hover:text-blue-700 font-medium"
+                      className="text-[var(--cl-teal)] underline hover:brightness-90 font-medium"
                     >
                       {tNav("privacyPolicy")}
                     </a>

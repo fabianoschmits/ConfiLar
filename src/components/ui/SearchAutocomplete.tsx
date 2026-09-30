@@ -134,7 +134,7 @@ export function SearchAutocomplete({
       {showDropdown && allSuggestions.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200"
+          className="absolute top-full left-0 right-0 mt-2 bg-[var(--cl-surface)] border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200"
         >
           {allSuggestions.map((item, index) => (
             <button

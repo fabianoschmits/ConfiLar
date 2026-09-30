@@ -403,21 +403,21 @@ export function SmartSearchBar({
         className={
           isClassifieds
             ? "flex flex-row items-center gap-2"
-            : "flex flex-row items-center gap-2 bg-white dark:bg-gray-900 p-2 rounded-xl shadow-md border border-gray-200 dark:border-gray-800"
+            : "flex flex-row items-center gap-2"
         }
       >
         <div
           className={
             isClassifieds
               ? "flex-1 relative min-w-0 bg-[var(--cl-mist)] rounded-full border-0"
-              : "flex-1 relative min-w-0"
+              : "flex-1 relative min-w-0 bg-[var(--cl-mist)] rounded-full border-0"
           }
         >
           <div
             className={
               isClassifieds
                 ? "flex items-center px-4 h-12"
-                : "flex items-center px-3 h-10"
+                : "flex items-center px-4 h-12"
             }
           >
             <Search className="text-[var(--cl-ink-muted)] h-5 w-5 mr-3 shrink-0" />
@@ -442,7 +442,7 @@ export function SmartSearchBar({
 
           {showSuggestions &&
             suggestions.filter((s) => s.type === "service").length > 0 && (
-              <Card className="absolute top-full left-0 right-0 mt-3 z-50 shadow-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 max-h-60 overflow-y-auto rounded-2xl overflow-hidden">
+              <Card className="absolute top-full left-0 right-0 mt-3 z-50 shadow-xl border border-gray-200 dark:border-gray-700 bg-[var(--cl-surface)] max-h-60 overflow-y-auto rounded-2xl overflow-hidden">
                 <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
                   Serviços Recomendados
                 </div>
@@ -453,7 +453,7 @@ export function SmartSearchBar({
                       <button
                         key={suggestion.id}
                         onClick={() => handleSuggestionClick(suggestion)}
-                        className="w-full px-4 py-2 text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center gap-3 transition-colors text-sm"
+                        className="w-full px-4 py-2 text-left hover:bg-[var(--cl-mist)] dark:hover:bg-blue-900/20 flex items-center gap-3 transition-colors text-sm"
                       >
                         <span>{suggestion.icon}</span>
                         <span className="font-medium text-gray-900 dark:text-gray-100">
@@ -471,23 +471,16 @@ export function SmartSearchBar({
             <Button
               variant="outline"
               onClick={handleOpenFilters}
-              className={
-                isClassifieds
-                  ? "h-12 w-12 p-0 rounded-[16px] border-0 bg-[var(--cl-mist)] text-[var(--cl-ink-muted)] hover:brightness-95"
-                  : "h-10 px-3 flex items-center gap-2 shrink-0 border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
-              }
+              className="h-12 w-12 p-0 rounded-[16px] border-0 bg-[var(--cl-mist)] text-[var(--cl-ink-muted)] hover:brightness-95"
               aria-label="Filtros"
             >
               <SlidersHorizontal className="h-4 w-4" />
-              {!isClassifieds && (
-                <span className="hidden sm:inline">Filtros</span>
-              )}
             </Button>
           )}
           {!isClassifieds && (
             <Button
               onClick={handleSearch}
-              className="h-10 px-3 sm:px-6 bg-[#00b0b0] hover:bg-[#009090] text-white font-bold rounded-lg shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] shrink-0"
+              className="h-12 px-5 bg-[var(--cl-ink)] hover:brightness-110 text-white font-semibold rounded-full shadow-sm transition-all active:scale-[0.98] shrink-0"
             >
               <Search className="h-4 w-4 sm:hidden" />
               <span className="hidden sm:inline">Buscar</span>
@@ -502,7 +495,7 @@ export function SmartSearchBar({
           {getFilterChips().map((chip) => (
             <div
               key={chip.key}
-              className="flex items-center gap-1.5 text-blue-900 dark:text-blue-100 text-xs sm:text-[13px] font-bold tracking-wide"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--cl-mist)] text-[var(--cl-ink-secondary)] text-xs sm:text-[13px] font-medium px-3 py-1"
             >
               <span>{chip.label}</span>
               <button
@@ -511,7 +504,7 @@ export function SmartSearchBar({
                   e.stopPropagation();
                   removeFilter(chip.key as keyof SearchFilters);
                 }}
-                className="text-blue-900/40 hover:text-red-500 dark:text-blue-100/40 dark:hover:text-red-400 transition-colors ml-1"
+                className="text-[var(--cl-ink-muted)] hover:text-red-500 transition-colors"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -521,7 +514,7 @@ export function SmartSearchBar({
             variant="ghost"
             size="sm"
             onClick={clearFilters}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 text-xs h-6 px-2"
+            className="text-[var(--cl-ink-muted)] hover:text-[var(--cl-ink)] text-xs h-6 px-2"
           >
             Limpar todos
           </Button>
@@ -568,7 +561,7 @@ export function SmartSearchBar({
               Cancelar
             </Button>
             <Button
-              className="flex-1 bg-[#00b0b0] hover:bg-[#009090] text-white whitespace-nowrap"
+              className="flex-1 bg-[var(--cl-teal)] hover:brightness-95 text-white whitespace-nowrap"
               onClick={() => {
                 const newFilters = { ...modalFilters, searchTerm: query };
                 setFilters(newFilters);

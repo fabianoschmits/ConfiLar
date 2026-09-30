@@ -402,7 +402,7 @@ export default function BuscarPage() {
           </div>
 
           {/* Abas de Filtro por Tipo de Usuário e Controles de Visualização */}
-          <div className="bg-gray-100 dark:bg-gray-900 py-3 mb-6 rounded-xl px-4">
+          <div className="bg-[var(--cl-mist)] py-3 mb-6 rounded-xl px-4">
             <div className="flex justify-center w-full">
               {/* Abas */}
               <div className="flex items-center justify-center gap-1 sm:gap-2 overflow-x-auto w-full sm:w-auto scrollbar-hide">
@@ -410,8 +410,8 @@ export default function BuscarPage() {
                   onClick={() => setActiveTab("all")}
                   className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                     activeTab === "all"
-                      ? "bg-white dark:bg-gray-700 text-[#00b0b0] dark:text-[#00b0b0] shadow-sm"
-                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      ? "bg-[var(--cl-surface)] text-[var(--cl-teal)] shadow-sm"
+                      : "text-[var(--cl-ink-secondary)] hover:text-[var(--cl-ink)] hover:bg-[var(--cl-surface)]/60"
                   }`}
                 >
                   <Users className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -428,8 +428,8 @@ export default function BuscarPage() {
                   onClick={() => setActiveTab("clients")}
                   className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                     activeTab === "clients"
-                      ? "bg-white dark:bg-gray-700 text-[#00b0b0] dark:text-[#00b0b0] shadow-sm"
-                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      ? "bg-[var(--cl-surface)] text-[var(--cl-teal)] shadow-sm"
+                      : "text-[var(--cl-ink-secondary)] hover:text-[var(--cl-ink)] hover:bg-[var(--cl-surface)]/60"
                   }`}
                 >
                   <User className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -449,8 +449,8 @@ export default function BuscarPage() {
                   onClick={() => setActiveTab("professionals")}
                   className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                     activeTab === "professionals"
-                      ? "bg-white dark:bg-gray-700 text-[#00b0b0] dark:text-[#00b0b0] shadow-sm"
-                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      ? "bg-[var(--cl-surface)] text-[var(--cl-teal)] shadow-sm"
+                      : "text-[var(--cl-ink-secondary)] hover:text-[var(--cl-ink)] hover:bg-[var(--cl-surface)]/60"
                   }`}
                 >
                   <UserCheck className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -489,7 +489,7 @@ export default function BuscarPage() {
               shouldRefresh={pullDistance >= 80}
             />
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-xl font-semibold text-[var(--cl-ink)]">
                 {activeTab === "all"
                   ? t("all")
                   : activeTab === "clients"
@@ -499,12 +499,12 @@ export default function BuscarPage() {
               </h2>
 
               {/* Controles de Visualização */}
-              <div className="hidden sm:flex border border-gray-200 dark:border-gray-800 rounded-lg shrink-0">
+              <div className="hidden sm:flex border border-[var(--cl-border)] rounded-lg shrink-0">
                 <Button
                   variant={viewMode === "grid" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("grid")}
-                  className="rounded-r-none dark:hover:bg-gray-800"
+                  className="rounded-r-none hover:bg-[var(--cl-mist)]"
                 >
                   <Grid3X3 className="h-4 w-4" />
                 </Button>
@@ -512,7 +512,7 @@ export default function BuscarPage() {
                   variant={viewMode === "list" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("list")}
-                  className="rounded-l-none dark:hover:bg-gray-800"
+                  className="rounded-l-none hover:bg-[var(--cl-mist)]"
                 >
                   <List className="h-4 w-4" />
                 </Button>
@@ -524,7 +524,9 @@ export default function BuscarPage() {
             ) : displayProfiles.length === 0 ? (
               <div className="space-y-8">
                 <EmptyState
-                  icon={<Search className="h-12 w-12 text-gray-400" />}
+                  icon={
+                    <Search className="h-12 w-12 text-[var(--cl-ink-muted)]" />
+                  }
                   title={t("noResults")}
                   description={
                     filters.searchTerm ||
@@ -551,11 +553,11 @@ export default function BuscarPage() {
                 {stats.recommendations && stats.recommendations.length > 0 && (
                   <div className="mt-12">
                     <div className="text-center mb-8">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      <h3 className="text-lg font-semibold text-[var(--cl-ink)]">
                         Não encontramos exatamente o que você procurou, mas
                         estes profissionais podem ajudar:
                       </h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                      <p className="text-sm text-[var(--cl-ink-muted)] mt-2">
                         Baseado no seu termo de busca "
                         {filters.searchTerm || filters.service}"
                       </p>
@@ -565,7 +567,7 @@ export default function BuscarPage() {
                       {stats.recommendations.map((profile) => (
                         <Card
                           key={profile.id}
-                          className="shadow-md hover:shadow-lg transition-all duration-300 relative border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
+                          className="shadow-[var(--cl-shadow)] hover:shadow-lg transition-all duration-300 relative border-[var(--cl-border)] bg-[var(--cl-surface)] rounded-[var(--cl-radius-card)]"
                         >
                           <CardContent className="p-5">
                             <div className="flex items-center space-x-3 mb-4">
@@ -580,10 +582,10 @@ export default function BuscarPage() {
                                 userId={profile.id}
                               />
                               <div className="flex-1 min-w-0">
-                                <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+                                <h4 className="font-semibold text-[var(--cl-ink)] truncate">
                                   {profile.full_name}
                                 </h4>
-                                <div className="flex items-center text-xs text-gray-500">
+                                <div className="flex items-center text-xs text-[var(--cl-ink-muted)]">
                                   <MapPin className="h-3 w-3 mr-1" />
                                   {profile.location_city},{" "}
                                   {profile.location_state}
@@ -623,7 +625,7 @@ export default function BuscarPage() {
                 {/* Recomendações de Categorias */}
                 {(filters.searchTerm || filters.service !== "all") && (
                   <div className="mt-12 text-center">
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-6">
+                    <h3 className="text-sm font-medium text-[var(--cl-ink-muted)] mb-6">
                       Ou explore categorias semelhantes:
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
@@ -639,12 +641,12 @@ export default function BuscarPage() {
                             key={catName}
                             href={`/profissionais/${service?.id || "buscar"}`}
                           >
-                            <Card className="hover:shadow-md transition-all cursor-pointer border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 overflow-hidden group">
+                            <Card className="hover:shadow-md transition-all cursor-pointer border-[var(--cl-border)] bg-[var(--cl-mist)]/50 overflow-hidden group rounded-[var(--cl-radius-card)]">
                               <CardContent className="p-3 flex items-center space-x-3">
                                 <span className="text-xl group-hover:scale-110 transition-transform">
                                   {service?.icon || "🔍"}
                                 </span>
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300 line-clamp-1">
+                                <span className="text-xs font-medium text-[var(--cl-ink-secondary)] line-clamp-1">
                                   {catName}
                                 </span>
                               </CardContent>
@@ -719,7 +721,10 @@ export default function BuscarPage() {
                         pageNumber === currentPage + 3
                       ) {
                         return (
-                          <span key={pageNumber} className="px-2 text-gray-500">
+                          <span
+                            key={pageNumber}
+                            className="px-2 text-[var(--cl-ink-muted)]"
+                          >
                             ...
                           </span>
                         );
@@ -749,7 +754,7 @@ export default function BuscarPage() {
                         }}
                         className={`px-3 ${
                           currentPage === pageNumber
-                            ? "bg-primary-600 text-white hover:bg-primary-700"
+                            ? "bg-[var(--cl-ink)] text-white hover:brightness-110"
                             : ""
                         }`}
                       >
@@ -785,7 +790,7 @@ export default function BuscarPage() {
 
             {/* Info da paginação */}
             {!loading && allFilteredProfiles.length > 0 && (
-              <div className="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-center mt-4 text-sm text-[var(--cl-ink-secondary)]">
                 Mostrando {startIndex + 1} a{" "}
                 {Math.min(endIndex, allFilteredProfiles.length)} de{" "}
                 {allFilteredProfiles.length} resultados

@@ -1003,7 +1003,7 @@ export function BansManagementEnhanced() {
 
             {/* Admin Info */}
             {banAdminInfo && (
-              <div className="bg-blue-50 dark:bg-blue-900/10 p-3 rounded border border-blue-200 dark:border-blue-800">
+              <div className="bg-[var(--cl-mist)] dark:bg-blue-900/10 p-3 rounded border border-blue-200 dark:border-blue-800">
                 <Label className="text-xs text-blue-700 dark:text-blue-300">
                   Banido por
                 </Label>

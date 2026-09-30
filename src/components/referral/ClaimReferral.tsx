@@ -118,7 +118,7 @@ export function ClaimReferral({ onSuccess }: ClaimReferralProps) {
                   setErrorStatus(null);
                 }}
                 placeholder="Código (Ex: BRUNO123)"
-                className={`rounded-r-none font-bold tracking-wider placeholder:font-normal placeholder:tracking-normal max-w-[200px] uppercase transition-all bg-white dark:bg-gray-900 ${
+                className={`rounded-r-none font-bold tracking-wider placeholder:font-normal placeholder:tracking-normal max-w-[200px] uppercase transition-all bg-[var(--cl-surface)] ${
                   errorStatus
                     ? "border-red-500 focus-visible:ring-red-500"
                     : "border-emerald-300"

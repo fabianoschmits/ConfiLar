@@ -70,7 +70,7 @@ const getNotificationColor = (type: string) => {
     case "booking":
       return "bg-green-100 text-green-800";
     case "verification":
-      return "bg-purple-100 text-purple-800";
+      return "bg-[var(--cl-mist)] text-purple-800";
     case "achievement":
       return "bg-orange-100 text-orange-800";
     case "success":
@@ -384,7 +384,7 @@ export const NotificationList: React.FC = () => {
             className={cn(
               "transition-all duration-200 hover:shadow-md",
               !notification.is_read &&
-                "border-l-4 border-l-blue-500 bg-blue-50/50",
+                "border-l-4 border-l-blue-500 bg-[var(--cl-mist)]/50",
             )}
           >
             <CardContent className="p-4">

@@ -42,7 +42,7 @@ export function PullToRefresh({
               }}
               className="flex items-center justify-center p-2 rounded-full bg-white dark:bg-gray-800 shadow-lg border border-gray-100 dark:border-gray-700"
             >
-              <RefreshCw className="w-5 h-5 text-[#00b0b0]" />
+              <RefreshCw className="w-5 h-5 text-[var(--cl-teal)]" />
             </motion.div>
           ) : (
             <motion.div
@@ -58,7 +58,7 @@ export function PullToRefresh({
             >
               <ChevronDown
                 className={`w-5 h-5 transition-colors duration-200 ${
-                  shouldRefresh ? "text-[#00b0b0]" : "text-gray-400"
+                  shouldRefresh ? "text-[var(--cl-teal)]" : "text-gray-400"
                 }`}
               />
             </motion.div>
@@ -70,7 +70,7 @@ export function PullToRefresh({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className={`text-[10px] font-medium mt-1 transition-colors duration-200 ${
-              shouldRefresh ? "text-[#00b0b0]" : "text-gray-400"
+              shouldRefresh ? "text-[var(--cl-teal)]" : "text-gray-400"
             }`}
           >
             {shouldRefresh ? "Solte para atualizar" : "Puxe para atualizar"}

@@ -153,7 +153,7 @@ export function CookieConsentBanner() {
             <div className="p-3 sm:p-6 space-y-3 sm:space-y-4">
               <div className="flex items-start gap-3 sm:gap-4">
                 <div className="w-8 h-8 sm:w-10 sm:h-10 bg-zinc-800 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Cookie className="h-4 w-4 sm:h-5 sm:w-5 text-[#00b0b0]" />
+                  <Cookie className="h-4 w-4 sm:h-5 sm:w-5 text-[var(--cl-teal)]" />
                 </div>
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between">
@@ -163,7 +163,7 @@ export function CookieConsentBanner() {
                     <div className="sm:hidden">
                       <Link
                         href="/privacidade"
-                        className="text-[#00b0b0] text-[10px] hover:underline"
+                        className="text-[var(--cl-teal)] text-[10px] hover:underline"
                       >
                         Saiba mais
                       </Link>
@@ -179,7 +179,7 @@ export function CookieConsentBanner() {
               <div className="flex flex-row gap-2 sm:gap-3">
                 <Button
                   onClick={handleAcceptAll}
-                  className="bg-[#00b0b0] hover:bg-[#008c8c] text-white font-medium rounded-lg sm:rounded-xl h-8 sm:h-11 flex-1 shadow-lg text-[10px] sm:text-base px-0"
+                  className="bg-[var(--cl-teal)] hover:bg-[#008c8c] text-white font-medium rounded-lg sm:rounded-xl h-8 sm:h-11 flex-1 shadow-lg text-[10px] sm:text-base px-0"
                 >
                   Aceitar Todos
                 </Button>
@@ -206,7 +206,7 @@ export function CookieConsentBanner() {
                 <span>Em conformidade com a LGPD.</span>
                 <Link
                   href="/privacidade"
-                  className="text-[#00b0b0] hover:underline font-medium"
+                  className="text-[var(--cl-teal)] hover:underline font-medium"
                 >
                   Saiba mais
                 </Link>
@@ -216,7 +216,7 @@ export function CookieConsentBanner() {
             <div className="p-5 sm:p-6 space-y-6">
               <div className="flex items-center justify-between border-b border-zinc-900 pb-4">
                 <div className="flex items-center gap-2">
-                  <Settings className="h-5 w-5 text-[#00b0b0]" />
+                  <Settings className="h-5 w-5 text-[var(--cl-teal)]" />
                   <h3 className="font-semibold text-lg">Preferências</h3>
                 </div>
                 <Button
@@ -260,7 +260,7 @@ export function CookieConsentBanner() {
                   <Button
                     onClick={() => togglePreference("analytical")}
                     variant="ghost"
-                    className={`h-8 w-12 rounded-full p-0 transition-colors ${preferences.analytical ? "bg-[#00b0b0] text-white" : "bg-zinc-800 text-zinc-500"}`}
+                    className={`h-8 w-12 rounded-full p-0 transition-colors ${preferences.analytical ? "bg-[var(--cl-teal)] text-white" : "bg-zinc-800 text-zinc-500"}`}
                   >
                     <div
                       className={`h-6 w-6 bg-white rounded-full shadow-md transition-transform transform ${preferences.analytical ? "translate-x-2" : "-translate-x-2"}`}
@@ -282,7 +282,7 @@ export function CookieConsentBanner() {
                   <Button
                     onClick={() => togglePreference("marketing")}
                     variant="ghost"
-                    className={`h-8 w-12 rounded-full p-0 transition-colors ${preferences.marketing ? "bg-[#00b0b0] text-white" : "bg-zinc-800 text-zinc-500"}`}
+                    className={`h-8 w-12 rounded-full p-0 transition-colors ${preferences.marketing ? "bg-[var(--cl-teal)] text-white" : "bg-zinc-800 text-zinc-500"}`}
                   >
                     <div
                       className={`h-6 w-6 bg-white rounded-full shadow-md transition-transform transform ${preferences.marketing ? "translate-x-2" : "-translate-x-2"}`}
@@ -294,7 +294,7 @@ export function CookieConsentBanner() {
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <Button
                   onClick={handleSavePreferences}
-                  className="bg-[#00b0b0] hover:bg-[#008c8c] text-white font-medium rounded-xl h-11 flex-1 shadow-lg shadow-teal-900/20"
+                  className="bg-[var(--cl-teal)] hover:bg-[#008c8c] text-white font-medium rounded-xl h-11 flex-1 shadow-lg shadow-teal-900/20"
                 >
                   <Check className="h-4 w-4 mr-2" />
                   Salvar Preferências

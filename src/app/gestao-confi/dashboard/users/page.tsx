@@ -191,18 +191,18 @@ export default function AdminUsersPage() {
           <div className="relative">
             <Avatar className="h-9 w-9 border border-border/50 group-hover/user:scale-105 transition-transform">
               <AvatarImage src={user.avatar_url} />
-              <AvatarFallback className="bg-blue-50 text-blue-700 text-[10px] font-bold">
+              <AvatarFallback className="bg-[var(--cl-mist)] text-blue-700 text-[10px] font-bold">
                 {user.full_name?.substring(0, 2).toUpperCase() || "??"}
               </AvatarFallback>
             </Avatar>
             {user.is_verified && (
-              <div className="absolute -bottom-1 -right-1 bg-white dark:bg-gray-950 rounded-full p-0.5 shadow-sm border border-border/50">
-                <CheckCircle2 className="w-3 h-3 text-blue-600 fill-blue-50" />
+              <div className="absolute -bottom-1 -right-1 bg-[var(--cl-surface)] rounded-full p-0.5 shadow-sm border border-border/50">
+                <CheckCircle2 className="w-3 h-3 text-[var(--cl-teal)] fill-blue-50" />
               </div>
             )}
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="font-bold text-sm truncate leading-none mb-1 group-hover/user:text-blue-600 transition-colors">
+            <span className="font-bold text-sm truncate leading-none mb-1 group-hover/user:text-[var(--cl-teal)] transition-colors">
               {user.full_name || "Sem nome"}
             </span>
             <span className="text-[11px] text-muted-foreground truncate opacity-70">
@@ -313,7 +313,7 @@ export default function AdminUsersPage() {
   ];
 
   const renderMobileCard = (user: User) => (
-    <div className="bg-white dark:bg-gray-900/40 border border-border/40 rounded-2xl sm:rounded-[24px] p-3 sm:p-5 space-y-3 sm:space-y-4 shadow-sm hover:border-primary/30 transition-all group">
+    <div className="bg-[var(--cl-surface)]/40 border border-border/40 rounded-2xl sm:rounded-[24px] p-3 sm:p-5 space-y-3 sm:space-y-4 shadow-sm hover:border-primary/30 transition-all group">
       <div className="flex items-start justify-between">
         <Link
           href={`/perfil/${user.id}`}
@@ -322,18 +322,18 @@ export default function AdminUsersPage() {
           <div className="relative">
             <Avatar className="h-10 w-10 sm:h-12 sm:w-12 border border-border/50 shadow-sm group-hover/user:scale-105 transition-transform">
               <AvatarImage src={user.avatar_url} />
-              <AvatarFallback className="bg-blue-50 text-blue-700 text-[10px] sm:text-xs font-bold font-mono">
+              <AvatarFallback className="bg-[var(--cl-mist)] text-blue-700 text-[10px] sm:text-xs font-bold font-mono">
                 {user.full_name?.substring(0, 2).toUpperCase() || "??"}
               </AvatarFallback>
             </Avatar>
             {user.is_verified && (
-              <div className="absolute -bottom-1 -right-1 bg-white dark:bg-gray-950 rounded-full p-0.5 shadow-sm border border-border/50">
-                <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 h-4 text-blue-600 fill-blue-50" />
+              <div className="absolute -bottom-1 -right-1 bg-[var(--cl-surface)] rounded-full p-0.5 shadow-sm border border-border/50">
+                <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 h-4 text-[var(--cl-teal)] fill-blue-50" />
               </div>
             )}
           </div>
           <div className="min-w-0">
-            <h3 className="font-black text-xs sm:text-sm text-gray-900 dark:text-white leading-tight group-hover/user:text-blue-600 transition-colors truncate max-w-[140px] sm:max-w-none">
+            <h3 className="font-black text-xs sm:text-sm text-gray-900 dark:text-white leading-tight group-hover/user:text-[var(--cl-teal)] transition-colors truncate max-w-[140px] sm:max-w-none">
               {user.full_name || "Sem nome"}
             </h3>
             <p className="text-[9px] sm:text-[11px] text-muted-foreground font-medium opacity-60 truncate max-w-[120px] sm:max-w-[150px]">
@@ -448,7 +448,7 @@ export default function AdminUsersPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && fetchUsers()}
-              className="pl-10 h-11 bg-white/50 dark:bg-black/20 border-border/40 rounded-2xl text-sm focus-visible:ring-blue-500/20"
+              className="pl-10 h-11 bg-white/50 dark:bg-black/20 border-border/40 rounded-2xl text-sm focus-visible:ring-[var(--cl-teal)]/20"
             />
           </div>
           <div className="flex w-full sm:w-auto gap-2">
@@ -458,7 +458,7 @@ export default function AdminUsersPage() {
               className={cn(
                 "h-11 px-6 rounded-2xl border-border/40 font-bold transition-all",
                 (filterState || filterCity || filterType !== "all") &&
-                  "border-blue-500/50 bg-blue-50/50 dark:bg-blue-900/10 text-blue-600",
+                  "border-blue-500/50 bg-[var(--cl-mist)]/50 dark:bg-blue-900/10 text-[var(--cl-teal)]",
               )}
             >
               <Filter className="w-4 h-4 mr-2" />
@@ -467,7 +467,7 @@ export default function AdminUsersPage() {
                 filterCity ||
                 filterType !== "all" ||
                 searchQuery) && (
-                <Badge className="ml-2 bg-blue-600 h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px]">
+                <Badge className="ml-2 bg-[var(--cl-ink)] h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px]">
                   !
                 </Badge>
               )}
@@ -491,7 +491,7 @@ export default function AdminUsersPage() {
                 fetchUsers(1);
               }}
               disabled={loading}
-              className="flex-grow sm:flex-grow-0 px-8 h-11 rounded-2xl bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/20 font-bold transition-all active:scale-95"
+              className="flex-grow sm:flex-grow-0 px-8 h-11 rounded-2xl bg-[var(--cl-ink)] hover:bg-blue-500 shadow-lg shadow-blue-500/20 font-bold transition-all active:scale-95"
             >
               Pesquisar
             </Button>

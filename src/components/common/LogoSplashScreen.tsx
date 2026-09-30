@@ -23,7 +23,7 @@ export function LogoSplashScreen() {
       <div className="relative flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-700 ease-out">
         {/* Logo Container with glow effect */}
         <div className="relative">
-          <div className="absolute -inset-4 bg-[#00b0b0]/20 blur-2xl rounded-full animate-pulse" />
+          <div className="absolute -inset-4 bg-[var(--cl-teal)]/20 blur-2xl rounded-full animate-pulse" />
           <Image
             src="/imagens/logo/Logo azul - sem fundo - Vertical.png"
             alt="ConfiLar"
@@ -40,7 +40,7 @@ export function LogoSplashScreen() {
           <div className="w-48 h-1 bg-gray-800 rounded-full overflow-hidden">
             <div className="h-full bg-gradient-to-r from-transparent via-[#00b0b0] to-transparent w-full animate-shimmer" />
           </div>
-          <span className="text-[10px] font-bold text-[#00b0b0]/60 uppercase tracking-[0.3em] animate-pulse">
+          <span className="text-[10px] font-bold text-[var(--cl-teal)]/60 uppercase tracking-[0.3em] animate-pulse">
             Carregando ambiente seguro
           </span>
         </div>

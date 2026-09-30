@@ -44,7 +44,7 @@ export function ProVerifiedBadge({
   const renderBlueBadge = () => (
     <div className="relative group/verified w-full h-full">
       <div className="absolute inset-0 bg-blue-500 blur-[4px] opacity-30 rounded-full animate-pulse"></div>
-      <div className="relative w-full h-full bg-gradient-to-tr from-blue-500 to-blue-600 text-white rounded-full p-[2px] shadow-sm flex items-center justify-center">
+      <div className="relative w-full h-full bg-gradient-to-tr from-blue-500 to-[var(--cl-ink)] text-white rounded-full p-[2px] shadow-sm flex items-center justify-center">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"

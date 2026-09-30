@@ -99,7 +99,7 @@ export default function PrivacidadePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-gray-700">{t("section1.description")}</p>
-                <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="bg-[var(--cl-mist)] p-4 rounded-lg">
                   <h4 className="font-semibold text-blue-800 mb-2">
                     {t("section1.dataController")}
                   </h4>
@@ -174,7 +174,7 @@ export default function PrivacidadePage() {
                   </div>
                 </div>
 
-                <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg">
+                <div className="bg-[var(--cl-mist)] dark:bg-blue-900/10 p-4 rounded-lg">
                   <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 flex items-center">
                     <Database className="w-4 h-4 mr-2" />
                     {t("section2.financialTitle")}
@@ -310,7 +310,7 @@ export default function PrivacidadePage() {
                   </div>
                 </div>
 
-                <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="bg-[var(--cl-mist)] p-4 rounded-lg">
                   <h4 className="font-semibold text-blue-800 mb-2">
                     {t("section4.howToExerciseTitle")}
                   </h4>
@@ -414,7 +414,7 @@ export default function PrivacidadePage() {
               <CardContent className="space-y-4">
                 <p className="text-gray-700">{t("section8.description")}</p>
                 <div className="grid md:grid-cols-3 gap-4">
-                  <div className="bg-blue-50 p-3 rounded-lg">
+                  <div className="bg-[var(--cl-mist)] p-3 rounded-lg">
                     <h4 className="font-semibold text-blue-800 text-sm">
                       {t("section8.essentialTitle")}
                     </h4>

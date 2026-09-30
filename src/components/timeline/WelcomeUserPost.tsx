@@ -89,7 +89,7 @@ export function WelcomeUserPost({
 
   return (
     <>
-      <Card className="mb-4 hover:shadow-md transition-shadow duration-200 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+      <Card className="mb-4 hover:shadow-md transition-shadow duration-200 bg-[var(--cl-surface)] border border-gray-200 dark:border-gray-700">
         <CardContent className="p-6">
           {/* Header do Card - Estilo da página de busca */}
           <div className="flex items-start space-x-3 mb-4">
@@ -108,7 +108,7 @@ export function WelcomeUserPost({
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-blue-600 cursor-pointer transition-colors">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-[var(--cl-teal)] cursor-pointer transition-colors">
                   <Link href={`/perfil/${post.user_id || ""}`}>
                     {post.metadata?.user}
                   </Link>
@@ -154,9 +154,9 @@ export function WelcomeUserPost({
           </div>
 
           {/* Mensagem de Boas-vindas */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+          <div className="bg-[var(--cl-mist)] dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <UserPlus className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <UserPlus className="h-4 w-4 text-[var(--cl-teal)] dark:text-blue-400" />
               <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
                 🎉 Bem-vindo(a) à comunidade!
               </span>
@@ -217,7 +217,7 @@ export function WelcomeUserPost({
                 onClick={() =>
                   openChat(post.user_id || "", post.metadata?.user || "Usuário")
                 }
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-[var(--cl-ink)] hover:brightness-110"
                 title="Contatar"
               >
                 <MessageCircle className="h-4 w-4" />

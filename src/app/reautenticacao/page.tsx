@@ -130,14 +130,14 @@ export default function ReauthenticationPage() {
           description:
             "Para alterar seu email, precisamos confirmar sua identidade",
           icon: <Mail className="h-8 w-8" />,
-          color: "text-blue-600",
+          color: "text-[var(--cl-teal)]",
         };
       default:
         return {
           title: "Verificação de segurança",
           description: "Confirme sua identidade para continuar",
           icon: <Shield className="h-8 w-8" />,
-          color: "text-purple-600",
+          color: "text-[var(--cl-teal)]",
         };
     }
   };
@@ -192,7 +192,7 @@ export default function ReauthenticationPage() {
           <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
             <div className="container flex h-16 items-center justify-between px-4">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                <div className="w-10 h-10 bg-[var(--cl-ink)] rounded-lg flex items-center justify-center shadow-lg">
                   <span className="text-white font-semibold text-lg">C</span>
                 </div>
                 <span className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -217,7 +217,7 @@ export default function ReauthenticationPage() {
             <Card className="max-w-md w-full bg-white/70 backdrop-blur-sm border-0 shadow-xl">
               <CardHeader className="text-center">
                 <div
-                  className={`mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-lg ${actionInfo.color}`}
+                  className={`mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-[var(--cl-ink)] rounded-xl flex items-center justify-center mb-4 shadow-lg ${actionInfo.color}`}
                 >
                   {actionInfo.icon}
                 </div>
@@ -233,9 +233,9 @@ export default function ReauthenticationPage() {
                 {!otpSent ? (
                   // Primeira etapa: Solicitar código
                   <>
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="bg-[var(--cl-mist)] border border-blue-200 rounded-lg p-4">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                        <Shield className="h-5 w-5 mr-2 text-blue-600" />
+                        <Shield className="h-5 w-5 mr-2 text-[var(--cl-teal)]" />
                         Verificação de segurança
                       </h3>
                       <p className="text-sm text-gray-600 mb-4">
@@ -258,7 +258,7 @@ export default function ReauthenticationPage() {
                     <Button
                       onClick={handleRequestOTP}
                       disabled={isLoading}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+                      className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white py-3"
                     >
                       {isLoading
                         ? "Enviando..."
@@ -319,7 +319,7 @@ export default function ReauthenticationPage() {
                         resetReauthentication();
                         setOtp("");
                       }}
-                      className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium mx-auto block"
+                      className="text-sm text-[var(--cl-teal)] hover:text-[var(--cl-teal)] hover:underline font-medium mx-auto block"
                     >
                       Solicitar novo código
                     </button>

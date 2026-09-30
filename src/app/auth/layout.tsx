@@ -8,7 +8,7 @@ export default function AuthLayout({
 }) {
   return (
     <LightModeLayout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      <div className="min-h-screen bg-gradient-to-br from-[var(--cl-mist)] via-white to-[var(--cl-mist)]">
         <Suspense fallback={<div>Carregando...</div>}>{children}</Suspense>
       </div>
     </LightModeLayout>

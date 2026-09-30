@@ -33,7 +33,7 @@ export function MobileFloatingMenu() {
         <Button
           onClick={() => setIsOpen(!isOpen)}
           size="lg"
-          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-blue-600 hover:bg-blue-700 text-white"
+          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-[var(--cl-ink)] hover:brightness-110 text-white"
         >
           {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </Button>
@@ -58,7 +58,7 @@ export function MobileFloatingMenu() {
                 <Link href="/feed" onClick={handleClose}>
                   <Button
                     variant="ghost"
-                    className="w-full justify-start text-[#00b0b0] hover:bg-teal-50 dark:hover:bg-teal-900/10 mb-2"
+                    className="w-full justify-start text-[var(--cl-teal)] hover:bg-teal-50 dark:hover:bg-teal-900/10 mb-2"
                     size="lg"
                   >
                     <Users className="h-5 w-5 mr-3" />
@@ -71,7 +71,7 @@ export function MobileFloatingMenu() {
                 </h4>
                 <Link href="/auth" onClick={handleClose}>
                   <Button
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white justify-start"
+                    className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white justify-start"
                     size="lg"
                   >
                     <LogIn className="h-4 w-4 mr-2" />
@@ -82,7 +82,7 @@ export function MobileFloatingMenu() {
                 <Link href="/auth?tab=register" onClick={handleClose}>
                   <Button
                     variant="outline"
-                    className="w-full border-blue-600 text-blue-600 hover:bg-blue-50 justify-start"
+                    className="w-full border-[var(--cl-teal)] text-[var(--cl-teal)] hover:bg-[var(--cl-mist)] justify-start"
                     size="lg"
                   >
                     <UserPlus className="h-4 w-4 mr-2" />

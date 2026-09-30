@@ -25,7 +25,7 @@ export function AdminPageHeader({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-start gap-4">
           {Icon && (
-            <div className="hidden sm:flex bg-blue-600/10 p-3 rounded-2xl border border-blue-600/20 text-blue-600 shadow-sm">
+            <div className="hidden sm:flex bg-[var(--cl-ink)]/10 p-3 rounded-2xl border border-[var(--cl-teal)]/20 text-[var(--cl-teal)] shadow-sm">
               <Icon className="h-6 w-6" />
             </div>
           )}
@@ -44,7 +44,7 @@ export function AdminPageHeader({
               </Button>
             )}
             <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
-              {Icon && <Icon className="sm:hidden h-5 w-5 text-blue-600" />}
+              {Icon && <Icon className="sm:hidden h-5 w-5 text-[var(--cl-teal)]" />}
               {title}
             </h2>
             {description && (

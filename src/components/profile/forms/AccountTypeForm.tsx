@@ -153,12 +153,12 @@ export function AccountTypeForm({ onSuccess }: AccountTypeFormProps) {
               className={cn(
                 "p-4 rounded-xl border-2 transition-all",
                 watchedValues.user_type === "client"
-                  ? "border-blue-500 bg-blue-50"
+                  ? "border-blue-500 bg-[var(--cl-mist)]"
                   : "border-gray-100 bg-gray-50",
               )}
             >
               <div className="flex items-center gap-2 mb-2">
-                <User className="w-5 h-5 text-blue-600" />
+                <User className="w-5 h-5 text-[var(--cl-teal)]" />
                 <span className="font-bold">Cliente</span>
               </div>
               <p className="text-xs text-gray-600">

@@ -110,14 +110,14 @@ export function AdminKpiCards({
 
         // Dynamic colors based on card.color
         const colorClasses: Record<string, string> = {
-          blue: "border-blue-100 bg-blue-50/30 text-blue-600",
+          blue: "border-blue-100 bg-[var(--cl-mist)]/30 text-[var(--cl-teal)]",
           amber: "border-amber-100 bg-amber-50/30 text-amber-600",
           red: "border-red-100 bg-red-50/30 text-red-600",
           emerald: "border-emerald-100 bg-emerald-50/30 text-emerald-600",
         };
 
         const iconBgClasses: Record<string, string> = {
-          blue: "bg-blue-600/10",
+          blue: "bg-[var(--cl-ink)]/10",
           amber: "bg-amber-600/10",
           red: "bg-red-600/10",
           emerald: "bg-emerald-600/10",
@@ -136,7 +136,7 @@ export function AdminKpiCards({
           <div
             key={i}
             className={cn(
-              "p-3 sm:p-5 rounded-2xl sm:rounded-3xl border transition-all hover:shadow-lg hover:-translate-y-1 group bg-white dark:bg-gray-950",
+              "p-3 sm:p-5 rounded-2xl sm:rounded-3xl border transition-all hover:shadow-lg hover:-translate-y-1 group bg-[var(--cl-surface)]",
               colorClasses[card.color] || "border-gray-100",
             )}
           >

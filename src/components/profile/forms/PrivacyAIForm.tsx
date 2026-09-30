@@ -112,7 +112,7 @@ export function PrivacyAIForm({ onSuccess }: PrivacyAIFormProps) {
               </div>
             </div>
             <div className="flex items-start gap-3 bg-white/50 dark:bg-black/20 p-4 rounded-2xl border border-white dark:border-white/5 shadow-sm">
-              <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
+              <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-[var(--cl-teal)] dark:text-blue-400">
                 <Shield className="w-4 h-4" />
               </div>
               <div className="space-y-1">

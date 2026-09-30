@@ -214,7 +214,7 @@ export function ReportDetailsModal({
                   href={`/ perfil / ${report.reporter?.id} `}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-blue-600 flex items-center gap-1 mt-1 hover:underline"
+                  className="text-xs text-[var(--cl-teal)] flex items-center gap-1 mt-1 hover:underline"
                 >
                   Ver Perfil <ExternalLink className="h-3 w-3" />
                 </a>
@@ -248,7 +248,7 @@ export function ReportDetailsModal({
                     href={`/ perfil / ${report.reported_user.id} `}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-blue-600 flex items-center gap-1 mt-1 hover:underline"
+                    className="text-xs text-[var(--cl-teal)] flex items-center gap-1 mt-1 hover:underline"
                   >
                     Ver Perfil <ExternalLink className="h-3 w-3" />
                   </a>
@@ -326,7 +326,7 @@ export function ReportDetailsModal({
                       <Button
                         variant="link"
                         size="sm"
-                        className="h-auto p-0 text-blue-600 font-bold text-xs hover:text-blue-700"
+                        className="h-auto p-0 text-[var(--cl-teal)] font-bold text-xs hover:text-[var(--cl-teal)]"
                         onClick={() =>
                           window.open(report.reported_content!.link, "_blank")
                         }

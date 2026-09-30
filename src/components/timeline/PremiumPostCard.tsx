@@ -184,7 +184,7 @@ export function PremiumPostCard({
 
         <Card
           id={`post-${post.id}`}
-          className="relative overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg shadow-amber-500/15 dark:shadow-amber-800/20 hover:shadow-amber-500/20 transition-all duration-300"
+          className="relative overflow-hidden border border-gray-200 dark:border-gray-700 bg-[var(--cl-surface)] shadow-lg shadow-amber-500/15 dark:shadow-amber-800/20 hover:shadow-amber-500/20 transition-all duration-300"
         >
           {/* Badge Premium Fixo no Topo */}
           <div className="absolute top-0 right-0 z-20">
@@ -228,7 +228,7 @@ export function PremiumPostCard({
                   <h3 className="flex-1 min-w-0 max-w-[60%] sm:max-w-[70%] text-xs sm:text-sm md:text-base font-semibold text-gray-900 dark:text-white overflow-hidden">
                     <Link
                       href={`/perfil/${post.user_id}`}
-                      className="truncate block hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      className="truncate block hover:text-[var(--cl-teal)] dark:hover:text-blue-400 transition-colors"
                     >
                       {post.user_name || "Usuário"}
                     </Link>
@@ -498,7 +498,7 @@ export function PremiumPostCard({
                 <div className="absolute bottom-2 right-2 z-10">
                   <Badge
                     variant="default"
-                    className="bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg text-xs"
+                    className="bg-gradient-to-r from-red-500 to-[var(--cl-teal)] text-white shadow-lg text-xs"
                   >
                     <Flame className="h-3 w-3 mr-1" />
                     <span className="hidden sm:inline">Trending</span>
@@ -513,7 +513,7 @@ export function PremiumPostCard({
 
       {/* Seção de comentários */}
       {showCommentSection && showComments && (
-        <div className="mt-4 bg-white dark:bg-gray-900 rounded-lg">
+        <div className="mt-4 bg-[var(--cl-surface)] rounded-lg">
           <CommentSection postId={post.id} />
         </div>
       )}

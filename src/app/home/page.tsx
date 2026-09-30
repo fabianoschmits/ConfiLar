@@ -168,14 +168,14 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           {/* Header da Página */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center px-4 py-2 bg-primary-100 text-primary-800 rounded-full text-sm font-medium mb-6">
+            <div className="inline-flex items-center px-4 py-2 bg-[var(--cl-mist)] text-[var(--cl-ink)] rounded-full text-sm font-medium mb-6">
               <Shield className="h-4 w-4 mr-2" />
               {t("platform")}
             </div>
-            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+            <h1 className="text-4xl lg:text-6xl font-bold text-[var(--cl-ink)] mb-6">
               {t("welcome")}
             </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-[var(--cl-ink-secondary)] max-w-3xl mx-auto leading-relaxed">
               {t("description")}
             </p>
           </div>
@@ -246,14 +246,14 @@ export default function HomePage() {
                   {/* Conteúdo */}
                   <div className="flex-1 text-center lg:text-left">
                     <div className="flex items-center gap-3 justify-center lg:justify-start mb-3">
-                      <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
+                      <h2 className="text-2xl lg:text-3xl font-bold text-[var(--cl-ink)]">
                         {t("referralProgram.title")}
                       </h2>
                       <Badge className="bg-green-600 hover:bg-green-700 text-white">
                         {t("referralProgram.new")}
                       </Badge>
                     </div>
-                    <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">
+                    <p className="text-lg text-[var(--cl-ink-secondary)] mb-4">
                       {t("referralProgram.description")}
                       Quanto mais pessoas você indicar, mais badges e benefícios
                       você desbloqueia.
@@ -261,43 +261,43 @@ export default function HomePage() {
 
                     {/* Benefícios em Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                      <div className="flex items-start gap-3 p-3 bg-white/50 dark:bg-gray-900/30 rounded-lg">
-                        <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="flex items-start gap-3 p-3 bg-[var(--cl-surface)]/50 rounded-lg">
+                        <div className="w-8 h-8 bg-[var(--cl-ink)] rounded-full flex items-center justify-center flex-shrink-0">
                           <Gift className="w-4 h-4 text-white" />
                         </div>
                         <div className="text-left">
-                          <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                          <p className="font-semibold text-[var(--cl-ink)] text-sm">
                             Ganhe Pontos
                           </p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                          <p className="text-xs text-[var(--cl-ink-muted)]">
                             Até 380 pontos por indicação
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex items-start gap-3 p-3 bg-white/50 dark:bg-gray-900/30 rounded-lg">
+                      <div className="flex items-start gap-3 p-3 bg-[var(--cl-surface)]/50 rounded-lg">
                         <div className="w-8 h-8 bg-yellow-600 dark:bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
                           <Award className="w-4 h-4 text-white" />
                         </div>
                         <div className="text-left">
-                          <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                          <p className="font-semibold text-[var(--cl-ink)] text-sm">
                             Badges Exclusivos
                           </p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                          <p className="text-xs text-[var(--cl-ink-muted)]">
                             5 níveis: Bronze ao Diamante
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex items-start gap-3 p-3 bg-white/50 dark:bg-gray-900/30 rounded-lg">
-                        <div className="w-8 h-8 bg-purple-600 dark:bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="flex items-start gap-3 p-3 bg-[var(--cl-surface)]/50 rounded-lg">
+                        <div className="w-8 h-8 bg-[var(--cl-teal)] rounded-full flex items-center justify-center flex-shrink-0">
                           <Zap className="w-4 h-4 text-white" />
                         </div>
                         <div className="text-left">
-                          <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                          <p className="font-semibold text-[var(--cl-ink)] text-sm">
                             Benefícios VIP
                           </p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                          <p className="text-xs text-[var(--cl-ink-muted)]">
                             Destaque e prioridade
                           </p>
                         </div>
@@ -351,14 +351,14 @@ export default function HomePage() {
           {/* Seção: Para Clientes */}
           <section className="mb-16">
             <div className="text-center mb-12">
-              <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mb-4">
+              <div className="inline-flex items-center px-4 py-2 bg-[var(--cl-mist)] text-[var(--cl-ink)] rounded-full text-sm font-medium mb-4">
                 <Users className="h-4 w-4 mr-2" />
                 Para Clientes
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-3xl font-bold text-[var(--cl-ink)] mb-4">
                 Como Encontrar um Profissional
               </h2>
-              <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+              <p className="text-lg text-[var(--cl-ink-secondary)] max-w-2xl mx-auto">
                 Siga estes passos para encontrar o profissional ideal para seu
                 projeto
               </p>
@@ -372,24 +372,24 @@ export default function HomePage() {
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center mb-4">
-                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                        <step.icon className="h-6 w-6 text-blue-600" />
+                      <div className="w-12 h-12 bg-[var(--cl-mist)] rounded-lg flex items-center justify-center mr-4">
+                        <step.icon className="h-6 w-6 text-[var(--cl-teal)]" />
                       </div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <div className="text-2xl font-bold text-[var(--cl-ink)]">
                         0{step.step}
                       </div>
                     </div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                    <h3 className="font-semibold text-[var(--cl-ink)] mb-2">
                       {step.title}
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    <p className="text-sm text-[var(--cl-ink-secondary)] mb-4">
                       {step.description}
                     </p>
                     <ul className="space-y-2">
                       {step.details.map((detail, detailIndex) => (
                         <li
                           key={detailIndex}
-                          className="flex items-center text-sm text-gray-600"
+                          className="flex items-center text-sm text-[var(--cl-ink-secondary)]"
                         >
                           <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
                           {detail}
@@ -409,10 +409,10 @@ export default function HomePage() {
                 <Briefcase className="h-4 w-4 mr-2" />
                 Para Profissionais
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-3xl font-bold text-[var(--cl-ink)] mb-4">
                 Como Oferecer Seus Serviços
               </h2>
-              <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+              <p className="text-lg text-[var(--cl-ink-secondary)] max-w-2xl mx-auto">
                 Transforme sua experiência em oportunidades de negócio
               </p>
             </div>
@@ -428,21 +428,21 @@ export default function HomePage() {
                       <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
                         <step.icon className="h-6 w-6 text-green-600" />
                       </div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <div className="text-2xl font-bold text-[var(--cl-ink)]">
                         0{step.step}
                       </div>
                     </div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                    <h3 className="font-semibold text-[var(--cl-ink)] mb-2">
                       {step.title}
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    <p className="text-sm text-[var(--cl-ink-secondary)] mb-4">
                       {step.description}
                     </p>
                     <ul className="space-y-2">
                       {step.details.map((detail, detailIndex) => (
                         <li
                           key={detailIndex}
-                          className="flex items-center text-sm text-gray-600"
+                          className="flex items-center text-sm text-[var(--cl-ink-secondary)]"
                         >
                           <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
                           {detail}

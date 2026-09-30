@@ -108,7 +108,7 @@ export function AdminBottomNav() {
               className={cn(
                 "flex flex-col items-center justify-center flex-1 h-12 rounded-2xl transition-all duration-200",
                 active
-                  ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20"
+                  ? "text-[var(--cl-teal)] dark:text-blue-400 bg-[var(--cl-mist)] dark:bg-blue-900/20"
                   : "text-gray-500 dark:text-gray-400",
               )}
             >
@@ -155,7 +155,7 @@ export function AdminBottomNav() {
                     className={cn(
                       "flex items-center gap-3 p-4 rounded-2xl border transition-all active:scale-95",
                       active
-                        ? "bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-400"
+                        ? "bg-[var(--cl-mist)] border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-400"
                         : "bg-muted/30 border-transparent text-foreground hover:bg-muted/50",
                     )}
                   >

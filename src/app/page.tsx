@@ -95,7 +95,7 @@ function HomeContent() {
   if (authLoading || !mounted || user) return <LogoSplashScreen />;
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans selection:bg-[#00b0b0]/20 selection:text-[#00b0b0]">
+    <div className="min-h-screen bg-white text-gray-900 font-sans selection:bg-[var(--cl-teal)]/20 selection:text-[var(--cl-teal)]">
       {/* Header Simplificado e Focado */}
       <header
         className={cn(
@@ -130,19 +130,19 @@ function HomeContent() {
             >
               <Link
                 href="/buscar"
-                className="hover:text-[#00b0b0] transition-colors"
+                className="hover:text-[var(--cl-teal)] transition-colors"
               >
                 {t("ctaSearch")}
               </Link>
               <Link
                 href="/sobre"
-                className="hover:text-[#00b0b0] transition-colors"
+                className="hover:text-[var(--cl-teal)] transition-colors"
               >
                 {tNav("about")}
               </Link>
               <Link
                 href="/ajuda"
-                className="hover:text-[#00b0b0] transition-colors"
+                className="hover:text-[var(--cl-teal)] transition-colors"
               >
                 {tNav("help")}
               </Link>
@@ -158,14 +158,14 @@ function HomeContent() {
                 href="/auth"
                 className={cn(
                   "text-sm font-bold hover:underline px-4",
-                  scrolled ? "text-[#00b0b0]" : "text-white",
+                  scrolled ? "text-[var(--cl-teal)]" : "text-white",
                 )}
               >
                 {tNav("login")}
               </Link>
               <Button
                 asChild
-                className="bg-[#00b0b0] hover:bg-[#009090] text-white rounded-full px-6 font-bold shadow-lg shadow-[#00b0b0]/40 border-0"
+                className="bg-[var(--cl-teal)] hover:brightness-95 text-white rounded-full px-6 font-bold shadow-lg shadow-[#00b0b0]/40 border-0"
               >
                 <Link href="/auth?tab=register">{tNav("createAccount")}</Link>
               </Button>
@@ -194,7 +194,7 @@ function HomeContent() {
         <nav className="flex flex-col gap-6 text-xl font-bold">
           <Link
             href="/auth"
-            className="flex items-center gap-3 py-4 border-b border-gray-100 text-[#00b0b0]"
+            className="flex items-center gap-3 py-4 border-b border-gray-100 text-[var(--cl-teal)]"
             onClick={() => setMobileMenuOpen(false)}
           >
             <LogIn size={24} /> {tNav("login")}
@@ -218,7 +218,7 @@ function HomeContent() {
             className="mt-8"
             onClick={() => setMobileMenuOpen(false)}
           >
-            <Button className="w-full bg-[#00b0b0] hover:bg-[#009090] text-white py-6 rounded-2xl text-lg font-bold shadow-xl shadow-[#00b0b0]/30">
+            <Button className="w-full bg-[var(--cl-teal)] hover:brightness-95 text-white py-6 rounded-2xl text-lg font-bold shadow-xl shadow-[#00b0b0]/30">
               {t("ctaStart")}
             </Button>
           </Link>
@@ -242,13 +242,14 @@ function HomeContent() {
 
           <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center relative z-10">
             <div className="text-center md:text-left">
-              <div className="inline-flex items-center gap-2 bg-[#00b0b0]/20 backdrop-blur-md text-[#00e6e6] border border-[#00b0b0]/40 px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest mb-8 mx-auto md:mx-0 shadow-lg shadow-black/20">
+              <div className="inline-flex items-center gap-2 bg-[var(--cl-teal)]/20 backdrop-blur-md text-[#00e6e6] border border-[var(--cl-teal)]/40 px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest mb-8 mx-auto md:mx-0 shadow-lg shadow-black/20">
                 <Zap size={14} className="fill-[#00e6e6] animate-pulse" />{" "}
                 {t("subtitle")}
               </div>
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight mb-8 text-white drop-shadow-2xl">
                 Encontre quem você{" "}
-                <span className="text-[#00b0b0]">confia</span> para o seu lar.
+                <span className="text-[var(--cl-teal)]">confia</span> para o seu
+                lar.
               </h1>
               <p className="text-lg md:text-xl text-white/90 mb-12 max-w-xl font-medium leading-relaxed drop-shadow-md mx-auto md:mx-0">
                 {t("description")}
@@ -257,7 +258,7 @@ function HomeContent() {
                 <Button
                   asChild
                   size="lg"
-                  className="bg-[#00b0b0] hover:bg-[#009090] text-white py-8 px-10 rounded-2xl text-xl font-black shadow-[0_20px_40px_-10px_rgba(0,176,176,0.6)] group border-0 transition-all hover:scale-105"
+                  className="bg-[var(--cl-teal)] hover:brightness-95 text-white py-8 px-10 rounded-2xl text-xl font-black shadow-[0_20px_40px_-10px_rgba(0,176,176,0.6)] group border-0 transition-all hover:scale-105"
                 >
                   <Link href="/buscar">
                     {t("ctaSearch")}
@@ -283,7 +284,7 @@ function HomeContent() {
               <div className="bg-white/10 backdrop-blur-2xl p-8 rounded-[2.5rem] border border-white/20 shadow-2xl max-w-xs transition-all hover:bg-white/15">
                 <div className="space-y-8">
                   <div className="group">
-                    <p className="text-4xl font-black text-[#00b0b0] mb-1 group-hover:scale-105 transition-transform origin-left">
+                    <p className="text-4xl font-black text-[var(--cl-teal)] mb-1 group-hover:scale-105 transition-transform origin-left">
                       {statsLoading
                         ? "..."
                         : formatStatNumber(professionalsCount)}
@@ -291,25 +292,25 @@ function HomeContent() {
                     <p className="text-xs uppercase font-extrabold text-white/70 tracking-widest">
                       {t("stats.professionals")}
                     </p>
-                    <div className="w-8 h-1 bg-[#00b0b0] mt-3 rounded-full" />
+                    <div className="w-8 h-1 bg-[var(--cl-teal)] mt-3 rounded-full" />
                   </div>
                   <div className="group">
-                    <p className="text-4xl font-black text-[#00b0b0] mb-1 group-hover:scale-105 transition-transform origin-left">
+                    <p className="text-4xl font-black text-[var(--cl-teal)] mb-1 group-hover:scale-105 transition-transform origin-left">
                       {statsLoading ? "..." : formatStatNumber(reviewsCount)}
                     </p>
                     <p className="text-xs uppercase font-extrabold text-white/70 tracking-widest">
                       {t("stats.reviews")}
                     </p>
-                    <div className="w-8 h-1 bg-[#00b0b0] mt-3 rounded-full" />
+                    <div className="w-8 h-1 bg-[var(--cl-teal)] mt-3 rounded-full" />
                   </div>
                   <div className="group">
-                    <p className="text-4xl font-black text-[#00b0b0] mb-1 group-hover:scale-105 transition-transform origin-left">
+                    <p className="text-4xl font-black text-[var(--cl-teal)] mb-1 group-hover:scale-105 transition-transform origin-left">
                       {statsLoading ? "..." : formatStatNumber(citiesCount)}
                     </p>
                     <p className="text-xs uppercase font-extrabold text-white/70 tracking-widest">
                       {t("stats.cities")}
                     </p>
-                    <div className="w-8 h-1 bg-[#00b0b0] mt-3 rounded-full" />
+                    <div className="w-8 h-1 bg-[var(--cl-teal)] mt-3 rounded-full" />
                   </div>
                 </div>
               </div>
@@ -331,7 +332,7 @@ function HomeContent() {
               </div>
               <Link
                 href="/buscar"
-                className="text-[#00b0b0] font-bold flex items-center gap-2 hover:underline group mx-auto md:mx-0 text-lg"
+                className="text-[var(--cl-teal)] font-bold flex items-center gap-2 hover:underline group mx-auto md:mx-0 text-lg"
               >
                 Ver todos os serviços{" "}
                 <ArrowRight
@@ -376,7 +377,7 @@ function HomeContent() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-gray-950/90 via-black/20 to-transparent" />
                   <div className="absolute bottom-6 left-6 right-6">
-                    <div className="bg-white/10 backdrop-blur-md w-12 h-12 rounded-2xl flex items-center justify-center mb-4 border border-white/20 group-hover:bg-[#00b0b0] group-hover:border-0 transition-all duration-300">
+                    <div className="bg-white/10 backdrop-blur-md w-12 h-12 rounded-2xl flex items-center justify-center mb-4 border border-white/20 group-hover:bg-[var(--cl-teal)] group-hover:border-0 transition-all duration-300">
                       {item.icon}
                     </div>
                     <h3 className="text-white font-black text-xl drop-shadow-md">
@@ -393,7 +394,7 @@ function HomeContent() {
         <section className="py-24 bg-[#f8fafb] border-y border-gray-100 relative overflow-hidden">
           <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-20 items-center">
             <div className="relative group">
-              <div className="absolute -inset-4 bg-gradient-to-tr from-[#00b0b0] to-teal-200 rounded-[4rem] opacity-20 blur-2xl" />
+              <div className="absolute -inset-4 bg-gradient-to-tr from-[var(--cl-teal)] to-teal-200 rounded-[4rem] opacity-20 blur-2xl" />
               <div className="relative rounded-[3rem] overflow-hidden shadow-2xl border-[10px] border-white">
                 <Image
                   src="/imagens/Fotos/referrals.png"
@@ -406,12 +407,12 @@ function HomeContent() {
             </div>
 
             <div className="text-center md:text-left">
-              <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest mb-8">
+              <div className="inline-flex items-center gap-2 bg-[var(--cl-mist)] text-[var(--cl-teal)] px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest mb-8">
                 <TrendingUp size={16} /> Valorização da confiança
               </div>
               <h2 className="text-4xl md:text-5xl font-black mb-8 leading-tight">
                 Uma rede feita por{" "}
-                <span className="text-[#00b0b0]">pessoas reais</span>.
+                <span className="text-[var(--cl-teal)]">pessoas reais</span>.
               </h2>
               <p className="text-xl text-gray-500 mb-12 leading-relaxed font-medium">
                 No ConfiLar, o seu histórico de confiança vale pontos. Já
@@ -429,7 +430,7 @@ function HomeContent() {
                   <p className="text-sm font-bold text-gray-400 mb-2 tracking-widest uppercase">
                     {t("stats.referrals")}
                   </p>
-                  <p className="text-4xl font-black text-[#00b0b0]">
+                  <p className="text-4xl font-black text-[var(--cl-teal)]">
                     {referralStats.loading
                       ? "..."
                       : formatStatNumber(referralStats.totalReferrals)}
@@ -450,7 +451,7 @@ function HomeContent() {
               <Button
                 asChild
                 size="lg"
-                className="bg-[#00b0b0] hover:bg-[#009090] text-white py-8 px-12 rounded-3xl text-xl font-black shadow-2xl shadow-[#00b0b0]/40 transition-all hover:scale-105 border-0"
+                className="bg-[var(--cl-teal)] hover:brightness-95 text-white py-8 px-12 rounded-3xl text-xl font-black shadow-2xl shadow-[#00b0b0]/40 transition-all hover:scale-105 border-0"
               >
                 <Link href="/auth?tab=register">Entrar para a rede</Link>
               </Button>
@@ -463,7 +464,7 @@ function HomeContent() {
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid md:grid-cols-3 gap-12">
               <div className="p-10 rounded-[2.5rem] bg-[#fdfdfd] border border-gray-100 shadow-sm hover:shadow-xl transition-all hover:-translate-y-2 group">
-                <div className="w-16 h-16 bg-[#00b0b0]/10 rounded-2xl flex items-center justify-center text-[#00b0b0] mb-8 group-hover:bg-[#00b0b0] group-hover:text-white transition-colors">
+                <div className="w-16 h-16 bg-[var(--cl-teal)]/10 rounded-2xl flex items-center justify-center text-[var(--cl-teal)] mb-8 group-hover:bg-[var(--cl-teal)] group-hover:text-white transition-colors">
                   <ShieldCheck size={36} />
                 </div>
                 <h3 className="text-2xl font-black mb-4">
@@ -474,7 +475,7 @@ function HomeContent() {
                 </p>
               </div>
               <div className="p-10 rounded-[2.5rem] bg-[#fdfdfd] border border-gray-100 shadow-sm hover:shadow-xl transition-all hover:-translate-y-2 group">
-                <div className="w-16 h-16 bg-[#00b0b0]/10 rounded-2xl flex items-center justify-center text-[#00b0b0] mb-8 group-hover:bg-[#00b0b0] group-hover:text-white transition-colors">
+                <div className="w-16 h-16 bg-[var(--cl-teal)]/10 rounded-2xl flex items-center justify-center text-[var(--cl-teal)] mb-8 group-hover:bg-[var(--cl-teal)] group-hover:text-white transition-colors">
                   <Users size={36} />
                 </div>
                 <h3 className="text-2xl font-black mb-4">Comunidade Real</h3>
@@ -484,7 +485,7 @@ function HomeContent() {
                 </p>
               </div>
               <div className="p-10 rounded-[2.5rem] bg-[#fdfdfd] border border-gray-100 shadow-sm hover:shadow-xl transition-all hover:-translate-y-2 group">
-                <div className="w-16 h-16 bg-[#00b0b0]/10 rounded-2xl flex items-center justify-center text-[#00b0b0] mb-8 group-hover:bg-[#00b0b0] group-hover:text-white transition-colors">
+                <div className="w-16 h-16 bg-[var(--cl-teal)]/10 rounded-2xl flex items-center justify-center text-[var(--cl-teal)] mb-8 group-hover:bg-[var(--cl-teal)] group-hover:text-white transition-colors">
                   <Smartphone size={36} />
                 </div>
                 <h3 className="text-2xl font-black mb-4">Tudo pelo Celular</h3>
@@ -504,15 +505,16 @@ function HomeContent() {
               className="absolute inset-0 bg-cover bg-center opacity-10 pointer-events-none"
               style={{ backgroundImage: "url('/imagens/Fotos/hero-bg.png')" }}
             />
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#00b0b0]/5 rounded-full blur-[100px] -mr-64 -mt-64" />
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[var(--cl-teal)]/5 rounded-full blur-[100px] -mr-64 -mt-64" />
 
             <div className="relative z-10 flex flex-col items-center">
               <div className="w-24 h-24 bg-white/5 backdrop-blur-2xl rounded-[2rem] flex items-center justify-center mb-10 border border-white/10 shadow-inner">
-                <Award size={48} className="text-[#00b0b0]" />
+                <Award size={48} className="text-[var(--cl-teal)]" />
               </div>
               <h2 className="text-5xl md:text-7xl font-black mb-10 tracking-tight leading-tight">
-                Pronto para <span className="text-[#00b0b0]">transformar</span>{" "}
-                seu lar?
+                Pronto para{" "}
+                <span className="text-[var(--cl-teal)]">transformar</span> seu
+                lar?
               </h2>
               <p className="text-white/60 text-xl md:text-2xl mb-16 max-w-3xl font-medium leading-relaxed">
                 Crie sua conta agora e tenha acesso aos melhores profissionais
@@ -522,7 +524,7 @@ function HomeContent() {
                 <Button
                   asChild
                   size="lg"
-                  className="bg-[#00b0b0] hover:bg-[#009090] text-white py-10 px-14 rounded-[2.5rem] text-2xl font-black shadow-[0_20px_40px_-5px_rgba(0,176,176,0.5)] border-0 transition-all hover:scale-105"
+                  className="bg-[var(--cl-teal)] hover:brightness-95 text-white py-10 px-14 rounded-[2.5rem] text-2xl font-black shadow-[0_20px_40px_-5px_rgba(0,176,176,0.5)] border-0 transition-all hover:scale-105"
                 >
                   <Link href="/auth?tab=register">Criar conta gratuita</Link>
                 </Button>
@@ -558,52 +560,52 @@ function HomeContent() {
             </div>
             <div className="flex flex-wrap justify-center gap-12 text-base font-black text-gray-900">
               <div className="flex flex-col gap-4">
-                <p className="text-xs text-[#00b0b0] uppercase tracking-widest mb-2">
+                <p className="text-xs text-[var(--cl-teal)] uppercase tracking-widest mb-2">
                   Plataforma
                 </p>
                 <Link
                   href="/buscar"
-                  className="hover:text-[#00b0b0] transition-colors"
+                  className="hover:text-[var(--cl-teal)] transition-colors"
                 >
                   {t("ctaSearch")}
                 </Link>
                 <Link
                   href="/profissionais"
-                  className="hover:text-[#00b0b0] transition-colors"
+                  className="hover:text-[var(--cl-teal)] transition-colors"
                 >
                   {tNav("professionals")}
                 </Link>
               </div>
               <div className="flex flex-col gap-4">
-                <p className="text-xs text-[#00b0b0] uppercase tracking-widest mb-2">
+                <p className="text-xs text-[var(--cl-teal)] uppercase tracking-widest mb-2">
                   Suporte
                 </p>
                 <Link
                   href="/ajuda"
-                  className="hover:text-[#00b0b0] transition-colors"
+                  className="hover:text-[var(--cl-teal)] transition-colors"
                 >
                   {tNav("help")}
                 </Link>
                 <Link
                   href="/sobre"
-                  className="hover:text-[#00b0b0] transition-colors"
+                  className="hover:text-[var(--cl-teal)] transition-colors"
                 >
                   {tNav("about")}
                 </Link>
               </div>
               <div className="flex flex-col gap-4">
-                <p className="text-xs text-[#00b0b0] uppercase tracking-widest mb-2">
+                <p className="text-xs text-[var(--cl-teal)] uppercase tracking-widest mb-2">
                   Legal
                 </p>
                 <Link
                   href="/termos"
-                  className="hover:text-[#00b0b0] transition-colors"
+                  className="hover:text-[var(--cl-teal)] transition-colors"
                 >
                   Termos
                 </Link>
                 <Link
                   href="/privacidade"
-                  className="hover:text-[#00b0b0] transition-colors"
+                  className="hover:text-[var(--cl-teal)] transition-colors"
                 >
                   Privacidade
                 </Link>

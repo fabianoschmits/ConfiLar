@@ -184,7 +184,7 @@ export function ConversationMenu({
         }
       >
         <div className="text-gray-600 space-y-3 pb-4">
-          <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+          <div className="bg-[var(--cl-mist)] border border-blue-200 p-3 rounded-lg">
             <p className="text-sm font-medium text-blue-800 mb-2 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-blue-500" /> Informação:
             </p>

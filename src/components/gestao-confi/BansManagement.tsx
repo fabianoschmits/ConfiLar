@@ -497,7 +497,7 @@ export function BansManagement() {
                   <p className="text-sm font-medium text-gray-600">
                     Últimos 30 dias
                   </p>
-                  <p className="text-2xl font-bold text-blue-600">
+                  <p className="text-2xl font-bold text-[var(--cl-teal)]">
                     {banStats.bans_last_30_days}
                   </p>
                 </div>
@@ -661,14 +661,14 @@ export function BansManagement() {
                   {/* Denúncia Relacionada - Compacta e Clicável */}
                   {ban.related_report_id && (
                     <div
-                      className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded cursor-pointer hover:bg-blue-100 transition-colors"
+                      className="mb-3 p-2 bg-[var(--cl-mist)] border border-blue-200 rounded cursor-pointer hover:bg-blue-100 transition-colors"
                       onClick={() => {
                         setSelectedBan(ban);
                         setShowReviewModal(true);
                       }}
                     >
                       <div className="flex items-center gap-2 mb-1">
-                        <Flag className="h-3 w-3 text-blue-600" />
+                        <Flag className="h-3 w-3 text-[var(--cl-teal)]" />
                         <span className="text-xs font-medium text-blue-800">
                           Denúncia Relacionada
                         </span>
@@ -677,7 +677,7 @@ export function BansManagement() {
                         <strong>Tipo:</strong> {ban.type} |<strong> ID:</strong>{" "}
                         {ban.related_report_id.substring(0, 8)}...
                       </p>
-                      <p className="text-xs text-blue-600 mt-1">
+                      <p className="text-xs text-[var(--cl-teal)] mt-1">
                         {ban.report_description
                           ? ban.report_description.length > 60
                             ? ban.report_description.substring(0, 60) + "..."
@@ -699,7 +699,7 @@ export function BansManagement() {
                             setSelectedBan(ban);
                             setShowReviewModal(true);
                           }}
-                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs"
+                          className="flex-1 bg-[var(--cl-ink)] hover:brightness-110 text-white text-xs"
                           size="sm"
                         >
                           <Eye className="h-3 w-3 mr-1" />
@@ -783,9 +783,9 @@ export function BansManagement() {
         showCloseButton={false}
         className="max-sm:max-h-[100dvh]"
       >
-        <div className="flex flex-col h-full bg-white dark:bg-black overflow-hidden">
+        <div className="flex flex-col h-full bg-[var(--cl-surface)] overflow-hidden">
           {/* HEADER FIXO */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0 z-10">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-[var(--cl-surface)] flex-shrink-0 z-10">
             <button
               onClick={() => setShowBanModal(false)}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
@@ -924,9 +924,9 @@ export function BansManagement() {
         showCloseButton={false}
         className="max-sm:max-h-[100dvh]"
       >
-        <div className="flex flex-col h-full bg-white dark:bg-black overflow-hidden">
+        <div className="flex flex-col h-full bg-[var(--cl-surface)] overflow-hidden">
           {/* HEADER FIXO */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0 z-10">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-[var(--cl-surface)] flex-shrink-0 z-10">
             <button
               onClick={() => setShowUnbanModal(false)}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
@@ -998,9 +998,9 @@ export function BansManagement() {
         showCloseButton={false}
         className="max-sm:max-h-[100dvh]"
       >
-        <div className="flex flex-col h-full bg-white dark:bg-black overflow-hidden">
+        <div className="flex flex-col h-full bg-[var(--cl-surface)] overflow-hidden">
           {/* HEADER FIXO */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0 z-10">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-[var(--cl-surface)] flex-shrink-0 z-10">
             <button
               onClick={() => setShowReviewModal(false)}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
@@ -1077,9 +1077,9 @@ export function BansManagement() {
 
                 {/* Informações da Denúncia */}
                 {selectedBan.related_report_id && (
-                  <div className="bg-blue-50 p-4 rounded-lg">
+                  <div className="bg-[var(--cl-mist)] p-4 rounded-lg">
                     <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                      <Flag className="h-5 w-5 text-blue-600" />
+                      <Flag className="h-5 w-5 text-[var(--cl-teal)]" />
                       Denúncia Relacionada
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm mb-3">
@@ -1100,7 +1100,7 @@ export function BansManagement() {
                       <div>
                         <p>
                           <strong className="text-blue-800">Status:</strong>{" "}
-                          <span className="text-blue-600">Em Revisão</span>
+                          <span className="text-[var(--cl-teal)]">Em Revisão</span>
                         </p>
                       </div>
                     </div>

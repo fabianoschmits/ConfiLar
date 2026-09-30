@@ -214,7 +214,7 @@ export default function AdminBansPage() {
         <div className="flex gap-2">
           <Link
             href={`/perfil/${ban.user_id}`}
-            className="text-blue-600 hover:text-blue-700 dark:text-blue-400 text-sm"
+            className="text-[var(--cl-teal)] hover:text-[var(--cl-teal)] dark:text-blue-400 text-sm"
           >
             Ver perfil
           </Link>

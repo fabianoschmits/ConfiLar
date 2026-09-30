@@ -136,7 +136,7 @@ export function ReferralLeaderboard({
 
                   {/* Stats */}
                   <div className="text-right">
-                    <p className="font-bold text-lg text-blue-600 dark:text-blue-400">
+                    <p className="font-bold text-lg text-[var(--cl-teal)] dark:text-blue-400">
                       {referrer.totalReferrals}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">

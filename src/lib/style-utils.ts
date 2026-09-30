@@ -156,7 +156,7 @@ export function bgError(scale: keyof typeof colors.error = 500) {
  * Classes padrão para cards
  */
 export const cardClasses = cn(
-  "bg-white dark:bg-black",
+  "bg-[var(--cl-surface)]",
   "rounded-xl",
   "border border-gray-200 dark:border-gray-800",
   "shadow-sm hover:shadow-md",
@@ -184,7 +184,7 @@ export const inputClasses = cn(
   "w-full",
   "rounded-md",
   "border border-gray-300 dark:border-gray-700",
-  "bg-white dark:bg-gray-900",
+  "bg-[var(--cl-surface)]",
   "px-3 py-2",
   "text-sm",
   "text-gray-900 dark:text-white",

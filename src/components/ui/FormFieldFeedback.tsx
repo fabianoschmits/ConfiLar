@@ -32,7 +32,7 @@ export function FormFieldFeedback({
   const getTextColor = () => {
     switch (state) {
       case "validating":
-        return "text-blue-600";
+        return "text-[var(--cl-teal)]";
       case "valid":
         return "text-green-600";
       case "error":

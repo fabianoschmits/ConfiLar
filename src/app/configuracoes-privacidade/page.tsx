@@ -226,7 +226,9 @@ export default function ConfiguracoesPrivacidadePage() {
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <div className="text-blue-600">{setting.icon}</div>
+                        <div className="text-[var(--cl-teal)]">
+                          {setting.icon}
+                        </div>
                         <div>
                           <h3 className="font-medium text-gray-900 dark:text-white dark:text-white">
                             {setting.title}
@@ -416,7 +418,7 @@ export default function ConfiguracoesPrivacidadePage() {
                       •{" "}
                       <a
                         href="/privacidade"
-                        className="text-blue-600 hover:underline"
+                        className="text-[var(--cl-teal)] hover:underline"
                       >
                         {t("privacyPolicy")}
                       </a>
@@ -425,7 +427,7 @@ export default function ConfiguracoesPrivacidadePage() {
                       •{" "}
                       <a
                         href="/termos"
-                        className="text-blue-600 hover:underline"
+                        className="text-[var(--cl-teal)] hover:underline"
                       >
                         {t("termsOfUse")}
                       </a>
@@ -434,7 +436,7 @@ export default function ConfiguracoesPrivacidadePage() {
                       •{" "}
                       <a
                         href="/ajuda"
-                        className="text-blue-600 hover:underline"
+                        className="text-[var(--cl-teal)] hover:underline"
                       >
                         {t("helpCenter")}
                       </a>
@@ -462,7 +464,7 @@ export default function ConfiguracoesPrivacidadePage() {
 
       {showRightToBeForgotten && user?.email && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-[var(--cl-surface)] rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-4 border-b flex justify-between items-center">
               <h2 className="text-xl font-semibold">{t("deleteAccount")}</h2>
               <Button

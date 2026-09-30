@@ -122,7 +122,7 @@ export function NotificationPreferences() {
                       className="flex items-center justify-between p-3 border rounded-lg"
                     >
                       <div className="flex items-center space-x-3">
-                        <div className="text-blue-600">{option.icon}</div>
+                        <div className="text-[var(--cl-teal)]">{option.icon}</div>
                         <div>
                           <h5 className="font-medium text-gray-900">
                             {option.title}
@@ -171,7 +171,7 @@ export function NotificationPreferences() {
           <Button
             onClick={handleSavePreferences}
             disabled={isSaving}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-[var(--cl-ink)] hover:brightness-110"
           >
             {isSaving ? (
               <>
@@ -188,7 +188,7 @@ export function NotificationPreferences() {
         </div>
 
         {/* Dica de Otimização */}
-        <div className="bg-blue-50 p-4 rounded-lg">
+        <div className="bg-[var(--cl-mist)] p-4 rounded-lg">
           <h4 className="font-semibold text-blue-800 mb-2">💡 Informação</h4>
           <p className="text-blue-700 text-sm">
             O sistema de notificações está em desenvolvimento. Em breve você

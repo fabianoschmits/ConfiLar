@@ -141,7 +141,7 @@ export function QuickActionMenu() {
                         {isActive && (
                           <motion.div
                             layoutId="active-pill"
-                            className="absolute inset-0 bg-[#00b0b0] rounded-full shadow-lg shadow-[#00b0b0]/30 z-10"
+                            className="absolute inset-0 bg-[var(--cl-teal)] rounded-full shadow-lg shadow-[#00b0b0]/30 z-10"
                             initial={{
                               opacity: 0,
                               scaleX: 1.5,

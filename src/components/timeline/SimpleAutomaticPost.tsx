@@ -115,14 +115,14 @@ export function SimpleAutomaticPost({
             {getPostIcon(type)}
             <Link
               href={`/perfil/${user_id || post.user_id || ""}`}
-              className="text-blue-600 hover:text-blue-800 font-medium hover:underline"
+              className="text-[var(--cl-teal)] hover:text-blue-800 font-medium hover:underline"
             >
               {user}
             </Link>{" "}
             favoritou{" "}
             <Link
               href={`/perfil/${favorited_id || post.professional_id || ""}`}
-              className="text-blue-600 hover:text-blue-800 font-medium hover:underline"
+              className="text-[var(--cl-teal)] hover:text-blue-800 font-medium hover:underline"
             >
               {favorited}
             </Link>
@@ -134,14 +134,14 @@ export function SimpleAutomaticPost({
             {getPostIcon(type)}
             <Link
               href={`/perfil/${from_user_id || post.user_id || ""}`}
-              className="text-blue-600 hover:text-blue-800 font-medium hover:underline"
+              className="text-[var(--cl-teal)] hover:text-blue-800 font-medium hover:underline"
             >
               {from_user}
             </Link>{" "}
             recomendou{" "}
             <Link
               href={`/perfil/${to_user_id || post.professional_id || ""}`}
-              className="text-blue-600 hover:text-blue-800 font-medium hover:underline"
+              className="text-[var(--cl-teal)] hover:text-blue-800 font-medium hover:underline"
             >
               {to_user}
             </Link>

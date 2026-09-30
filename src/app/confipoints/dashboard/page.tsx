@@ -82,7 +82,7 @@ export default function ConfiPointsDashboardPage() {
       return {
         name: "Silver",
         color: "text-gray-400",
-        bgColor: "bg-gray-50",
+        bgColor: "bg-[var(--cl-mist)]",
         icon: "⚪",
       };
     return {
@@ -343,14 +343,14 @@ export default function ConfiPointsDashboardPage() {
             {/* Header */}
             <div className="mb-8">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center">
-                  <Coins className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                <div className="w-12 h-12 bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-[var(--cl-radius-card)] flex items-center justify-center">
+                  <Coins className="h-6 w-6 text-[var(--cl-teal)]" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <h1 className="text-2xl font-bold text-[var(--cl-ink)]">
                     {t("myConfiPoints")}
                   </h1>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-[var(--cl-ink-secondary)]">
                     {t("managePoints")}
                   </p>
                 </div>
@@ -360,11 +360,11 @@ export default function ConfiPointsDashboardPage() {
             {/* Resumo de Saldo e Nível - Sutil com Cor da Marca */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               {/* Card de Saldo */}
-              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+              <Card className="border-[var(--cl-border)] shadow-none bg-[var(--cl-surface)]">
                 <CardContent className="p-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <Coins className="w-5 h-5 text-[#00b0b0]" />
+                    <div className="flex-shrink-0 p-2 bg-[var(--cl-mist)] rounded-lg">
+                      <Coins className="w-5 h-5 text-[var(--cl-teal)]" />
                     </div>
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
@@ -381,11 +381,11 @@ export default function ConfiPointsDashboardPage() {
               </Card>
 
               {/* Total Ganho */}
-              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+              <Card className="border-[var(--cl-border)] shadow-none bg-[var(--cl-surface)]">
                 <CardContent className="p-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <TrendingUp className="w-5 h-5 text-[#00b0b0]" />
+                    <div className="flex-shrink-0 p-2 bg-[var(--cl-mist)] rounded-lg">
+                      <TrendingUp className="w-5 h-5 text-[var(--cl-teal)]" />
                     </div>
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
@@ -404,11 +404,11 @@ export default function ConfiPointsDashboardPage() {
               </Card>
 
               {/* Total Gasto */}
-              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+              <Card className="border-[var(--cl-border)] shadow-none bg-[var(--cl-surface)]">
                 <CardContent className="p-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <TrendingDown className="w-5 h-5 text-[#00b0b0]" />
+                    <div className="flex-shrink-0 p-2 bg-[var(--cl-mist)] rounded-lg">
+                      <TrendingDown className="w-5 h-5 text-[var(--cl-teal)]" />
                     </div>
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
@@ -425,11 +425,11 @@ export default function ConfiPointsDashboardPage() {
               </Card>
 
               {/* Nível e Progresso */}
-              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-white dark:bg-gray-950">
+              <Card className="border-[var(--cl-border)] shadow-none bg-[var(--cl-surface)]">
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <Trophy className="w-4 h-4 text-[#00b0b0]" />
+                      <Trophy className="w-4 h-4 text-[var(--cl-teal)]" />
                       <span className="text-xs font-bold text-gray-900 dark:text-white capitalize">
                         {currentLevel.name}
                       </span>
@@ -440,7 +440,7 @@ export default function ConfiPointsDashboardPage() {
                   </div>
                   <Progress
                     value={progress}
-                    className="h-1.5 bg-gray-100 dark:bg-gray-800 [&>div]:bg-[#00b0b0]"
+                    className="h-1.5 bg-gray-100 dark:bg-gray-800 [&>div]:bg-[var(--cl-teal)]"
                   />
                 </CardContent>
               </Card>
@@ -448,7 +448,7 @@ export default function ConfiPointsDashboardPage() {
 
             {/* Seção Principal */}
             <Tabs defaultValue="visao-geral" className="space-y-6">
-              <TabsList className="bg-gray-100/50 dark:bg-gray-900/50 p-1 border border-gray-200 dark:border-gray-800 rounded-lg">
+              <TabsList className="bg-[var(--cl-mist)]/50 p-1 border border-[var(--cl-border)] rounded-xl">
                 <TabsTrigger
                   value="visao-geral"
                   className="rounded-md px-4 py-2 text-xs"
@@ -479,7 +479,7 @@ export default function ConfiPointsDashboardPage() {
               <TabsContent value="visao-geral" className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Ações Rápidas */}
-                  <Card className="border-gray-200 dark:border-gray-800 shadow-none">
+                  <Card className="border-[var(--cl-border)] shadow-none">
                     <CardHeader className="pb-3">
                       <CardTitle className="text-sm font-semibold flex items-center gap-2">
                         <Zap className="h-4 w-4 text-yellow-600" />
@@ -489,11 +489,11 @@ export default function ConfiPointsDashboardPage() {
                     <CardContent className="space-y-2">
                       <Link href="/confipoints/comprar" className="block">
                         <Button
-                          className="w-full justify-between h-10 px-3 bg-white hover:bg-gray-50 text-gray-900 border-gray-200 dark:bg-gray-900 dark:text-white dark:border-gray-800 shadow-none"
+                          className="w-full justify-between h-10 px-3 bg-[var(--cl-surface)] hover:bg-[var(--cl-mist)] text-[var(--cl-ink)] border-[var(--cl-border)] shadow-none"
                           variant="outline"
                         >
                           <span className="flex items-center gap-2 text-xs">
-                            <PlusCircle className="h-4 w-4 text-purple-600" />
+                            <PlusCircle className="h-4 w-4 text-[var(--cl-teal)]" />
                             {t("buyPoints")}
                           </span>
                           <ChevronRight className="h-3 w-3 text-gray-400" />
@@ -501,11 +501,11 @@ export default function ConfiPointsDashboardPage() {
                       </Link>
                       <Link href="/confipoints/transferir" className="block">
                         <Button
-                          className="w-full justify-between h-10 px-3 bg-white hover:bg-gray-50 text-gray-900 border-gray-200 dark:bg-gray-900 dark:text-white dark:border-gray-800 shadow-none"
+                          className="w-full justify-between h-10 px-3 bg-[var(--cl-surface)] hover:bg-[var(--cl-mist)] text-[var(--cl-ink)] border-[var(--cl-border)] shadow-none"
                           variant="outline"
                         >
                           <span className="flex items-center gap-2 text-xs">
-                            <Send className="h-4 w-4 text-purple-600" />
+                            <Send className="h-4 w-4 text-[var(--cl-teal)]" />
                             {t("transferPoints")}
                           </span>
                           <ChevronRight className="h-3 w-3 text-gray-400" />
@@ -515,10 +515,10 @@ export default function ConfiPointsDashboardPage() {
                   </Card>
 
                   {/* Transações Recentes */}
-                  <Card className="border-gray-200 dark:border-gray-800 shadow-none">
+                  <Card className="border-[var(--cl-border)] shadow-none">
                     <CardHeader className="pb-3">
                       <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                        <History className="h-4 w-4 text-blue-600" />
+                        <History className="h-4 w-4 text-[var(--cl-teal)]" />
                         {t("latestTransactions")}
                       </CardTitle>
                     </CardHeader>
@@ -563,7 +563,7 @@ export default function ConfiPointsDashboardPage() {
                                     )}
                                   </p>
                                   {transaction.metadata?.message && (
-                                    <p className="text-[10px] text-purple-600 dark:text-purple-400 italic line-clamp-1">
+                                    <p className="text-[10px] text-[var(--cl-teal)] italic line-clamp-1">
                                       "{transaction.metadata.message}"
                                     </p>
                                   )}
@@ -586,15 +586,15 @@ export default function ConfiPointsDashboardPage() {
 
               {/* Como Ganhar */}
               <TabsContent value="ganhar" className="space-y-6">
-                <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+                <Card className="bg-[var(--cl-mist)] border-[var(--cl-border)]">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-3">
-                      <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                      <Info className="h-5 w-5 text-[var(--cl-teal)] mt-0.5" />
                       <div>
-                        <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                        <h3 className="font-semibold text-[var(--cl-ink)] mb-2">
                           {t("pointsSystem")}
                         </h3>
-                        <p className="text-sm text-blue-800 dark:text-blue-200">
+                        <p className="text-sm text-[var(--cl-ink-secondary)]">
                           {t("onlyWayToEarn")}{" "}
                           <strong>{t("referralProgram")}</strong>.{" "}
                           {t("canAlsoBuy")}
@@ -645,7 +645,7 @@ export default function ConfiPointsDashboardPage() {
                       ].map((item, index) => (
                         <div
                           key={index}
-                          className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700"
+                          className="flex items-center justify-between p-4 rounded-lg border border-[var(--cl-border)]"
                         >
                           <div className="flex items-center gap-3">
                             <span className="text-2xl">{item.icon}</span>
@@ -676,7 +676,7 @@ export default function ConfiPointsDashboardPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <ShoppingBag className="h-5 w-5 text-blue-600" />
+                      <ShoppingBag className="h-5 w-5 text-[var(--cl-teal)]" />
                       {t("buyPoints")}
                     </CardTitle>
                   </CardHeader>
@@ -700,7 +700,7 @@ export default function ConfiPointsDashboardPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 text-purple-600" />
+                      <Sparkles className="h-5 w-5 text-[var(--cl-teal)]" />
                       Ações Premium na Plataforma
                     </CardTitle>
                   </CardHeader>
@@ -743,7 +743,7 @@ export default function ConfiPointsDashboardPage() {
                                 <span className="text-3xl">{item.icon}</span>
                                 <Badge
                                   variant="outline"
-                                  className="text-purple-600 border-purple-600"
+                                  className="text-[var(--cl-teal)] border-[var(--cl-teal)]"
                                 >
                                   -{item.cost} pts
                                 </Badge>
@@ -786,7 +786,7 @@ export default function ConfiPointsDashboardPage() {
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2 text-base">
-                        <Send className="h-5 w-5 text-blue-600" />
+                        <Send className="h-5 w-5 text-[var(--cl-teal)]" />
                         Transferir
                       </CardTitle>
                     </CardHeader>
@@ -848,7 +848,7 @@ export default function ConfiPointsDashboardPage() {
                           {allTransactions.map((transaction) => (
                             <div
                               key={transaction.id}
-                              className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                              className="flex items-center justify-between p-4 rounded-lg border border-[var(--cl-border)] hover:bg-[var(--cl-mist)] transition-colors"
                             >
                               <div className="flex items-center gap-4">
                                 <div
@@ -898,7 +898,7 @@ export default function ConfiPointsDashboardPage() {
                                               {transferText}
                                               <Link
                                                 href={`/perfil/${otherUserId}`}
-                                                className="text-purple-600 dark:text-purple-400 hover:underline"
+                                                className="text-[var(--cl-teal)] hover:underline"
                                               >
                                                 {userName}
                                               </Link>
@@ -922,7 +922,7 @@ export default function ConfiPointsDashboardPage() {
                                               {transferText}
                                               <Link
                                                 href={`/perfil/${otherUserId}`}
-                                                className="text-purple-600 dark:text-purple-400 hover:underline"
+                                                className="text-[var(--cl-teal)] hover:underline"
                                               >
                                                 {userName}
                                               </Link>
@@ -960,7 +960,7 @@ export default function ConfiPointsDashboardPage() {
                                                   {part}
                                                   <Link
                                                     href={`/perfil/${transaction.from_user_id}`}
-                                                    className="text-purple-600 dark:text-purple-400 hover:underline"
+                                                    className="text-[var(--cl-teal)] hover:underline"
                                                   >
                                                     {
                                                       transaction.from_user
@@ -995,7 +995,7 @@ export default function ConfiPointsDashboardPage() {
                                                   {part}
                                                   <Link
                                                     href={`/perfil/${transaction.to_user_id}`}
-                                                    className="text-purple-600 dark:text-purple-400 hover:underline"
+                                                    className="text-[var(--cl-teal)] hover:underline"
                                                   >
                                                     {
                                                       transaction.to_user
@@ -1032,7 +1032,7 @@ export default function ConfiPointsDashboardPage() {
                                                   {part}
                                                   <Link
                                                     href={`/perfil/${transaction.metadata.from_user_id}`}
-                                                    className="text-purple-600 dark:text-purple-400 hover:underline"
+                                                    className="text-[var(--cl-teal)] hover:underline"
                                                   >
                                                     {
                                                       transaction.metadata
@@ -1068,7 +1068,7 @@ export default function ConfiPointsDashboardPage() {
                                                   {part}
                                                   <Link
                                                     href={`/perfil/${transaction.metadata.to_user_id}`}
-                                                    className="text-purple-600 dark:text-purple-400 hover:underline"
+                                                    className="text-[var(--cl-teal)] hover:underline"
                                                   >
                                                     {
                                                       transaction.metadata
@@ -1114,7 +1114,7 @@ export default function ConfiPointsDashboardPage() {
                                       </Badge>
                                     </div>
                                     {transaction.metadata?.message && (
-                                      <p className="text-xs text-purple-600 dark:text-purple-400 mt-1 italic">
+                                      <p className="text-xs text-[var(--cl-teal)] mt-1 italic">
                                         "{transaction.metadata.message}"
                                       </p>
                                     )}

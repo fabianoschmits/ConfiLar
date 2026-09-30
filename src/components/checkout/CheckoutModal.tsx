@@ -701,7 +701,7 @@ export function CheckoutModal({
       className="max-w-2xl"
     >
       {/* HEADER FIXO */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0 z-20">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-[var(--cl-surface)] flex-shrink-0 z-20">
         <div className="flex items-center gap-2">
           <button
             onClick={onClose}
@@ -752,7 +752,7 @@ export function CheckoutModal({
         {step === "form" && (
           <div className="space-y-6">
             {/* Resumo da Compra */}
-            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+            <div className="bg-gradient-to-r from-[var(--cl-mist)] to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
               <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
                 Resumo da Compra
               </h3>
@@ -972,7 +972,7 @@ export function CheckoutModal({
                 <div className="bg-white p-4 rounded-lg border-2 border-gray-200 relative min-h-[256px] flex items-center justify-center">
                   {isQRCodeImageLoading && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-black/80 z-10 rounded-lg">
-                      <Loader2 className="w-10 h-10 text-[#00b0b0] animate-spin mb-2" />
+                      <Loader2 className="w-10 h-10 text-[var(--cl-teal)] animate-spin mb-2" />
                       <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                         Carregando QR Code...
                       </p>

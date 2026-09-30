@@ -107,7 +107,7 @@ export default function AlterarEmailPage() {
         <div className="min-h-screen bg-[var(--cl-paper)] flex items-center justify-center p-4">
           <Card className="max-w-md w-full text-center bg-white/80 backdrop-blur-md border-0 shadow-xl">
             <CardContent className="p-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-6"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-[var(--cl-teal)] border-t-transparent mx-auto mb-6"></div>
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                 Verificando autenticação...
               </h1>
@@ -154,7 +154,7 @@ export default function AlterarEmailPage() {
 
               <Button
                 onClick={handleBackToHome}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+                className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white py-3"
               >
                 Voltar para página inicial
               </Button>
@@ -173,7 +173,7 @@ export default function AlterarEmailPage() {
           <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
             <div className="container flex h-16 items-center justify-between px-4">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                <div className="w-10 h-10 bg-[var(--cl-ink)] rounded-lg flex items-center justify-center shadow-lg">
                   <span className="text-white font-semibold text-lg">C</span>
                 </div>
                 <span className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -197,7 +197,7 @@ export default function AlterarEmailPage() {
           <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
             <Card className="max-w-md w-full bg-white/70 backdrop-blur-sm border-0 shadow-xl">
               <CardHeader className="text-center">
-                <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-lg">
+                <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-[var(--cl-ink)] rounded-xl flex items-center justify-center mb-4 shadow-lg">
                   <Mail className="h-8 w-8 text-white" />
                 </div>
                 <CardTitle className="text-2xl font-semibold text-gray-900 dark:text-white">
@@ -211,9 +211,9 @@ export default function AlterarEmailPage() {
 
               <CardContent className="space-y-6">
                 {/* Aviso importante */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="bg-[var(--cl-mist)] border border-blue-200 rounded-lg p-4">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                    <Info className="h-5 w-5 mr-2 text-blue-600" />
+                    <Info className="h-5 w-5 mr-2 text-[var(--cl-teal)]" />
                     Importante
                   </h3>
                   <div className="space-y-2 text-sm text-gray-600">
@@ -313,7 +313,7 @@ export default function AlterarEmailPage() {
                       !confirmEmail ||
                       newEmail !== confirmEmail
                     }
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+                    className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white py-3"
                   >
                     {isLoading ? "Atualizando..." : "Atualizar email"}
                   </Button>

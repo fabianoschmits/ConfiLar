@@ -69,7 +69,7 @@ export function Modal({
         className={cn(
           "relative w-full",
           sizeClasses[size],
-          "bg-white dark:bg-black rounded-xl shadow-xl border border-gray-200 dark:border-gray-800",
+          "bg-[var(--cl-surface)] rounded-xl shadow-xl border border-gray-200 dark:border-gray-800",
           "animate-in fade-in-0 zoom-in-95 duration-200",
           "max-h-[90vh] overflow-hidden",
         )}

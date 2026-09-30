@@ -129,7 +129,7 @@ export function CidadeCombobox({
             estadoSelecionado ? placeholder : "Primeiro selecione um estado"
           }
           disabled={!estadoSelecionado}
-          className="pl-10 pr-10 h-9 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+          className="pl-10 pr-10 h-9 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-[var(--cl-teal)] focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
         />
         <Button
           type="button"

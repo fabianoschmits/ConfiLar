@@ -707,7 +707,7 @@ export default function AvaliacoesPage() {
                                             ? "text-green-600 border-green-600"
                                             : request.status === "rejected"
                                               ? "text-red-600 border-red-600"
-                                              : "text-blue-600 border-blue-600"
+                                              : "text-[var(--cl-teal)] border-[var(--cl-teal)]"
                                       }`}
                                     >
                                       {request.status === "pending"
@@ -907,7 +907,7 @@ export default function AvaliacoesPage() {
                                 }
                                 alt={`Avatar de ${reviewsSubTab === "received" ? review.reviewer.full_name : review.reviewed?.full_name}`}
                               />
-                              <AvatarFallback className="bg-blue-100 text-blue-600">
+                              <AvatarFallback className="bg-blue-100 text-[var(--cl-teal)]">
                                 {(reviewsSubTab === "received"
                                   ? review.reviewer.full_name
                                   : review.reviewed?.full_name || ""
@@ -989,7 +989,7 @@ export default function AvaliacoesPage() {
                                         size="sm"
                                         variant="outline"
                                         onClick={() => handleEditReview(review)}
-                                        className="text-blue-600 border-blue-600 hover:bg-blue-50 text-xs sm:text-sm"
+                                        className="text-[var(--cl-teal)] border-[var(--cl-teal)] hover:bg-[var(--cl-mist)] text-xs sm:text-sm"
                                       >
                                         <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                                         <span className="hidden sm:inline">

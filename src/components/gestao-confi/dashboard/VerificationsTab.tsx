@@ -295,7 +295,7 @@ export function VerificationsTab() {
   ];
 
   const renderMobileCard = (req: VerificationRequest) => (
-    <div className="bg-white dark:bg-gray-900/40 border border-border/40 rounded-2xl p-3 sm:p-5 space-y-3 shadow-sm group">
+    <div className="bg-[var(--cl-surface)]/40 border border-border/40 rounded-2xl p-3 sm:p-5 space-y-3 shadow-sm group">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <Avatar className="h-9 w-9 border border-border/50 shadow-sm">
@@ -321,7 +321,7 @@ export function VerificationsTab() {
             "text-[8px] uppercase font-black px-1.5 py-0.5 h-4.5 rounded-md border-0",
             req.status === "pending"
               ? "bg-amber-50 text-amber-700"
-              : "bg-blue-50 text-blue-700",
+              : "bg-[var(--cl-mist)] text-blue-700",
           )}
         >
           {req.status}
@@ -382,7 +382,7 @@ export function VerificationsTab() {
         <DialogContent className="max-w-4xl w-[95vw] sm:w-full max-h-[95vh] overflow-y-auto p-4 sm:p-6 rounded-[32px]">
           <DialogHeader className="sm:text-left">
             <DialogTitle className="flex items-center gap-2 text-xl font-black uppercase">
-              <ShieldCheck className="w-6 h-6 text-blue-600" />
+              <ShieldCheck className="w-6 h-6 text-[var(--cl-teal)]" />
               Verificação
             </DialogTitle>
           </DialogHeader>
@@ -503,7 +503,7 @@ export function VerificationsTab() {
                   Reprovar
                 </Button>
                 <LoadingButton
-                  className="rounded-2xl h-12 flex-1 bg-blue-600 hover:bg-blue-500 font-black uppercase text-[11px] tracking-wider shadow-lg shadow-blue-500/20"
+                  className="rounded-2xl h-12 flex-1 bg-[var(--cl-ink)] hover:bg-blue-500 font-black uppercase text-[11px] tracking-wider shadow-lg shadow-blue-500/20"
                   onClick={handleApprove}
                   isLoading={isProcessing}
                 >

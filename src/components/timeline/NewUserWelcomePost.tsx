@@ -133,7 +133,7 @@ export function NewUserWelcomePost({
 
   return (
     <>
-      <Card className="mb-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+      <Card className="mb-3 bg-[var(--cl-surface)] border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
         <CardContent className="p-3 md:p-4">
           {/* Header - Responsivo */}
           <div className="flex items-start space-x-3 mb-3">
@@ -153,7 +153,7 @@ export function NewUserWelcomePost({
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-sm md:text-base font-semibold text-gray-900 dark:text-white hover:text-blue-600 cursor-pointer transition-colors truncate">
+                <h3 className="text-sm md:text-base font-semibold text-gray-900 dark:text-white hover:text-[var(--cl-teal)] cursor-pointer transition-colors truncate">
                   <Link href={`/perfil/${post.user_id || ""}`}>{userName}</Link>
                 </h3>
 
@@ -165,7 +165,7 @@ export function NewUserWelcomePost({
                 {/* Badge de Tipo de Usuário */}
                 <Badge
                   variant="outline"
-                  className="text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 rounded-full border-blue-200 text-blue-700 bg-blue-50 flex items-center gap-0.5 sm:gap-1"
+                  className="text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 rounded-full border-blue-200 text-blue-700 bg-[var(--cl-mist)] flex items-center gap-0.5 sm:gap-1"
                 >
                   <User className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                   <span className="hidden sm:inline">
@@ -185,10 +185,10 @@ export function NewUserWelcomePost({
               </div>
 
               {/* Mensagem de boas-vindas personalizada e responsiva */}
-              <div className="bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-2">
+              <div className="bg-gradient-to-r from-[var(--cl-mist)] to-green-50 dark:from-blue-900/20 dark:to-green-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-2">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-5 h-5 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 dark:text-blue-400 text-xs">
+                    <span className="text-[var(--cl-teal)] dark:text-blue-400 text-xs">
                       🎉
                     </span>
                   </div>

@@ -344,7 +344,7 @@ export function UserHistoryModal({
       case "comment":
         return <MessageSquare className="w-4 h-4 text-indigo-500" />;
       case "reaction":
-        return <ThumbsUp className="w-4 h-4 text-blue-600" />;
+        return <ThumbsUp className="w-4 h-4 text-[var(--cl-teal)]" />;
       case "share":
         return <Share2 className="w-4 h-4 text-blue-400" />;
       case "point":
@@ -361,7 +361,7 @@ export function UserHistoryModal({
           <div className="flex items-center gap-4">
             <Avatar className="h-14 w-14 ring-4 ring-white dark:ring-slate-900 shadow-xl">
               <AvatarImage src={user?.avatar_url} />
-              <AvatarFallback className="bg-blue-600 text-white font-bold">
+              <AvatarFallback className="bg-[var(--cl-ink)] text-white font-bold">
                 {user?.full_name?.substring(0, 2).toUpperCase() || "??"}
               </AvatarFallback>
             </Avatar>
@@ -379,7 +379,7 @@ export function UserHistoryModal({
         <ScrollArea className="h-[450px] p-8">
           {loading && history.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full py-20 gap-4">
-              <div className="w-10 h-10 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
+              <div className="w-10 h-10 border-4 border-[var(--cl-teal)]/20 border-t-blue-600 rounded-full animate-spin" />
               <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">
                 Carregando histórico...
               </p>
@@ -414,7 +414,7 @@ export function UserHistoryModal({
                                 ? `/classificados?ad=${item.target_id}`
                                 : `/perfil/${item.target_id}`
                           }
-                          className="font-black text-sm text-slate-900 dark:text-white leading-tight hover:text-blue-600 transition-colors flex items-center gap-1 group/link"
+                          className="font-black text-sm text-slate-900 dark:text-white leading-tight hover:text-[var(--cl-teal)] transition-colors flex items-center gap-1 group/link"
                         >
                           {item.title}
                           <ChevronRight className="w-3 h-3 opacity-0 group-hover/link:opacity-100 transition-all -ml-1 group-hover:ml-0" />
@@ -445,7 +445,7 @@ export function UserHistoryModal({
                     variant="ghost"
                     onClick={handleSeeMore}
                     disabled={loading}
-                    className="rounded-2xl px-8 h-12 font-black text-xs uppercase tracking-widest text-blue-600 hover:bg-blue-50 transition-all hover:scale-105 active:scale-95"
+                    className="rounded-2xl px-8 h-12 font-black text-xs uppercase tracking-widest text-[var(--cl-teal)] hover:bg-[var(--cl-mist)] transition-all hover:scale-105 active:scale-95"
                   >
                     {loading ? "Carregando..." : "Ver Mais Histórico"}
                     {!loading && <ChevronRight className="w-4 h-4 ml-2" />}

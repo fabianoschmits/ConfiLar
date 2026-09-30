@@ -184,7 +184,7 @@ export const AppointmentResponse: React.FC<AppointmentResponseProps> = ({
       <Card className="w-full max-w-2xl mx-auto">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Calendar className="h-5 w-5 text-blue-600" />
+            <Calendar className="h-5 w-5 text-[var(--cl-teal)]" />
             Solicitação de Agendamento
             {getStatusBadge(appointmentRequest.status)}
           </CardTitle>
@@ -212,7 +212,7 @@ export const AppointmentResponse: React.FC<AppointmentResponseProps> = ({
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
-          <Calendar className="h-5 w-5 text-blue-600" />
+          <Calendar className="h-5 w-5 text-[var(--cl-teal)]" />
           Solicitação de Agendamento
           {getStatusBadge(appointmentRequest.status)}
         </CardTitle>
@@ -226,7 +226,7 @@ export const AppointmentResponse: React.FC<AppointmentResponseProps> = ({
 
       <CardContent ref={textareaWrapperRef} className="space-y-6">
         {/* Detalhes da Solicitação */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-[var(--cl-mist)] border border-blue-200 rounded-lg p-4">
           <h4 className="font-medium text-blue-900 mb-3 flex items-center gap-2">
             <AlertCircle className="h-4 w-4" />
             Detalhes da Solicitação
@@ -235,7 +235,7 @@ export const AppointmentResponse: React.FC<AppointmentResponseProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-blue-600" />
+                <Calendar className="h-4 w-4 text-[var(--cl-teal)]" />
                 <span className="font-medium">Data:</span>
                 <span>
                   {format(appointmentRequest.requestedDate, "PPP", {
@@ -245,13 +245,13 @@ export const AppointmentResponse: React.FC<AppointmentResponseProps> = ({
               </div>
 
               <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-blue-600" />
+                <Clock className="h-4 w-4 text-[var(--cl-teal)]" />
                 <span className="font-medium">Horário:</span>
                 <span>{appointmentRequest.requestedTime}</span>
               </div>
 
               <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-blue-600" />
+                <Clock className="h-4 w-4 text-[var(--cl-teal)]" />
                 <span className="font-medium">Duração:</span>
                 <span>
                   {durationLabels[appointmentRequest.duration] ||
@@ -262,7 +262,7 @@ export const AppointmentResponse: React.FC<AppointmentResponseProps> = ({
 
             <div className="space-y-2">
               <div className="flex items-start gap-2">
-                <MapPin className="h-4 w-4 text-blue-600 mt-0.5" />
+                <MapPin className="h-4 w-4 text-[var(--cl-teal)] mt-0.5" />
                 <div>
                   <span className="font-medium">Endereço:</span>
                   <p className="text-xs mt-1">{appointmentRequest.address}</p>

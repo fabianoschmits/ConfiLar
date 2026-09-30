@@ -70,7 +70,7 @@ const NOTIFICATION_TYPES = [
     value: "achievement",
     label: "Conquista",
     icon: Trophy,
-    color: "bg-purple-500",
+    color: "bg-[var(--cl-teal)]",
   },
   {
     value: "verification",
@@ -305,7 +305,7 @@ export function NotificationSettingsOnlyModal({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Filter className="w-5 h-5 text-purple-600" />
+              <Filter className="w-5 h-5 text-[var(--cl-teal)]" />
               Tipos de Notificação
             </CardTitle>
             <CardDescription>
@@ -516,7 +516,7 @@ export function NotificationSettingsOnlyModal({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Mail className="w-5 h-5 text-blue-600" />
+              <Mail className="w-5 h-5 text-[var(--cl-teal)]" />
               Notificações por Email
             </CardTitle>
             <CardDescription>Configure notificações por email</CardDescription>

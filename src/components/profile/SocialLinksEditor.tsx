@@ -293,7 +293,7 @@ export function SocialLinksEditor({
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="bg-gradient-to-r from-[#00b0b0] to-cyan-600 hover:from-[#00a0a0] hover:to-cyan-700"
+          className="bg-gradient-to-r from-[var(--cl-teal)] to-cyan-600 hover:from-[#00a0a0] hover:to-cyan-700"
         >
           {saving ? (
             <>

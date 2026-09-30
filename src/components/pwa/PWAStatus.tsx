@@ -55,7 +55,7 @@ export function PWAStatus() {
           size="sm"
           variant="outline"
           onClick={updateApp}
-          className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+          className="bg-[var(--cl-mist)] text-blue-700 border-blue-200 hover:bg-blue-100"
         >
           <RotateCcw className="h-3 w-3 mr-1" />
           Atualizar
@@ -95,7 +95,7 @@ export function PWAStatus() {
               size="sm"
               variant="outline"
               onClick={requestPermission}
-              className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+              className="bg-[var(--cl-mist)] text-blue-700 border-blue-200 hover:bg-blue-100"
             >
               <Bell className="h-3 w-3 mr-1" />
               <span className="hidden md:inline">Ativar Notificações</span>

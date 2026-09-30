@@ -162,7 +162,7 @@ export function PremiumPostForm({
       {/* Header Premium */}
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">
-          <Crown className="h-6 w-6 text-[#00b0b0]" />
+          <Crown className="h-6 w-6 text-[var(--cl-teal)]" />
           <h3 className="text-xl font-bold text-[#008080]">Post Premium</h3>
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-300">
@@ -171,18 +171,18 @@ export function PremiumPostForm({
       </div>
 
       {/* Saldo Atual */}
-      <Card className="border-[#00b0b0]/20 dark:border-[#00b0b0]/30 bg-[#00b0b0]/5 dark:bg-[#00b0b0]/10">
+      <Card className="border-[var(--cl-teal)]/20 dark:border-[var(--cl-teal)]/30 bg-[var(--cl-teal)]/5 dark:bg-[var(--cl-teal)]/10">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Coins className="h-5 w-5 text-[#00b0b0]" />
+              <Coins className="h-5 w-5 text-[var(--cl-teal)]" />
               <span className="font-medium text-gray-900 dark:text-gray-100">
                 Seus ConfiPoints:
               </span>
             </div>
             <Badge
               variant="secondary"
-              className="bg-[#00b0b0]/10 dark:bg-[#00b0b0]/20 text-[#008080] dark:text-[#00b0b0]"
+              className="bg-[var(--cl-teal)]/10 dark:bg-[var(--cl-teal)]/20 text-[#008080] dark:text-[var(--cl-teal)]"
             >
               {balance?.balance || 0} pontos
             </Badge>
@@ -192,7 +192,7 @@ export function PremiumPostForm({
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {isRenewal && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <div className="bg-[var(--cl-mist)] dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <p className="text-sm text-blue-800 dark:text-blue-200">
               💡 Seu post será renovado com destaque premium. Escolha a duração
               desejada.
@@ -210,7 +210,7 @@ export function PremiumPostForm({
               <Card
                 key={option.points}
                 className={`cursor-pointer transition-all ${formData.pointsToSpend === option.points
-                    ? "ring-2 ring-[#00b0b0] bg-[#00b0b0]/5 dark:bg-[#00b0b0]/10 border-[#00b0b0]/30 dark:border-[#00b0b0]/50 shadow-[0_0_15px_rgba(0,176,176,0.1)]"
+                    ? "ring-2 ring-[var(--cl-teal)] bg-[var(--cl-teal)]/5 dark:bg-[var(--cl-teal)]/10 border-[var(--cl-teal)]/30 dark:border-[var(--cl-teal)]/50 shadow-[0_0_15px_rgba(0,176,176,0.1)]"
                     : "hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-700"
                   } ${!canAfford && option.points > (balance?.balance || 0) ? "opacity-50" : ""}`}
                 onClick={() => {
@@ -269,7 +269,7 @@ export function PremiumPostForm({
                           borderColor: option.color,
                           color: option.color,
                         }}
-                        className="bg-white dark:bg-gray-900 text-base font-semibold px-3 py-1"
+                        className="bg-[var(--cl-surface)] text-base font-semibold px-3 py-1"
                       >
                         {option.points.toLocaleString("pt-BR")} pts
                       </Badge>
@@ -307,7 +307,7 @@ export function PremiumPostForm({
                   setFormData((prev) => ({ ...prev, title: e.target.value }))
                 }
                 placeholder="Digite o título do seu post premium..."
-                className="border-[#00b0b0]/20 dark:border-[#00b0b0]/40 focus:border-[#00b0b0] dark:focus:border-[#00b0b0] bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                className="border-[var(--cl-teal)]/20 dark:border-[var(--cl-teal)]/40 focus:border-[var(--cl-teal)] dark:focus:border-[var(--cl-teal)] bg-[var(--cl-surface)] text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                 required
               />
             </div>
@@ -360,7 +360,7 @@ export function PremiumPostForm({
                 }
                 placeholder="Compartilhe sua experiência, dica ou conhecimento... Use @ para mencionar alguém"
                 rows={4}
-                className="border-[#00b0b0]/20 dark:border-[#00b0b0]/40 focus:border-[#00b0b0] dark:focus:border-[#00b0b0] bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                className="border-[var(--cl-teal)]/20 dark:border-[var(--cl-teal)]/40 focus:border-[var(--cl-teal)] dark:focus:border-[var(--cl-teal)] bg-[var(--cl-surface)] text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                 required
               />
             </div>
@@ -382,18 +382,18 @@ export function PremiumPostForm({
         )}
 
         {/* Resumo do Custo */}
-        <Card className="border-[#00b0b0]/20 dark:border-[#00b0b0]/40 bg-[#00b0b0]/5 dark:bg-[#00b0b0]/10">
+        <Card className="border-[var(--cl-teal)]/20 dark:border-[var(--cl-teal)]/40 bg-[var(--cl-teal)]/5 dark:bg-[var(--cl-teal)]/10">
           <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4 text-[#00b0b0]" />
+                <Zap className="h-4 w-4 text-[var(--cl-teal)]" />
                 <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                   Custo do Post Premium:
                 </span>
               </div>
               <Badge
                 variant="secondary"
-                className="bg-[#00b0b0]/10 dark:bg-[#00b0b0]/20 text-[#008080] dark:text-[#00b0b0] text-sm"
+                className="bg-[var(--cl-teal)]/10 dark:bg-[var(--cl-teal)]/20 text-[#008080] dark:text-[var(--cl-teal)] text-sm"
               >
                 {formData.pointsToSpend} ConfiPoints
               </Badge>
@@ -418,7 +418,7 @@ export function PremiumPostForm({
           </Button>
           <LoadingButton
             type="submit"
-            className="flex-1 bg-[#00b0b0] hover:bg-[#008a8a] text-white shadow-[0_4px_14px_rgba(0,176,176,0.3)] transition-all"
+            className="flex-1 bg-[var(--cl-teal)] hover:bg-[#008a8a] text-white shadow-[0_4px_14px_rgba(0,176,176,0.3)] transition-all"
             disabled={
               isLoading ||
               !canAfford ||

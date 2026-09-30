@@ -73,7 +73,7 @@ const getNotificationIcon = (type: string) => {
     case "verification":
       return (
         <Shield
-          className={cn(iconClass, "text-purple-500 dark:text-purple-400")}
+          className={cn(iconClass, "text-purple-500 dark:text-[var(--cl-teal)]")}
         />
       );
     case "support":
@@ -414,7 +414,7 @@ export const NotificationDropdown: React.FC = () => {
         side="bottom"
         className={cn(
           "w-[calc(100vw-2rem)] sm:w-96 p-0",
-          "bg-white dark:bg-gray-900",
+          "bg-[var(--cl-surface)]",
           "border border-gray-200 dark:border-gray-700",
           "shadow-2xl rounded-xl",
           "max-h-[85vh] flex flex-col",
@@ -449,7 +449,7 @@ export const NotificationDropdown: React.FC = () => {
                   onClick={savePreferences}
                   disabled={saving}
                   size="sm"
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  className="bg-[var(--cl-ink)] hover:brightness-110 text-white"
                 >
                   {saving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -631,7 +631,7 @@ export const NotificationDropdown: React.FC = () => {
                         "relative p-4 cursor-pointer transition-colors",
                         "hover:bg-gray-50 dark:hover:bg-gray-800",
                         !notification.is_read &&
-                          "bg-blue-50/50 dark:bg-blue-900/10",
+                          "bg-[var(--cl-mist)]/50 dark:bg-blue-900/10",
                       )}
                     >
                       <div className="flex items-start gap-3">

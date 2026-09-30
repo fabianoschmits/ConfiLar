@@ -231,7 +231,7 @@ export default function RecuperarSenhaPage() {
           <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
             <div className="container flex h-16 items-center justify-between px-4">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                <div className="w-10 h-10 bg-[var(--cl-ink)] rounded-lg flex items-center justify-center shadow-lg">
                   <span className="text-white font-semibold text-lg">C</span>
                 </div>
                 <span className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -254,7 +254,7 @@ export default function RecuperarSenhaPage() {
           <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
             <Card className="max-w-md w-full bg-white/70 backdrop-blur-sm border-0 shadow-xl">
               <CardHeader>
-                <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-lg">
+                <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-[var(--cl-ink)] rounded-xl flex items-center justify-center mb-4 shadow-lg">
                   <Key className="w-8 h-8 text-white" />
                 </div>
                 <CardTitle className="text-2xl font-semibold text-gray-900 dark:text-white text-center">
@@ -293,14 +293,14 @@ export default function RecuperarSenhaPage() {
                     )}
                   </div>
 
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="bg-[var(--cl-mist)] border border-blue-200 rounded-lg p-4">
                     <p className="text-sm text-gray-600">
                       Não recebeu o código?{" "}
                       <button
                         type="button"
                         onClick={resendOtp}
                         disabled={isLoading}
-                        className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
+                        className="text-[var(--cl-teal)] hover:text-[var(--cl-teal)] hover:underline font-medium"
                       >
                         Reenviar código
                       </button>
@@ -309,7 +309,7 @@ export default function RecuperarSenhaPage() {
 
                   <LoadingButton
                     type="submit"
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+                    className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white py-3"
                     disabled={isLoading}
                     isLoading={isLoading}
                     loadingText="Verificando..."
@@ -333,7 +333,7 @@ export default function RecuperarSenhaPage() {
           <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
             <div className="container flex h-16 items-center justify-between px-4">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                <div className="w-10 h-10 bg-[var(--cl-ink)] rounded-lg flex items-center justify-center shadow-lg">
                   <span className="text-white font-semibold text-lg">C</span>
                 </div>
                 <span className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -358,7 +358,7 @@ export default function RecuperarSenhaPage() {
             <Card className="max-w-md w-full bg-white/70 backdrop-blur-sm border-0 shadow-xl">
               <CardContent className="p-8">
                 <div className="text-center mb-8">
-                  <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-6 shadow-lg">
+                  <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-[var(--cl-ink)] rounded-xl flex items-center justify-center mb-6 shadow-lg">
                     <Mail className="w-8 h-8 text-white" />
                   </div>
                   <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
@@ -398,7 +398,7 @@ export default function RecuperarSenhaPage() {
 
                   <LoadingButton
                     type="submit"
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+                    className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white py-3"
                     disabled={isLoading}
                     isLoading={isLoading}
                     loadingText="Enviando..."
@@ -410,7 +410,7 @@ export default function RecuperarSenhaPage() {
                     <button
                       type="button"
                       onClick={handleBackToLogin}
-                      className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium flex items-center justify-center gap-1 mx-auto"
+                      className="text-sm text-[var(--cl-teal)] hover:text-[var(--cl-teal)] hover:underline font-medium flex items-center justify-center gap-1 mx-auto"
                     >
                       <ArrowLeft className="w-4 h-4" />
                       <span>Voltar para o login</span>

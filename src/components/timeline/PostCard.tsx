@@ -245,10 +245,10 @@ export function PostCard({
   return (
     <article
       id={`post-${post.id}`}
-      className={`relative bg-white dark:bg-black border rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 scroll-mt-24 ${isHighlighted
+      className={`relative bg-[var(--cl-surface)] border rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 scroll-mt-24 ${isHighlighted
         ? "border-blue-400 dark:border-blue-700 z-10 shadow-lg shadow-blue-500/20"
         : isActivePremium
-          ? "ring-2 ring-[#00b0b0]/50 dark:ring-[#00b0b0]/40 border-[#00b0b0]/30 dark:border-[#00b0b0]/20 bg-gradient-to-br from-[#00b0b0]/5 to-transparent dark:from-[#00b0b0]/10 dark:to-transparent shadow-[0_15px_40px_-15px_rgba(0,176,176,0.4)] dark:shadow-[0_15px_40px_-15px_rgba(0,176,176,0.2)] premium-border-shine"
+          ? "ring-2 ring-[var(--cl-teal)]/50 dark:ring-[var(--cl-teal)]/40 border-[var(--cl-teal)]/30 dark:border-[var(--cl-teal)]/20 bg-gradient-to-br from-[var(--cl-teal)]/5 to-transparent dark:from-[var(--cl-teal)]/10 dark:to-transparent shadow-[0_15px_40px_-15px_rgba(0,176,176,0.4)] dark:shadow-[0_15px_40px_-15px_rgba(0,176,176,0.2)] premium-border-shine"
           : "border-gray-200 dark:border-gray-800"
         }`}
     >
@@ -395,7 +395,7 @@ export function PostCard({
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                   <div className="relative h-20 w-20">
                     <Coins
-                      className="h-20 w-20 absolute inset-0 text-[#00b0b0] animate-ping"
+                      className="h-20 w-20 absolute inset-0 text-[var(--cl-teal)] animate-ping"
                       style={{
                         fill: "currentColor",
                         stroke: "none",
@@ -542,7 +542,7 @@ export function PostCard({
                                       isEditingComment ||
                                       !editCommentContent.trim()
                                     }
-                                    className="text-xs text-blue-600 dark:text-blue-400 font-semibold disabled:opacity-50"
+                                    className="text-xs text-[var(--cl-teal)] dark:text-blue-400 font-semibold disabled:opacity-50"
                                   >
                                     Salvar
                                   </button>

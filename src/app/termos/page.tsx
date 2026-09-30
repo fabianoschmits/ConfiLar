@@ -48,7 +48,7 @@ export default function TermosPage() {
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-4">
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                <FileText className="h-6 w-6 text-blue-600" />
+                <FileText className="h-6 w-6 text-[var(--cl-teal)]" />
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white dark:text-white">
@@ -328,7 +328,7 @@ export default function TermosPage() {
                     O tratamento de dados pessoais segue nossa{" "}
                     <Link
                       href="/privacidade"
-                      className="text-blue-600 hover:text-blue-700 underline"
+                      className="text-[var(--cl-teal)] hover:text-[var(--cl-teal)] underline"
                     >
                       {t("section7.privacyPolicy")}
                     </Link>{" "}
