@@ -113,6 +113,7 @@ import { ShareAdModal } from "@/components/classifieds/ShareAdModal";
 import { services } from "@/data/services";
 import { ClassifiedsListSkeleton } from "@/components/ui/skeleton";
 import { ClassifiedsCard } from "@/components/classifieds/ClassifiedsCard";
+import { ClassifiedAdDetailModal } from "@/components/classifieds/ClassifiedAdDetailModal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ClientOnly } from "@/components/ClientOnly";
 import { SmartSearchBar } from "@/components/search/SmartSearchBar";
@@ -126,6 +127,7 @@ import { useTranslations } from "next-intl";
 import { UnifiedCreateAdForm } from "@/components/classifieds/UnifiedCreateAdForm";
 import { ClassifiedsLocationSelector } from "@/components/classifieds/ClassifiedsLocationSelector";
 import { useIsSuperAdmin } from "@/hooks/useAdmin";
+import { useClassifiedEngagement } from "@/hooks/useClassifiedEngagement";
 
 type AdType = "all" | "offers" | "requests";
 
@@ -144,6 +146,8 @@ export default function ClassificadosPage() {
   const [isEditingAd, setIsEditingAd] = useState(false);
   const [editingAdId, setEditingAdId] = useState<string | null>(null);
   const [selectedAd, setSelectedAd] = useState<any>(null);
+  const [selectedDetailAd, setSelectedDetailAd] = useState<any>(null);
+  const [focusDetailComment, setFocusDetailComment] = useState(false);
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [expandedUserProfiles, setExpandedUserProfiles] = useState<
@@ -174,6 +178,8 @@ export default function ClassificadosPage() {
     setAdTypeFilter,
     loadClassifiedAds,
   } = useClassifiedSearch();
+  const { getEngagement, toggleLike, changeCommentsCount, isLikePending } =
+    useClassifiedEngagement(classifiedAds);
 
   const { containerRef, isPulling, isRefreshing, pullDistance } =
     usePullToRefresh({
@@ -821,7 +827,7 @@ export default function ClassificadosPage() {
             </div>
 
             {/* Controles secundários discretos */}
-            <div className="flex justify-between items-center mb-3 gap-2">
+            <div className="mb-3 hidden items-center justify-between gap-2 sm:flex">
               <div className="flex items-center gap-2">
                 {!loading && displayAds.length > 0 && (
                   <div className="flex items-center gap-1.5">
@@ -1055,25 +1061,38 @@ export default function ClassificadosPage() {
                 />
               ) : (
                 <div className="flex flex-col gap-3.5">
-                  {paginatedAds.map((ad) => (
-                    <div key={ad.id} id={`ad-${ad.id}`}>
-                      <ClassifiedsCard
-                        ad={ad}
-                        onEdit={handleEditAd}
-                        onDelete={handleDeleteClick}
-                        onRenewPremium={(adId) => {
-                          setRenewingAdId(adId);
-                          setShowRenewPremiumDialog(true);
-                        }}
-                        isDeleting={isDeleting && deletingAdId === ad.id}
-                        isHighlighted={ad.id === highlightAdId}
-                        onShare={(sharedAd) => {
-                          setAdToShare(sharedAd);
-                          setShareModalOpen(true);
-                        }}
-                      />
-                    </div>
-                  ))}
+                  {paginatedAds.map((ad) => {
+                    const engagement = getEngagement(ad);
+
+                    return (
+                      <div key={ad.id} id={"ad-" + ad.id}>
+                        <ClassifiedsCard
+                          ad={ad}
+                          onEdit={handleEditAd}
+                          onDelete={handleDeleteClick}
+                          onRenewPremium={(adId) => {
+                            setRenewingAdId(adId);
+                            setShowRenewPremiumDialog(true);
+                          }}
+                          isDeleting={isDeleting && deletingAdId === ad.id}
+                          isHighlighted={ad.id === highlightAdId}
+                          onShare={(sharedAd) => {
+                            setAdToShare(sharedAd);
+                            setShareModalOpen(true);
+                          }}
+                          onOpenDetails={(detailAd, focusComments = false) => {
+                            setSelectedDetailAd(detailAd);
+                            setFocusDetailComment(focusComments);
+                          }}
+                          onToggleLike={toggleLike}
+                          isLiked={engagement.isLiked}
+                          isLikePending={isLikePending(ad.id)}
+                          likesCount={engagement.likesCount}
+                          commentsCount={engagement.commentsCount}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
@@ -1228,6 +1247,27 @@ export default function ClassificadosPage() {
                 }}
                 adId={adToShare.id}
                 adTitle={adToShare.title}
+              />
+            )}
+
+            {selectedDetailAd && (
+              <ClassifiedAdDetailModal
+                ad={selectedDetailAd}
+                isOpen={Boolean(selectedDetailAd)}
+                onOpenChange={(open) => {
+                  if (!open) {
+                    setSelectedDetailAd(null);
+                    setFocusDetailComment(false);
+                  }
+                }}
+                isLiked={getEngagement(selectedDetailAd).isLiked}
+                likesCount={getEngagement(selectedDetailAd).likesCount}
+                commentsCount={getEngagement(selectedDetailAd).commentsCount}
+                onToggleLike={() => void toggleLike(selectedDetailAd)}
+                onCommentsCountChange={(change) =>
+                  changeCommentsCount(selectedDetailAd.id, change)
+                }
+                focusCommentInput={focusDetailComment}
               />
             )}
           </div>

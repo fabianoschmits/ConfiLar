@@ -3,26 +3,25 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  MapPin,
-  MessageCircle,
-  MoreVertical,
-  Edit,
-  Trash2,
-  Flag,
-  Crown,
-  Share2,
-  Heart,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  CheckCircle2,
+  Crown,
+  Edit,
+  Flag,
+  Heart,
+  MapPin,
   Megaphone,
+  MessageCircle,
+  MoreVertical,
+  Share2,
   Tag,
+  Trash2,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useIsAdmin } from "@/hooks/useAdmin";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -31,12 +30,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MentionText } from "@/components/ui/MentionText";
 import { ReportDialog } from "@/components/ReportDialog";
 import { useCloseOnScroll } from "@/hooks/useCloseOnScroll";
 import { ProVerifiedBadge } from "@/components/ui/ProVerifiedBadge";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 import { GuestBlurOverlay } from "@/components/auth/GuestBlurOverlay";
 
 interface ClassifiedsCardProps {
@@ -47,15 +44,22 @@ interface ClassifiedsCardProps {
   isDeleting?: boolean;
   isHighlighted?: boolean;
   onShare?: (ad: any) => void;
+  onOpenDetails?: (ad: any, focusComments?: boolean) => void;
+  onToggleLike?: (ad: any) => void;
+  isLiked?: boolean;
+  isLikePending?: boolean;
+  likesCount?: number;
+  commentsCount?: number;
 }
 
 function parseTags(category?: string): string[] {
   if (!category) return [];
+
   return [
     ...new Set(
       category
         .split(/[,|/·•]/)
-        .map((t) => t.trim())
+        .map((tag) => tag.trim())
         .filter(Boolean),
     ),
   ].slice(0, 4);
@@ -63,13 +67,18 @@ function parseTags(category?: string): string[] {
 
 function relativeTime(iso?: string): string {
   if (!iso) return "";
+
   const diffMs = Date.now() - new Date(iso).getTime();
-  const mins = Math.max(1, Math.floor(diffMs / 60000));
-  if (mins < 60) return `${mins}min atrás`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h atrás`;
+  const minutes = Math.max(1, Math.floor(diffMs / 60000));
+
+  if (minutes < 60) return minutes + "min atrás";
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return hours + "h atrás";
+
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d atrás`;
+  if (days < 7) return days + "d atrás";
+
   return formatDistanceToNow(new Date(iso), {
     addSuffix: true,
     locale: ptBR,
@@ -84,25 +93,28 @@ export function ClassifiedsCard({
   isDeleting = false,
   isHighlighted = false,
   onShare,
+  onOpenDetails,
+  onToggleLike,
+  isLiked = false,
+  isLikePending = false,
+  likesCount,
+  commentsCount,
 }: ClassifiedsCardProps) {
   const { user } = useAuthContext();
-  const { openChat } = useFloatingChat();
   const { isAdmin } = useIsAdmin();
-  const [showFullDescription, setShowFullDescription] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isImageExpanded, setIsImageExpanded] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
-  const [liked, setLiked] = useState(false);
 
-  useCloseOnScroll(isOpen, setIsOpen);
+  useCloseOnScroll(isMenuOpen, setIsMenuOpen);
 
   let images: string[] = [];
   try {
-    if (Array.isArray(ad.images)) images = ad.images;
-    else if (typeof ad.images === "string") {
-      const parsed = JSON.parse(ad.images);
-      if (Array.isArray(parsed)) images = parsed;
+    if (Array.isArray(ad.images)) {
+      images = ad.images;
+    } else if (typeof ad.images === "string") {
+      const parsedImages = JSON.parse(ad.images);
+      if (Array.isArray(parsedImages)) images = parsedImages;
     }
   } catch {
     images = [];
@@ -110,14 +122,11 @@ export function ClassifiedsCard({
 
   const isOwner = user?.id === ad.user_id;
   const isOffer = ad.ad_type === "oferecer";
-  const isPremiumAd = Boolean(ad.is_premium);
   const premiumExpired = ad.premium_expires_at
     ? new Date(ad.premium_expires_at) < new Date()
     : false;
-  const isActivePremium = isPremiumAd && !premiumExpired;
+  const isActivePremium = Boolean(ad.is_premium) && !premiumExpired;
   const tags = parseTags(ad.category);
-  const likesCount = (ad.likes_count || 0) + (liked ? 1 : 0);
-  const commentsCount = ad.comments_count ?? ad.views_count ?? ad.views ?? 0;
   const subtitle = isOffer
     ? ad.category || "Profissional"
     : "Preciso de um profissional";
@@ -127,67 +136,63 @@ export function ClassifiedsCard({
   const timeLabel = relativeTime(ad.created_at);
   const priceLabel = ad.price_range
     ? isOffer
-      ? `A partir de R$ ${ad.price_range}`
-      : `Tenho até R$ ${ad.price_range}`
+      ? "A partir de R$ " + ad.price_range
+      : "Tenho até R$ " + ad.price_range
     : null;
-  const description = ad.description || "";
+  const displayLikesCount = likesCount ?? ad.likes_count ?? 0;
+  const displayCommentsCount = commentsCount ?? ad.comments_count ?? 0;
 
-  const nextImage = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const showDetails = (focusComments = false) => {
+    onOpenDetails?.(ad, focusComments);
+  };
+
+  const nextImage = (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
     if (images.length > 1) {
-      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+      setCurrentImageIndex((current) => (current + 1) % images.length);
     }
   };
 
-  const prevImage = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const previousImage = (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
     if (images.length > 1) {
-      setCurrentImageIndex((prev) =>
-        prev === 0 ? images.length - 1 : prev - 1,
+      setCurrentImageIndex((current) =>
+        current === 0 ? images.length - 1 : current - 1,
       );
     }
-  };
-
-  const handleContactClick = () => {
-    if (isOwner) {
-      toast.info("Este é o seu próprio anúncio!");
-      return;
-    }
-    openChat(ad.user_id, ad.user_name || "Usuário");
-    toast.success(`Abrindo chat com ${ad.user_name}...`);
   };
 
   return (
     <article
       className={cn(
-        "classifieds-card group relative flex flex-col overflow-hidden bg-[var(--cl-surface)] border border-[var(--cl-border)] shadow-[var(--cl-shadow)]",
-        isHighlighted && "ring-2 ring-sky-400 z-10",
+        "classifieds-card group relative flex flex-col overflow-hidden border border-[var(--cl-border)] bg-[var(--cl-surface)] shadow-[var(--cl-shadow)]",
+        isHighlighted && "z-10 ring-2 ring-sky-400",
         isActivePremium &&
-          "ring-2 ring-[var(--cl-teal)]/35 border-[var(--cl-teal)]/40 premium-border-shine",
+          "premium-border-shine border-[var(--cl-teal)]/40 ring-2 ring-[var(--cl-teal)]/35",
       )}
     >
       {!user && (
-        <div className="absolute top-0 left-0 right-0 z-30 px-4 pt-4 pointer-events-none">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 px-4 pt-4">
           <div className="flex items-center gap-3">
             <Link
-              href={`/perfil/${ad.user_id}`}
+              href={"/perfil/" + ad.user_id}
               className="pointer-events-auto"
             >
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-12 w-12 border border-[var(--cl-border)]">
                 <AvatarImage
                   src={ad.user_avatar || ad.user_avatar_url || ""}
                   alt={ad.user_name || "Usuário"}
                 />
-                <AvatarFallback className="bg-[var(--cl-mist)] text-[var(--cl-ink)] font-bold uppercase">
+                <AvatarFallback className="bg-[var(--cl-mist)] font-bold uppercase text-[var(--cl-ink)]">
                   {(ad.user_name || "U").charAt(0)}
                 </AvatarFallback>
               </Avatar>
             </Link>
             <Link
-              href={`/perfil/${ad.user_id}`}
-              className="text-sm font-semibold text-[var(--cl-ink)] hover:underline pointer-events-auto"
+              href={"/perfil/" + ad.user_id}
+              className="pointer-events-auto text-sm font-semibold text-[var(--cl-ink)] hover:underline"
             >
               {ad.user_name}
             </Link>
@@ -195,42 +200,42 @@ export function ClassifiedsCard({
         </div>
       )}
 
-      <GuestBlurOverlay isGuest={!user} className="flex-1 flex flex-col">
-        {/* Header: avatar | identity | badge + menu */}
-        <div className="flex items-start gap-3 px-4 pt-4 pb-3">
-          <Link href={`/perfil/${ad.user_id}`} className="shrink-0">
-            <Avatar className="h-11 w-11 border border-[var(--cl-border)]">
+      <GuestBlurOverlay isGuest={!user} className="flex flex-1 flex-col">
+        <header className="flex items-start gap-3 px-4 pb-3 pt-4">
+          <Link href={"/perfil/" + ad.user_id} className="shrink-0">
+            <Avatar className="h-12 w-12 border border-[var(--cl-border)]">
               <AvatarImage
                 src={ad.user_avatar || ad.user_avatar_url || ""}
                 alt={ad.user_name || "Usuário"}
               />
-              <AvatarFallback className="bg-[var(--cl-mist)] text-[var(--cl-ink)] font-bold uppercase">
+              <AvatarFallback className="bg-[var(--cl-mist)] font-bold uppercase text-[var(--cl-ink)]">
                 {(ad.user_name || "U").charAt(0)}
               </AvatarFallback>
             </Avatar>
           </Link>
 
-          <div className="min-w-0 flex-1">
-            <Link href={`/perfil/${ad.user_id}`}>
-              <div className="flex items-center gap-1.5 min-w-0">
-                <span className="font-semibold text-[15px] text-[var(--cl-ink)] truncate hover:underline">
-                  {ad.user_name}
-                </span>
-                <ProVerifiedBadge
-                  isVerified={ad.user_profile?.is_verified}
-                  isPro={ad.user_profile?.is_pro}
-                  proExpiresAt={ad.user_profile?.pro_expires_at}
-                  iconSize={2.5}
-                />
-              </div>
+          <div className="min-w-0 flex-1 pt-0.5">
+            <Link
+              href={"/perfil/" + ad.user_id}
+              className="flex min-w-0 items-center gap-1.5"
+            >
+              <span className="truncate text-[16px] font-semibold leading-tight text-[var(--cl-ink)] hover:underline">
+                {ad.user_name}
+              </span>
+              <ProVerifiedBadge
+                isVerified={ad.user_profile?.is_verified}
+                isPro={ad.user_profile?.is_pro}
+                proExpiresAt={ad.user_profile?.pro_expires_at}
+                iconSize={2.5}
+              />
             </Link>
-            <p className="text-[13px] text-[var(--cl-ink-secondary)] truncate mt-0.5">
+            <p className="mt-0.5 truncate text-[13px] text-[var(--cl-ink-secondary)]">
               {subtitle}
             </p>
-            <p className="text-xs text-[var(--cl-ink-muted)] mt-0.5 flex items-center gap-1 truncate">
+            <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-[var(--cl-ink-muted)]">
               {locationLabel && (
                 <>
-                  <MapPin className="h-3 w-3 shrink-0 opacity-70" />
+                  <MapPin className="h-3.5 w-3.5 shrink-0" />
                   <span className="truncate">{locationLabel}</span>
                 </>
               )}
@@ -241,7 +246,7 @@ export function ClassifiedsCard({
             </p>
           </div>
 
-          <div className="flex items-start gap-1.5 shrink-0 pt-0.5">
+          <div className="flex shrink-0 items-start gap-1 pt-0.5">
             <span
               className={cn(
                 "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold",
@@ -251,25 +256,35 @@ export function ClassifiedsCard({
               )}
             >
               {isOffer ? (
-                <CheckCircle2 className="h-3 w-3" />
+                <CheckCircle2 className="h-3.5 w-3.5" />
               ) : (
-                <Megaphone className="h-3 w-3" />
+                <Megaphone className="h-3.5 w-3.5" />
               )}
-              {isOffer ? "Serviço" : "Pedido"}
+              <span className="hidden min-[390px]:inline">
+                {isOffer ? "Serviço" : "Pedido"}
+              </span>
             </span>
 
             {isActivePremium && (
-              <span className="inline-flex items-center rounded-full px-2 py-1 text-[11px] font-bold bg-[var(--cl-teal)] text-white">
-                <Crown className="h-3 w-3" />
+              <span
+                aria-label="Anúncio em destaque"
+                className="inline-flex items-center rounded-full bg-[var(--cl-cta)] px-2 py-1 text-[var(--cl-on-cta)]"
+              >
+                <Crown className="h-3.5 w-3.5" />
               </span>
             )}
 
-            <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
+            <DropdownMenu
+              open={isMenuOpen}
+              onOpenChange={setIsMenuOpen}
+              modal={false}
+            >
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
                   className="h-8 w-8 p-0 text-[var(--cl-ink-muted)] hover:text-[var(--cl-ink)]"
+                  aria-label="Mais opções"
                 >
                   <MoreVertical className="h-4 w-4" />
                 </Button>
@@ -277,16 +292,16 @@ export function ClassifiedsCard({
               <DropdownMenuContent align="end" className="rounded-xl">
                 {isOwner && (
                   <DropdownMenuItem onClick={() => onEdit?.(ad)}>
-                    <Edit className="h-4 w-4 mr-2" />
+                    <Edit className="mr-2 h-4 w-4" />
                     Editar
                   </DropdownMenuItem>
                 )}
-                {isOwner && isActivePremium && premiumExpired && (
+                {isOwner && !isActivePremium && Boolean(ad.is_premium) && (
                   <DropdownMenuItem
                     onClick={() => onRenewPremium?.(ad.id)}
                     className="text-amber-600"
                   >
-                    <Crown className="h-4 w-4 mr-2" />
+                    <Crown className="mr-2 h-4 w-4" />
                     Renovar Premium
                   </DropdownMenuItem>
                 )}
@@ -296,7 +311,7 @@ export function ClassifiedsCard({
                     className="text-red-600"
                     disabled={isDeleting}
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
+                    <Trash2 className="mr-2 h-4 w-4" />
                     {isAdmin && !isOwner ? "Deletar (Admin)" : "Deletar"}
                   </DropdownMenuItem>
                 )}
@@ -305,12 +320,12 @@ export function ClassifiedsCard({
                     onClick={() => setShowReportDialog(true)}
                     className="text-red-600"
                   >
-                    <Flag className="h-4 w-4 mr-2" />
+                    <Flag className="mr-2 h-4 w-4" />
                     Denunciar
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem onClick={() => onShare?.(ad)}>
-                  <Share2 className="h-4 w-4 mr-2" />
+                  <Share2 className="mr-2 h-4 w-4" />
                   Compartilhar
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -325,96 +340,76 @@ export function ClassifiedsCard({
               reportedUserId={ad.user_id}
             />
           </div>
-        </div>
+        </header>
 
-        {/* Body: image left + copy right */}
         <div
+          role="button"
+          tabIndex={0}
+          onClick={() => showDetails(false)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              showDetails(false);
+            }
+          }}
           className={cn(
-            "px-4 pb-3",
-            images.length > 0 &&
-              "grid grid-cols-[112px_1fr] sm:grid-cols-[minmax(0,38%)_1fr] gap-3",
+            "mx-4 grid min-w-0 gap-3 text-left",
+            images.length > 0
+              ? "grid-cols-[132px_minmax(0,1fr)] sm:grid-cols-[minmax(0,42%)_minmax(0,1fr)]"
+              : "grid-cols-1",
           )}
+          aria-label={"Abrir detalhes de " + ad.title}
         >
           {images.length > 0 && (
-            <div
-              className={cn(
-                "relative overflow-hidden rounded-[14px] bg-[var(--cl-mist)] cursor-pointer group/media",
-                isImageExpanded ? "col-span-2 aspect-auto" : "aspect-[4/3]",
-              )}
-              onClick={() => setIsImageExpanded((v) => !v)}
-            >
+            <div className="group/media relative aspect-[4/3] overflow-hidden rounded-[14px] bg-[var(--cl-mist)]">
               <img
-                key={currentImageIndex}
                 src={images[currentImageIndex]}
-                alt={`${ad.title} - Foto ${currentImageIndex + 1}`}
-                className={cn(
-                  "w-full h-full",
-                  isImageExpanded
-                    ? "max-h-[560px] object-contain"
-                    : "object-cover",
-                )}
+                alt={ad.title + " - Foto " + (currentImageIndex + 1).toString()}
+                className="h-full w-full object-cover"
               />
               {images.length > 1 && (
                 <>
                   <button
-                    onClick={prevImage}
-                    className="absolute left-1 top-1/2 -translate-y-1/2 text-white drop-shadow opacity-0 group-hover/media:opacity-100 transition-opacity z-10"
+                    type="button"
+                    onClick={previousImage}
+                    className="absolute left-1 top-1/2 -translate-y-1/2 rounded-full p-1 text-white drop-shadow transition-opacity md:opacity-0 md:group-hover/media:opacity-100"
                     aria-label="Foto anterior"
                   >
-                    <ChevronLeft className="w-7 h-7" />
+                    <ChevronLeft className="h-6 w-6" />
                   </button>
                   <button
+                    type="button"
                     onClick={nextImage}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 text-white drop-shadow opacity-0 group-hover/media:opacity-100 transition-opacity z-10"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-1 text-white drop-shadow transition-opacity md:opacity-0 md:group-hover/media:opacity-100"
                     aria-label="Próxima foto"
                   >
-                    <ChevronRight className="w-7 h-7" />
+                    <ChevronRight className="h-6 w-6" />
                   </button>
-                  <div className="absolute bottom-2 right-2 bg-[var(--cl-cta)]/75 text-[var(--cl-on-cta)] text-[11px] font-semibold px-2 py-0.5 rounded-lg pointer-events-none">
+                  <span className="pointer-events-none absolute bottom-2 right-2 rounded-lg bg-[var(--cl-cta)]/85 px-2 py-0.5 text-[11px] font-semibold text-[var(--cl-on-cta)]">
                     +{images.length - 1}
-                  </div>
+                  </span>
                 </>
               )}
             </div>
           )}
 
-          <div
-            className={cn(
-              "flex flex-col min-w-0",
-              images.length > 0 && isImageExpanded && "col-span-2",
-            )}
-          >
-            <h3 className="text-[15px] sm:text-base font-bold text-[var(--cl-ink)] leading-snug line-clamp-2">
+          <div className="flex min-w-0 flex-col">
+            <h3 className="line-clamp-2 text-[16px] font-bold leading-snug text-[var(--cl-ink)] sm:text-[18px]">
               {ad.title}
             </h3>
-            <p
-              className={cn(
-                "mt-1 text-[13px] text-[var(--cl-ink-secondary)] leading-relaxed whitespace-pre-wrap",
-                !showFullDescription && "line-clamp-2 sm:line-clamp-3",
-              )}
-            >
-              <MentionText text={description} />
+            <p className="mt-1 line-clamp-3 text-[13px] leading-relaxed text-[var(--cl-ink-secondary)] sm:text-[14px]">
+              {ad.description}
             </p>
-            {(description.length > 100 ||
-              description.split("\n").length > 2) && (
-              <button
-                type="button"
-                onClick={() => setShowFullDescription((v) => !v)}
-                className="mt-1 self-start text-[13px] font-semibold text-[var(--cl-ink)] hover:underline"
-              >
-                {showFullDescription ? "ver menos" : "ler mais"}
-              </button>
-            )}
 
             {(tags.length > 0 || isActivePremium) && (
-              <div className="flex flex-wrap gap-1.5 mt-2.5">
+              <div className="mt-2.5 flex flex-wrap gap-1.5">
                 {tags.map((tag) => (
                   <span key={tag} className="classifieds-tag">
                     {tag}
                   </span>
                 ))}
                 {isActivePremium && (
-                  <span className="classifieds-tag bg-amber-50 text-amber-700">
+                  <span className="classifieds-tag bg-amber-50 text-amber-700 dark:bg-amber-400/15 dark:text-amber-200">
                     Destaque
                   </span>
                 )}
@@ -423,78 +418,58 @@ export function ClassifiedsCard({
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="mt-auto px-4 pb-4 pt-1 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-3.5">
+        <footer className="mt-auto flex items-center gap-2 px-4 pb-4 pt-3">
+          <div className="flex shrink-0 items-center gap-3">
             <button
               type="button"
-              onClick={() => {
-                if (!user) {
-                  toast.info("Faça login para curtir anúncios");
-                  return;
-                }
-                setLiked((v) => !v);
-              }}
+              onClick={() => onToggleLike?.(ad)}
+              disabled={isLikePending}
               className={cn(
-                "inline-flex items-center gap-1.5 text-[13px] text-[var(--cl-ink-muted)] transition-colors",
-                liked && "text-[var(--cl-heart)]",
+                "inline-flex items-center gap-1.5 text-[13px] transition-colors disabled:cursor-wait disabled:opacity-60",
+                isLiked
+                  ? "text-[var(--cl-heart)]"
+                  : "text-[var(--cl-ink-muted)] hover:text-[var(--cl-heart)]",
               )}
-              aria-label="Curtir"
+              aria-label={isLiked ? "Remover curtida" : "Curtir anúncio"}
+              aria-pressed={isLiked}
             >
               <Heart
-                className={cn(
-                  "h-4 w-4 text-[var(--cl-heart)]",
-                  liked && "fill-current",
-                )}
+                className={cn("h-[18px] w-[18px]", isLiked && "fill-current")}
               />
               <span className="tabular-nums text-[var(--cl-ink)]/80">
-                {likesCount}
+                {displayLikesCount}
               </span>
             </button>
             <button
               type="button"
-              onClick={handleContactClick}
-              disabled={isOwner}
-              className="inline-flex items-center gap-1.5 text-[13px] text-[var(--cl-ink-muted)] hover:text-[var(--cl-request)] transition-colors disabled:opacity-40"
-              aria-label="Conversar"
+              onClick={() => showDetails(true)}
+              className="inline-flex items-center gap-1.5 text-[13px] text-[var(--cl-ink-muted)] transition-colors hover:text-[var(--cl-request)]"
+              aria-label="Abrir comentários"
             >
-              <MessageCircle className="h-4 w-4" />
+              <MessageCircle className="h-[18px] w-[18px]" />
               <span className="tabular-nums text-[var(--cl-ink)]/80">
-                {commentsCount}
+                {displayCommentsCount}
               </span>
             </button>
           </div>
 
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="ml-auto flex min-w-0 items-center gap-2">
             {priceLabel && (
-              <span className="hidden sm:inline-flex items-center gap-1 text-[12px] font-medium text-[var(--cl-ink-secondary)] truncate max-w-[160px]">
+              <span className="inline-flex min-w-0 max-w-[102px] items-center gap-1 truncate text-[11px] font-medium text-[var(--cl-ink-secondary)] sm:max-w-[200px] sm:text-[13px]">
                 <Tag className="h-3.5 w-3.5 shrink-0" />
-                {priceLabel}
+                <span className="truncate">{priceLabel}</span>
               </span>
             )}
             <Button
-              onClick={handleContactClick}
-              disabled={isOwner}
+              onClick={() => showDetails(false)}
               size="sm"
-              className={cn(
-                "classifieds-cta",
-                isOwner && "opacity-50 cursor-not-allowed",
-              )}
+              className="classifieds-cta shrink-0"
             >
               Ver mais
-              <ChevronRight className="h-4 w-4 ml-0.5" />
+              <ChevronRight className="ml-0.5 h-4 w-4" />
             </Button>
           </div>
-        </div>
-
-        {priceLabel && (
-          <div className="sm:hidden px-4 pb-3 -mt-1">
-            <span className="inline-flex items-center gap-1 text-[13px] font-medium text-[var(--cl-ink-secondary)]">
-              <Tag className="h-3.5 w-3.5" />
-              {priceLabel}
-            </span>
-          </div>
-        )}
+        </footer>
       </GuestBlurOverlay>
     </article>
   );

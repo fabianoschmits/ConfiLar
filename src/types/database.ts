@@ -414,6 +414,7 @@ export interface Database {
           updated_at: string;
           views_count: number;
           likes_count: number;
+          comments_count: number;
           user_name: string;
           user_type: string;
           views: number;
@@ -439,6 +440,7 @@ export interface Database {
           updated_at?: string;
           views_count?: number;
           likes_count?: number;
+          comments_count?: number;
           user_name: string;
           user_type: string;
           views?: number;
@@ -464,6 +466,7 @@ export interface Database {
           updated_at?: string;
           views_count?: number;
           likes_count?: number;
+          comments_count?: number;
           user_name?: string;
           user_type?: string;
           views?: number;

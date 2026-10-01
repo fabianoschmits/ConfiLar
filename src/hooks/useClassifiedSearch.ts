@@ -19,6 +19,8 @@ interface ClassifiedAd {
   created_at: string;
   is_active: boolean;
   views: number;
+  likes_count?: number;
+  comments_count?: number;
   user_avatar_url: string | null;
   ad_type: string;
   is_featured?: boolean;
@@ -116,7 +118,7 @@ export function useClassifiedSearch() {
           .select(
             `
             id, user_id, user_name, user_type, title, description, category,
-            location_state, location_city, created_at, is_active, views,
+            location_state, location_city, created_at, is_active, views, likes_count,
             ad_type, is_premium, is_featured, premium_points_spent,
             premium_expires_at, premium_highlight_color, price_range,
             contact_phone, contact_email, images
@@ -147,6 +149,7 @@ export function useClassifiedSearch() {
           created_at,
           is_active,
           views,
+          likes_count,
           ad_type,
           is_premium,
           is_featured,
@@ -280,6 +283,8 @@ export function useClassifiedSearch() {
           created_at: ad.created_at,
           is_active: ad.is_active,
           views: ad.views || 0,
+          likes_count: ad.likes_count || 0,
+          comments_count: 0,
           user_avatar_url:
             profile?.avatar_url || profile?.profile_photo_url || null,
           ad_type: ad.ad_type,
