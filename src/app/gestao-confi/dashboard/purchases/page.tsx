@@ -371,7 +371,7 @@ export default function AdminPurchasesPage() {
 
         <div className="p-3 sm:p-5 rounded-2xl sm:rounded-[28px] border border-blue-100 bg-[var(--cl-mist)]/20 shadow-sm">
           <div className="flex items-center justify-between mb-2 sm:mb-3">
-            <div className="p-1.5 sm:p-2 rounded-xl bg-[var(--cl-ink)]/10 text-[var(--cl-teal)]">
+            <div className="p-1.5 sm:p-2 rounded-xl bg-[var(--cl-cta)]/10 text-[var(--cl-teal)]">
               <ShoppingCart className="h-4 w-4 sm:h-5 w-5" />
             </div>
           </div>

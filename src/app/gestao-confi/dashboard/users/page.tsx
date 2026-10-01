@@ -467,7 +467,7 @@ export default function AdminUsersPage() {
                 filterCity ||
                 filterType !== "all" ||
                 searchQuery) && (
-                <Badge className="ml-2 bg-[var(--cl-ink)] h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px]">
+                <Badge className="ml-2 bg-[var(--cl-cta)] h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px]">
                   !
                 </Badge>
               )}
@@ -491,7 +491,7 @@ export default function AdminUsersPage() {
                 fetchUsers(1);
               }}
               disabled={loading}
-              className="flex-grow sm:flex-grow-0 px-8 h-11 rounded-2xl bg-[var(--cl-ink)] hover:bg-blue-500 shadow-lg shadow-blue-500/20 font-bold transition-all active:scale-95"
+              className="flex-grow sm:flex-grow-0 px-8 h-11 rounded-2xl bg-[var(--cl-cta)] hover:bg-blue-500 shadow-lg shadow-blue-500/20 font-bold transition-all active:scale-95"
             >
               Pesquisar
             </Button>

@@ -45,7 +45,7 @@ export function ProfilePageLayout({
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[var(--cl-paper)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Header da Página */}
           <div className="mb-6">

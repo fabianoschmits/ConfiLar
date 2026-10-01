@@ -141,7 +141,7 @@ export function ReferralBadge({
           className={cn(
             sizes.count,
             "absolute -bottom-1 -right-1",
-            "bg-[var(--cl-ink)] dark:bg-blue-500 rounded-full",
+            "bg-[var(--cl-cta)] dark:bg-blue-500 rounded-full",
             "border border-white dark:border-gray-900",
             "text-white font-bold",
             "flex items-center justify-center",

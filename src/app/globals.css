@@ -1095,42 +1095,42 @@ textarea {
   }
 
   .dark {
-    /* Escuro: preto + zinc com contraste legível */
-    --cl-ink: #f8fafc;
-    --cl-ink-secondary: #cbd5e1;
-    --cl-ink-muted: #94a3b8;
+    /* Escuro verdadeiro: preto + zinc quase preto */
+    --cl-ink: #f4f4f5;
+    --cl-ink-secondary: #a1a1aa;
+    --cl-ink-muted: #71717a;
     --cl-paper: #000000;
-    --cl-surface: #18181b;
-    --cl-mist: #27272a;
-    --cl-border: #3f3f46;
-    --cl-muted: #94a3b8;
+    --cl-surface: #0a0a0a;
+    --cl-mist: #141414;
+    --cl-border: #262626;
+    --cl-muted: #71717a;
     --cl-service: #68d391;
-    --cl-service-bg: rgba(72, 187, 120, 0.18);
+    --cl-service-bg: rgba(72, 187, 120, 0.14);
     --cl-request: #63b3ed;
-    --cl-request-bg: rgba(66, 153, 225, 0.18);
-    --cl-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
-    --cl-cta: #f8fafc;
-    --cl-on-cta: #0a0a0a;
+    --cl-request-bg: rgba(66, 153, 225, 0.14);
+    --cl-shadow: 0 2px 14px rgba(0, 0, 0, 0.55);
+    --cl-cta: #f4f4f5;
+    --cl-on-cta: #000000;
 
     --background: 0 0% 0%;
-    --foreground: 210 40% 98%;
-    --card: 240 6% 10%;
-    --card-foreground: 210 40% 98%;
-    --popover: 240 6% 10%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 215 28% 16%;
-    --secondary: 240 4% 16%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 240 4% 16%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 240 4% 16%;
-    --accent-foreground: 210 40% 98%;
+    --foreground: 240 5% 96%;
+    --card: 0 0% 4%;
+    --card-foreground: 240 5% 96%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 240 5% 96%;
+    --primary: 240 5% 96%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 8%;
+    --secondary-foreground: 240 5% 96%;
+    --muted: 0 0% 8%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 0 0% 8%;
+    --accent-foreground: 240 5% 96%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 240 4% 16%;
-    --input: 240 4% 16%;
-    --ring: 215 20% 65%;
+    --destructive-foreground: 240 5% 96%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 240 4% 46%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -1213,7 +1213,7 @@ textarea {
     color: var(--cl-ink-muted);
   }
 
-  /* Superfícies cinza claras → mist (painel), não paper (fundo da tela) */
+  /* Superfícies cinza claras */
   .bg-gray-50,
   .bg-slate-50 {
     background-color: var(--cl-mist);
@@ -1224,17 +1224,40 @@ textarea {
     background-color: var(--cl-mist);
   }
 
-  /* bg-white sólido → surface no escuro (não mexe em bg-white/opacity) */
+  /* No escuro: gray-50 de página → paper (preto real) */
+  .dark .bg-gray-50,
+  .dark .bg-slate-50 {
+    background-color: var(--cl-paper);
+  }
+
+  .dark .bg-gray-100,
+  .dark .bg-slate-100 {
+    background-color: var(--cl-mist);
+  }
+
+  /* bg-white sólido → surface no escuro */
   .dark .bg-white {
     background-color: var(--cl-surface);
   }
 
-  .dark .bg-white\/95 {
+  .dark .bg-white\/95,
+  .dark .bg-white\/90 {
     background-color: color-mix(in srgb, var(--cl-surface) 95%, transparent);
   }
 
-  .dark .bg-white\/80 {
+  .dark .bg-white\/80,
+  .dark .bg-white\/70 {
     background-color: color-mix(in srgb, var(--cl-surface) 80%, transparent);
+  }
+
+  .dark .bg-white\/50,
+  .dark .bg-white\/40 {
+    background-color: color-mix(in srgb, var(--cl-surface) 50%, transparent);
+  }
+
+  .dark .bg-white\/20,
+  .dark .bg-white\/10 {
+    background-color: color-mix(in srgb, var(--cl-mist) 40%, transparent);
   }
 
   .dark .border-gray-200,
@@ -1252,14 +1275,67 @@ textarea {
   .dark .bg-gray-800,
   .dark .bg-gray-900,
   .dark .bg-zinc-900,
-  .dark .bg-zinc-800 {
+  .dark .bg-zinc-800,
+  .dark .bg-zinc-950 {
     background-color: var(--cl-mist);
+  }
+
+  .dark .bg-zinc-950\/95,
+  .dark .bg-gray-950\/95 {
+    background-color: color-mix(in srgb, var(--cl-surface) 95%, transparent);
   }
 
   .dark .border-gray-300,
   .dark .border-gray-600,
-  .dark .border-gray-700 {
+  .dark .border-gray-700,
+  .dark .border-gray-800 {
     border-color: var(--cl-border);
+  }
+
+  /* Pastéis claros → tons escuros no tema escuro */
+  .dark .bg-green-50,
+  .dark .bg-emerald-50 {
+    background-color: rgba(16, 185, 129, 0.12);
+  }
+
+  .dark .bg-yellow-50,
+  .dark .bg-amber-50,
+  .dark .bg-orange-50 {
+    background-color: rgba(245, 158, 11, 0.12);
+  }
+
+  .dark .bg-red-50,
+  .dark .bg-rose-50 {
+    background-color: rgba(239, 68, 68, 0.12);
+  }
+
+  .dark .bg-blue-50,
+  .dark .bg-sky-50,
+  .dark .bg-cyan-50,
+  .dark .bg-primary-50 {
+    background-color: rgba(0, 176, 176, 0.12);
+  }
+
+  .dark .text-green-800,
+  .dark .text-emerald-800 {
+    color: #6ee7b7;
+  }
+
+  .dark .text-yellow-800,
+  .dark .text-amber-800,
+  .dark .text-orange-800 {
+    color: #fcd34d;
+  }
+
+  .dark .text-red-800,
+  .dark .text-rose-800 {
+    color: #fca5a5;
+  }
+
+  .dark .text-blue-800,
+  .dark .text-blue-700,
+  .dark .text-cyan-800 {
+    color: #67e8f9;
   }
 
   /* Utilitário CTA com contraste correto nos dois temas */

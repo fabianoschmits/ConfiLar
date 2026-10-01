@@ -109,15 +109,7 @@ export function ModernHeader({
     averageRating: 0,
   });
 
-  // Scroll detection for dynamic header
-  const [isScrolled, setIsScrolled] = useState(false);
-
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-
     // Listener para abrir o modal de perfil de qualquer lugar
     const handleOpenProfile = (e: any) => {
       if (e.detail?.tab) {
@@ -129,7 +121,6 @@ export function ModernHeader({
     window.addEventListener("confilar:open-profile-modal", handleOpenProfile);
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
       window.removeEventListener(
         "confilar:open-profile-modal",
         handleOpenProfile,

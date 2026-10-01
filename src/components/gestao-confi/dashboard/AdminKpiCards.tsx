@@ -117,7 +117,7 @@ export function AdminKpiCards({
         };
 
         const iconBgClasses: Record<string, string> = {
-          blue: "bg-[var(--cl-ink)]/10",
+          blue: "bg-[var(--cl-cta)]/10",
           amber: "bg-amber-600/10",
           red: "bg-red-600/10",
           emerald: "bg-emerald-600/10",

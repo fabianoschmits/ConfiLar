@@ -33,7 +33,7 @@ export function WhoReferredMe({
               size="sm"
               showReferralBadge={false}
             />
-            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-blue-500 dark:bg-[var(--cl-ink)] rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900">
+            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-blue-500 dark:bg-[var(--cl-cta)] rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900">
               <UserCheck className="w-2.5 h-2.5 text-white" />
             </div>
           </div>

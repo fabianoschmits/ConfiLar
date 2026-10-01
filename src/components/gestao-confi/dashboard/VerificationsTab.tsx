@@ -503,7 +503,7 @@ export function VerificationsTab() {
                   Reprovar
                 </Button>
                 <LoadingButton
-                  className="rounded-2xl h-12 flex-1 bg-[var(--cl-ink)] hover:bg-blue-500 font-black uppercase text-[11px] tracking-wider shadow-lg shadow-blue-500/20"
+                  className="rounded-2xl h-12 flex-1 bg-[var(--cl-cta)] hover:bg-blue-500 font-black uppercase text-[11px] tracking-wider shadow-lg shadow-blue-500/20"
                   onClick={handleApprove}
                   isLoading={isProcessing}
                 >

@@ -718,7 +718,7 @@ export function BasicSignupForm() {
       )}
 
       {/* Dados Básicos */}
-      <div className="space-y-4 bg-white/50 backdrop-blur-sm border border-gray-200 rounded-lg shadow-sm p-6">
+      <div className="space-y-4 bg-[var(--cl-surface)]/80 backdrop-blur-sm border border-[var(--cl-border)] rounded-lg shadow-sm p-6">
         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
           Criar Conta
         </h3>

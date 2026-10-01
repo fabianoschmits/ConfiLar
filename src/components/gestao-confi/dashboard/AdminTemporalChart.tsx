@@ -32,7 +32,7 @@ function CustomTooltip({ active, payload, label }: any) {
           {label}
         </p>
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-[var(--cl-ink)]" />
+          <div className="w-2 h-2 rounded-full bg-[var(--cl-cta)]" />
           <p className="text-sm font-black text-gray-900 dark:text-white">
             {payload[0].value}{" "}
             <span className="text-[10px] font-normal opacity-50">
@@ -61,7 +61,7 @@ export function AdminTemporalChart({
     <Card className="rounded-[32px] border-border/50 shadow-sm overflow-hidden bg-white/50 dark:bg-gray-950/50 backdrop-blur-sm">
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2 mb-1">
-          <div className="p-1.5 rounded-lg bg-[var(--cl-ink)]/10 text-[var(--cl-teal)]">
+          <div className="p-1.5 rounded-lg bg-[var(--cl-cta)]/10 text-[var(--cl-teal)]">
             <TrendingUp className="w-4 h-4" />
           </div>
           <CardTitle className="text-base font-bold tracking-tight">

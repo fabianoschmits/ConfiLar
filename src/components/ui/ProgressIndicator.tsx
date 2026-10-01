@@ -83,7 +83,7 @@ export function ProgressIndicator({
         )}
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
           <div
-            className="h-full bg-[var(--cl-ink)] rounded-full transition-all duration-300 ease-out"
+            className="h-full bg-[var(--cl-cta)] rounded-full transition-all duration-300 ease-out"
             style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
           />
         </div>
@@ -109,7 +109,7 @@ export function ProgressIndicator({
             <div
               key={i}
               className={cn(
-                "bg-[var(--cl-ink)] rounded-full animate-bounce",
+                "bg-[var(--cl-cta)] rounded-full animate-bounce",
                 size === "sm"
                   ? "w-1.5 h-1.5"
                   : size === "md"

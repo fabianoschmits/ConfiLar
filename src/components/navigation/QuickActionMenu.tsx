@@ -14,7 +14,6 @@ import {
   Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -28,7 +27,6 @@ interface QuickActionItem {
 
 export function QuickActionMenu() {
   const pathname = usePathname();
-  const { isVisible } = useScrollDirection();
   const { user, profile } = useAuthContext();
 
   if (user && profile && !profile.profile_completed) {
@@ -70,180 +68,131 @@ export function QuickActionMenu() {
     !user || !profile ? publicQuickActions : loggedInQuickActions;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={false}
-        animate={{
-          y: 0,
-          opacity: 1,
-        }}
-        transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-[90] pointer-events-none overflow-visible"
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[90] pointer-events-none overflow-visible">
+      <nav
+        className="relative px-2 flex items-center justify-around pointer-events-none"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        <nav
-          className="relative px-2 flex items-center justify-around pointer-events-none"
-          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-        >
-          {/* Animated Background layer (Bar) */}
-          <motion.div
-            initial={false}
-            animate={{
-              y: isVisible ? 0 : 100,
-              opacity: isVisible ? 1 : 0,
-            }}
-            transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
-            className="absolute inset-0 bg-white/95 dark:bg-gray-950/95 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.4)] -z-10"
-          />
+        <div className="absolute inset-0 bg-[var(--cl-surface)]/95 backdrop-blur-md border-t border-[var(--cl-border)] shadow-[0_-4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.55)] -z-10" />
 
-          <div
-            className={cn(
-              "flex items-center justify-around w-full transition-all duration-500 relative",
-              isVisible ? "h-14" : "h-12",
-            )}
-          >
-            {quickActions.map((action) => {
-              const Icon = action.icon;
-              const isContact = action.id === "contact";
-              const isActive = isContact
-                ? false
-                : pathname === action.href ||
-                  pathname.startsWith(action.href + "/");
+        <div className="flex items-center justify-around w-full h-14 relative">
+          {quickActions.map((action) => {
+            const Icon = action.icon;
+            const isContact = action.id === "contact";
+            const isActive = isContact
+              ? false
+              : pathname === action.href ||
+                pathname.startsWith(action.href + "/");
 
-              const itemContent = (
-                <div className="flex flex-col items-center justify-center h-full relative">
-                  {/* Container for Icon and Active Pill */}
-                  <div
-                    className={cn(
-                      "relative flex items-center justify-center w-12 transition-all duration-500",
-                      isVisible ? "h-10" : "h-12",
-                    )}
-                  >
-                    {action.badge && action.badge > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center border-[1.5px] border-white dark:border-gray-950 z-30">
-                        {action.badge}
-                      </span>
-                    )}
+            const itemContent = (
+              <div className="flex flex-col items-center justify-center h-full relative">
+                <div className="relative flex items-center justify-center w-12 h-10">
+                  {action.badge && action.badge > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center border-[1.5px] border-[var(--cl-surface)] z-30">
+                      {action.badge}
+                    </span>
+                  )}
 
-                    {/* Active Pill & Icon Wrapper - Moves as one unit */}
-                    <motion.div
-                      animate={{
-                        y: isActive && isVisible ? -18 : 0,
-                      }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 30,
-                      }}
-                      className="relative flex items-center justify-center w-12 h-12"
-                    >
-                      {/* Active Indicator - Squash & Stretch Animation */}
-                      <AnimatePresence>
-                        {isActive && (
-                          <motion.div
-                            layoutId="active-pill"
-                            className="absolute inset-0 bg-[var(--cl-teal)] rounded-full shadow-lg shadow-[#00b0b0]/30 z-10"
-                            initial={{
-                              opacity: 0,
-                              scaleX: 1.5,
-                              scaleY: 0.6,
-                            }}
-                            animate={{
-                              opacity: 1,
-                              scaleX: 1,
-                              scaleY: 1,
-                            }}
-                            exit={{
-                              opacity: 0,
-                              scaleX: 0.5,
-                              scaleY: 1.5,
-                            }}
-                            transition={{
-                              type: "spring",
-                              stiffness: 400,
-                              damping: 25,
-                              mass: 1,
-                              layout: {
-                                type: "spring",
-                                stiffness: 350,
-                                damping: 25,
-                              },
-                            }}
-                          />
-                        )}
-                      </AnimatePresence>
-
-                      {/* Icon */}
-                      <motion.div
-                        animate={{
-                          color: isActive ? "#ffffff" : "rgb(156, 163, 175)",
-                        }}
-                        transition={{ duration: 0.2 }}
-                        className="relative z-20 flex items-center justify-center pointer-events-none"
-                      >
-                        <Icon
-                          className={cn(
-                            "w-5 h-5 transition-[stroke-width,width,height] duration-300",
-                            isActive ? "w-6 h-6 stroke-[2.5]" : "stroke-[1.8]",
-                          )}
-                        />
-                      </motion.div>
-                    </motion.div>
-                  </div>
-
-                  {/* Label */}
-                  <motion.span
-                    initial={false}
-                    animate={{
-                      opacity: isVisible ? 1 : 0,
-                      height: isVisible ? "auto" : 0,
-                      scale: isActive ? 1.05 : 1,
-                      marginTop: isVisible ? "2px" : "0px",
-                    }}
+                  <motion.div
+                    animate={{ y: isActive ? -18 : 0 }}
                     transition={{
                       type: "spring",
                       stiffness: 300,
                       damping: 30,
                     }}
-                    className={cn(
-                      "text-[10px] font-medium leading-none relative z-10 overflow-hidden whitespace-nowrap",
-                      isActive && "font-bold",
-                    )}
+                    className="relative flex items-center justify-center w-12 h-12"
                   >
-                    {action.label}
-                  </motion.span>
+                    <AnimatePresence>
+                      {isActive && (
+                        <motion.div
+                          layoutId="active-pill"
+                          className="absolute inset-0 bg-[var(--cl-teal)] rounded-full shadow-lg shadow-[#00b0b0]/30 z-10"
+                          initial={{
+                            opacity: 0,
+                            scaleX: 1.5,
+                            scaleY: 0.6,
+                          }}
+                          animate={{
+                            opacity: 1,
+                            scaleX: 1,
+                            scaleY: 1,
+                          }}
+                          exit={{
+                            opacity: 0,
+                            scaleX: 0.5,
+                            scaleY: 1.5,
+                          }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 25,
+                            mass: 1,
+                            layout: {
+                              type: "spring",
+                              stiffness: 350,
+                              damping: 25,
+                            },
+                          }}
+                        />
+                      )}
+                    </AnimatePresence>
+
+                    <div
+                      className={cn(
+                        "relative z-20 flex items-center justify-center pointer-events-none",
+                        isActive ? "text-white" : "text-[var(--cl-ink-muted)]",
+                      )}
+                    >
+                      <Icon
+                        className={cn(
+                          "w-5 h-5 transition-[stroke-width,width,height] duration-300",
+                          isActive ? "w-6 h-6 stroke-[2.5]" : "stroke-[1.8]",
+                        )}
+                      />
+                    </div>
+                  </motion.div>
                 </div>
-              );
 
-              const itemClassName = cn(
-                "flex-1 flex justify-center active:scale-90 transition-all duration-500 pointer-events-auto",
-                isVisible ? "h-14" : "h-12",
-              );
+                <span
+                  className={cn(
+                    "text-[10px] font-medium leading-none relative z-10 mt-0.5 whitespace-nowrap",
+                    isActive
+                      ? "font-bold text-[var(--cl-ink)]"
+                      : "text-[var(--cl-ink-muted)]",
+                  )}
+                >
+                  {action.label}
+                </span>
+              </div>
+            );
 
-              return isContact ? (
-                <a
-                  key={action.id}
-                  id={`nav-item-${action.id}`}
-                  href={action.href}
-                  className={itemClassName}
-                  aria-label={action.label}
-                >
-                  {itemContent}
-                </a>
-              ) : (
-                <Link
-                  key={action.id}
-                  id={`nav-item-${action.id}`}
-                  href={action.href}
-                  className={itemClassName}
-                  aria-label={action.label}
-                >
-                  {itemContent}
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
-      </motion.div>
-    </AnimatePresence>
+            const itemClassName =
+              "flex-1 flex justify-center h-14 active:scale-90 transition-transform duration-200 pointer-events-auto";
+
+            return isContact ? (
+              <a
+                key={action.id}
+                id={`nav-item-${action.id}`}
+                href={action.href}
+                className={itemClassName}
+                aria-label={action.label}
+              >
+                {itemContent}
+              </a>
+            ) : (
+              <Link
+                key={action.id}
+                id={`nav-item-${action.id}`}
+                href={action.href}
+                className={itemClassName}
+                aria-label={action.label}
+              >
+                {itemContent}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </div>
   );
 }

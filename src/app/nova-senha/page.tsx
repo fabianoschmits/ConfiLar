@@ -338,8 +338,10 @@ export default function NovaSenhaPage() {
         <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
           <div className="container flex h-16 items-center justify-between px-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-[var(--cl-ink)] rounded-lg flex items-center justify-center shadow-lg">
-                <span className="text-white font-semibold text-lg">C</span>
+              <div className="w-10 h-10 bg-[var(--cl-cta)] rounded-lg flex items-center justify-center shadow-lg">
+                <span className="text-[var(--cl-on-cta)] font-semibold text-lg">
+                  C
+                </span>
               </div>
               <span className="text-xl font-semibold text-gray-900 dark:text-white">
                 ConfiLar

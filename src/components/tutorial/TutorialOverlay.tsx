@@ -178,7 +178,7 @@ export function TutorialOverlay() {
                   className={cn(
                     "h-1.5 w-1.5 rounded-full transition-colors",
                     i === currentStepIndex
-                      ? "bg-[var(--cl-ink)]"
+                      ? "bg-[var(--cl-cta)]"
                       : "bg-gray-300 dark:bg-gray-700",
                   )}
                 />

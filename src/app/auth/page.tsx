@@ -147,7 +147,7 @@ export default function AuthPage() {
                     <Suspense
                       fallback={
                         <div className="text-center py-8">
-                          <div className="w-8 h-8 bg-[var(--cl-ink)] rounded-xl mx-auto animate-pulse"></div>
+                          <div className="w-8 h-8 bg-[var(--cl-cta)] rounded-xl mx-auto animate-pulse"></div>
                           <p className="text-[var(--cl-ink-secondary)] font-medium mt-2">
                             {tCommon("loading")}
                           </p>
@@ -162,7 +162,7 @@ export default function AuthPage() {
                     <Suspense
                       fallback={
                         <div className="text-center py-8">
-                          <div className="w-8 h-8 bg-[var(--cl-ink)] rounded-xl mx-auto animate-pulse"></div>
+                          <div className="w-8 h-8 bg-[var(--cl-cta)] rounded-xl mx-auto animate-pulse"></div>
                           <p className="text-[var(--cl-ink-secondary)] font-medium mt-2">
                             {tCommon("loading")}
                           </p>

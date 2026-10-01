@@ -38,7 +38,6 @@ function HomeContent() {
   const tNav = useTranslations("navigation");
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   // Dados Reais do Projeto
@@ -58,9 +57,6 @@ function HomeContent() {
 
   useEffect(() => {
     setMounted(true);
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Redirecionamento se já estiver logado
@@ -95,39 +91,31 @@ function HomeContent() {
   if (authLoading || !mounted || user) return <LogoSplashScreen />;
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans selection:bg-[var(--cl-teal)]/20 selection:text-[var(--cl-teal)]">
-      {/* Header Simplificado e Focado */}
-      <header
-        className={cn(
-          "fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-4 md:px-8",
-          scrolled
-            ? "py-3 bg-white/95 backdrop-blur-md shadow-lg"
-            : "py-5 bg-transparent",
-        )}
-      >
+    <div className="min-h-screen bg-[var(--cl-paper)] text-[var(--cl-ink)] font-sans selection:bg-[var(--cl-teal)]/20 selection:text-[var(--cl-teal)]">
+      {/* Header fixo — mesma altura com ou sem scroll */}
+      <header className="fixed top-0 left-0 right-0 z-50 px-4 md:px-8 py-4 bg-[var(--cl-surface)]/95 backdrop-blur-md border-b border-[var(--cl-border)] shadow-sm">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <Link href="/" className="flex items-center">
             <Image
-              src={
-                scrolled
-                  ? "/imagens/logo/Logo azul - sem fundo - horizontal.png"
-                  : "/imagens/logo/Logo branco - sem fundo - horizontal.png"
-              }
+              src="/imagens/logo/Logo azul - sem fundo - horizontal.png"
               alt="ConfiLar"
               width={180}
               height={48}
               priority
-              className="h-8 md:h-10 w-auto object-contain drop-shadow-md"
+              className="h-8 md:h-10 w-auto object-contain dark:hidden"
+            />
+            <Image
+              src="/imagens/logo/Logo branco - sem fundo - horizontal.png"
+              alt="ConfiLar"
+              width={180}
+              height={48}
+              priority
+              className="h-8 md:h-10 w-auto object-contain hidden dark:block"
             />
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
-            <nav
-              className={cn(
-                "flex items-center gap-6 text-sm font-semibold transition-colors",
-                scrolled ? "text-gray-600" : "text-white",
-              )}
-            >
+            <nav className="flex items-center gap-6 text-sm font-semibold text-[var(--cl-ink-secondary)]">
               <Link
                 href="/buscar"
                 className="hover:text-[var(--cl-teal)] transition-colors"
@@ -147,19 +135,11 @@ function HomeContent() {
                 {tNav("help")}
               </Link>
             </nav>
-            <div
-              className={cn(
-                "h-4 w-[1px]",
-                scrolled ? "bg-gray-200" : "bg-white/20",
-              )}
-            />
+            <div className="h-4 w-[1px] bg-[var(--cl-border)]" />
             <div className="flex items-center gap-3">
               <Link
                 href="/auth"
-                className={cn(
-                  "text-sm font-bold hover:underline px-4",
-                  scrolled ? "text-[var(--cl-teal)]" : "text-white",
-                )}
+                className="text-sm font-bold hover:underline px-4 text-[var(--cl-teal)]"
               >
                 {tNav("login")}
               </Link>
@@ -173,10 +153,7 @@ function HomeContent() {
           </div>
 
           <button
-            className={cn(
-              "md:hidden p-2",
-              scrolled ? "text-gray-600" : "text-white",
-            )}
+            className="md:hidden p-2 text-[var(--cl-ink)]"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
@@ -187,28 +164,28 @@ function HomeContent() {
       {/* Menu Mobile Simplificado */}
       <div
         className={cn(
-          "fixed inset-0 z-40 bg-white transition-transform duration-300 md:hidden pt-24 px-6",
+          "fixed inset-0 z-40 bg-[var(--cl-surface)] transition-transform duration-300 md:hidden pt-24 px-6",
           mobileMenuOpen ? "translate-x-0" : "translate-x-full",
         )}
       >
-        <nav className="flex flex-col gap-6 text-xl font-bold">
+        <nav className="flex flex-col gap-6 text-xl font-bold text-[var(--cl-ink)]">
           <Link
             href="/auth"
-            className="flex items-center gap-3 py-4 border-b border-gray-100 text-[var(--cl-teal)]"
+            className="flex items-center gap-3 py-4 border-b border-[var(--cl-border)] text-[var(--cl-teal)]"
             onClick={() => setMobileMenuOpen(false)}
           >
             <LogIn size={24} /> {tNav("login")}
           </Link>
           <Link
             href="/buscar"
-            className="flex items-center gap-3 py-4 border-b border-gray-100"
+            className="flex items-center gap-3 py-4 border-b border-[var(--cl-border)]"
             onClick={() => setMobileMenuOpen(false)}
           >
             <Search size={24} /> {t("ctaSearch")}
           </Link>
           <Link
             href="/sobre"
-            className="flex items-center gap-3 py-4 border-b border-gray-100"
+            className="flex items-center gap-3 py-4 border-b border-[var(--cl-border)]"
             onClick={() => setMobileMenuOpen(false)}
           >
             <Users size={24} /> {tNav("about")}
@@ -319,7 +296,7 @@ function HomeContent() {
         </section>
 
         {/* Serviços em Cards - Otimizado para Mobile */}
-        <section className="py-24 bg-white relative">
+        <section className="py-24 bg-[var(--cl-surface)] relative">
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8 text-center md:text-left">
               <div>
@@ -391,7 +368,7 @@ function HomeContent() {
         </section>
 
         {/* Indicações Reais - Dados Dinâmicos */}
-        <section className="py-24 bg-[#f8fafb] border-y border-gray-100 relative overflow-hidden">
+        <section className="py-24 bg-[var(--cl-mist)] border-y border-[var(--cl-border)] relative overflow-hidden">
           <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-20 items-center">
             <div className="relative group">
               <div className="absolute -inset-4 bg-gradient-to-tr from-[var(--cl-teal)] to-teal-200 rounded-[4rem] opacity-20 blur-2xl" />
@@ -426,7 +403,7 @@ function HomeContent() {
               </p>
 
               <div className="flex flex-wrap gap-6 justify-center md:justify-start mb-12">
-                <div className="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-50 flex-1 min-w-[200px]">
+                <div className="bg-[var(--cl-surface)] p-8 rounded-[2.5rem] shadow-[var(--cl-shadow)] border border-[var(--cl-border)] flex-1 min-w-[200px]">
                   <p className="text-sm font-bold text-gray-400 mb-2 tracking-widest uppercase">
                     {t("stats.referrals")}
                   </p>
@@ -436,7 +413,7 @@ function HomeContent() {
                       : formatStatNumber(referralStats.totalReferrals)}
                   </p>
                 </div>
-                <div className="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-50 flex-1 min-w-[200px]">
+                <div className="bg-[var(--cl-surface)] p-8 rounded-[2.5rem] shadow-[var(--cl-shadow)] border border-[var(--cl-border)] flex-1 min-w-[200px]">
                   <p className="text-sm font-bold text-gray-400 mb-2 tracking-widest uppercase">
                     Participantes
                   </p>
@@ -460,10 +437,10 @@ function HomeContent() {
         </section>
 
         {/* Section Diferenciais - Clean e Direto */}
-        <section className="py-24 bg-white">
+        <section className="py-24 bg-[var(--cl-surface)]">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid md:grid-cols-3 gap-12">
-              <div className="p-10 rounded-[2.5rem] bg-[#fdfdfd] border border-gray-100 shadow-sm hover:shadow-xl transition-all hover:-translate-y-2 group">
+              <div className="p-10 rounded-[2.5rem] bg-[var(--cl-mist)] border border-[var(--cl-border)] shadow-sm hover:shadow-xl transition-all hover:-translate-y-2 group">
                 <div className="w-16 h-16 bg-[var(--cl-teal)]/10 rounded-2xl flex items-center justify-center text-[var(--cl-teal)] mb-8 group-hover:bg-[var(--cl-teal)] group-hover:text-white transition-colors">
                   <ShieldCheck size={36} />
                 </div>
@@ -474,7 +451,7 @@ function HomeContent() {
                   {t("security.description")}
                 </p>
               </div>
-              <div className="p-10 rounded-[2.5rem] bg-[#fdfdfd] border border-gray-100 shadow-sm hover:shadow-xl transition-all hover:-translate-y-2 group">
+              <div className="p-10 rounded-[2.5rem] bg-[var(--cl-mist)] border border-[var(--cl-border)] shadow-sm hover:shadow-xl transition-all hover:-translate-y-2 group">
                 <div className="w-16 h-16 bg-[var(--cl-teal)]/10 rounded-2xl flex items-center justify-center text-[var(--cl-teal)] mb-8 group-hover:bg-[var(--cl-teal)] group-hover:text-white transition-colors">
                   <Users size={36} />
                 </div>
@@ -484,7 +461,7 @@ function HomeContent() {
                   Transparência total sobre quem você está contratando.
                 </p>
               </div>
-              <div className="p-10 rounded-[2.5rem] bg-[#fdfdfd] border border-gray-100 shadow-sm hover:shadow-xl transition-all hover:-translate-y-2 group">
+              <div className="p-10 rounded-[2.5rem] bg-[var(--cl-mist)] border border-[var(--cl-border)] shadow-sm hover:shadow-xl transition-all hover:-translate-y-2 group">
                 <div className="w-16 h-16 bg-[var(--cl-teal)]/10 rounded-2xl flex items-center justify-center text-[var(--cl-teal)] mb-8 group-hover:bg-[var(--cl-teal)] group-hover:text-white transition-colors">
                   <Smartphone size={36} />
                 </div>
@@ -542,9 +519,9 @@ function HomeContent() {
         </section>
       </main>
 
-      <footer className="py-20 bg-white border-t border-gray-50">
+      <footer className="py-20 bg-[var(--cl-surface)] border-t border-[var(--cl-border)]">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-12 text-center md:text-left border-b border-gray-100 pb-16">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-12 text-center md:text-left border-b border-[var(--cl-border)] pb-16">
             <div className="max-w-sm">
               <Image
                 src="/imagens/logo/Logo azul - sem fundo - horizontal.png"

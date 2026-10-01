@@ -220,7 +220,7 @@ export default function AdminDashboardPage() {
           size="sm"
           onClick={fetchData}
           disabled={loading}
-          className="rounded-xl border-border/50 bg-white/50 backdrop-blur-sm shadow-sm"
+          className="rounded-xl border-border/50 bg-[var(--cl-surface)]/80 backdrop-blur-sm shadow-sm"
         >
           <RefreshCw
             className={cn("mr-2 h-4 w-4", loading && "animate-spin")}
@@ -244,7 +244,7 @@ export default function AdminDashboardPage() {
 
         {/* Quick Links & Activity */}
         <div className="lg:col-span-3 space-y-6">
-          <Card className="rounded-[20px] sm:rounded-[32px] border-border/50 shadow-sm bg-white/50 backdrop-blur-sm">
+          <Card className="rounded-[20px] sm:rounded-[32px] border-border/50 shadow-sm bg-[var(--cl-surface)]/80 backdrop-blur-sm">
             <CardHeader className="pb-2 sm:pb-3 px-4 sm:px-6">
               <CardTitle className="text-[13px] sm:text-base font-bold">
                 Menu de Ação
@@ -286,7 +286,7 @@ export default function AdminDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-[20px] sm:rounded-[32px] border-border/50 shadow-sm bg-white/50 backdrop-blur-sm overflow-hidden">
+          <Card className="rounded-[20px] sm:rounded-[32px] border-border/50 shadow-sm bg-[var(--cl-surface)]/80 backdrop-blur-sm overflow-hidden">
             <CardHeader className="px-4 sm:px-6 pt-4 sm:pt-6 flex flex-row items-center justify-between">
               <CardTitle className="text-[13px] sm:text-base font-bold">
                 Log de Acessos
@@ -323,7 +323,7 @@ export default function AdminDashboardPage() {
                             className="h-8 w-8 rounded-full mt-0.5 shrink-0 object-cover border border-border shadow-sm group-hover:scale-110 transition-transform"
                           />
                         ) : (
-                          <div className="bg-muted p-2 rounded-full mt-0.5 shrink-0 group-hover:bg-[var(--cl-ink)]/10 group-hover:text-[var(--cl-teal)] transition-colors">
+                          <div className="bg-muted p-2 rounded-full mt-0.5 shrink-0 group-hover:bg-[var(--cl-cta)]/10 group-hover:text-[var(--cl-teal)] transition-colors">
                             <Activity className="h-3.5 w-3.5" />
                           </div>
                         )}

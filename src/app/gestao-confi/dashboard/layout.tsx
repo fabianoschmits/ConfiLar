@@ -26,7 +26,7 @@ export default function AdminDashboardLayout({
             {/* Mobile Header (Modern & Floating effect) */}
             <div className="md:hidden flex items-center justify-between px-6 py-4 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b sticky top-0 z-40">
               <div className="flex items-center gap-3">
-                <div className="bg-[var(--cl-ink)] p-1.5 rounded-lg shadow-lg shadow-blue-500/20">
+                <div className="bg-[var(--cl-cta)] p-1.5 rounded-lg shadow-lg shadow-blue-500/20">
                   <Shield className="h-4 w-4 text-white" />
                 </div>
                 <h1 className="font-extrabold text-lg tracking-tight">Admin</h1>

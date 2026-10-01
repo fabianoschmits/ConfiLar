@@ -65,7 +65,7 @@ export function AdminGuard({
     }
 
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--cl-paper)]">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 p-3 bg-red-100 rounded-full w-fit">
