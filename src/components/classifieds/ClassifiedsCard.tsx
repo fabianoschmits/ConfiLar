@@ -180,7 +180,7 @@ export function ClassifiedsCard({
               href={"/perfil/" + ad.user_id}
               className="pointer-events-auto"
             >
-              <Avatar className="h-12 w-12 border border-[var(--cl-border)]">
+              <Avatar className="classifieds-author-avatar h-14 w-14 border border-[var(--cl-border)]">
                 <AvatarImage
                   src={ad.user_avatar || ad.user_avatar_url || ""}
                   alt={ad.user_name || "Usuário"}
@@ -203,7 +203,7 @@ export function ClassifiedsCard({
       <GuestBlurOverlay isGuest={!user} className="flex flex-1 flex-col">
         <header className="flex items-start gap-3 px-4 pb-3 pt-4">
           <Link href={"/perfil/" + ad.user_id} className="shrink-0">
-            <Avatar className="h-12 w-12 border border-[var(--cl-border)]">
+            <Avatar className="classifieds-author-avatar h-14 w-14 border border-[var(--cl-border)]">
               <AvatarImage
                 src={ad.user_avatar || ad.user_avatar_url || ""}
                 alt={ad.user_name || "Usuário"}
@@ -453,17 +453,17 @@ export function ClassifiedsCard({
             </button>
           </div>
 
-          <div className="ml-auto flex min-w-0 items-center gap-2">
+          <div className="ml-auto flex min-w-0 items-center gap-1.5">
             {priceLabel && (
-              <span className="inline-flex min-w-0 max-w-[102px] items-center gap-1 truncate text-[11px] font-medium text-[var(--cl-ink-secondary)] sm:max-w-[200px] sm:text-[13px]">
+              <span className="classifieds-price inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-[11px] font-medium text-[var(--cl-ink-secondary)] sm:text-[13px]">
                 <Tag className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">{priceLabel}</span>
+                <span>{priceLabel}</span>
               </span>
             )}
             <Button
               onClick={() => showDetails(false)}
               size="sm"
-              className="classifieds-cta shrink-0"
+              className="classifieds-cta classifieds-cta--compact shrink-0"
             >
               Ver mais
               <ChevronRight className="ml-0.5 h-4 w-4" />

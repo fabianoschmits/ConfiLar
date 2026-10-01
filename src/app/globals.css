@@ -2035,6 +2035,20 @@ html.dark .border-zinc-800 {
   box-shadow: none !important;
 }
 
+.classifieds-cta--compact {
+  padding-left: 0.875rem !important;
+  padding-right: 0.75rem !important;
+}
+
+.classifieds-location-context {
+  border: 1px solid var(--cl-border);
+  border-radius: var(--cl-radius-pill);
+  background: var(--cl-mist);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  line-height: 1;
+}
+
 .classifieds-cta:hover {
   filter: brightness(1.08);
 }
@@ -2052,6 +2066,17 @@ html.dark .border-zinc-800 {
 
 .dark .classifieds-fab {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+}
+
+@media (max-width: 374px) {
+  .classifieds-price {
+    font-size: 0.625rem;
+  }
+
+  .classifieds-cta--compact {
+    padding-left: 0.75rem !important;
+    padding-right: 0.625rem !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

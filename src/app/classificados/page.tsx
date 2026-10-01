@@ -712,17 +712,6 @@ export default function ClassificadosPage() {
       <MainLayout requireAuth={false}>
         <div className="classifieds-page min-h-screen">
           <div className="max-w-[720px] mx-auto px-3 sm:px-4 py-3 sm:py-4 pb-28">
-            {/* Localidade — topo direita, como no mock */}
-            <div className="flex items-center justify-end mb-3">
-              <ClassifiedsLocationSelector
-                location={filters.location}
-                onChange={(next) => {
-                  setLocationFilter(next);
-                  setCurrentPage(1);
-                }}
-              />
-            </div>
-
             <div className="mb-3">
               <SmartSearchBar
                 onSearch={(query, newFilters) => {
@@ -784,6 +773,18 @@ export default function ClassificadosPage() {
                 showAdvancedFilters={true}
                 mode="classifieds"
                 placeholder="O que você precisa?"
+              />
+            </div>
+
+            {/* A localidade passa a ser contexto direto da busca, sem disputar o topo da página. */}
+            <div className="mb-3 flex items-center">
+              <ClassifiedsLocationSelector
+                className="classifieds-location-context"
+                location={filters.location}
+                onChange={(next) => {
+                  setLocationFilter(next);
+                  setCurrentPage(1);
+                }}
               />
             </div>
 
