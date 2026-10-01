@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
@@ -27,6 +27,10 @@ function initialEngagement(ad: ClassifiedAdLikeTarget): ClassifiedEngagement {
 
 export function useClassifiedEngagement(ads: ClassifiedAdLikeTarget[]) {
   const { user } = useAuthContext();
+  const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
+  const pendingLocks = useRef(new Set<string>());
+  const currentUserId = useRef(user?.id);
+  currentUserId.current = user?.id;
   const [engagementByAd, setEngagementByAd] = useState<
     Record<string, ClassifiedEngagement>
   >({});
@@ -50,13 +54,24 @@ export function useClassifiedEngagement(ads: ClassifiedAdLikeTarget[]) {
         const previous = current[ad.id];
         next[ad.id] = {
           ...initialEngagement(ad),
-          isLiked: previous?.isLiked || false,
+          ...(previous || {}),
         };
       });
 
       return next;
     });
   }, [ads, adIdsKey]);
+
+  useEffect(() => {
+    setEngagementByAd((current) =>
+      Object.fromEntries(
+        Object.entries(current).map(([id, value]) => [
+          id,
+          { ...value, isLiked: false },
+        ]),
+      ),
+    );
+  }, [user?.id]);
 
   useEffect(() => {
     if (!adIds.length) return;
@@ -83,12 +98,14 @@ export function useClassifiedEngagement(ads: ClassifiedAdLikeTarget[]) {
       // A migração é aplicada junto do deploy. Enquanto um ambiente antigo não
       // a recebeu, a listagem continua disponível com seus contadores base.
       if (countsResult.error || likesResult.error) {
+        setIsAvailable(false);
         console.warn("Engajamento de classificados indisponível:", {
           counts: countsResult.error?.message,
           likes: likesResult.error?.message,
         });
         return;
       }
+      setIsAvailable(true);
 
       const countsById = new Map(
         (countsResult.data || []).map((ad) => [
@@ -107,6 +124,7 @@ export function useClassifiedEngagement(ads: ClassifiedAdLikeTarget[]) {
         const next = { ...current };
 
         adIds.forEach((adId) => {
+          if (user && pendingLocks.current.has(`${user.id}:${adId}`)) return;
           const counts = countsById.get(adId);
           const previous = current[adId] || {
             likesCount: 0,
@@ -125,12 +143,22 @@ export function useClassifiedEngagement(ads: ClassifiedAdLikeTarget[]) {
       });
     };
 
-    void loadEngagement();
+    const refresh = () => {
+      if (document.visibilityState !== "hidden")
+        void loadEngagement().catch(() => {
+          if (!cancelled) setIsAvailable(false);
+        });
+    };
+    refresh();
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
 
     return () => {
       cancelled = true;
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
     };
-  }, [adIdsKey, user]);
+  }, [adIdsKey, user, ads]);
 
   const getEngagement = useCallback(
     (ad: ClassifiedAdLikeTarget): ClassifiedEngagement =>
@@ -144,8 +172,16 @@ export function useClassifiedEngagement(ads: ClassifiedAdLikeTarget[]) {
         toast.info("Faça login para curtir anúncios");
         return;
       }
+      if (isAvailable !== true) {
+        toast.info(
+          "Curtidas temporariamente indisponíveis. Tente novamente mais tarde.",
+        );
+        return;
+      }
 
-      if (pendingLikeIds.has(ad.id)) return;
+      const lockKey = `${user.id}:${ad.id}`;
+      if (pendingLocks.current.has(lockKey)) return;
+      pendingLocks.current.add(lockKey);
 
       const previous = getEngagement(ad);
       const nextLiked = !previous.isLiked;
@@ -160,33 +196,58 @@ export function useClassifiedEngagement(ads: ClassifiedAdLikeTarget[]) {
         },
       }));
 
-      const result = nextLiked
-        ? await supabase
-            .from("classified_ad_likes")
-            .insert({ ad_id: ad.id, user_id: user.id })
-        : await supabase
-            .from("classified_ad_likes")
-            .delete()
-            .eq("ad_id", ad.id)
-            .eq("user_id", user.id);
+      try {
+        const result = nextLiked
+          ? await supabase.from("classified_ad_likes").upsert(
+              { ad_id: ad.id, user_id: user.id },
+              {
+                onConflict: "ad_id,user_id",
+                ignoreDuplicates: true,
+              },
+            )
+          : await supabase
+              .from("classified_ad_likes")
+              .delete()
+              .eq("ad_id", ad.id)
+              .eq("user_id", user.id);
 
-      if (result.error) {
+        if (result.error) throw result.error;
+        const { data: counts } = await supabase
+          .from("classified_ads")
+          .select("likes_count, comments_count")
+          .eq("id", ad.id)
+          .single();
+        if (counts && currentUserId.current === user.id) {
+          setEngagementByAd((current) => ({
+            ...current,
+            [ad.id]: {
+              ...(current[ad.id] || previous),
+              likesCount: counts.likes_count || 0,
+              commentsCount: counts.comments_count || 0,
+            },
+          }));
+        }
+      } catch {
+        if (currentUserId.current !== user.id) return;
         setEngagementByAd((current) => ({
           ...current,
-          [ad.id]: previous,
+          [ad.id]: {
+            ...(current[ad.id] || previous),
+            isLiked: previous.isLiked,
+            likesCount: previous.likesCount,
+          },
         }));
-        toast.error("Não foi possível atualizar a curtida", {
-          description: result.error.message,
+        toast.error("Não foi possível atualizar a curtida. Tente novamente.");
+      } finally {
+        pendingLocks.current.delete(lockKey);
+        setPendingLikeIds((current) => {
+          const next = new Set(current);
+          next.delete(ad.id);
+          return next;
         });
       }
-
-      setPendingLikeIds((current) => {
-        const next = new Set(current);
-        next.delete(ad.id);
-        return next;
-      });
     },
-    [getEngagement, pendingLikeIds, user],
+    [getEngagement, isAvailable, user],
   );
 
   const changeCommentsCount = useCallback((adId: string, change: number) => {
@@ -212,5 +273,6 @@ export function useClassifiedEngagement(ads: ClassifiedAdLikeTarget[]) {
     toggleLike,
     changeCommentsCount,
     isLikePending: (adId: string) => pendingLikeIds.has(adId),
+    isAvailable,
   };
 }

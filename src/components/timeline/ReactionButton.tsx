@@ -12,6 +12,7 @@ import {
 } from "@/hooks/useReactions";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 // CSS para animação de batida do coração
 if (typeof document !== "undefined") {
@@ -84,13 +85,9 @@ export function ReactionButton({
     setIsAnimating(true);
     setTimeout(() => setIsAnimating(false), 600); // Duração da animação
 
-    if (userReaction === "like") {
-      // Se já curtiu, remove a curtida
-      addReaction("like");
-    } else {
-      // Se não curtiu ou curtiu com outro emoji, muda para like
-      addReaction("like");
-    }
+    void addReaction("like").catch(() =>
+      toast.error("Não foi possível atualizar a curtida. Tente novamente."),
+    );
   };
 
   const formatUserNames = () => {

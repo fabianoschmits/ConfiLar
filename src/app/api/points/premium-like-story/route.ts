@@ -141,18 +141,21 @@ export const POST = withAuth(
       );
 
       // 2. Deduzir pontos do usuário autenticado que curtiu
-      const { error: deductError } = await supabase.rpc("add_points", {
-        p_user_id: authenticatedUserId, // 🔒 Sempre ID autenticado
-        p_points: -pointsCost,
-        p_source: "premium_like_story",
-        p_description: "Curtida premium em story",
-        p_metadata: {
-          story_id: storyId,
-          owner_id: storyOwnerId,
+      const { data: deduction, error: deductError } = await supabase.rpc(
+        "add_points",
+        {
+          p_user_id: authenticatedUserId, // 🔒 Sempre ID autenticado
+          p_points: -pointsCost,
+          p_source: "premium_like_story",
+          p_description: "Curtida premium em story",
+          p_metadata: {
+            story_id: storyId,
+            owner_id: storyOwnerId,
+          },
         },
-      });
+      );
 
-      if (deductError) {
+      if (deductError || deduction?.success === false) {
         console.error("Erro ao deduzir pontos:", deductError);
         // Rollback: remover like
         await supabase.from("story_likes").delete().eq("id", premiumLike.id);
@@ -163,18 +166,21 @@ export const POST = withAuth(
       }
 
       // 3. Adicionar pontos ao criador do story
-      const { error: rewardError } = await supabase.rpc("add_points", {
-        p_user_id: storyOwnerId,
-        p_points: pointsReward,
-        p_source: "receive_premium_like_story",
-        p_description: "Recebeu curtida premium em story",
-        p_metadata: {
-          story_id: storyId,
-          from_user_id: authenticatedUserId, // 🔒 Sempre ID autenticado
+      const { data: reward, error: rewardError } = await supabase.rpc(
+        "add_points",
+        {
+          p_user_id: storyOwnerId,
+          p_points: pointsReward,
+          p_source: "receive_premium_like_story",
+          p_description: "Recebeu curtida premium em story",
+          p_metadata: {
+            story_id: storyId,
+            from_user_id: authenticatedUserId, // 🔒 Sempre ID autenticado
+          },
         },
-      });
+      );
 
-      if (rewardError) {
+      if (rewardError || reward?.success === false) {
         console.error(
           "⚠️ [Premium Like Story API] Erro ao recompensar criador:",
           rewardError,
@@ -199,7 +205,7 @@ export const POST = withAuth(
           type: "achievement",
           title: "💰 Curtida Premium no Story!",
           message: `${likerName} deu uma curtida premium no seu story (+${pointsReward} pontos)`,
-          action_url: `/stories`,
+          action_url: `/feed`,
           priority: "high",
           metadata: {
             story_id: storyId,
@@ -246,7 +252,8 @@ export const POST = withAuth(
         success: true,
         like: premiumLike,
         pointsSpent: pointsCost,
-        pointsRewarded: pointsReward,
+        pointsRewarded:
+          rewardError || reward?.success === false ? 0 : pointsReward,
       });
     } catch (error) {
       console.error("Erro ao processar premium like story:", error);

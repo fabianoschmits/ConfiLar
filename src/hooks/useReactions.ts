@@ -1,8 +1,10 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { ReactionType, ReactionCounts, UserReaction } from "@/types/reactions";
 import { NotificationService } from "@/services/NotificationService";
+import { nextReactionCounts } from "@/lib/reaction-counts";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 export interface ReactionUser {
   id: string;
@@ -20,10 +22,14 @@ export function useReactions(
   postOwnerName?: string,
 ) {
   const queryClient = useQueryClient();
+  const { user: currentUser } = useAuthContext();
+  const userId = currentUser?.id;
+  const lock = useRef(false);
 
   // Query para buscar a reação atual do usuário
   const { data: userReaction } = useQuery({
-    queryKey: ["user-reaction", postId],
+    queryKey: ["user-reaction", postId, userId],
+    enabled: Boolean(userId),
     queryFn: async () => {
       const {
         data: { user },
@@ -63,12 +69,13 @@ export function useReactions(
       if (!user) throw new Error("Usuário não autenticado");
 
       // Verificar se já existe reação do usuário
-      const { data: existingReaction } = await supabase
+      const { data: existingReaction, error: lookupError } = await supabase
         .from("post_reactions")
         .select("id, reaction_type")
         .eq("post_id", postId)
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
+      if (lookupError) throw lookupError;
 
       if (existingReaction) {
         if (existingReaction.reaction_type === reactionType) {
@@ -122,7 +129,9 @@ export function useReactions(
     },
     onMutate: async ({ reactionType, postId }) => {
       // Cancelar queries em andamento
-      await queryClient.cancelQueries({ queryKey: ["user-reaction", postId] });
+      await queryClient.cancelQueries({
+        queryKey: ["user-reaction", postId, userId],
+      });
       await queryClient.cancelQueries({
         queryKey: ["reaction-counts", postId],
       });
@@ -131,6 +140,7 @@ export function useReactions(
       const previousUserReaction = queryClient.getQueryData([
         "user-reaction",
         postId,
+        userId,
       ]);
       const previousCounts = queryClient.getQueryData([
         "reaction-counts",
@@ -139,29 +149,20 @@ export function useReactions(
 
       // Atualizar otimisticamente
       queryClient.setQueryData(
-        ["user-reaction", postId],
+        ["user-reaction", postId, userId],
         reactionType === userReaction ? null : reactionType,
       );
 
       // Atualizar contagens otimisticamente
       if (previousCounts) {
-        const currentCounts = previousCounts as any;
-        const isRemoving = reactionType === userReaction;
-        const previousType = userReaction as ReactionType | null;
-
-        queryClient.setQueryData(["reaction-counts", postId], {
-          ...currentCounts,
-          [reactionType]: isRemoving
-            ? Math.max(0, (currentCounts[reactionType] || 0) - 1)
-            : (currentCounts[reactionType] || 0) + 1,
-          [previousType || reactionType]:
-            previousType && previousType !== reactionType
-              ? Math.max(0, (currentCounts[previousType] || 0) - 1)
-              : currentCounts[previousType || reactionType] || 0,
-          total: isRemoving
-            ? Math.max(0, (currentCounts.total || 0) - 1)
-            : (currentCounts.total || 0) + 1,
-        });
+        queryClient.setQueryData(
+          ["reaction-counts", postId],
+          nextReactionCounts(
+            previousCounts as ReactionCounts,
+            userReaction || null,
+            reactionType,
+          ),
+        );
       }
 
       return { previousUserReaction, previousCounts };
@@ -170,7 +171,7 @@ export function useReactions(
       // Reverter em caso de erro
       if (context?.previousUserReaction !== undefined) {
         queryClient.setQueryData(
-          ["user-reaction", variables.postId],
+          ["user-reaction", variables.postId, userId],
           context.previousUserReaction,
         );
       }
@@ -184,7 +185,7 @@ export function useReactions(
     onSuccess: (result, variables) => {
       // Invalidar cache para garantir sincronização
       queryClient.invalidateQueries({
-        queryKey: ["user-reaction", variables.postId],
+        queryKey: ["user-reaction", variables.postId, userId],
       });
       queryClient.invalidateQueries({
         queryKey: ["reaction-counts", variables.postId],
@@ -199,17 +200,24 @@ export function useReactions(
   });
 
   const addReaction = useCallback(
-    (reactionType: ReactionType) => {
-      reactionMutation.mutate({ reactionType, postId });
+    async (reactionType: ReactionType) => {
+      if (lock.current) return false;
+      lock.current = true;
+      try {
+        await reactionMutation.mutateAsync({ reactionType, postId });
+        return true;
+      } finally {
+        lock.current = false;
+      }
     },
     [reactionMutation, postId],
   );
 
   const removeReaction = useCallback(() => {
     if (userReaction) {
-      reactionMutation.mutate({ reactionType: userReaction, postId });
+      void addReaction(userReaction).catch(() => undefined);
     }
-  }, [reactionMutation, postId, userReaction]);
+  }, [addReaction, userReaction]);
 
   return {
     addReaction,

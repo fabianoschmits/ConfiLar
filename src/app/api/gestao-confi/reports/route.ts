@@ -133,7 +133,7 @@ export const GET = withAdminAuth(
           // Para denúncias de comentário
           if (report.reported_comment_id) {
             const { data: commentData } = await adminSupabase
-              .from("comments")
+              .from("post_comments")
               .select("*")
               .eq("id", report.reported_comment_id)
               .single();

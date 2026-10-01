@@ -86,6 +86,22 @@ export default async function RootLayout({
   const {
     data: { session },
   } = await supabase.auth.getSession();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  // Session storage is not an authentication boundary. Only hydrate a user
+  // verified by Auth; do not read/trust getSession().user on the server.
+  const verifiedSession =
+    session && user
+      ? {
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+          token_type: session.token_type,
+          expires_in: session.expires_in,
+          expires_at: session.expires_at,
+          user,
+        }
+      : null;
 
   // Carregar mensagens de tradução
   const locale = await getLocale();
@@ -160,7 +176,7 @@ export default async function RootLayout({
                     <OfflineProvider>
                       <LoadingProvider>
                         <SidebarProvider>
-                          <AuthProvider initialSession={session}>
+                          <AuthProvider initialSession={verifiedSession}>
                             <FontSizeApplier />
                             {/* <AutoReauthentication> */}
                             <AvailabilityProvider>

@@ -96,20 +96,23 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
     setIsActive(true);
   };
 
-  const endTutorial = () => {
+  const endTutorial = (advanceToNextPage = true) => {
     if (user?.id && currentPage) {
       localStorage.setItem(
         `confilar_tutorial_seen_${currentPage}_${user.id}`,
         "true",
       );
     }
-    // Auto-redirection flow
-    if (currentPage === "feed") {
-      router.push("/classificados");
-    } else if (currentPage === "classificados") {
-      router.push("/buscar");
-    } else if (currentPage === "busca") {
-      router.push("/feed");
+    // Only completing the guided tour advances to the next page.
+    // Dismissing it must leave the user's current navigation intact.
+    if (advanceToNextPage) {
+      if (currentPage === "feed") {
+        router.push("/classificados");
+      } else if (currentPage === "classificados") {
+        router.push("/buscar");
+      } else if (currentPage === "busca") {
+        router.push("/feed");
+      }
     }
 
     setIsActive(false);
@@ -119,12 +122,12 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
     const url = new URL(window.location.href);
     if (url.searchParams.has("welcome")) {
       url.searchParams.delete("welcome");
-      window.history.replaceState({}, "", url);
+      window.history.replaceState(window.history.state, "", url);
     }
   };
 
   const skipTutorial = () => {
-    endTutorial();
+    endTutorial(false);
   };
 
   const nextStep = () => {

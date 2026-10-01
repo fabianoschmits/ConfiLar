@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import {
   CheckCircle2,
@@ -36,6 +37,7 @@ interface ClassifiedAdDetailModalProps {
   likesCount: number;
   commentsCount: number;
   onToggleLike: () => void;
+  isLikePending?: boolean;
   onCommentsCountChange: (change: number) => void;
   focusCommentInput?: boolean;
 }
@@ -81,14 +83,50 @@ export function ClassifiedAdDetailModal({
   likesCount,
   commentsCount,
   onToggleLike,
+  isLikePending = false,
   onCommentsCountChange,
   focusCommentInput = false,
 }: ClassifiedAdDetailModalProps) {
   const { user } = useAuthContext();
   const { openChat } = useFloatingChat();
-  const [comments, setComments] = useState<ClassifiedComment[]>([]);
-  const [commentsError, setCommentsError] = useState<string | null>(null);
-  const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const queryClient = useQueryClient();
+  const commentLock = useRef(false);
+  const deleteLocks = useRef(new Set<string>());
+  const activeAdId = useRef(ad?.id);
+  activeAdId.current = ad?.id;
+  const {
+    data: commentPages,
+    error: queryError,
+    isLoading: isLoadingComments,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["classified-comments", ad?.id, user?.id],
+    enabled: isOpen && Boolean(ad?.id),
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => {
+      const { data, error } = await supabase
+        .from("classified_ad_comments")
+        .select(
+          "id, user_id, content, created_at, user:profiles!classified_ad_comments_user_id_fkey(full_name, avatar_url, profile_photo_url)",
+        )
+        .eq("ad_id", ad.id)
+        .order("created_at", { ascending: true })
+        .order("id")
+        .range(pageParam * 20, pageParam * 20 + 19);
+      if (error) throw error;
+      return (data || []) as ClassifiedComment[];
+    },
+    getNextPageParam: (lastPage, pages) =>
+      lastPage.length === 20 ? pages.length : undefined,
+    retry: 1,
+    staleTime: 30000,
+  });
+  const comments = commentPages?.pages.flat() || [];
+  const commentsError = queryError
+    ? "Não foi possível carregar os comentários agora. Tente novamente mais tarde."
+    : null;
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -105,41 +143,11 @@ export function ClassifiedAdDetailModal({
       : "Tenho até R$ " + ad.price_range
     : null;
 
-  const loadComments = async () => {
-    if (!ad) return;
-
-    setIsLoadingComments(true);
-    setCommentsError(null);
-
-    const { data, error } = await supabase
-      .from("classified_ad_comments")
-      .select(
-        "id, user_id, content, created_at, user:profiles!classified_ad_comments_user_id_fkey(full_name, avatar_url, profile_photo_url)",
-      )
-      .eq("ad_id", ad.id)
-      .order("created_at", { ascending: true });
-
-    if (error) {
-      console.warn("Não foi possível carregar comentários do anúncio:", error);
-      setComments([]);
-      setCommentsError(
-        error.code === "PGRST205"
-          ? "Os comentários estarão disponíveis após a atualização do banco."
-          : "Não foi possível carregar os comentários agora.",
-      );
-    } else {
-      setComments((data || []) as ClassifiedComment[]);
-    }
-
-    setIsLoadingComments(false);
-  };
-
   useEffect(() => {
     if (!isOpen || !ad) return;
 
     setCurrentImageIndex(0);
     setCommentText("");
-    void loadComments();
   }, [isOpen, ad?.id]);
 
   const handleContact = () => {
@@ -164,46 +172,65 @@ export function ClassifiedAdDetailModal({
     }
 
     const content = commentText.trim();
-    if (!content || !ad) return;
+    if (!content || content.length > 1000 || !ad || commentLock.current) return;
 
+    commentLock.current = true;
     setIsSubmittingComment(true);
-    const { error } = await supabase.from("classified_ad_comments").insert({
-      ad_id: ad.id,
-      user_id: user.id,
-      content,
-    });
-
-    if (error) {
-      toast.error("Não foi possível publicar o comentário", {
-        description: error.message,
+    const submittedAdId = ad.id;
+    try {
+      const { error } = await supabase.from("classified_ad_comments").insert({
+        ad_id: ad.id,
+        user_id: user.id,
+        content,
       });
-    } else {
-      setCommentText("");
-      onCommentsCountChange(1);
-      await loadComments();
-    }
 
-    setIsSubmittingComment(false);
+      if (error) throw error;
+      if (activeAdId.current === submittedAdId) {
+        setCommentText((current) =>
+          current.trim() === content ? "" : current,
+        );
+        onCommentsCountChange(1);
+      }
+      await queryClient.invalidateQueries({
+        queryKey: ["classified-comments", submittedAdId],
+      });
+    } catch {
+      toast.error(
+        "Não foi possível publicar o comentário. Seu texto foi mantido para tentar novamente.",
+      );
+    } finally {
+      commentLock.current = false;
+      setIsSubmittingComment(false);
+    }
   };
 
   const handleDeleteComment = async (commentId: string) => {
-    if (!user) return;
+    if (!user || deleteLocks.current.has(commentId)) return;
+    deleteLocks.current.add(commentId);
+    const deletedAdId = ad.id;
 
-    const { error } = await supabase
-      .from("classified_ad_comments")
-      .delete()
-      .eq("id", commentId)
-      .eq("user_id", user.id);
+    try {
+      const { data, error } = await supabase
+        .from("classified_ad_comments")
+        .delete()
+        .eq("id", commentId)
+        .eq("user_id", user.id)
+        .select("id");
 
-    if (error) {
-      toast.error("Não foi possível remover o comentário", {
-        description: error.message,
+      if (error) {
+        throw error;
+      }
+
+      if (data?.length && activeAdId.current === deletedAdId)
+        onCommentsCountChange(-1);
+      await queryClient.invalidateQueries({
+        queryKey: ["classified-comments", deletedAdId],
       });
-      return;
+    } catch {
+      toast.error("Não foi possível remover o comentário. Tente novamente.");
+    } finally {
+      deleteLocks.current.delete(commentId);
     }
-
-    onCommentsCountChange(-1);
-    await loadComments();
   };
 
   if (!ad) return null;
@@ -339,6 +366,7 @@ export function ClassifiedAdDetailModal({
               <button
                 type="button"
                 onClick={onToggleLike}
+                disabled={isLikePending}
                 className={cn(
                   "inline-flex items-center gap-2 text-sm font-medium transition-colors",
                   isLiked
@@ -428,6 +456,17 @@ export function ClassifiedAdDetailModal({
               </div>
             )}
           </section>
+          {hasNextPage && (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isFetchingNextPage}
+              onClick={() => void fetchNextPage()}
+              className="w-full"
+            >
+              {isFetchingNextPage ? "Carregando…" : "Carregar mais comentários"}
+            </Button>
+          )}
         </div>
 
         <footer className="border-t border-[var(--cl-border)] bg-[var(--cl-surface)] px-4 py-3 sm:px-6">
@@ -438,7 +477,7 @@ export function ClassifiedAdDetailModal({
               placeholder={
                 user ? "Escreva um comentário…" : "Entre para comentar"
               }
-              disabled={isSubmittingComment}
+              disabled={!user || isSubmittingComment || Boolean(commentsError)}
               autoFocus={focusCommentInput}
               maxLength={1000}
               className="min-h-10 max-h-24 resize-none rounded-xl border-[var(--cl-border)] bg-[var(--cl-paper)] px-3 py-2 text-sm text-[var(--cl-ink)] placeholder:text-[var(--cl-ink-muted)]"
@@ -447,7 +486,12 @@ export function ClassifiedAdDetailModal({
               type="button"
               size="icon"
               onClick={() => void handleSubmitComment()}
-              disabled={!commentText.trim() || isSubmittingComment}
+              disabled={
+                !user ||
+                !commentText.trim() ||
+                isSubmittingComment ||
+                Boolean(commentsError)
+              }
               className="mb-0.5 h-10 w-10 shrink-0 rounded-xl bg-[var(--cl-cta)] text-[var(--cl-on-cta)] hover:brightness-110"
               aria-label="Publicar comentário"
             >

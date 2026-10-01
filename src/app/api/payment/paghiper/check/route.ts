@@ -29,6 +29,7 @@ export const GET = withAuth(
         .from("points_purchases")
         .select("*")
         .eq("id", purchaseId)
+        .eq("user_id", user.id)
         .single();
 
       if (fetchError || !purchase) {
@@ -139,7 +140,7 @@ export const GET = withAuth(
               statusResponse.ok &&
               statusData.status_request?.result === "success"
             ) {
-              currentPixCode = statusData.status_request.pix_code.emv;
+              currentPixCode = statusData.status_request.pix_code?.emv;
               currentQrCode = statusData.status_request.pix_code.qrcode_base64
                 ? `data:image/png;base64,${statusData.status_request.pix_code.qrcode_base64}`
                 : statusData.status_request.pix_code.qrcode_image_url;

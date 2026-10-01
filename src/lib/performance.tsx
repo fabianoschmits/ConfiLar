@@ -107,24 +107,6 @@ function sendToAnalytics(metric: VitalMetric, config: PerformanceConfig) {
         },
       });
     }
-
-    // API própria para tracking customizado
-    fetch("/api/analytics/web-vitals", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: metric.name,
-        value: metric.value,
-        rating: metric.rating,
-        delta: metric.delta,
-        id: metric.id,
-        url: window.location.href,
-        userAgent: navigator.userAgent,
-        timestamp: Date.now(),
-      }),
-    }).catch((error) => {
-      logger.error("performance-analytics", error, { metric: metric.name });
-    });
   }
 }
 

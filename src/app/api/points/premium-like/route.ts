@@ -156,23 +156,26 @@ export const POST = withAuth(
       console.log("✅ [Premium Like API] Like premium criado com sucesso");
 
       // 2. Deduzir pontos do usuário autenticado que curtiu
-      const { error: deductError } = await supabase.rpc("add_points", {
-        p_user_id: authenticatedUserId, // 🔒 Sempre ID autenticado
-        p_points: -pointsCost,
-        p_source: "premium_like",
-        p_description: "Curtida premium em post",
-        p_metadata: {
-          post_id: postId,
-          creator_id: postCreatorId,
+      const { data: deduction, error: deductError } = await supabase.rpc(
+        "add_points",
+        {
+          p_user_id: authenticatedUserId, // 🔒 Sempre ID autenticado
+          p_points: -pointsCost,
+          p_source: "premium_like",
+          p_description: "Curtida premium em post",
+          p_metadata: {
+            post_id: postId,
+            creator_id: postCreatorId,
+          },
         },
-      });
+      );
 
-      if (deductError) {
+      if (deductError || deduction?.success === false) {
         console.error("Erro ao deduzir pontos:", deductError);
         // Rollback: remover is_premium do like
         await supabase
           .from("feed_posts_likes")
-          .update({ is_premium: false, premium_points_spent: 0 })
+          .delete()
           .eq("id", premiumLike.id);
         return NextResponse.json(
           { error: "Erro ao processar pontos" },
@@ -181,18 +184,21 @@ export const POST = withAuth(
       }
 
       // 3. Adicionar pontos ao criador do post (75 pontos - deflação)
-      const { error: rewardError } = await supabase.rpc("add_points", {
-        p_user_id: postCreatorId,
-        p_points: pointsReward,
-        p_source: "receive_premium_like",
-        p_description: "Recebeu curtida premium em post",
-        p_metadata: {
-          post_id: postId,
-          from_user_id: authenticatedUserId, // 🔒 Sempre ID autenticado
+      const { data: reward, error: rewardError } = await supabase.rpc(
+        "add_points",
+        {
+          p_user_id: postCreatorId,
+          p_points: pointsReward,
+          p_source: "receive_premium_like",
+          p_description: "Recebeu curtida premium em post",
+          p_metadata: {
+            post_id: postId,
+            from_user_id: authenticatedUserId, // 🔒 Sempre ID autenticado
+          },
         },
-      });
+      );
 
-      if (rewardError) {
+      if (rewardError || reward?.success === false) {
         console.error(
           "⚠️ [Premium Like API] Erro ao recompensar criador:",
           rewardError,
@@ -271,7 +277,8 @@ export const POST = withAuth(
         success: true,
         like: premiumLike,
         pointsSpent: pointsCost,
-        pointsRewarded: pointsReward,
+        pointsRewarded:
+          rewardError || reward?.success === false ? 0 : pointsReward,
       });
     } catch (error) {
       console.error("Erro ao processar premium like:", error);

@@ -61,7 +61,7 @@ function HomeContent() {
   // Redirecionamento se já estiver logado
   useEffect(() => {
     if (mounted && isReady && user) {
-      router.push("/feed");
+      router.replace("/home");
     }
   }, [user, isReady, router, mounted]);
 

@@ -6,31 +6,26 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
+import { UserHomeContent } from "@/components/home/UserHomeContent";
 import { useAdvancedSearch } from "@/hooks/useAdvancedSearch";
 import { ReferralBadge } from "@/components/referral/ReferralBadge";
 import { LogoSplashScreen } from "@/components/common/LogoSplashScreen";
-import { DashboardSkeleton } from "@/components/ui/skeleton";
 import {
   Users,
   UserCheck,
   ArrowRight,
   Briefcase,
   Star,
-  TrendingUp,
-  Calendar,
   FileText,
-  MapPin,
   Shield,
   Award,
   Eye,
-  Plus,
-  Filter,
-  Clock,
   CheckCircle,
   Search,
   MessageCircle,
@@ -41,9 +36,52 @@ import {
 import { useTranslations } from "next-intl";
 
 export default function HomePage() {
+  const { user, profile, loading } = useAuthContext();
+  const { openChat } = useFloatingChat();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted || loading) return <LogoSplashScreen />;
+  if (user && !profile)
+    return (
+      <MainLayout>
+        <div className="app-access-screen">
+          <div className="app-access-card space-y-4">
+            <h1 className="text-xl font-extrabold">
+              Seu perfil não está disponível
+            </h1>
+            <p className="text-sm text-[var(--cl-ink-secondary)]">
+              Não foi possível carregar os dados da sua conta. Tente novamente.
+            </p>
+            <Button onClick={() => window.location.reload()}>
+              Tentar novamente
+            </Button>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  if (!user || !profile) return <GuestHomeGuide />;
+
+  return (
+    <MainLayout>
+      <UserHomeContent
+        profile={profile}
+        onOpenChat={() => openChat()}
+        onEditProfile={() =>
+          window.dispatchEvent(
+            new CustomEvent("confilar:open-profile-modal", {
+              detail: { tab: "account" },
+            }),
+          )
+        }
+      />
+    </MainLayout>
+  );
+}
+
+function GuestHomeGuide() {
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
-  const { user, profile } = useAuthContext();
   const t = useTranslations("home");
 
   // Hook para busca avançada para obter estatísticas reais

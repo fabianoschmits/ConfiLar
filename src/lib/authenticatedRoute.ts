@@ -119,6 +119,16 @@ export function validateUserId(
   return userId === authenticatedUserId;
 }
 
+/** Defense in depth for dynamic admin handlers that also receive route params. */
+export async function requireAdmin(
+  request: NextRequest,
+): Promise<NextResponse | null> {
+  const response = await withAdminAuth(async () =>
+    NextResponse.json({ authorized: true }),
+  )(request);
+  return response.ok ? null : response;
+}
+
 /**
  * Helper para proteger rotas administrativas
  *

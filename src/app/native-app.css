@@ -123,6 +123,10 @@
   font-size: 0.6875rem;
   font-weight: 400;
   touch-action: manipulation;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
 }
 .app-bottom-nav-icon {
   display: grid;
@@ -143,6 +147,149 @@
   outline: 2px solid var(--cl-teal);
   outline-offset: -4px;
   border-radius: 12px;
+}
+.app-bottom-nav-label--compact {
+  display: none;
+}
+@media (max-width: 360px) {
+  .app-bottom-nav-label--full {
+    display: none;
+  }
+  .app-bottom-nav-label--compact {
+    display: inline;
+  }
+}
+.account-dropdown-scroll {
+  max-height: calc(
+    100dvh - var(--app-header-height) - var(--app-top-inset) -
+      var(--app-tabbar-height) - var(--app-bottom-inset) - 16px
+  );
+  overscroll-behavior: contain;
+}
+@media (max-width: 639px) {
+  .account-dropdown-panel {
+    position: fixed;
+    top: calc(var(--app-header-height) + var(--app-top-inset) + 8px);
+    right: 12px;
+    width: calc(100% - 24px);
+    max-width: 360px;
+    margin-top: 0;
+  }
+}
+.account-dropdown-scroll button {
+  min-height: 44px;
+}
+.account-shortcuts-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 8px;
+  color: var(--cl-ink-secondary);
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+.account-shortcut {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 10px 8px;
+  border-radius: 12px;
+  text-align: left;
+  color: var(--cl-ink);
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.account-shortcut:hover,
+.account-shortcuts-heading:hover,
+.home-shortcut:hover,
+.home-list-link:hover {
+  background: var(--cl-mist);
+}
+@media (max-width: 379px) {
+  .account-shortcuts-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.home-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.home-primary {
+  padding: 20px;
+  border: 1px solid var(--cl-border);
+  border-radius: var(--cl-radius-card);
+  background: var(--cl-surface);
+}
+.home-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 12px 14px;
+  border-radius: var(--cl-radius-control);
+  background: var(--cl-mist);
+  color: var(--cl-ink-secondary);
+  font-size: 0.875rem;
+}
+.home-shortcut {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+  min-height: 130px;
+  padding: 14px;
+  border: 1px solid var(--cl-border);
+  border-radius: 18px;
+  background: var(--cl-surface);
+  text-align: left;
+  color: var(--cl-ink);
+  overflow-wrap: anywhere;
+}
+.home-shortcut-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 4px;
+  border-radius: 12px;
+  background: var(--cl-mist);
+  color: var(--cl-teal);
+}
+.home-link-list {
+  overflow: hidden;
+  border: 1px solid var(--cl-border);
+  border-radius: 18px;
+  background: var(--cl-surface);
+}
+.home-list-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 16px;
+  text-align: left;
+  color: var(--cl-ink);
+}
+.home-list-link + .home-list-link {
+  border-top: 1px solid var(--cl-border);
+}
+:is(
+  .account-shortcut,
+  .account-shortcuts-heading,
+  .home-shortcut,
+  .home-search,
+  .home-list-link,
+  .home-avatar-link
+):focus-visible {
+  outline: 2px solid var(--cl-teal);
+  outline-offset: -3px;
 }
 .app-button {
   touch-action: manipulation;

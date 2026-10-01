@@ -125,6 +125,7 @@ export function useClassifiedSearch() {
           `,
           )
           .eq("id", pinAdId)
+          .eq("is_active", true)
           .single();
 
         if (!specificError && specificAd) {
@@ -234,9 +235,7 @@ export function useClassifiedSearch() {
           pro_expires_at
         `,
         )
-        .in("id", userIds)
-        .limit(20);
-
+        .in("id", userIds);
       const profilesMap = new Map(
         profilesData?.map((profile) => [profile.id, profile]) || [],
       );
@@ -284,7 +283,7 @@ export function useClassifiedSearch() {
           is_active: ad.is_active,
           views: ad.views || 0,
           likes_count: ad.likes_count || 0,
-          comments_count: 0,
+          comments_count: ad.comments_count || 0,
           user_avatar_url:
             profile?.avatar_url || profile?.profile_photo_url || null,
           ad_type: ad.ad_type,

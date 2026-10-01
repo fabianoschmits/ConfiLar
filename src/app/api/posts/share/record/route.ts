@@ -79,14 +79,13 @@ export const POST = withAuth(
           checkError.message?.includes("403") ||
           checkError.message?.includes("permission denied")
         ) {
-          console.log(
-            "⚠️ API: Tabela post_shares não existe ou sem permissão, simulando sucesso",
+          return NextResponse.json(
+            {
+              error:
+                "Registro de compartilhamento temporariamente indisponível",
+            },
+            { status: 503 },
           );
-          return NextResponse.json({
-            success: true,
-            message: "Compartilhamento registrado (simulado)",
-            isNew: true,
-          });
         }
         throw checkError;
       }
@@ -123,14 +122,13 @@ export const POST = withAuth(
           error.message?.includes("403") ||
           error.message?.includes("permission denied")
         ) {
-          console.log(
-            "⚠️ API: Tabela post_shares não existe ou sem permissão, simulando sucesso",
+          return NextResponse.json(
+            {
+              error:
+                "Registro de compartilhamento temporariamente indisponível",
+            },
+            { status: 503 },
           );
-          return NextResponse.json({
-            success: true,
-            message: "Compartilhamento registrado (simulado)",
-            isNew: true,
-          });
         }
         // Se for erro de duplicata, retornar sucesso
         if (error.code === "23505") {

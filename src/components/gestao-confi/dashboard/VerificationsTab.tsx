@@ -224,7 +224,7 @@ export function VerificationsTab() {
         message: `Motivo: ${rejectionReason}`,
         type: "warning",
         priority: "normal",
-        action_url: "/editarperfil",
+        action_url: "/home?editProfile=1",
       });
 
       toast.success("Rejeitado.");

@@ -2,66 +2,79 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Home,
-  Rows3,
-  Search,
-  BriefcaseBusiness,
-  UserRound,
-  LogIn,
-} from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
+import { getMobileShortcuts, isShortcutActive } from "@/lib/app-navigation";
 import { cn } from "@/lib/utils";
 
 export function QuickActionMenu() {
   const pathname = usePathname();
   const { user, profile } = useAuthContext();
+  const { isOpen, openChat, closeChat } = useFloatingChat();
 
   if (user && profile && !profile.profile_completed) return null;
 
-  const signedIn = Boolean(user && profile);
-  const actions = [
-    { id: "home", label: "Início", href: signedIn ? "/home" : "/", icon: Home },
-    { id: "feed", label: "Feed", href: "/feed", icon: Rows3 },
-    { id: "search", label: "Buscar", href: "/buscar", icon: Search },
-    {
-      id: "classifieds",
-      label: "Classificados",
-      href: "/classificados",
-      icon: BriefcaseBusiness,
-    },
-    signedIn
-      ? {
-          id: "profile",
-          label: "Perfil",
-          href: `/perfil/${profile!.id}`,
-          icon: UserRound,
-        }
-      : { id: "login", label: "Entrar", href: "/auth", icon: LogIn },
-  ];
+  const actions = getMobileShortcuts(user && profile ? profile : null);
 
   return (
     <nav className="app-bottom-nav lg:hidden" aria-label="Navegação principal">
-      {actions.map(({ id, label, href, icon: Icon }) => {
+      {actions.map((shortcut) => {
+        const { id, label, icon: Icon } = shortcut;
         const active =
-          pathname === href ||
-          (href !== "/" && pathname.startsWith(href + "/"));
+          shortcut.action === "chat"
+            ? isOpen
+            : !isOpen && isShortcutActive(pathname, shortcut);
+        const className = cn(
+          "app-bottom-nav-item",
+          active && "app-bottom-nav-item--active",
+        );
+        const content = (
+          <>
+            <span className="app-bottom-nav-icon">
+              <Icon aria-hidden="true" className="h-[22px] w-[22px]" />
+            </span>
+            <span
+              className={cn(
+                "app-bottom-nav-label",
+                id === "classifieds" && "app-bottom-nav-label--full",
+              )}
+            >
+              {label}
+            </span>
+            {id === "classifieds" && (
+              <span
+                aria-hidden="true"
+                className="app-bottom-nav-label app-bottom-nav-label--compact"
+              >
+                Anúncios
+              </span>
+            )}
+          </>
+        );
+        if (shortcut.action === "chat")
+          return (
+            <button
+              key={id}
+              id={`nav-item-${id}`}
+              type="button"
+              className={className}
+              aria-label={label}
+              aria-expanded={isOpen}
+              onClick={() => (isOpen ? closeChat() : openChat())}
+            >
+              {content}
+            </button>
+          );
         return (
           <Link
             key={id}
             id={`nav-item-${id}`}
-            href={href}
-            className={cn(
-              "app-bottom-nav-item",
-              active && "app-bottom-nav-item--active",
-            )}
+            href={shortcut.href}
+            className={className}
             aria-current={active ? "page" : undefined}
             aria-label={label}
           >
-            <span className="app-bottom-nav-icon">
-              <Icon aria-hidden="true" className="h-[22px] w-[22px]" />
-            </span>
-            <span className="app-bottom-nav-label">{label}</span>
+            {content}
           </Link>
         );
       })}

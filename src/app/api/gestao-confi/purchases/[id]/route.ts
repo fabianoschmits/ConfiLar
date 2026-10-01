@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { requireAdmin } from "@/lib/authenticatedRoute";
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,6 +17,8 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const denied = await requireAdmin(request);
+  if (denied) return denied;
   try {
     const { id } = await params;
 
@@ -44,7 +47,7 @@ export async function GET(
     const { data: packageData, error: packageError } = await supabaseAdmin
       .from("points_packages")
       .select(
-        "id, name, slug, description, points, bonus_percentage, price_brl, total_points",
+        "id, name, slug, points, bonus_percentage, price_brl, total_points",
       )
       .eq("id", purchase.package_id)
       .single();
@@ -88,6 +91,8 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const denied = await requireAdmin(request);
+  if (denied) return denied;
   try {
     const { id } = await params;
     const body = await request.json();

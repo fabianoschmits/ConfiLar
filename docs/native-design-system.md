@@ -15,8 +15,21 @@ O feed e os classificados são a referência para as demais telas: Gilroy, super
 
 Prefira estes componentes em novas telas. Evite alturas de tela duplicadas, avatares com margens negativas, barras flutuantes sobre a navegação e botões posicionados por coordenadas fixas. Grupos longos de filtros podem rolar horizontalmente; a página inteira não deve rolar nessa direção.
 
+## Navegação e início do usuário
+
+`src/lib/app-navigation.ts` é a lista compartilhada de destinos da barra inferior, da home e do dropdown. Ao trocar um atalho da barra, mantenha seu destino em `getShortcutGroups` e valide os testes de cobertura do menu.
+
+- Conta conectada: Início, Feed, Buscar, Classificados e Mensagens. Visitantes mantêm Entrar no último lugar.
+- Até 360 px, Classificados mostra o rótulo curto “Anúncios”, preservando o nome acessível e a rota. A barra tem áreas de toque de 64 px.
+- Meu perfil fica diretamente na seção Minha conta do dropdown, aberta por padrão. Favoritos, avaliações, indicações, ConfiPoints e ferramentas profissionais continuam acessíveis por grupos. Suporte, preferências, disponibilidade e administração são preservados.
+- Mensagens abre o chat existente; não é um link de rota fictícia. O dropdown fecha antes de abrir o chat e mantém o contador de mensagens não lidas.
+- `/home` apresenta os dados reais do perfil e atalhos por tipo de conta. Clientes priorizam buscar profissionais; profissionais priorizam os classificados e seu trabalho. A home não inventa saldos, atividades ou métricas.
+- O login comum, o retorno OAuth sem destino explícito e a entrada de usuários conectados pela landing levam à home. Destinos explícitos de retorno continuam respeitados.
+
+O dropdown usa uma coluna nas telas menores que 380 px para preservar a leitura. Seu conteúdo rola dentro da altura disponível, sem sobrepor a barra inferior. Escape fecha o menu e devolve o foco ao botão da conta.
+
 ## Verificação
 
-`node --test tests/native-ui.test.cjs` verifica contratos dos componentes, atributos de formulário, acessibilidade básica e destinos da navegação administrativa. Execute também `npm run type-check`, ESLint e `npm run build`.
+`node --test tests/native-ui.test.cjs` verifica contratos dos componentes, atributos de formulário, acessibilidade básica, destinos da navegação administrativa, cobertura dos atalhos no dropdown, ações do chat, personalização da home e retornos de login. Execute também `npm run type-check`, ESLint e `npm run build`.
 
 A revisão visual deve incluir 320 e 390 px, desktop, ambos os temas, texto longo, rodapés, campos, filtros e modais. Nenhum teste deve publicar conteúdo, transferir pontos ou alterar configurações reais apenas para conferir o visual.

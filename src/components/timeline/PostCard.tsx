@@ -110,19 +110,24 @@ export function PostCard({
   const [editCommentContent, setEditCommentContent] = useState("");
 
   // Função para curtir/descurtir
-  const handleLikeClick = () => {
+  const handleLikeClick = async () => {
+    if (isLiking) return;
     setIsLiking(true);
-    addReaction("like");
-    if (onLike) onLike();
-
-    if (!isLikedByUser) {
-      toast.success("❤️ Post curtido!", {
-        duration: 1500,
-        position: "bottom-center",
-      });
+    try {
+      const updated = await addReaction("like");
+      if (!updated) return;
+      if (onLike) onLike();
+      if (!isLikedByUser) {
+        toast.success("❤️ Post curtido!", {
+          duration: 1500,
+          position: "bottom-center",
+        });
+      }
+    } catch {
+      toast.error("Não foi possível atualizar a curtida. Tente novamente.");
+    } finally {
+      setIsLiking(false);
     }
-
-    setTimeout(() => setIsLiking(false), 300);
   };
 
   const handleAddComment = async () => {

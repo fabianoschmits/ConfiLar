@@ -215,7 +215,7 @@ export function ModernSidebar() {
         {
           id: "contact",
           title: "Contato",
-          href: "/contato",
+          href: "/ajuda",
           icon: <Phone className="h-4 w-4" />,
         },
         {

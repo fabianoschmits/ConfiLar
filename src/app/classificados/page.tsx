@@ -178,8 +178,13 @@ export default function ClassificadosPage() {
     setAdTypeFilter,
     loadClassifiedAds,
   } = useClassifiedSearch();
-  const { getEngagement, toggleLike, changeCommentsCount, isLikePending } =
-    useClassifiedEngagement(classifiedAds);
+  const {
+    getEngagement,
+    toggleLike,
+    changeCommentsCount,
+    isLikePending,
+    isAvailable,
+  } = useClassifiedEngagement(classifiedAds);
 
   const { containerRef, isPulling, isRefreshing, pullDistance } =
     usePullToRefresh({
@@ -1032,6 +1037,15 @@ export default function ClassificadosPage() {
                 pullDistance={pullDistance}
                 shouldRefresh={pullDistance >= 80}
               />
+              {isAvailable === false && (
+                <p
+                  role="status"
+                  className="mb-3 rounded-xl border border-[var(--cl-border)] bg-[var(--cl-surface)] p-3 text-sm text-[var(--cl-ink-secondary)]"
+                >
+                  Curtidas e comentários temporariamente indisponíveis. Os
+                  anúncios e o contato com os anunciantes continuam disponíveis.
+                </p>
+              )}
 
               {loading ? (
                 <ClassifiedsListSkeleton viewMode="list" />
@@ -1087,7 +1101,9 @@ export default function ClassificadosPage() {
                           }}
                           onToggleLike={toggleLike}
                           isLiked={engagement.isLiked}
-                          isLikePending={isLikePending(ad.id)}
+                          isLikePending={
+                            isLikePending(ad.id) || isAvailable !== true
+                          }
                           likesCount={engagement.likesCount}
                           commentsCount={engagement.commentsCount}
                         />
@@ -1265,6 +1281,9 @@ export default function ClassificadosPage() {
                 likesCount={getEngagement(selectedDetailAd).likesCount}
                 commentsCount={getEngagement(selectedDetailAd).commentsCount}
                 onToggleLike={() => void toggleLike(selectedDetailAd)}
+                isLikePending={
+                  isLikePending(selectedDetailAd.id) || isAvailable !== true
+                }
                 onCommentsCountChange={(change) =>
                   changeCommentsCount(selectedDetailAd.id, change)
                 }

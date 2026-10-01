@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useNotifications } from "@/components/notifications/NotificationProviderSimple";
@@ -72,6 +72,7 @@ export function useMessages(activeConversationId?: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const sendLocks = useRef(new Set<string>());
   const [error, setError] = useState<string | null>(null);
   const [realtimeChannel, setRealtimeChannel] =
     useState<RealtimeChannel | null>(null);
@@ -345,7 +346,9 @@ export function useMessages(activeConversationId?: string) {
   // Enviar mensagem
   const sendMessage = useCallback(
     async (conversationId: string, content: string) => {
-      if (!user?.id) return false;
+      if (!user?.id || !content.trim() || sendLocks.current.has(conversationId))
+        return false;
+      sendLocks.current.add(conversationId);
 
       try {
         setSending(true);
@@ -373,6 +376,9 @@ export function useMessages(activeConversationId?: string) {
         const conversation = conversationData;
         const isClient = conversation.client_id === user.id;
         const isProfessional = conversation.professional_id === user.id;
+
+        if (!isClient && !isProfessional)
+          throw new Error("Você não participa desta conversa");
 
         // REATIVAR conversa se foi deletada pelo usuário atual
         const wasDeleted =
@@ -466,6 +472,8 @@ export function useMessages(activeConversationId?: string) {
           senderName,
           content.trim(),
           conversationId,
+        ).catch((error) =>
+          console.warn("Mensagem enviada; notificação indisponível:", error),
         );
 
         // Recarregar conversas para atualizar a lista
@@ -482,6 +490,7 @@ export function useMessages(activeConversationId?: string) {
         setError(err instanceof Error ? err.message : "Erro desconhecido");
         return false;
       } finally {
+        sendLocks.current.delete(conversationId);
         setSending(false);
       }
     },

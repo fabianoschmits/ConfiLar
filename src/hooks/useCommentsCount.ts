@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 
 interface CommentsCountResult {
@@ -48,27 +48,6 @@ export function useCommentsCount(postId: string): CommentsCountResult {
     gcTime: 1000 * 60 * 5, // Manter no cache por 5 minutos
   });
 
-  // Mutation para atualizar contador no post
-  const updatePostCountMutation = useMutation({
-    mutationFn: async (newCount: number) => {
-      const { error } = await supabase
-        .from("feed_posts")
-        .update({ comments_count: newCount })
-        .eq("id", postId);
-
-      if (error) throw error;
-      return newCount;
-    },
-    onSuccess: (newCount) => {
-      // Atualizar cache local
-      queryClient.setQueryData(["comments-count", postId], newCount);
-
-      // Invalidar queries relacionadas
-      queryClient.invalidateQueries({ queryKey: ["timeline"] });
-      queryClient.invalidateQueries({ queryKey: ["trending-posts"] });
-    },
-  });
-
   // Função para sincronizar contador
   const syncCount = async () => {
     try {
@@ -84,8 +63,9 @@ export function useCommentsCount(postId: string): CommentsCountResult {
 
       const actualCount = count || 0;
 
-      // Atualizar no banco se necessário
-      await updatePostCountMutation.mutateAsync(actualCount);
+      // Reading comments must never overwrite counters owned by database triggers.
+      queryClient.setQueryData(["comments-count", postId], actualCount);
+      void queryClient.invalidateQueries({ queryKey: ["unified-timeline"] });
 
       return actualCount;
     } catch (error) {
@@ -129,9 +109,10 @@ export function useCommentsCountUpdater(postId: string) {
     try {
       const { count, error } = await supabase
         .from("post_comments")
-        .select("*", { count: "exact" })
+        .select("*", { count: "exact", head: true })
         .eq("post_id", postId)
-        .eq("is_deleted", false);
+        .eq("is_deleted", false)
+        .is("parent_comment_id", null);
 
       if (error) throw error;
 

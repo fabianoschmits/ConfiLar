@@ -49,7 +49,6 @@ export function DeleteAccountForm({
     requestReauthentication,
     verifyOTP,
     resetReauthentication,
-    checkReauthenticationRequired,
   } = useReauthentication();
 
   const handleStartDeletion = async () => {
@@ -58,16 +57,9 @@ export function DeleteAccountForm({
       setError(null);
 
       // Verificar se reautenticação é necessária
-      const needsReauth = await checkReauthenticationRequired("email");
-
-      if (needsReauth) {
-        setStep("reauth");
-        setIsLoading(false);
-        return;
-      }
-
-      // Se não precisa reautenticação, ir direto para confirmação
-      setStep("confirmation");
+      // Account deletion always requires a fresh, server-verifiable OTP.
+      resetReauthentication();
+      setStep("reauth");
       setIsLoading(false);
     } catch (err: any) {
       console.error("Erro ao iniciar deleção:", err);
@@ -141,7 +133,7 @@ export function DeleteAccountForm({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          emailVerified: true, // Indica que email foi verificado via reautenticação
+          confirmation: "DELETAR CONTA",
         }),
       });
 

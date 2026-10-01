@@ -20,6 +20,7 @@ import { FormFieldFeedback } from "@/components/ui/FormFieldFeedback";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 import { toast } from "sonner";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
@@ -47,7 +48,7 @@ export function LoginForm() {
   const accountCreated = searchParams.get("message") === "account_created";
 
   // Obter o parâmetro de redirecionamento - redireciona para home por padrão
-  const redirectPath = searchParams.get("redirect") || "/feed";
+  const redirectPath = safeRedirectPath(searchParams.get("redirect"));
 
   const {
     register,

@@ -31,7 +31,7 @@ function createQueryClient() {
         // Retry apenas 2 vezes
         retry: (failureCount, error) => {
           // Se estiver offline, não tentar novamente
-          if (!navigator.onLine) {
+          if (typeof navigator !== "undefined" && !navigator.onLine) {
             return false;
           }
 
@@ -49,14 +49,9 @@ function createQueryClient() {
         networkMode: "offlineFirst", // Tentar cache primeiro quando offline
       },
       mutations: {
-        // Retry mutations apenas 1 vez
-        retry: (failureCount, error) => {
-          // Se estiver offline, salvar para sincronização posterior
-          if (!navigator.onLine) {
-            return false;
-          }
-          return failureCount < 1;
-        },
+        // A lost response does not mean the write failed. Retrying an insert or
+        // point purchase can duplicate it; retry only explicitly idempotent work.
+        retry: false,
         onError: (error) => {
           logger.error("react-query", error as Error, {
             context: "mutation-error",

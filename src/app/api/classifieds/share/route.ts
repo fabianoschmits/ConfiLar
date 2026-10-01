@@ -22,9 +22,25 @@ export const POST = withAuth(
         );
       }
 
-      if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+      if (
+        !userIds ||
+        !Array.isArray(userIds) ||
+        userIds.length === 0 ||
+        userIds.length > 20 ||
+        userIds.some(
+          (id) =>
+            typeof id !== "string" ||
+            !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+              id,
+            ),
+        ) ||
+        (message && (typeof message !== "string" || message.length > 1000))
+      ) {
         return NextResponse.json(
-          { error: "userIds deve ser um array não vazio" },
+          {
+            error:
+              "Selecione até 20 destinatários válidos e uma mensagem de até 1000 caracteres",
+          },
           { status: 400 },
         );
       }
@@ -36,6 +52,7 @@ export const POST = withAuth(
         .from("classified_ads")
         .select("title, id")
         .eq("id", adId)
+        .eq("is_active", true)
         .single();
 
       if (adError || !adData) {
@@ -62,23 +79,26 @@ export const POST = withAuth(
       const fromUserName = profileData.full_name || "Usuário";
 
       // Criar notificações
-      const notifications = userIds.map((userId: string) => ({
-        user_id: userId,
-        type: "info",
-        title: "Anúncio compartilhado",
-        message: message || `${fromUserName} compartilhou um anúncio com você`,
-        action_url: `/classificados?ad=${adId}`,
-        priority: "normal",
-        metadata: {
-          ad_id: adId,
-          ad_title: adData.title,
-          shared_by: fromUserName,
-          from_user_id: authenticatedUserId,
-          message: message || null,
-          type: "shared_ad",
-        },
-        is_read: false,
-      }));
+      const notifications = [...new Set<string>(userIds)].map(
+        (userId: string) => ({
+          user_id: userId,
+          type: "info",
+          title: "Anúncio compartilhado",
+          message:
+            message || `${fromUserName} compartilhou um anúncio com você`,
+          action_url: `/classificados?ad=${adId}`,
+          priority: "normal",
+          metadata: {
+            ad_id: adId,
+            ad_title: adData.title,
+            shared_by: fromUserName,
+            from_user_id: authenticatedUserId,
+            message: message || null,
+            type: "shared_ad",
+          },
+          is_read: false,
+        }),
+      );
 
       const { data, error } = await adminSupabase
         .from("notifications")
@@ -94,12 +114,22 @@ export const POST = withAuth(
 
       // Registrar compartilhamento na tabela classified_shares (opcional, ignora erro se não existir)
       try {
-        await adminSupabase.from("classified_shares").insert({
-          ad_id: adId,
-          user_id: authenticatedUserId,
-          share_type: "user",
-          shared_at: new Date().toISOString(),
-        });
+        const { error: shareError } = await adminSupabase
+          .from("classified_shares")
+          .upsert(
+            {
+              ad_id: adId,
+              user_id: authenticatedUserId,
+              share_type: "user",
+              shared_at: new Date().toISOString(),
+            },
+            { onConflict: "ad_id,user_id,share_type", ignoreDuplicates: true },
+          );
+        if (shareError)
+          console.warn(
+            "Notificações enviadas; registro do compartilhamento indisponível:",
+            shareError.code,
+          );
       } catch (shareError) {
         // Ignora erro se a tabela não existir
       }

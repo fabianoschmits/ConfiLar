@@ -331,7 +331,7 @@ export const FloatingProfile: React.FC = () => {
                     <span>Central de Ajuda</span>
                   </Link>
                   <Link
-                    href="/_public/contato"
+                    href="/ajuda"
                     className="flex items-center space-x-2 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >

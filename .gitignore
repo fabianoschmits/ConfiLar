@@ -157,6 +157,8 @@ temp/
 scripts/*
 !scripts/mcp-supabase-server.js
 !scripts/start-dev.js
+!scripts/audit-system.cjs
+!scripts/apply-system-migrations.cjs
 *.sh
 *.ps1
 *.sql

@@ -1,4 +1,5 @@
 "use client";
+import { shareLink } from "@/lib/share-link";
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -120,13 +121,15 @@ export function SharePostModal({
   // Compartilhar no Facebook Messenger
   const handleShareMessenger = async () => {
     const url = getPostUrl();
-    window.open(
-      `https://www.facebook.com/dialog/send?link=${encodeURIComponent(url)}&app_id=YOUR_APP_ID&redirect_uri=${encodeURIComponent(url)}`,
-      "_blank",
-    );
-
-    // Registrar compartilhamento
-    await recordShare("messenger");
+    try {
+      const outcome = await shareLink({ title: postTitle, url });
+      if (outcome === "cancelled") return;
+      if (outcome === "copied")
+        toast.success("Link copiado. Cole no aplicativo que preferir.");
+      await recordShare("link");
+    } catch {
+      toast.error("Não foi possível compartilhar. Tente copiar o link.");
+    }
   };
 
   // Função para registrar compartilhamento
@@ -537,7 +540,7 @@ export function SharePostModal({
               >
                 <path d="M12 0C5.373 0 0 4.974 0 11.111c0 3.498 1.744 6.614 4.469 8.654V24l4.088-2.242c1.092.3 2.246.464 3.443.464 6.627 0 12-4.974 12-11.111C24 4.974 18.627 0 12 0zm1.191 14.963l-3.055-3.26-5.963 3.26L10.732 8l3.131 3.259L19.752 8l-6.561 6.963z" />
               </svg>
-              <span className="text-sm">Messenger</span>
+              <span className="text-sm">Outros apps</span>
             </Button>
           </div>
         </div>

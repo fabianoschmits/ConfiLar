@@ -201,7 +201,7 @@ export class NotificationService {
         type: "message",
         title: "Nova mensagem",
         message: `${senderName}: ${messageContent.substring(0, 50)}${messageContent.length > 50 ? "..." : ""}`,
-        action_url: `/chat/${chatId}`,
+        action_url: `/mensagens?conversation=${chatId}`,
         priority: "high",
         metadata: {
           chat_id: chatId,

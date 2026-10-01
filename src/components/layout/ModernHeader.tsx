@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useSidebar } from "@/contexts/SidebarContext";
@@ -23,45 +22,23 @@ import { FontSizeControl } from "@/components/ui/FontSizeControl";
 import { soundManager } from "@/lib/soundManager";
 import { useTranslations } from "next-intl";
 import {
-  Search,
-  Bell,
   Menu,
-  X,
   ChevronDown,
   User,
   Settings,
   LogOut,
   HelpCircle,
   MessageCircle,
-  Heart,
   Star,
-  Calendar,
-  Briefcase,
-  Home,
   Users,
-  TrendingUp,
   Shield,
-  Award,
   Eye,
   ThumbsUp,
-  BarChart3,
   ShieldCheck,
   Flag,
   FileText,
-  UserPlus,
-  Coins,
-  Target,
-  History,
-  Gift,
-  Zap,
-  ShoppingCart,
-  DollarSign,
-  Send,
-  Crown,
-  ShoppingBag,
-  MapPin,
-  Camera,
 } from "lucide-react";
+import { AccountShortcuts } from "@/components/navigation/AccountShortcuts";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { cn } from "@/lib/utils";
 import {
@@ -93,6 +70,7 @@ export function ModernHeader({
   const t = useTranslations("header");
   const { isCollapsed } = useSidebar();
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
+  const accountTriggerRef = React.useRef<HTMLButtonElement>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(),
   );
@@ -110,6 +88,20 @@ export function ModernHeader({
   });
 
   useEffect(() => {
+    if (!isMenuExpanded) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMenuExpanded(false);
+        accountTriggerRef.current?.focus();
+      }
+    };
+    const menu = document.getElementById("account-dropdown");
+    menu?.querySelector<HTMLElement>("a, button")?.focus();
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [isMenuExpanded]);
+
+  useEffect(() => {
     // Listener para abrir o modal de perfil de qualquer lugar
     const handleOpenProfile = (e: any) => {
       if (e.detail?.tab) {
@@ -119,6 +111,20 @@ export function ModernHeader({
       }
     };
     window.addEventListener("confilar:open-profile-modal", handleOpenProfile);
+    // Old notification links can request the existing editor without a dead route.
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("editProfile") === "1") {
+      openProfileModal("verification");
+      params.delete("editProfile");
+      const query = params.toString();
+      window.history.replaceState(
+        window.history.state,
+        "",
+        window.location.pathname +
+          (query ? `?${query}` : "") +
+          window.location.hash,
+      );
+    }
 
     return () => {
       window.removeEventListener(
@@ -399,7 +405,12 @@ export function ModernHeader({
                       setIsMenuExpanded(!isMenuExpanded);
                     }}
                     className="flex h-11 items-center gap-1 px-2 py-2"
+                    ref={accountTriggerRef}
+                    id="account-menu-trigger"
                     aria-label="Abrir menu da conta"
+                    aria-controls={
+                      isMenuExpanded ? "account-dropdown" : undefined
+                    }
                     aria-expanded={isMenuExpanded}
                   >
                     <UserAvatar
@@ -425,8 +436,13 @@ export function ModernHeader({
 
                 {/* Menu Expandido */}
                 {isMenuExpanded && (
-                  <div className="absolute top-full right-0 mt-2 w-72 sm:w-80 bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-2xl shadow-[var(--cl-shadow)] z-50 max-h-[calc(100dvh-var(--app-header-height)-var(--app-top-inset)-var(--app-tabbar-height)-var(--app-bottom-inset)-16px)] overflow-hidden ">
-                    <div className="p-3 sm:p-4 overflow-y-auto max-h-[75vh]">
+                  <div className="account-dropdown-panel absolute top-full right-0 mt-2 w-[min(360px,calc(100vw-24px))] bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-2xl shadow-[var(--cl-shadow)] z-50 max-h-[calc(100dvh-var(--app-header-height)-var(--app-top-inset)-var(--app-tabbar-height)-var(--app-bottom-inset)-16px)] overflow-hidden ">
+                    <div
+                      id="account-dropdown"
+                      role="region"
+                      aria-label="Menu da conta"
+                      className="account-dropdown-scroll p-3 sm:p-4 overflow-y-auto"
+                    >
                       {/* Header do Perfil */}
                       <div className="flex items-center space-x-2 sm:space-x-3 pb-3 sm:pb-4 border-b border-[var(--cl-border)] -mx-3 sm:-mx-4 px-3 sm:px-4">
                         {/* Link para o perfil - apenas foto e nome */}
@@ -536,266 +552,14 @@ export function ModernHeader({
                         </div>
                       </div>
 
-                      {/* Principal */}
-                      <div className="border-b border-[var(--cl-border)]">
-                        <button
-                          onClick={() => toggleSection("principal")}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-[var(--cl-mist)] rounded-md px-2"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Home className="h-3 w-3" />
-                            {t("principal")}
-                          </div>
-                          <ChevronDown
-                            className={`h-3 w-3 transition-transform ${expandedSections.has("principal") ? "rotate-180" : ""}`}
-                          />
-                        </button>
-                        {expandedSections.has("principal") && (
-                          <div className="grid grid-cols-2 gap-1 px-2 pb-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation("/home")}
-                              className="flex items-center gap-1 text-xs py-2 min-h-11"
-                            >
-                              <Home className="h-3 w-3" />
-                              <span className="truncate">Home</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation("/feed")}
-                              className="flex items-center gap-1 text-xs py-2 min-h-11 text-[var(--cl-teal)]"
-                            >
-                              <Users className="h-3 w-3" />
-                              <span className="truncate">
-                                {t("socialFeed")}
-                              </span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation("/classificados")}
-                              className="flex items-center gap-1 text-xs py-2 min-h-11"
-                            >
-                              <Briefcase className="h-3 w-3" />
-                              <span className="truncate">
-                                {t("classifieds")}
-                              </span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation("/buscar")}
-                              className="flex items-center gap-1 text-xs py-2 min-h-11"
-                            >
-                              <Search className="h-3 w-3" />
-                              <span className="truncate">
-                                {t("searchProfessionals")}
-                              </span>
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Gestão */}
-                      <div className="border-b border-[var(--cl-border)]">
-                        <button
-                          onClick={() => toggleSection("gestao")}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-[var(--cl-mist)] rounded-md px-2"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-3 w-3" />
-                            {t("management")}
-                          </div>
-                          <ChevronDown
-                            className={`h-3 w-3 transition-transform ${expandedSections.has("gestao") ? "rotate-180" : ""}`}
-                          />
-                        </button>
-                        {expandedSections.has("gestao") && (
-                          <div className="grid grid-cols-2 gap-1 px-2 pb-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation("/favoritos")}
-                              className="flex items-center gap-1 text-xs py-2 min-h-11"
-                            >
-                              <Heart className="h-3 w-3" />
-                              <span className="truncate">{t("favorites")}</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation("/avaliacoes")}
-                              className="flex items-center gap-1 text-xs py-2 min-h-11"
-                            >
-                              <Star className="h-3 w-3" />
-                              <span className="truncate">{t("reviews")}</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation("/indicacoes")}
-                              className="flex items-center gap-1 text-xs py-2 min-h-11 bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-900/30"
-                            >
-                              <UserPlus className="h-3 w-3 text-green-600 dark:text-green-400" />
-                              <span className="truncate text-green-700 dark:text-green-300">
-                                Indicações
-                              </span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                openChat();
-                                setIsMenuExpanded(false);
-                              }}
-                              className="flex items-center gap-1 text-xs py-2 min-h-11"
-                            >
-                              <MessageCircle className="h-3 w-3" />
-                              <span className="truncate">Mensagens</span>
-                              {getTotalUnreadCount() > 0 && (
-                                <Badge
-                                  variant="destructive"
-                                  className="ml-auto text-xs px-1 py-0"
-                                >
-                                  {getTotalUnreadCount()}
-                                </Badge>
-                              )}
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* ConfiPoints */}
-                      <div className="border-b border-[var(--cl-border)]">
-                        <button
-                          onClick={() => toggleSection("confipoints")}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-[var(--cl-mist)] rounded-md px-2"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Coins className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
-                            {t("confipoints")}
-                          </div>
-                          <ChevronDown
-                            className={`h-3 w-3 transition-transform ${expandedSections.has("confipoints") ? "rotate-180" : ""}`}
-                          />
-                        </button>
-                        {expandedSections.has("confipoints") && (
-                          <div className="grid grid-cols-2 gap-1 px-2 pb-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                handleNavigation("/confipoints/dashboard")
-                              }
-                              className="flex items-center gap-1 text-xs py-2 min-h-11 bg-yellow-50 dark:bg-yellow-950/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30"
-                            >
-                              <BarChart3 className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
-                              <span className="truncate text-yellow-700 dark:text-yellow-300">
-                                Dashboard
-                              </span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                handleNavigation("/confipoints/comprar")
-                              }
-                              className="flex items-center gap-1 text-xs py-2 min-h-11 bg-[var(--cl-teal)]/10 hover:bg-[var(--cl-teal)]/20"
-                            >
-                              <Crown className="h-3 w-3 text-[var(--cl-teal)]" />
-                              <span className="truncate text-[var(--cl-teal)]">
-                                Loja Premium
-                              </span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                handleNavigation("/confipoints/compras")
-                              }
-                              className="flex items-center gap-1 text-xs py-2 min-h-11 bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-900/30"
-                            >
-                              <ShoppingBag className="h-3 w-3 text-green-600 dark:text-green-400" />
-                              <span className="truncate text-green-700 dark:text-green-300">
-                                Minhas Compras
-                              </span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                handleNavigation("/confipoints/transferir")
-                              }
-                              className="flex items-center gap-1 text-xs py-2 min-h-11 bg-[var(--cl-mist)] hover:brightness-95"
-                            >
-                              <Send className="h-3 w-3 text-[var(--cl-teal)]" />
-                              <span className="truncate text-[var(--cl-ink)]">
-                                Transferir
-                              </span>
-                            </Button>
-                            {isAdmin && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() =>
-                                  handleNavigation("/gestao-confi/confipoints")
-                                }
-                                className="flex items-center gap-1 text-xs py-2 min-h-11 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-green-900/30 border border-red-200 dark:border-red-800"
-                              >
-                                <BarChart3 className="h-3 w-3 text-red-600 dark:text-red-400" />
-                                <span className="truncate text-red-700 dark:text-red-300">
-                                  Admin
-                                </span>
-                              </Button>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Profissional */}
-                      {profile?.user_type === "professional" && (
-                        <div className="border-b border-[var(--cl-border)]">
-                          <button
-                            onClick={() => toggleSection("profissional")}
-                            className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-[var(--cl-mist)] rounded-md px-2"
-                          >
-                            <div className="flex items-center gap-2">
-                              <Briefcase className="h-3 w-3" />
-                              {t("professional")}
-                            </div>
-                            <ChevronDown
-                              className={`h-3 w-3 transition-transform ${expandedSections.has("profissional") ? "rotate-180" : ""}`}
-                            />
-                          </button>
-                          {expandedSections.has("profissional") && (
-                            <div className="grid grid-cols-2 gap-1 px-2 pb-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleNavigation("/portfolio")}
-                                className="flex items-center gap-1 text-xs py-2 min-h-11"
-                              >
-                                <FileText className="h-3 w-3" />
-                                <span className="truncate">
-                                  {t("myPortfolio")}
-                                </span>
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleNavigation("/reputacao")}
-                                className="flex items-center gap-1 text-xs py-2 min-h-11"
-                              >
-                                <Award className="h-3 w-3" />
-                                <span className="truncate">
-                                  {t("reputation")}
-                                </span>
-                              </Button>
-                            </div>
-                          )}
-                        </div>
+                      {profile && (
+                        <AccountShortcuts
+                          profile={profile}
+                          isAdmin={isAdmin}
+                          unreadMessages={getTotalUnreadCount()}
+                          onNavigate={() => setIsMenuExpanded(false)}
+                          onOpenChat={() => openChat()}
+                        />
                       )}
 
                       {/* Meu Perfil */}

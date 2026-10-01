@@ -1,48 +1,14 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import createMiddleware from "next-intl/middleware";
 import { routing } from "./src/i18n/routing";
+import { safeRedirectPath } from "./src/lib/safe-redirect";
 
 // Middleware do next-intl
 const intlMiddleware = createMiddleware(routing);
 
 export async function middleware(request: NextRequest) {
-  // Primeiro, aplicar middleware do next-intl
-  const intlResponse = intlMiddleware(request);
-
-  // Se o next-intl redirecionou, usar essa resposta
-  if (intlResponse) {
-    // Ainda precisamos configurar o Supabase para cookies
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return request.cookies.get(name)?.value;
-          },
-          set(name: string, value: string, options: CookieOptions) {
-            intlResponse.cookies.set({
-              name,
-              value,
-              ...options,
-            });
-          },
-          remove(name: string, options: CookieOptions) {
-            intlResponse.cookies.set({
-              name,
-              value: "",
-              ...options,
-            });
-          },
-        },
-      },
-    );
-    await supabase.auth.getUser();
-    return intlResponse;
-  }
-
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -54,42 +20,21 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value;
+        getAll() {
+          return request.cookies.getAll();
         },
-        set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value,
-            ...options,
-          });
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value),
+          );
           response = NextResponse.next({
             request: {
               headers: request.headers,
             },
           });
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          });
-        },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value: "",
-            ...options,
-          });
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          });
-          response.cookies.set({
-            name,
-            value: "",
-            ...options,
-          });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options),
+          );
         },
       },
     },
@@ -99,6 +44,20 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Locale middleware must not bypass authentication or rewrite API endpoints.
+  if (!request.nextUrl.pathname.startsWith("/api/")) {
+    const localized = intlMiddleware(request);
+    response.cookies
+      .getAll()
+      .forEach((cookie) => localized.cookies.set(cookie));
+    response = localized;
+  }
+  const redirect = (url: URL) => {
+    const target = NextResponse.redirect(url);
+    response.cookies.getAll().forEach((cookie) => target.cookies.set(cookie));
+    return target;
+  };
 
   // Rotas que requerem autenticação
   // Nota: /perfil/[id] é pública, mas /perfil (sem ID) requer autenticação
@@ -126,7 +85,8 @@ export async function middleware(request: NextRequest) {
   // Rotas que não devem ser redirecionadas automaticamente
   const specialRoutes = ["/verificacao", "/reautenticacao"];
 
-  const { pathname } = request.nextUrl;
+  const originalPath = request.nextUrl.pathname;
+  const pathname = originalPath.replace(/^\/(?:pt-BR|en)(?=\/|$)/, "") || "/";
 
   // Se for uma rota de API, apenas sincronizar cookies e retornar (sem redirecionamentos)
   // REMOVIDO: Agora tratamos rotas de API protegidas mais abaixo
@@ -135,7 +95,11 @@ export async function middleware(request: NextRequest) {
   // }
 
   // Permitir acesso à rota de logout sem interferência
-  if (pathname === "/logout") {
+  if (
+    pathname === "/logout" ||
+    pathname === "/auth/callback" ||
+    pathname === "/api/payment/paghiper/webhook"
+  ) {
     return response;
   }
 
@@ -198,7 +162,7 @@ export async function middleware(request: NextRequest) {
     !pathname.startsWith("/gestao-confi/login")
   ) {
     if (!user) {
-      return NextResponse.redirect(new URL("/auth", request.url));
+      return redirect(new URL("/auth", request.url));
     }
 
     const { data: admin } = await supabase
@@ -209,7 +173,7 @@ export async function middleware(request: NextRequest) {
       .single();
 
     if (!admin) {
-      return NextResponse.redirect(new URL("/auth", request.url));
+      return redirect(new URL("/home", request.url));
     }
   }
 
@@ -235,8 +199,11 @@ export async function middleware(request: NextRequest) {
   // Se não há usuário e tentando acessar rota protegida ou próprio perfil
   if (!user && (isProtectedRoute || isOwnProfileRoute)) {
     const redirectUrl = new URL("/auth", request.url);
-    redirectUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(redirectUrl);
+    redirectUrl.searchParams.set(
+      "redirect",
+      originalPath + request.nextUrl.search,
+    );
+    return redirect(redirectUrl);
   }
 
   // Permitir acesso público a /perfil/[id]
@@ -253,7 +220,12 @@ export async function middleware(request: NextRequest) {
     !request.headers.get("x-middleware-redirect") &&
     pathname !== "/nova-senha"
   ) {
-    return NextResponse.redirect(new URL("/feed", request.url));
+    return redirect(
+      new URL(
+        safeRedirectPath(request.nextUrl.searchParams.get("redirect")),
+        request.url,
+      ),
+    );
   }
 
   return response;
@@ -271,6 +243,6 @@ export const config = {
      * NOTA: Incluímos rotas /api para que o middleware sincronize cookies de autenticação
      * mas as rotas de API não serão redirecionadas pelo middleware, apenas terão cookies sincronizados
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.[^/]+$).*)",
   ],
 };

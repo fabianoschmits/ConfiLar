@@ -40,15 +40,17 @@ export function ConfiPointsChart({ timeRange }: ConfiPointsChartProps) {
               ? 90
               : 365;
       const startDate = new Date();
-      startDate.setDate(startDate.getDate() - days);
+      startDate.setDate(startDate.getDate() - (days - 1));
+      startDate.setUTCHours(0, 0, 0, 0);
 
       // Buscar transações de pontos
       let transactions: any[] = [];
       try {
         const { data, error } = await supabase
-          .from("points_transactions")
-          .select("created_at, points, action_type")
-          .gte("created_at", startDate.toISOString());
+          .from("point_transactions")
+          .select("created_at, points:amount, action_type:source")
+          .gte("created_at", startDate.toISOString())
+          .order("created_at", { ascending: true });
 
         if (error) {
           // Se a tabela não existir, usar array vazio
@@ -96,29 +98,30 @@ export function ConfiPointsChart({ timeRange }: ConfiPointsChartProps) {
         grouped[dateStr] = { earned: 0, spent: 0, balance: 0 };
       }
 
-      let runningBalance = 0;
       transactions?.forEach((tx) => {
         const date = new Date(tx.created_at).toISOString().split("T")[0];
         if (grouped[date]) {
           if (tx.points > 0) {
             grouped[date].earned += tx.points;
-            runningBalance += tx.points;
           } else {
             grouped[date].spent += Math.abs(tx.points);
-            runningBalance += tx.points; // já é negativo
           }
-          grouped[date].balance = runningBalance;
         }
       });
 
+      let runningBalance = 0;
       const chartData = Object.entries(grouped)
-        .map(([date, values]) => ({
-          date: new Date(date).toLocaleDateString("pt-BR", {
-            day: "2-digit",
-            month: "2-digit",
-          }),
-          ...values,
-        }))
+        .map(([date, values]) => {
+          runningBalance += values.earned - values.spent;
+          return {
+            date: new Date(date).toLocaleDateString("pt-BR", {
+              day: "2-digit",
+              month: "2-digit",
+            }),
+            ...values,
+            balance: runningBalance,
+          };
+        })
         .slice(-days);
 
       setData(chartData);
@@ -141,7 +144,7 @@ export function ConfiPointsChart({ timeRange }: ConfiPointsChartProps) {
       color: "hsl(var(--chart-2))",
     },
     balance: {
-      label: "Saldo Total",
+      label: "Saldo no período",
       color: "hsl(var(--chart-3))",
     },
   };

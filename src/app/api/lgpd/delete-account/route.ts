@@ -15,19 +15,41 @@ import { createAdminSupabaseClient } from "@/lib/supabase";
 export const POST = withAuth(
   async (request: NextRequest, supabaseAuth, user) => {
     try {
-      const { password, emailVerified } = await request.json();
-
-      // Se emailVerified for true, significa que o usuário passou pela reautenticação por email
-      // Caso contrário, ainda aceita senha para compatibilidade
-      if (!emailVerified && !password) {
+      const { password, confirmation } = await request.json();
+      if (confirmation !== "DELETAR CONTA")
         return NextResponse.json(
-          { error: "Senha ou verificação por email é obrigatória" },
+          { error: "Confirmação de exclusão obrigatória" },
           { status: 400 },
         );
+
+      // Password or a recent, verified OTP is required in addition to confirmation.
+      if (!password) {
+        // Trust verified JWT authentication-method timestamps, never a client boolean.
+        const { data, error } = await supabaseAuth.auth.getClaims();
+        const methods = data?.claims?.amr as
+          | { method: string; timestamp: number }[]
+          | undefined;
+        const now = Math.floor(Date.now() / 1000);
+        const recentOtp = methods?.some(
+          (method) =>
+            method.method === "otp" &&
+            Number.isFinite(method.timestamp) &&
+            now >= method.timestamp &&
+            now - method.timestamp <= 600,
+        );
+        if (error || data?.claims?.sub !== user.id || !recentOtp) {
+          return NextResponse.json(
+            {
+              error:
+                "Confirme novamente o código enviado ao seu email antes de excluir a conta.",
+            },
+            { status: 401 },
+          );
+        }
       }
 
-      // Se não foi verificado por email, verificar senha (compatibilidade com código antigo)
-      if (!emailVerified) {
+      // Verify supplied passwords on the server.
+      if (password) {
         const { error: signInError } =
           await supabaseAuth.auth.signInWithPassword({
             email: user.email!,
@@ -41,7 +63,6 @@ export const POST = withAuth(
           );
         }
       }
-      // Se emailVerified for true, a reautenticação já foi verificada no frontend
 
       // Usar admin client para operações de deleção
       const supabase = createAdminSupabaseClient();
@@ -59,10 +80,10 @@ export const POST = withAuth(
         supabase.from("post_reactions").delete().eq("user_id", user.id),
 
         // 4. Deletar likes em posts (se existir tabela separada)
-        supabase.from("post_likes").delete().eq("user_id", user.id),
+        supabase.from("feed_posts_likes").delete().eq("user_id", user.id),
 
         // 5. Deletar transações de pontos
-        supabase.from("points_transactions").delete().eq("user_id", user.id),
+        supabase.from("point_transactions").delete().eq("user_id", user.id),
         supabase.from("user_points_balance").delete().eq("user_id", user.id),
         supabase.from("user_points_stats").delete().eq("user_id", user.id),
 
@@ -132,40 +153,19 @@ export const POST = withAuth(
       ];
 
       // Executar todas as operações de exclusão
-      const results = await Promise.allSettled(
-        deleteOperations.map(async (op) => {
-          try {
-            const { error } = await op;
-            if (error) {
-              return { error };
-            }
-            return { success: true };
-          } catch (err) {
-            return { error: err };
-          }
-        }),
-      );
-
-      // Verificar se alguma operação falhou
-      const failures = results
-        .map((result, index) => {
-          if (result.status === "rejected") {
-            return { index, error: result.reason };
-          }
-          if (result.status === "fulfilled" && result.value?.error) {
-            return { index, error: result.value.error };
-          }
-          return null;
-        })
-        .filter(Boolean);
-
-      // Log de falhas (mas não bloquear se algumas tabelas não existirem)
-      if (failures.length > 0) {
-        console.warn(
-          "Algumas operações de exclusão falharam (pode ser normal se tabelas não existirem):",
-          failures,
-        );
-        // Continuar mesmo com falhas, pois algumas tabelas podem não existir
+      // Respect FK ordering. Do not claim a successful deletion after failed writes.
+      for (const operation of deleteOperations) {
+        const { error } = await operation;
+        if (error) {
+          console.error("Falha na exclusão dos dados da conta:", error.code);
+          return NextResponse.json(
+            {
+              error:
+                "Não foi possível concluir a exclusão dos dados. Entre em contato com o suporte.",
+            },
+            { status: 500 },
+          );
+        }
       }
 
       // Finalmente, deletar a conta de autenticação

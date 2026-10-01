@@ -36,9 +36,18 @@ export const POST = withAuth(
         );
       }
 
-      if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+      if (
+        !userIds ||
+        !Array.isArray(userIds) ||
+        userIds.length === 0 ||
+        userIds.length > 20 ||
+        (message && (typeof message !== "string" || message.length > 1000))
+      ) {
         return NextResponse.json(
-          { error: "userIds deve ser um array não vazio" },
+          {
+            error:
+              "Selecione até 20 destinatários e uma mensagem de até 1000 caracteres",
+          },
           { status: 400 },
         );
       }
@@ -91,23 +100,25 @@ export const POST = withAuth(
       const fromUserName = profileData.full_name || "Usuário";
 
       // Criar notificações para cada usuário
-      const notifications = userIds.map((userId: string) => ({
-        user_id: userId,
-        type: "info",
-        title: "Post compartilhado",
-        message: message || `${fromUserName} compartilhou um post com você`,
-        action_url: `/feed?post=${postId}`,
-        priority: "normal",
-        metadata: {
-          post_id: postId,
-          post_title: postData.title,
-          shared_by: fromUserName,
-          from_user_id: authenticatedUserId, // 🔒 Sempre ID autenticado
-          message: message || null,
-          type: "shared_post",
-        },
-        is_read: false,
-      }));
+      const notifications = [...new Set<string>(userIds)].map(
+        (userId: string) => ({
+          user_id: userId,
+          type: "info",
+          title: "Post compartilhado",
+          message: message || `${fromUserName} compartilhou um post com você`,
+          action_url: `/feed?post=${postId}`,
+          priority: "normal",
+          metadata: {
+            post_id: postId,
+            post_title: postData.title,
+            shared_by: fromUserName,
+            from_user_id: authenticatedUserId, // 🔒 Sempre ID autenticado
+            message: message || null,
+            type: "shared_post",
+          },
+          is_read: false,
+        }),
+      );
 
       const { data, error } = await adminSupabase
         .from("notifications")

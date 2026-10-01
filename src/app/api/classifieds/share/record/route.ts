@@ -39,6 +39,7 @@ export const POST = withAuth(
         .from("classified_ads")
         .select("id")
         .eq("id", adId)
+        .eq("is_active", true)
         .single();
 
       if (adError || !adData) {
@@ -49,30 +50,30 @@ export const POST = withAuth(
       }
 
       // Registrar compartilhamento
-      try {
-        const { data, error } = await adminSupabase
-          .from("classified_shares")
-          .insert({
-            ad_id: adId,
-            user_id: authenticatedUserId,
-            share_type: shareType,
-            shared_at: new Date().toISOString(),
-          })
-          .select()
-          .single();
+      const { error } = await adminSupabase
+        .from("classified_shares")
+        .insert({
+          ad_id: adId,
+          user_id: authenticatedUserId,
+          share_type: shareType,
+          shared_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
 
-        return NextResponse.json({
-          success: true,
-          message: "Compartilhamento registrado",
-          isNew: true,
-        });
-      } catch (error: any) {
-        // Se a tabela não existir, apenas retornar sucesso simulado
-        return NextResponse.json({
-          success: true,
-          message: "Compartilhamento processado",
-        });
+      if (error) {
+        if (error.code === "23505")
+          return NextResponse.json({ success: true, isNew: false });
+        return NextResponse.json(
+          { error: "Não foi possível registrar o compartilhamento" },
+          { status: 503 },
+        );
       }
+      return NextResponse.json({
+        success: true,
+        message: "Compartilhamento registrado",
+        isNew: true,
+      });
     } catch (error) {
       return NextResponse.json(
         { error: "Erro interno do servidor" },

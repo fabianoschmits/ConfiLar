@@ -1,6 +1,7 @@
 -- Interações reais dos anúncios classificados.
 -- Likes e comentários ficam normalizados, enquanto os contadores no anúncio
 -- permitem renderização rápida da listagem.
+BEGIN;
 
 ALTER TABLE public.classified_ads
   ADD COLUMN IF NOT EXISTS comments_count integer NOT NULL DEFAULT 0;
@@ -24,11 +25,19 @@ CREATE TABLE IF NOT EXISTS public.classified_ad_likes (
 CREATE TABLE IF NOT EXISTS public.classified_ad_comments (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   ad_id uuid NOT NULL REFERENCES public.classified_ads(id) ON DELETE CASCADE,
-  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   content text NOT NULL CHECK (char_length(trim(content)) BETWEEN 1 AND 1000),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- The author embed in the application targets profiles, not auth.users.
+-- Also repairs databases that received the first version of this migration.
+ALTER TABLE public.classified_ad_comments
+  DROP CONSTRAINT IF EXISTS classified_ad_comments_user_id_fkey;
+ALTER TABLE public.classified_ad_comments
+  ADD CONSTRAINT classified_ad_comments_user_id_fkey
+  FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
 
 CREATE INDEX IF NOT EXISTS classified_ad_likes_ad_id_idx
   ON public.classified_ad_likes(ad_id);
@@ -41,6 +50,13 @@ CREATE INDEX IF NOT EXISTS classified_ad_comments_ad_id_created_at_idx
 
 ALTER TABLE public.classified_ad_likes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.classified_ad_comments ENABLE ROW LEVEL SECURITY;
+
+GRANT SELECT, INSERT, DELETE ON public.classified_ad_likes TO authenticated;
+GRANT SELECT ON public.classified_ad_comments TO anon, authenticated;
+GRANT INSERT, DELETE ON public.classified_ad_comments TO authenticated;
+REVOKE UPDATE ON public.classified_ad_comments FROM anon, authenticated;
+GRANT UPDATE (content) ON public.classified_ad_comments TO authenticated;
+GRANT ALL ON public.classified_ad_likes, public.classified_ad_comments TO service_role;
 
 DROP POLICY IF EXISTS "Users can read own classified likes" ON public.classified_ad_likes;
 CREATE POLICY "Users can read own classified likes"
@@ -167,3 +183,11 @@ CREATE TRIGGER classified_ad_comments_count_trigger
   AFTER INSERT OR DELETE ON public.classified_ad_comments
   FOR EACH ROW
   EXECUTE FUNCTION public.sync_classified_ad_comments_count();
+
+-- Never trust historical counters: derive them from the normalized records.
+UPDATE public.classified_ads ad SET
+  likes_count = (SELECT count(*) FROM public.classified_ad_likes l WHERE l.ad_id = ad.id),
+  comments_count = (SELECT count(*) FROM public.classified_ad_comments c WHERE c.ad_id = ad.id);
+
+NOTIFY pgrst, 'reload schema';
+COMMIT;
