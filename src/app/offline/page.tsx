@@ -44,7 +44,7 @@ export default function OfflinePage() {
           <div className="mx-auto mb-4 w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
             <WifiOff className="w-8 h-8 text-gray-600" />
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+          <CardTitle className="text-2xl font-bold text-[var(--cl-ink)]">
             ConfiLar Offline
           </CardTitle>
           <CardDescription className="text-gray-600">

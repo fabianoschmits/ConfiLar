@@ -6,5 +6,5 @@ interface LightModeLayoutProps {
 
 /** Wrapper legado — não força mais tema claro (respeita preferência do usuário). */
 export function LightModeLayout({ children }: LightModeLayoutProps) {
-  return <>{children}</>;
+  return <div className="app-auth-screen">{children}</div>;
 }

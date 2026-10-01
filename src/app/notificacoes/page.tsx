@@ -1,5 +1,6 @@
 import { ModernHeader } from "@/components/layout/ModernHeader";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { FullNotificationList } from "@/components/notifications/FullNotificationList";
 import { Metadata } from "next";
 
@@ -11,16 +12,11 @@ export const metadata: Metadata = {
 export default function NotificationsPage() {
   return (
     <MainLayout requireAuth={true}>
-      <div className="container max-w-4xl mx-auto px-4">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-[var(--cl-ink)] mb-2">
-            Notificações
-          </h1>
-          <p className="text-[var(--cl-ink-secondary)]">
-            Acompanhe todas as suas atividades, mensagens e alertas em um só
-            lugar.
-          </p>
-        </div>
+      <div className="app-page app-page--narrow">
+        <PageHeader
+          title="Notificações"
+          description="Suas atividades, mensagens e alertas em um só lugar."
+        />
 
         <FullNotificationList />
       </div>

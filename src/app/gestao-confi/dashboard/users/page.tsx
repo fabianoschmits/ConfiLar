@@ -333,7 +333,7 @@ export default function AdminUsersPage() {
             )}
           </div>
           <div className="min-w-0">
-            <h3 className="font-black text-xs sm:text-sm text-gray-900 dark:text-white leading-tight group-hover/user:text-[var(--cl-teal)] transition-colors truncate max-w-[140px] sm:max-w-none">
+            <h3 className="font-black text-xs sm:text-sm text-[var(--cl-ink)] leading-tight group-hover/user:text-[var(--cl-teal)] transition-colors truncate max-w-[140px] sm:max-w-none">
               {user.full_name || "Sem nome"}
             </h3>
             <p className="text-[9px] sm:text-[11px] text-muted-foreground font-medium opacity-60 truncate max-w-[120px] sm:max-w-[150px]">

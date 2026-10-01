@@ -2,6 +2,7 @@
 
 import React from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Crown, Medal, Award, Star, Users } from "lucide-react";
@@ -44,24 +45,15 @@ export default function ConfiPointsRankingPage() {
   if (loading) {
     return (
       <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-[var(--cl-paper)]">
-          <div className="container py-4">
+        <div className="app-screen bg-[var(--cl-paper)]">
+          <div className="app-page">
             <div className="mx-auto max-w-4xl">
-              <div className="mb-8">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center">
-                    <Trophy className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-                  </div>
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                      {t("ranking")} {t("title")}
-                    </h1>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      {t("topUsers")}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <PageHeader
+                title="Ranking ConfiPoints"
+                description={t("topUsers")}
+                icon={Trophy}
+                backHref="/confipoints/dashboard"
+              />
 
               <RankingListSkeleton count={10} />
             </div>
@@ -74,14 +66,14 @@ export default function ConfiPointsRankingPage() {
   if (error) {
     return (
       <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-[var(--cl-paper)] flex items-center justify-center">
+        <div className="app-screen bg-[var(--cl-paper)] flex items-center justify-center">
           <Card className="w-full max-w-md">
             <CardContent className="p-8 text-center">
               <Trophy className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              <h2 className="text-xl font-semibold text-[var(--cl-ink)] mb-2">
                 {t("errorLoadingRanking")}
               </h2>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-[var(--cl-ink-secondary)]">
                 {t("errorLoadingRankingDescription")}
               </p>
             </CardContent>
@@ -93,39 +85,30 @@ export default function ConfiPointsRankingPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-[var(--cl-paper)]">
-        <div className="container py-4">
+      <div className="app-screen bg-[var(--cl-paper)]">
+        <div className="app-page">
           <div className="mx-auto max-w-4xl">
             {/* Header */}
-            <div className="mb-8">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-[var(--cl-surface)] border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center">
-                  <Trophy className="h-6 w-6 text-[var(--cl-teal)]" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    Ranking ConfiPoints
-                  </h1>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {t("topUsers")}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <PageHeader
+              title="Ranking ConfiPoints"
+              description={t("topUsers")}
+              icon={Trophy}
+              backHref="/confipoints/dashboard"
+            />
 
             {/* Estatísticas do Ranking - Padronizadas */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-[var(--cl-surface)]">
+              <Card className="border-[var(--cl-border)] shadow-none bg-[var(--cl-surface)]">
                 <CardContent className="p-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="flex-shrink-0 p-2 bg-[var(--cl-mist)] rounded-lg">
                       <Users className="w-5 h-5 text-[var(--cl-teal)]" />
                     </div>
                     <div>
-                      <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                      <p className="text-[10px] uppercase tracking-wider text-[var(--cl-ink-muted)] font-medium">
                         {t("usersInRanking")}
                       </p>
-                      <p className="text-base font-bold text-gray-900 dark:text-white">
+                      <p className="text-base font-bold text-[var(--cl-ink)]">
                         {leaderboard.length}
                       </p>
                     </div>
@@ -133,17 +116,17 @@ export default function ConfiPointsRankingPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-[var(--cl-surface)]">
+              <Card className="border-[var(--cl-border)] shadow-none bg-[var(--cl-surface)]">
                 <CardContent className="p-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="flex-shrink-0 p-2 bg-[var(--cl-mist)] rounded-lg">
                       <Trophy className="w-5 h-5 text-[var(--cl-teal)]" />
                     </div>
                     <div>
-                      <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                      <p className="text-[10px] uppercase tracking-wider text-[var(--cl-ink-muted)] font-medium">
                         {t("highestScore")}
                       </p>
-                      <p className="text-base font-bold text-gray-900 dark:text-white">
+                      <p className="text-base font-bold text-[var(--cl-ink)]">
                         {leaderboard.length > 0
                           ? formatPoints(leaderboard[0].total_points_earned)
                           : "0"}
@@ -153,17 +136,17 @@ export default function ConfiPointsRankingPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-[var(--cl-surface)]">
+              <Card className="border-[var(--cl-border)] shadow-none bg-[var(--cl-surface)]">
                 <CardContent className="p-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="flex-shrink-0 p-2 bg-[var(--cl-mist)] rounded-lg">
                       <Medal className="w-5 h-5 text-[var(--cl-teal)]" />
                     </div>
                     <div>
-                      <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                      <p className="text-[10px] uppercase tracking-wider text-[var(--cl-ink-muted)] font-medium">
                         {t("yourRank")}
                       </p>
-                      <p className="text-base font-bold text-gray-900 dark:text-white">
+                      <p className="text-base font-bold text-[var(--cl-ink)]">
                         #{userRank > 0 ? userRank : "-"}
                       </p>
                     </div>
@@ -171,17 +154,17 @@ export default function ConfiPointsRankingPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-[var(--cl-surface)]">
+              <Card className="border-[var(--cl-border)] shadow-none bg-[var(--cl-surface)]">
                 <CardContent className="p-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="flex-shrink-0 p-2 bg-[var(--cl-mist)] rounded-lg">
                       <Star className="w-5 h-5 text-[var(--cl-teal)]" />
                     </div>
                     <div>
-                      <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                      <p className="text-[10px] uppercase tracking-wider text-[var(--cl-ink-muted)] font-medium">
                         {t("diamondUsers")}
                       </p>
-                      <p className="text-base font-bold text-gray-900 dark:text-white">
+                      <p className="text-base font-bold text-[var(--cl-ink)]">
                         {
                           leaderboard.filter(
                             (u: PointsLeaderboard) =>
@@ -200,10 +183,10 @@ export default function ConfiPointsRankingPage() {
               <Card>
                 <CardContent className="p-8 text-center">
                   <Trophy className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  <h3 className="text-lg font-semibold text-[var(--cl-ink)] mb-2">
                     {t("noUsersInRanking")}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-[var(--cl-ink-secondary)]">
                     {t("beFirstInRanking")}
                   </p>
                 </CardContent>
@@ -244,7 +227,7 @@ export default function ConfiPointsRankingPage() {
                         </div>
 
                         {/* Avatar */}
-                        <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center overflow-hidden">
+                        <div className="w-8 h-8 bg-[var(--cl-mist)] rounded-full flex items-center justify-center overflow-hidden">
                           <span className="text-sm font-medium text-gray-500">
                             {user.full_name?.charAt(0)?.toUpperCase() || "U"}
                           </span>
@@ -252,7 +235,7 @@ export default function ConfiPointsRankingPage() {
 
                         {/* Informações */}
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                          <h3 className="text-sm font-semibold text-[var(--cl-ink)] truncate">
                             {user.full_name || "Usuário"}
                           </h3>
                           <div className="flex items-center gap-2">
@@ -265,7 +248,7 @@ export default function ConfiPointsRankingPage() {
 
                         {/* Pontos */}
                         <div className="text-right">
-                          <div className="text-sm font-bold text-gray-900 dark:text-white">
+                          <div className="text-sm font-bold text-[var(--cl-ink)]">
                             {formatPoints(user.total_points_earned)}
                           </div>
                           <p className="text-[10px] text-gray-500">pontos</p>

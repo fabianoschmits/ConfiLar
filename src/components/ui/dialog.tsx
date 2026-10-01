@@ -63,9 +63,9 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "bg-background fixed z-[200] grid w-full gap-4 shadow-lg duration-500 ease-in-out border-[var(--cl-border)]",
+          "app-modal fixed z-[201] grid w-full max-h-[92dvh] overflow-y-auto overscroll-contain gap-4 text-[var(--cl-ink)] shadow-lg duration-200 ease-out border-[var(--cl-border)]",
           // Mobile (Bottom Sheet)
-          "bottom-0 left-0 right-0 top-auto translate-x-0 translate-y-0 rounded-t-3xl border-t p-6 bg-[var(--cl-surface)]",
+          "bottom-0 left-0 right-0 top-auto translate-x-0 translate-y-0 rounded-t-3xl border-t p-4 sm:p-6 bg-[var(--cl-surface)]",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full",
           // Desktop (Centered)
@@ -83,10 +83,10 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+            className="ring-offset-background focus:ring-ring absolute top-3 right-3 flex h-11 w-11 items-center justify-center rounded-full bg-[var(--cl-mist)] text-[var(--cl-ink-secondary)] hover:opacity-80 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-4"
           >
             <XIcon />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">Fechar</span>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Content>
@@ -98,7 +98,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn("flex flex-col gap-2 text-center sm:text-left", className)}
+      className={cn("flex flex-col gap-2 pr-12 text-left", className)}
       {...props}
     />
   );
@@ -109,7 +109,7 @@ function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="dialog-footer"
       className={cn(
-        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
+        "app-modal-footer flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
         className,
       )}
       {...props}

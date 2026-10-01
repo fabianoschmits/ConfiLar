@@ -480,6 +480,7 @@ export function SmartSearchBar({
           {!isClassifieds && (
             <Button
               onClick={handleSearch}
+              aria-label="Buscar"
               className="h-12 px-5 bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)] font-semibold rounded-full shadow-sm transition-all active:scale-[0.98] shrink-0"
             >
               <Search className="h-4 w-4 sm:hidden" />
@@ -504,7 +505,8 @@ export function SmartSearchBar({
                   e.stopPropagation();
                   removeFilter(chip.key as keyof SearchFilters);
                 }}
-                className="text-[var(--cl-ink-muted)] hover:text-red-500 transition-colors"
+                aria-label={"Remover filtro " + chip.label}
+                className="min-h-8 min-w-8 flex items-center justify-center rounded-full text-[var(--cl-ink-muted)] hover:text-red-500"
               >
                 <X className="h-3.5 w-3.5" />
               </button>

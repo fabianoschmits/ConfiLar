@@ -1,20 +1,8 @@
 "use client";
 
-import { ReactNode } from "react";
-import { PWAStatus } from "@/components/pwa/PWAStatus";
-import { QuickActionMenu } from "@/components/navigation/QuickActionMenu";
+import type { ReactNode } from "react";
+import { MainLayout } from "@/components/layout/MainLayout";
 
-interface PublicLayoutProps {
-  children: ReactNode;
-}
-
-export function PublicLayout({ children }: PublicLayoutProps) {
-  return (
-    <>
-      {children}
-      <PWAStatus />
-      {/* Menu de acesso rápido para mobile - aparece quando não está logado */}
-      <QuickActionMenu />
-    </>
-  );
+export function PublicLayout({ children }: { children: ReactNode }) {
+  return <MainLayout requireAuth={false}>{children}</MainLayout>;
 }

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -337,25 +338,25 @@ export default function ConfiPointsDashboardPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-[var(--cl-paper)]">
-        <div className="container py-4">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="app-screen bg-[var(--cl-paper)]">
+        <div className="app-page">
+          <div className="min-w-0">
             {/* Header */}
-            <div className="mb-8">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-[var(--cl-radius-card)] flex items-center justify-center">
-                  <Coins className="h-6 w-6 text-[var(--cl-teal)]" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-[var(--cl-ink)]">
-                    {t("myConfiPoints")}
-                  </h1>
-                  <p className="text-sm text-[var(--cl-ink-secondary)]">
-                    {t("managePoints")}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <PageHeader
+              title={t("myConfiPoints")}
+              description={t("managePoints")}
+              icon={Coins}
+              actions={
+                <>
+                  <Button asChild variant="outline">
+                    <Link href="/confipoints/transferir">{t("transfer")}</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link href="/confipoints/comprar">{t("buyPoints")}</Link>
+                  </Button>
+                </>
+              }
+            />
 
             {/* Resumo de Saldo e Nível - Sutil com Cor da Marca */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -367,10 +368,10 @@ export default function ConfiPointsDashboardPage() {
                       <Coins className="w-5 h-5 text-[var(--cl-teal)]" />
                     </div>
                     <div>
-                      <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                      <p className="text-[10px] uppercase tracking-wider text-[var(--cl-ink-muted)] font-medium">
                         {t("balance")}
                       </p>
-                      <p className="text-base font-bold text-gray-900 dark:text-white">
+                      <p className="text-base font-bold text-[var(--cl-ink)]">
                         {loadingPoints
                           ? "..."
                           : (balance?.balance || 0).toLocaleString("pt-BR")}
@@ -388,10 +389,10 @@ export default function ConfiPointsDashboardPage() {
                       <TrendingUp className="w-5 h-5 text-[var(--cl-teal)]" />
                     </div>
                     <div>
-                      <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                      <p className="text-[10px] uppercase tracking-wider text-[var(--cl-ink-muted)] font-medium">
                         {t("totalEarned")}
                       </p>
-                      <p className="text-base font-bold text-gray-900 dark:text-white">
+                      <p className="text-base font-bold text-[var(--cl-ink)]">
                         {loadingPoints
                           ? "..."
                           : (balance?.total_earned || 0).toLocaleString(
@@ -411,10 +412,10 @@ export default function ConfiPointsDashboardPage() {
                       <TrendingDown className="w-5 h-5 text-[var(--cl-teal)]" />
                     </div>
                     <div>
-                      <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                      <p className="text-[10px] uppercase tracking-wider text-[var(--cl-ink-muted)] font-medium">
                         {t("totalSpent")}
                       </p>
-                      <p className="text-base font-bold text-gray-900 dark:text-white">
+                      <p className="text-base font-bold text-[var(--cl-ink)]">
                         {loadingPoints
                           ? "..."
                           : (balance?.total_spent || 0).toLocaleString("pt-BR")}
@@ -430,7 +431,7 @@ export default function ConfiPointsDashboardPage() {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <Trophy className="w-4 h-4 text-[var(--cl-teal)]" />
-                      <span className="text-xs font-bold text-gray-900 dark:text-white capitalize">
+                      <span className="text-xs font-bold text-[var(--cl-ink)] capitalize">
                         {currentLevel.name}
                       </span>
                     </div>
@@ -440,7 +441,7 @@ export default function ConfiPointsDashboardPage() {
                   </div>
                   <Progress
                     value={progress}
-                    className="h-1.5 bg-gray-100 dark:bg-gray-800 [&>div]:bg-[var(--cl-teal)]"
+                    className="h-1.5 bg-[var(--cl-mist)] [&>div]:bg-[var(--cl-teal)]"
                   />
                 </CardContent>
               </Card>
@@ -524,7 +525,7 @@ export default function ConfiPointsDashboardPage() {
                     </CardHeader>
                     <CardContent>
                       {allTransactions.length === 0 ? (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 text-center py-4">
+                        <p className="text-xs text-[var(--cl-ink-muted)] text-center py-4">
                           {t("noTransactions")}
                         </p>
                       ) : (
@@ -553,7 +554,7 @@ export default function ConfiPointsDashboardPage() {
                                   </div>
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="text-xs font-medium text-gray-900 dark:text-white truncate max-w-[150px] sm:max-w-[200px]">
+                                  <p className="text-xs font-medium text-[var(--cl-ink)] truncate max-w-[150px] sm:max-w-[200px]">
                                     {transaction.description}
                                   </p>
                                   <p className="text-[10px] text-gray-500">
@@ -612,7 +613,7 @@ export default function ConfiPointsDashboardPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    <p className="text-sm text-[var(--cl-ink-secondary)] mb-4">
                       {t("referralDescription")}
                     </p>
                     <div className="space-y-3">
@@ -649,7 +650,7 @@ export default function ConfiPointsDashboardPage() {
                         >
                           <div className="flex items-center gap-3">
                             <span className="text-2xl">{item.icon}</span>
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            <span className="text-sm font-medium text-[var(--cl-ink)]">
                               {item.action}
                             </span>
                           </div>
@@ -681,7 +682,7 @@ export default function ConfiPointsDashboardPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    <p className="text-sm text-[var(--cl-ink-secondary)] mb-4">
                       Você também pode comprar pontos diretamente para usar nas
                       funcionalidades premium da plataforma.
                     </p>
@@ -748,10 +749,10 @@ export default function ConfiPointsDashboardPage() {
                                   -{item.cost} pts
                                 </Badge>
                               </div>
-                              <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                              <h3 className="font-semibold text-[var(--cl-ink)] mb-1">
                                 {item.name}
                               </h3>
-                              <p className="text-xs text-gray-600 dark:text-gray-400">
+                              <p className="text-xs text-[var(--cl-ink-secondary)]">
                                 {item.description}
                               </p>
                             </CardContent>
@@ -771,7 +772,7 @@ export default function ConfiPointsDashboardPage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      <p className="text-sm text-[var(--cl-ink-secondary)] mb-4">
                         Compre badges exclusivos, recursos especiais e muito
                         mais.
                       </p>
@@ -791,7 +792,7 @@ export default function ConfiPointsDashboardPage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      <p className="text-sm text-[var(--cl-ink-secondary)] mb-4">
                         Envie pontos para outros usuários (taxa de 25%).
                       </p>
                       <Link href="/confipoints/transferir">
@@ -868,7 +869,7 @@ export default function ConfiPointsDashboardPage() {
                                   </div>
                                 </div>
                                 <div>
-                                  <p className="font-medium text-gray-900 dark:text-white">
+                                  <p className="font-medium text-[var(--cl-ink)]">
                                     {(() => {
                                       // Se for transferência, criar links para perfis
                                       if (
@@ -1086,7 +1087,7 @@ export default function ConfiPointsDashboardPage() {
                                   </p>
                                   <div className="flex flex-col mt-1">
                                     <div className="flex items-center gap-2">
-                                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                                      <p className="text-xs text-[var(--cl-ink-muted)]">
                                         {formatDistanceToNow(
                                           new Date(transaction.date),
                                           {
@@ -1140,7 +1141,7 @@ export default function ConfiPointsDashboardPage() {
                         {/* Sempre mostrar todas as transações - sem limite */}
                         {allTransactions.length > 0 && (
                           <div className="mt-6 flex justify-center">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                            <p className="text-sm text-[var(--cl-ink-muted)]">
                               Total de {allTransactions.length} transações
                               exibidas
                             </p>

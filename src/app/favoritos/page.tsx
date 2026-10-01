@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -138,7 +139,7 @@ export default function FavoritesPage() {
   if (!user) {
     return (
       <MainLayout requireAuth={false}>
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="app-page app-page--narrow">
           <Card>
             <CardContent className="p-8 text-center">
               <Heart className="h-16 w-16 mx-auto text-[var(--cl-ink-muted)] mb-4" />
@@ -160,66 +161,60 @@ export default function FavoritesPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-[var(--cl-paper)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="app-screen bg-[var(--cl-paper)]">
+        <div className="app-page">
           {/* Header da Página */}
           <div className="mb-8">
-            <div className="text-center mb-4">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <Heart className="h-8 w-8 text-red-500" />
-                <h1 className="text-3xl font-bold text-[var(--cl-ink)]">
-                  {t("title")}
-                </h1>
-              </div>
-              <p className="text-[var(--cl-ink-secondary)]">
-                {t("description")}
-              </p>
-            </div>
+            <PageHeader
+              title={t("title")}
+              description={t("description")}
+              icon={Heart}
+            />
 
             {/* Estatísticas Compactas */}
-            <Card className="mb-6 sm:mb-8 hover:shadow-xl transition-all duration-300">
+            <Card className="mb-6 sm:mb-8 ">
               <CardContent className="py-2 px-3 sm:py-3 sm:px-4">
                 <div className="flex flex-row items-center justify-around gap-1 sm:gap-2">
                   {/* Total de Favoritos */}
                   <div className="flex flex-col items-center min-w-0 flex-1">
-                    <Heart className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                    <Heart className="h-3 w-3 sm:h-4 sm:w-4 text-[var(--cl-ink-secondary)] mb-0.5" />
+                    <p className="text-xs text-[var(--cl-ink-muted)] text-center">
                       {tCommon("total")}
                     </p>
-                    <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                    <p className="text-sm sm:text-base font-bold text-[var(--cl-ink)]">
                       {stats.totalFavorites}
                     </p>
                   </div>
 
                   {/* Profissionais */}
                   <div className="flex flex-col items-center min-w-0 flex-1">
-                    <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                    <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 text-[var(--cl-ink-secondary)] mb-0.5" />
+                    <p className="text-xs text-[var(--cl-ink-muted)] text-center">
                       {t("professionals")}
                     </p>
-                    <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                    <p className="text-sm sm:text-base font-bold text-[var(--cl-ink)]">
                       {stats.professionalFavorites}
                     </p>
                   </div>
 
                   {/* Clientes */}
                   <div className="flex flex-col items-center min-w-0 flex-1">
-                    <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                    <User className="h-3 w-3 sm:h-4 sm:w-4 text-[var(--cl-ink-secondary)] mb-0.5" />
+                    <p className="text-xs text-[var(--cl-ink-muted)] text-center">
                       {t("clients")}
                     </p>
-                    <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                    <p className="text-sm sm:text-base font-bold text-[var(--cl-ink)]">
                       {stats.clientFavorites}
                     </p>
                   </div>
 
                   {/* Ativos */}
                   <div className="flex flex-col items-center min-w-0 flex-1">
-                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[var(--cl-ink-secondary)] mb-0.5" />
+                    <p className="text-xs text-[var(--cl-ink-muted)] text-center">
                       Ativos
                     </p>
-                    <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                    <p className="text-sm sm:text-base font-bold text-[var(--cl-ink)]">
                       {stats.totalFavorites}
                     </p>
                   </div>
@@ -383,7 +378,7 @@ export default function FavoritesPage() {
                           <div className="space-y-1">
                             {(favorite.professional?.location_city ||
                               favorite.professional?.location_state) && (
-                              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                              <div className="flex items-center text-xs text-[var(--cl-ink-muted)]">
                                 <MapPin className="h-3 w-3 mr-1" />
                                 {favorite.professional?.location_city}
                                 {favorite.professional?.location_city &&
@@ -401,7 +396,7 @@ export default function FavoritesPage() {
 
                             {favorite.professional?.user_type ===
                               "professional" && (
-                              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                              <div className="flex items-center text-xs text-[var(--cl-ink-muted)]">
                                 <Star className="h-3 w-3 mr-1" />
                                 <div className="flex items-center gap-1">
                                   <span>

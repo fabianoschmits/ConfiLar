@@ -50,6 +50,7 @@ import {
   ThumbsUp,
 } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { ReviewListSkeleton } from "@/components/ui/skeleton";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
@@ -370,12 +371,12 @@ export default function AvaliacoesPage() {
     return (
       <ClientOnly>
         <MainLayout requireAuth={false}>
-          <div className="min-h-screen bg-[var(--cl-paper)]">
+          <div className="app-screen bg-[var(--cl-paper)]">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
               <Card className="max-w-2xl mx-auto">
                 <CardContent className="p-8 text-center">
                   <Star className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  <h2 className="text-2xl font-bold text-[var(--cl-ink)] mb-2">
                     Minhas Avaliações
                   </h2>
                   <p className="text-gray-600 mb-6">
@@ -461,8 +462,8 @@ export default function AvaliacoesPage() {
     return (
       <ClientOnly>
         <MainLayout requireAuth={true}>
-          <div className="min-h-screen bg-[var(--cl-paper)]">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="app-screen bg-[var(--cl-paper)]">
+            <div className="app-page">
               <ReviewListSkeleton count={5} />
             </div>
           </div>
@@ -474,25 +475,17 @@ export default function AvaliacoesPage() {
   return (
     <ClientOnly>
       <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-[var(--cl-paper)]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="app-screen bg-[var(--cl-paper)]">
+          <div className="app-page">
             {/* Header */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center">
-                    <Award className="h-8 w-8 mr-3 text-gray-700" />
-                    Minhas Avaliações
-                  </h1>
-                  <p className="text-gray-600">
-                    Gerencie suas avaliações e solicitações de avaliação
-                  </p>
-                </div>
-              </div>
-            </div>
+            <PageHeader
+              title="Minhas avaliações"
+              description="Gerencie suas avaliações e solicitações."
+              icon={Award}
+            />
 
             {/* Estatísticas Compactas */}
-            <Card className="mb-6 sm:mb-8 hover:shadow-xl transition-all duration-300">
+            <Card className="mb-6 sm:mb-8 ">
               <CardContent className="py-2 px-3 sm:py-3 sm:px-4">
                 <div className="flex flex-row items-center justify-around gap-1 sm:gap-2">
                   {/* Solicitações Recebidas */}
@@ -501,7 +494,7 @@ export default function AvaliacoesPage() {
                     <p className="text-xs text-gray-500 text-center">
                       Recebidas
                     </p>
-                    <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                    <p className="text-sm sm:text-base font-bold text-[var(--cl-ink)]">
                       {stats.receivedRequests}
                     </p>
                   </div>
@@ -512,7 +505,7 @@ export default function AvaliacoesPage() {
                     <p className="text-xs text-gray-500 text-center">
                       Enviadas
                     </p>
-                    <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                    <p className="text-sm sm:text-base font-bold text-[var(--cl-ink)]">
                       {stats.sentRequests}
                     </p>
                   </div>
@@ -523,7 +516,7 @@ export default function AvaliacoesPage() {
                     <p className="text-xs text-gray-500 text-center">
                       Avaliações
                     </p>
-                    <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                    <p className="text-sm sm:text-base font-bold text-[var(--cl-ink)]">
                       {stats.totalReviews}
                     </p>
                   </div>
@@ -534,7 +527,7 @@ export default function AvaliacoesPage() {
                     <p className="text-xs text-gray-500 text-center">
                       Pendentes
                     </p>
-                    <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                    <p className="text-sm sm:text-base font-bold text-[var(--cl-ink)]">
                       {stats.pendingRequests}
                     </p>
                   </div>
@@ -545,12 +538,12 @@ export default function AvaliacoesPage() {
             {/* Tabs */}
             <div className="mb-8">
               <div className="border-b border-gray-200">
-                <nav className="-mb-px flex flex-wrap gap-2 sm:gap-4 lg:gap-8">
+                <nav className="app-filter-tabs">
                   <button
                     onClick={() => setActiveTab("requests")}
                     className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                       activeTab === "requests"
-                        ? "border-gray-500 text-gray-900 dark:text-white"
+                        ? "border-gray-500 text-[var(--cl-ink)]"
                         : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                     }`}
                   >
@@ -564,7 +557,7 @@ export default function AvaliacoesPage() {
                     onClick={() => setActiveTab("reviews")}
                     className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                       activeTab === "reviews"
-                        ? "border-gray-500 text-gray-900 dark:text-white"
+                        ? "border-gray-500 text-[var(--cl-ink)]"
                         : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                     }`}
                   >
@@ -600,12 +593,12 @@ export default function AvaliacoesPage() {
                   {/* Abas de Solicitações */}
                   <div className="mb-6">
                     <div className="border-b border-gray-200">
-                      <nav className="-mb-px flex flex-wrap gap-2 sm:gap-4 lg:gap-8">
+                      <nav className="app-filter-tabs">
                         <button
                           onClick={() => setRequestsSubTab("received")}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             requestsSubTab === "received"
-                              ? "border-gray-500 text-gray-900 dark:text-white"
+                              ? "border-gray-500 text-[var(--cl-ink)]"
                               : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                           }`}
                         >
@@ -623,7 +616,7 @@ export default function AvaliacoesPage() {
                           onClick={() => setRequestsSubTab("sent")}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             requestsSubTab === "sent"
-                              ? "border-gray-700 text-gray-900 dark:text-white"
+                              ? "border-gray-700 text-[var(--cl-ink)]"
                               : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400"
                           }`}
                         >
@@ -688,7 +681,7 @@ export default function AvaliacoesPage() {
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
                                 <div className="min-w-0">
-                                  <h4 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base truncate">
+                                  <h4 className="font-semibold text-[var(--cl-ink)] text-sm sm:text-base truncate">
                                     {request.requester_id === user.id
                                       ? "Você"
                                       : request.requester_name}{" "}
@@ -817,12 +810,12 @@ export default function AvaliacoesPage() {
                   {/* Abas de Avaliações */}
                   <div className="mb-6">
                     <div className="border-b border-gray-200">
-                      <nav className="-mb-px flex flex-wrap gap-2 sm:gap-4 lg:gap-8">
+                      <nav className="app-filter-tabs">
                         <button
                           onClick={() => setReviewsSubTab("received")}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             reviewsSubTab === "received"
-                              ? "border-gray-500 text-gray-900 dark:text-white"
+                              ? "border-gray-500 text-[var(--cl-ink)]"
                               : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                           }`}
                         >
@@ -840,7 +833,7 @@ export default function AvaliacoesPage() {
                           onClick={() => setReviewsSubTab("given")}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             reviewsSubTab === "given"
-                              ? "border-gray-700 text-gray-900 dark:text-white"
+                              ? "border-gray-700 text-[var(--cl-ink)]"
                               : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400"
                           }`}
                         >
@@ -918,7 +911,7 @@ export default function AvaliacoesPage() {
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
                                 <div className="min-w-0">
-                                  <h4 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base truncate">
+                                  <h4 className="font-semibold text-[var(--cl-ink)] text-sm sm:text-base truncate">
                                     {reviewsSubTab === "received"
                                       ? review.reviewer.full_name
                                       : review.reviewed?.full_name || ""}
@@ -1015,7 +1008,7 @@ export default function AvaliacoesPage() {
                   ) : (
                     <div className="text-center py-8">
                       <Star className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                      <h3 className="text-lg font-semibold text-[var(--cl-ink)] mb-2">
                         {searchTerm || filterType !== "all"
                           ? "Nenhuma avaliação encontrada"
                           : "Nenhuma avaliação ainda"}

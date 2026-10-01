@@ -46,7 +46,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" className="h-9 w-9" disabled>
+      <Button variant="ghost" size="icon" disabled>
         <Sun className="h-5 w-5 opacity-50" />
         <span className="sr-only">Alternar tema</span>
       </Button>
@@ -62,7 +62,7 @@ export function ThemeToggle() {
       size="icon"
       onClick={toggleTheme}
       disabled={isTransitioning}
-      className="h-9 w-9 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+      className="hover:bg-[var(--cl-mist)]"
       title={isDark ? "Alternar para modo claro" : "Alternar para modo escuro"}
     >
       <div className="relative w-5 h-5">

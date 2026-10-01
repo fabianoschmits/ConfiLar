@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { ClientOnly } from "@/components/ClientOnly";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -87,90 +88,82 @@ export default function PortfolioPage() {
   return (
     <ClientOnly>
       <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-[var(--cl-paper)]">
+        <div className="app-screen bg-[var(--cl-paper)]">
           {/* Header Section */}
-          <div className="bg-[var(--cl-surface)] border-b border-gray-200 dark:border-gray-800">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                    <Briefcase className="h-8 w-8 text-primary-600" />
-                    {t("title")}
-                  </h1>
-                  <p className="mt-2 text-gray-600 dark:text-gray-400">
-                    Gerencie seus projetos e mostre o seu melhor trabalho para
-                    os clientes.
-                  </p>
-                </div>
-                <Button
-                  onClick={handleCreate}
-                  className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl transition-all"
-                >
-                  <Plus className="h-5 w-5 mr-2" />
-                  Novo Projeto
-                </Button>
-              </div>
+          <div className="">
+            <div className="app-page">
+              <PageHeader
+                title={t("title")}
+                description="Seus projetos e trabalhos, organizados em um só lugar."
+                icon={Briefcase}
+                actions={
+                  <Button onClick={handleCreate}>
+                    <Plus className="h-4 w-4" />
+                    Novo projeto
+                  </Button>
+                }
+              />
 
               {/* Stats Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-                <Card className="bg-gradient-to-br from-[var(--cl-mist)] to-[var(--cl-mist)] dark:from-blue-900/10 dark:to-indigo-900/10 border-blue-100 dark:border-blue-900/50">
-                  <CardContent className="p-4 flex items-center gap-4">
-                    <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                      <LayoutGrid className="h-6 w-6 text-[var(--cl-teal)] dark:text-blue-400" />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+                <Card>
+                  <CardContent className="p-3 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
+                    <div className="p-2 bg-[var(--cl-mist)] rounded-xl">
+                      <LayoutGrid className="h-5 w-5 text-[var(--cl-teal)] dark:text-blue-400" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      <p className="text-sm font-medium text-[var(--cl-ink-muted)]">
                         Projetos
                       </p>
-                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <h3 className="text-2xl font-bold text-[var(--cl-ink)]">
                         {stats.totalProjects}
                       </h3>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 border-green-100 dark:border-green-900/50">
-                  <CardContent className="p-4 flex items-center gap-4">
-                    <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                      <Star className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <Card>
+                  <CardContent className="p-3 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
+                    <div className="p-2 bg-[var(--cl-mist)] rounded-xl">
+                      <Star className="h-5 w-5 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      <p className="text-sm font-medium text-[var(--cl-ink-muted)]">
                         Média Avaliações
                       </p>
-                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <h3 className="text-2xl font-bold text-[var(--cl-ink)]">
                         {stats.averageRating}
                       </h3>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-[var(--cl-mist)] to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10 border-purple-100 dark:border-purple-900/50">
-                  <CardContent className="p-4 flex items-center gap-4">
-                    <div className="p-3 bg-[var(--cl-mist)] dark:bg-purple-900/30 rounded-lg">
-                      <ImageIcon className="h-6 w-6 text-[var(--cl-teal)] dark:text-[var(--cl-teal)]" />
+                <Card>
+                  <CardContent className="p-3 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
+                    <div className="p-2 bg-[var(--cl-mist)] rounded-xl">
+                      <ImageIcon className="h-5 w-5 text-[var(--cl-teal)] dark:text-[var(--cl-teal)]" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      <p className="text-sm font-medium text-[var(--cl-ink-muted)]">
                         Destaques
                       </p>
-                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <h3 className="text-2xl font-bold text-[var(--cl-ink)]">
                         {stats.featuredProjects}
                       </h3>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/10 dark:to-amber-900/10 border-orange-100 dark:border-orange-900/50">
-                  <CardContent className="p-4 flex items-center gap-4">
-                    <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-                      <Star className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                <Card>
+                  <CardContent className="p-3 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
+                    <div className="p-2 bg-[var(--cl-mist)] rounded-xl">
+                      <Star className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                        Total Views
+                      <p className="text-sm font-medium text-[var(--cl-ink-muted)]">
+                        Visualizações
                       </p>
-                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <h3 className="text-2xl font-bold text-[var(--cl-ink)]">
                         {stats.totalViews}
                       </h3>
                     </div>
@@ -180,7 +173,7 @@ export default function PortfolioPage() {
             </div>
           </div>
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="app-page">
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
@@ -236,7 +229,7 @@ export default function PortfolioPage() {
                 <AlertDialogDescription>
                   Essa ação não pode ser desfeita. Isso excluirá permanentemente
                   o projeto
-                  <span className="font-semibold text-gray-900 dark:text-white">
+                  <span className="font-semibold text-[var(--cl-ink)]">
                     {" "}
                     {projectToDelete?.title}{" "}
                   </span>

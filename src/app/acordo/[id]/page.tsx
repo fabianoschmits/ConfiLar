@@ -20,6 +20,7 @@ import {
   ArrowLeft,
   Timer,
 } from "lucide-react";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { DashboardSkeleton } from "@/components/ui/skeleton";
@@ -170,11 +171,11 @@ export default function AgreementPage() {
   if (loading) {
     return (
       <MainLayout requireAuth={true}>
-        <div className="container mx-auto px-4 py-8">
+        <div className="app-page">
           <div className="flex items-center justify-center h-64">
-            <div className="flex items-center space-x-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-4 border-black border-t-transparent"></div>
-              <span className="font-black text-black">
+            <div className="flex items-center space-x-2 bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-2xl shadow-[var(--cl-shadow)] p-4">
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-[var(--cl-teal)] border-t-transparent"></div>
+              <span className="font-semibold text-[var(--cl-ink)]">
                 CARREGANDO ACORDO...
               </span>
             </div>
@@ -187,16 +188,13 @@ export default function AgreementPage() {
   if (!agreement) {
     return (
       <MainLayout requireAuth={true}>
-        <div className="container mx-auto px-4 py-8">
+        <div className="app-page">
           <div className="text-center">
-            <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-6 inline-block">
-              <h1 className="text-2xl font-black text-black mb-4">
+            <div className="bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-2xl shadow-[var(--cl-shadow)] p-6 inline-block">
+              <h1 className="text-2xl font-semibold text-[var(--cl-ink)] mb-4">
                 ACORDO NÃO ENCONTRADO
               </h1>
-              <Button
-                onClick={() => router.push("/mensagens")}
-                className="bg-black text-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
-              >
+              <Button onClick={() => router.push("/feed")}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 VOLTAR PARA MENSAGENS
               </Button>
@@ -217,64 +215,51 @@ export default function AgreementPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="container mx-auto px-4 py-8">
+      <div className="app-page">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <Button
-                onClick={() => router.push("/mensagens")}
-                className="bg-white text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                VOLTAR
-              </Button>
-              <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
-                <h1 className="text-3xl font-black text-black mb-2">
-                  🤝 ACORDO ACEITO
-                </h1>
-                <p className="text-black font-bold">
-                  DETALHES DO ACORDO DE SERVIÇO
-                </p>
-              </div>
-            </div>
-            <Badge className="bg-green-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-lg px-4 py-2">
-              <CheckCircle className="h-5 w-5 mr-2" />
-              ACEITO
+        <PageHeader
+          title="Acordo de serviço"
+          description="Confira os detalhes e participantes do acordo aceito."
+          icon={FileText}
+          actions={
+            <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 px-3 py-2">
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Aceito
             </Badge>
-          </div>
-        </div>
+          }
+          backHref="/feed"
+        />
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Informações do Acordo */}
           <div className="space-y-6">
             {/* Detalhes do Serviço */}
-            <Card className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <Card className="bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-2xl shadow-[var(--cl-shadow)]">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <FileText className="h-6 w-6 text-black" />
-                  <h2 className="text-xl font-black text-black uppercase">
+                  <FileText className="h-6 w-6 text-[var(--cl-ink)]" />
+                  <h2 className="text-xl font-semibold text-[var(--cl-ink)]">
                     DETALHES DO SERVIÇO
                   </h2>
                 </div>
 
                 <div className="space-y-3">
                   <div>
-                    <span className="text-sm font-black text-black uppercase">
+                    <span className="text-sm font-semibold text-[var(--cl-ink)]">
                       SERVIÇO:
                     </span>
-                    <p className="text-black font-bold">
+                    <p className="text-[var(--cl-ink)] font-bold">
                       {agreement.service_description}
                     </p>
                   </div>
 
                   {agreement.agreed_price && (
                     <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-black" />
-                      <span className="text-sm font-black text-black uppercase">
+                      <DollarSign className="h-4 w-4 text-[var(--cl-ink)]" />
+                      <span className="text-sm font-semibold text-[var(--cl-ink)]">
                         VALOR:
                       </span>
-                      <span className="text-black font-bold">
+                      <span className="text-[var(--cl-ink)] font-bold">
                         R$ {agreement.agreed_price}
                       </span>
                     </div>
@@ -282,11 +267,11 @@ export default function AgreementPage() {
 
                   {agreement.proposed_date && (
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-black" />
-                      <span className="text-sm font-black text-black uppercase">
+                      <Calendar className="h-4 w-4 text-[var(--cl-ink)]" />
+                      <span className="text-sm font-semibold text-[var(--cl-ink)]">
                         DATA:
                       </span>
-                      <span className="text-black font-bold">
+                      <span className="text-[var(--cl-ink)] font-bold">
                         {new Date(agreement.proposed_date).toLocaleDateString(
                           "pt-BR",
                         )}
@@ -296,11 +281,11 @@ export default function AgreementPage() {
 
                   {agreement.proposed_time && (
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-black" />
-                      <span className="text-sm font-black text-black uppercase">
+                      <Clock className="h-4 w-4 text-[var(--cl-ink)]" />
+                      <span className="text-sm font-semibold text-[var(--cl-ink)]">
                         HORÁRIO:
                       </span>
-                      <span className="text-black font-bold">
+                      <span className="text-[var(--cl-ink)] font-bold">
                         {agreement.proposed_time}
                       </span>
                     </div>
@@ -308,11 +293,11 @@ export default function AgreementPage() {
 
                   {agreement.estimated_duration && (
                     <div className="flex items-center gap-2">
-                      <Timer className="h-4 w-4 text-black" />
-                      <span className="text-sm font-black text-black uppercase">
+                      <Timer className="h-4 w-4 text-[var(--cl-ink)]" />
+                      <span className="text-sm font-semibold text-[var(--cl-ink)]">
                         DURAÇÃO ESTIMADA:
                       </span>
-                      <span className="text-black font-bold">
+                      <span className="text-[var(--cl-ink)] font-bold">
                         {agreement.estimated_duration} horas
                       </span>
                     </div>
@@ -320,10 +305,12 @@ export default function AgreementPage() {
 
                   {agreement.notes && (
                     <div>
-                      <span className="text-sm font-black text-black uppercase">
+                      <span className="text-sm font-semibold text-[var(--cl-ink)]">
                         OBSERVAÇÕES:
                       </span>
-                      <p className="text-black font-bold">{agreement.notes}</p>
+                      <p className="text-[var(--cl-ink)] font-bold">
+                        {agreement.notes}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -331,11 +318,11 @@ export default function AgreementPage() {
             </Card>
 
             {/* Informações dos Participantes */}
-            <Card className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <Card className="bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-2xl shadow-[var(--cl-shadow)]">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <Users className="h-6 w-6 text-black" />
-                  <h2 className="text-xl font-black text-black uppercase">
+                  <Users className="h-6 w-6 text-[var(--cl-ink)]" />
+                  <h2 className="text-xl font-semibold text-[var(--cl-ink)]">
                     PARTICIPANTES
                   </h2>
                 </div>
@@ -343,26 +330,28 @@ export default function AgreementPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-3 bg-gray-100 border-2 border-black">
                     <div>
-                      <p className="font-black text-black uppercase">CLIENTE</p>
-                      <p className="text-black font-bold">
+                      <p className="font-semibold text-[var(--cl-ink)]">
+                        CLIENTE
+                      </p>
+                      <p className="text-[var(--cl-ink)] font-bold">
                         {agreement.client.full_name}
                       </p>
                     </div>
-                    <Badge className="bg-blue-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black">
+                    <Badge className="bg-blue-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-semibold">
                       CLIENTE
                     </Badge>
                   </div>
 
                   <div className="flex items-center justify-between p-3 bg-gray-100 border-2 border-black">
                     <div>
-                      <p className="font-black text-black uppercase">
+                      <p className="font-semibold text-[var(--cl-ink)]">
                         PROFISSIONAL
                       </p>
-                      <p className="text-black font-bold">
+                      <p className="text-[var(--cl-ink)] font-bold">
                         {agreement.professional.full_name}
                       </p>
                     </div>
-                    <Badge className="bg-green-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black">
+                    <Badge className="bg-green-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-semibold">
                       PROFISSIONAL
                     </Badge>
                   </div>
@@ -374,26 +363,26 @@ export default function AgreementPage() {
           {/* Status e Ações */}
           <div className="space-y-6">
             {/* Contador de Tempo */}
-            <Card className="bg-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <Card className="bg-yellow-400 border border-[var(--cl-border)] rounded-2xl shadow-[var(--cl-shadow)]">
               <CardContent className="p-6">
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-3 mb-4">
-                    <Timer className="h-8 w-8 text-black" />
-                    <h2 className="text-xl font-black text-black uppercase">
+                    <Timer className="h-8 w-8 text-[var(--cl-ink)]" />
+                    <h2 className="text-xl font-semibold text-[var(--cl-ink)]">
                       TEMPO PARA AVALIAÇÃO
                     </h2>
                   </div>
 
-                  <div className="bg-black text-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-6 mb-4">
-                    <div className="text-4xl font-black mb-2">
+                  <div className="bg-black text-yellow-400 border border-[var(--cl-border)] rounded-2xl shadow-[var(--cl-shadow)] p-6 mb-4">
+                    <div className="text-4xl font-semibold mb-2">
                       {canReview ? "✅" : "⏰"}
                     </div>
-                    <div className="text-2xl font-black">
+                    <div className="text-2xl font-semibold">
                       {canReview ? "PODE AVALIAR!" : timeUntilReview}
                     </div>
                   </div>
 
-                  <p className="text-black font-bold mb-4">
+                  <p className="text-[var(--cl-ink)] font-bold mb-4">
                     {canReview
                       ? "Vocês já podem se avaliar mutuamente!"
                       : "Aguarde 20 horas após o acordo para poder avaliar"}
@@ -402,7 +391,7 @@ export default function AgreementPage() {
                   <Button
                     onClick={handleGoToReviews}
                     disabled={!canReview}
-                    className="bg-black text-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-black text-yellow-400 border border-[var(--cl-border)] rounded-2xl shadow-[var(--cl-shadow)] hover:opacity-90 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Star className="h-4 w-4 mr-2" />
                     {canReview ? "AVALIAR USUÁRIO" : "AGUARDANDO TEMPO"}
@@ -412,16 +401,16 @@ export default function AgreementPage() {
             </Card>
 
             {/* Ações Rápidas */}
-            <Card className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <Card className="bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-2xl shadow-[var(--cl-shadow)]">
               <CardContent className="p-6">
-                <h2 className="text-xl font-black text-black uppercase mb-4">
+                <h2 className="text-xl font-semibold text-[var(--cl-ink)] mb-4">
                   AÇÕES RÁPIDAS
                 </h2>
 
                 <div className="space-y-3">
                   <Button
                     onClick={handleGoToChat}
-                    className="w-full bg-blue-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                    className="w-full bg-blue-500 text-white border border-[var(--cl-border)] rounded-2xl shadow-[var(--cl-shadow)] hover:opacity-90 transition-all font-semibold"
                   >
                     <Handshake className="h-4 w-4 mr-2" />
                     CONTINUAR CONVERSA
@@ -429,7 +418,7 @@ export default function AgreementPage() {
 
                   <Button
                     onClick={handleGoToReviews}
-                    className="w-full bg-green-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                    className="w-full bg-green-500 text-white border border-[var(--cl-border)] rounded-2xl shadow-[var(--cl-shadow)] hover:opacity-90 transition-all font-semibold"
                   >
                     <Star className="h-4 w-4 mr-2" />
                     VER AVALIAÇÕES
@@ -439,22 +428,26 @@ export default function AgreementPage() {
             </Card>
 
             {/* Informações do Acordo */}
-            <Card className="bg-gray-100 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <Card className="bg-gray-100 border border-[var(--cl-border)] rounded-2xl shadow-[var(--cl-shadow)]">
               <CardContent className="p-6">
-                <h2 className="text-xl font-black text-black uppercase mb-4">
+                <h2 className="text-xl font-semibold text-[var(--cl-ink)] mb-4">
                   INFORMAÇÕES
                 </h2>
 
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="font-black text-black">ACORDO ID:</span>
-                    <span className="font-bold text-black">
+                    <span className="font-semibold text-[var(--cl-ink)]">
+                      ACORDO ID:
+                    </span>
+                    <span className="font-bold text-[var(--cl-ink)]">
                       {agreement.id.slice(0, 8)}...
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-black text-black">CRIADO EM:</span>
-                    <span className="font-bold text-black">
+                    <span className="font-semibold text-[var(--cl-ink)]">
+                      CRIADO EM:
+                    </span>
+                    <span className="font-bold text-[var(--cl-ink)]">
                       {format(
                         new Date(agreement.created_at),
                         "dd/MM/yyyy HH:mm",
@@ -463,8 +456,10 @@ export default function AgreementPage() {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-black text-black">ACEITO EM:</span>
-                    <span className="font-bold text-black">
+                    <span className="font-semibold text-[var(--cl-ink)]">
+                      ACEITO EM:
+                    </span>
+                    <span className="font-bold text-[var(--cl-ink)]">
                       {format(
                         new Date(
                           agreement.contacts_revealed_at ||

@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Flag, Info, ChevronLeft } from "lucide-react";
 import { ClientOnly } from "@/components/ClientOnly";
 import ReportsModule from "@/modules/reports/ReportsModule";
@@ -16,36 +17,19 @@ export default function MinhasDenunciasPage() {
   return (
     <ClientOnly>
       <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-[var(--cl-paper)]">
-          <div className="max-w-4xl mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-8">
-            <Link href="/ajuda">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="mb-4 sm:mb-6 gap-2 text-muted-foreground hover:text-primary transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Voltar para a Central de Ajuda
-              </Button>
-            </Link>
-
+        <div className="app-screen bg-[var(--cl-paper)]">
+          <div className="app-page app-page--narrow">
             {/* Header */}
-            <div className="mb-8 flex items-center gap-3">
-              <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                <Flag className="h-8 w-8 text-red-600 dark:text-red-400" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-                  Central de Denúncias
-                </h1>
-                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
-                  Acompanhe o status e as resoluções das suas denúncias.
-                </p>
-              </div>
-            </div>
+            <PageHeader
+              title="Central de denúncias"
+              description="Acompanhe o status e as resoluções das suas denúncias."
+              icon={Flag}
+              backHref="/ajuda"
+              backLabel="Central de ajuda"
+            />
 
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <Card className="min-h-[500px] sm:min-h-[600px] p-3 sm:p-6 bg-background/60 backdrop-blur-md border-red-100 dark:border-red-900/20">
+              <Card className="p-3 sm:p-6">
                 <ReportsModule initialReportId={reportId} />
               </Card>
 

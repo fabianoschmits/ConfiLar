@@ -2,6 +2,7 @@
 
 import React from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -55,7 +56,7 @@ export default function ComprarPontosPage() {
   if (pointsLoading || packagesLoading) {
     return (
       <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-[var(--cl-surface)] p-4 sm:p-6">
+        <div className="app-screen bg-[var(--cl-paper)] p-4 sm:p-6">
           <div className="max-w-7xl mx-auto">
             <PackageSkeleton />
           </div>
@@ -184,22 +185,22 @@ export default function ComprarPontosPage() {
 
   const benefits = [
     {
-      icon: <Crown className="w-5 h-5 text-gray-600 dark:text-gray-400" />,
+      icon: <Crown className="w-5 h-5 text-[var(--cl-ink-secondary)]" />,
       title: t("benefit1.title"),
       description: t("benefit1.description"),
     },
     {
-      icon: <Heart className="w-5 h-5 text-gray-600 dark:text-gray-400" />,
+      icon: <Heart className="w-5 h-5 text-[var(--cl-ink-secondary)]" />,
       title: t("benefit2.title"),
       description: t("benefit2.description"),
     },
     {
-      icon: <TrendingUp className="w-5 h-5 text-gray-600 dark:text-gray-400" />,
+      icon: <TrendingUp className="w-5 h-5 text-[var(--cl-ink-secondary)]" />,
       title: t("benefit3.title"),
       description: t("benefit3.description"),
     },
     {
-      icon: <Gift className="w-5 h-5 text-gray-600 dark:text-gray-400" />,
+      icon: <Gift className="w-5 h-5 text-[var(--cl-ink-secondary)]" />,
       title: t("benefit4.title"),
       description: t("benefit4.description"),
     },
@@ -230,37 +231,28 @@ export default function ComprarPontosPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-[var(--cl-surface)]">
-        <div className="container py-4 sm:py-8 px-4">
+      <div className="app-screen bg-[var(--cl-paper)]">
+        <div className="app-page">
           <div className="mx-auto max-w-6xl">
             {/* Header - Mobile Optimized with Brand Color */}
-            <div className="mb-6">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center">
-                  <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-[var(--cl-teal)]" />
-                </div>
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-                    {t("buyPoints")}
-                  </h1>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {t("acquirePoints")}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <PageHeader
+              title={t("buyPoints")}
+              description={t("acquirePoints")}
+              icon={ShoppingCart}
+              backHref="/confipoints/dashboard"
+            />
 
             {/* Saldo Atual - Compact & Discreet */}
             {user && (
-              <div className="mb-3 p-2 border border-gray-200 dark:border-gray-800 rounded-lg">
+              <div className="mb-3 p-2 border border-[var(--cl-border)] rounded-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Coins className="h-4 w-4 text-[var(--cl-teal)]" />
                     <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs text-[var(--cl-ink-muted)]">
                         {t("balance")}
                       </p>
-                      <p className="text-sm font-bold text-gray-900 dark:text-white">
+                      <p className="text-sm font-bold text-[var(--cl-ink)]">
                         {pointsData?.balance || 0} pts
                       </p>
                     </div>
@@ -276,11 +268,11 @@ export default function ComprarPontosPage() {
             )}
 
             {/* Conversão - Compact Single Line */}
-            <div className="mb-4 p-3 border border-gray-200 dark:border-gray-800 rounded-lg">
+            <div className="mb-4 p-3 border border-[var(--cl-border)] rounded-lg">
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div className="flex items-center gap-2">
                   <Coins className="h-4 w-4 text-[var(--cl-teal)]" />
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                  <span className="text-sm font-semibold text-[var(--cl-ink)]">
                     {t("conversionExample")}
                   </span>
                 </div>
@@ -304,7 +296,7 @@ export default function ComprarPontosPage() {
             {/* Pacotes - Mobile Optimized Grid */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                <h2 className="text-xl sm:text-2xl font-bold text-[var(--cl-ink)]">
                   {t("choosePackage")}
                 </h2>
                 {isCurrentlyPro && (
@@ -329,10 +321,10 @@ export default function ComprarPontosPage() {
                         <Crown className="w-6 h-6 text-amber-600 dark:text-amber-400" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-900 dark:text-white">
+                        <h3 className="font-bold text-[var(--cl-ink)]">
                           Assinatura ConfiLar Pro Ativa
                         </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <p className="text-sm text-[var(--cl-ink-secondary)]">
                           Aproveite todos os seus benefícios exclusivos.
                         </p>
                       </div>
@@ -340,7 +332,7 @@ export default function ComprarPontosPage() {
                     <div className="flex items-center gap-3 bg-white/50 dark:bg-black/20 p-2 px-4 rounded-lg border border-amber-200/50 dark:border-amber-800/50 backdrop-blur-sm">
                       <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                       <div className="text-sm">
-                        <span className="text-gray-500 dark:text-gray-400 font-medium mr-1">
+                        <span className="text-[var(--cl-ink-muted)] font-medium mr-1">
                           Próxima renovação em:
                         </span>
                         <span className="font-bold text-amber-700 dark:text-amber-400">
@@ -365,17 +357,17 @@ export default function ComprarPontosPage() {
                     <div className="space-y-6">
                       {/* Icon & Description */}
                       <div className="text-center">
-                        <div className="mx-auto mb-3 w-16 h-16 bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center text-[var(--cl-teal)]">
+                        <div className="mx-auto mb-3 w-16 h-16 bg-[var(--cl-mist)] border-2 border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center text-[var(--cl-teal)]">
                           {activePackage.icon}
                         </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <p className="text-sm text-[var(--cl-ink-secondary)]">
                           {activePackage.description}
                         </p>
                       </div>
 
                       {/* Price */}
-                      <div className="p-4 border border-gray-200 dark:border-gray-800 rounded-lg text-center">
-                        <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                      <div className="p-4 border border-[var(--cl-border)] rounded-lg text-center">
+                        <div className="text-3xl font-bold text-[var(--cl-ink)] mb-2">
                           {activePackage.price}
                         </div>
                         <div className="flex items-center justify-center gap-2 mb-2">
@@ -388,8 +380,8 @@ export default function ComprarPontosPage() {
 
                         {/* Pro Badge Preview */}
                         {activePackage.slug === "pro_monthly" && (
-                          <div className="flex items-center justify-center mt-2 mb-1 gap-2 bg-gray-50 dark:bg-gray-800/50 py-1.5 rounded-full w-fit mx-auto px-4 border border-gray-100 dark:border-gray-700">
-                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                          <div className="flex items-center justify-center mt-2 mb-1 gap-2 bg-[var(--cl-mist)]/50 py-1.5 rounded-full w-fit mx-auto px-4 border border-gray-100 dark:border-gray-700">
+                            <span className="text-xs font-medium text-[var(--cl-ink-muted)]">
                               Receba:
                             </span>
                             <ProVerifiedBadge
@@ -411,7 +403,7 @@ export default function ComprarPontosPage() {
                               +{activePackage.bonus.toLocaleString("pt-BR")}{" "}
                               bônus
                             </Badge>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 font-semibold">
+                            <p className="text-sm text-[var(--cl-ink-muted)] mt-2 font-semibold">
                               Total:{" "}
                               {(
                                 activePackage.points + activePackage.bonus
@@ -423,11 +415,11 @@ export default function ComprarPontosPage() {
                       </div>
 
                       {/* Equivalent */}
-                      <div className="p-3 border border-gray-200 dark:border-gray-800 rounded-lg">
+                      <div className="p-3 border border-[var(--cl-border)] rounded-lg">
                         <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
                           Equivalente a:
                         </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <p className="text-sm text-[var(--cl-ink-secondary)]">
                           {activePackage.uses}
                         </p>
                       </div>
@@ -552,7 +544,7 @@ export default function ComprarPontosPage() {
                         className={`w-full p-3 border rounded-lg transition-all text-center ${
                           pkg.popular
                             ? "border-gray-900 dark:border-gray-100 bg-gray-50 dark:bg-gray-900"
-                            : "border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700"
+                            : "border-[var(--cl-border)] hover:border-gray-300 dark:hover:border-gray-700"
                         } ${isExpanded ? "ring-2 ring-gray-900 dark:ring-gray-100" : ""}`}
                       >
                         {pkg.popular && (
@@ -561,15 +553,15 @@ export default function ComprarPontosPage() {
                           </Badge>
                         )}
 
-                        <div className="mb-2 mx-auto w-8 h-8 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center text-[var(--cl-teal)]">
+                        <div className="mb-2 mx-auto w-8 h-8 bg-[var(--cl-mist)] border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center text-[var(--cl-teal)]">
                           {pkg.icon}
                         </div>
 
-                        <h3 className="text-xs font-bold text-gray-900 dark:text-white mb-1">
+                        <h3 className="text-xs font-bold text-[var(--cl-ink)] mb-1">
                           {pkg.name}
                         </h3>
 
-                        <p className="text-sm font-bold text-gray-900 dark:text-white mb-0.5">
+                        <p className="text-sm font-bold text-[var(--cl-ink)] mb-0.5">
                           {pkg.price}
                         </p>
 
@@ -611,7 +603,7 @@ export default function ComprarPontosPage() {
                           </div>
                         )}
 
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        <p className="text-xs text-[var(--cl-ink-muted)] mt-2">
                           {isExpanded ? "Fechar" : "Ver mais"}
                         </p>
                       </button>
@@ -623,21 +615,21 @@ export default function ComprarPontosPage() {
 
             {/* Benefícios - Compact (Moved Below) */}
             <div className="mb-4">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 className="text-sm font-semibold text-[var(--cl-ink)] mb-2">
                 {t("whatCanYouDo")}
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {benefits.map((benefit, index) => (
                   <div
                     key={index}
-                    className="p-2 border border-gray-200 dark:border-gray-800 rounded-lg text-center"
+                    className="p-2 border border-[var(--cl-border)] rounded-lg text-center"
                   >
                     <div className="flex justify-center mb-1">
-                      <div className="w-4 h-4 text-gray-600 dark:text-gray-400">
+                      <div className="w-4 h-4 text-[var(--cl-ink-secondary)]">
                         {benefit.icon}
                       </div>
                     </div>
-                    <h4 className="text-xs font-semibold text-gray-900 dark:text-white">
+                    <h4 className="text-xs font-semibold text-[var(--cl-ink)]">
                       {t(`benefit${index + 1}.title`)}
                     </h4>
                   </div>
@@ -647,37 +639,37 @@ export default function ComprarPontosPage() {
 
             {/* Tabela de Preços das Ações - Compact */}
             <div className="mb-4">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-                <Zap className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+              <h3 className="text-sm font-semibold text-[var(--cl-ink)] mb-2 flex items-center gap-2">
+                <Zap className="h-4 w-4 text-[var(--cl-ink-secondary)]" />
                 {t("premiumActionsCostTable")}
               </h3>
               <div className="grid grid-cols-3 gap-2">
-                <div className="p-2 border border-gray-200 dark:border-gray-800 rounded-lg text-center">
-                  <Heart className="w-4 h-4 text-gray-600 dark:text-gray-400 mx-auto mb-1" />
-                  <p className="text-xs font-semibold text-gray-900 dark:text-white">
+                <div className="p-2 border border-[var(--cl-border)] rounded-lg text-center">
+                  <Heart className="w-4 h-4 text-[var(--cl-ink-secondary)] mx-auto mb-1" />
+                  <p className="text-xs font-semibold text-[var(--cl-ink)]">
                     {PREMIUM_PRICES.LIKE.POINTS} pts
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-[var(--cl-ink-muted)]">
                     {t("premiumLike")}
                   </p>
                 </div>
 
-                <div className="p-2 border border-gray-200 dark:border-gray-800 rounded-lg text-center">
-                  <Crown className="w-4 h-4 text-gray-600 dark:text-gray-400 mx-auto mb-1" />
-                  <p className="text-xs font-semibold text-gray-900 dark:text-white">
+                <div className="p-2 border border-[var(--cl-border)] rounded-lg text-center">
+                  <Crown className="w-4 h-4 text-[var(--cl-ink-secondary)] mx-auto mb-1" />
+                  <p className="text-xs font-semibold text-[var(--cl-ink)]">
                     {PREMIUM_PRICES.POST.POINTS} pts
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-[var(--cl-ink-muted)]">
                     {t("premiumPost")}
                   </p>
                 </div>
 
-                <div className="p-2 border border-gray-200 dark:border-gray-800 rounded-lg text-center">
-                  <Star className="w-4 h-4 text-gray-600 dark:text-gray-400 mx-auto mb-1" />
-                  <p className="text-xs font-semibold text-gray-900 dark:text-white">
+                <div className="p-2 border border-[var(--cl-border)] rounded-lg text-center">
+                  <Star className="w-4 h-4 text-[var(--cl-ink-secondary)] mx-auto mb-1" />
+                  <p className="text-xs font-semibold text-[var(--cl-ink)]">
                     {PREMIUM_PRICES.AD_1_DAY.POINTS} pts
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-[var(--cl-ink-muted)]">
                     {t("premiumAd")}
                   </p>
                 </div>
@@ -685,12 +677,12 @@ export default function ComprarPontosPage() {
             </div>
 
             {/* Informações Adicionais - Compact */}
-            <details className="border border-gray-200 dark:border-gray-800 rounded-lg p-3">
-              <summary className="flex items-center gap-2 cursor-pointer text-sm font-semibold text-gray-900 dark:text-white">
-                <Info className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <details className="border border-[var(--cl-border)] rounded-lg p-3">
+              <summary className="flex items-center gap-2 cursor-pointer text-sm font-semibold text-[var(--cl-ink)]">
+                <Info className="w-4 h-4 text-[var(--cl-ink-secondary)]" />
                 Informações Importantes
               </summary>
-              <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1 mt-2 ml-6">
+              <ul className="text-xs text-[var(--cl-ink-secondary)] space-y-1 mt-2 ml-6">
                 <li>• R$ 1,00 = 100 ConfiPoints</li>
                 <li>• Pontos não expiram</li>
                 <li>• Pagamento seguro via PIX</li>

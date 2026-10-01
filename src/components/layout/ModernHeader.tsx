@@ -307,7 +307,7 @@ export function ModernHeader({
       {/* Header Moderno - Flutuante no Mobile (dinâmico) e Desktop (fixo) */}
       <div
         className={cn(
-          "fixed z-50 transition-all duration-300 ease-in-out",
+          "app-topbar fixed z-50",
           // All screen sizes: flat bar at top, full-width on mobile, sidebar-offset on desktop
           "top-0 left-0 right-0 w-auto",
           isCollapsed ? "lg:left-16" : "lg:left-56",
@@ -315,7 +315,7 @@ export function ModernHeader({
         )}
       >
         <div className="px-3 sm:px-4 lg:px-4">
-          <div className="flex items-center justify-between h-12 sm:h-14 lg:h-16">
+          <div className="app-topbar-row flex items-center justify-between">
             {/* Left side */}
             <div className="flex items-center space-x-4">
               {showBackButton && (
@@ -364,9 +364,9 @@ export function ModernHeader({
 
               {/* Dynamic Page Title - Desktop only */}
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-[var(--cl-ink)]">
+                <p className="text-base font-bold text-[var(--cl-ink)]">
                   {getPageTitle()}
-                </h1>
+                </p>
               </div>
             </div>
 
@@ -374,21 +374,21 @@ export function ModernHeader({
             <div className="flex-1" />
 
             {/* Right side - Actions */}
-            <div className="flex items-center">
+            <div className="flex items-center gap-1">
               {/* Toggle de Tema */}
-              <div className="relative -ml-1">
+              <div className="relative">
                 <ThemeToggle />
               </div>
 
               {/* Notificações */}
               {isLoggedIn && (
-                <div className="relative -ml-1">
+                <div className="relative">
                   <SimpleHeaderBell />
                 </div>
               )}
 
               {/* Avatar e Menu do Usuário OU Botão de Login */}
-              <div className="relative -ml-1">
+              <div className="relative">
                 {isLoggedIn ? (
                   <Button
                     variant="ghost"
@@ -398,13 +398,15 @@ export function ModernHeader({
                       });
                       setIsMenuExpanded(!isMenuExpanded);
                     }}
-                    className="flex items-center gap-1 px-2 py-2"
+                    className="flex h-11 items-center gap-1 px-2 py-2"
+                    aria-label="Abrir menu da conta"
+                    aria-expanded={isMenuExpanded}
                   >
                     <UserAvatar
                       src={userAvatarUrl}
                       alt={userFullName}
                       fallback={userFullName.charAt(0)}
-                      size="sm"
+                      size="md"
                       userId={userId}
                       showReferralBadge={false}
                     />
@@ -414,7 +416,7 @@ export function ModernHeader({
                   <Button
                     variant="default"
                     size="sm"
-                    className="rounded-full px-4 h-8 text-xs font-bold"
+                    className="rounded-full px-4 h-10 text-sm font-bold"
                     onClick={() => router.push("/auth")}
                   >
                     Entrar
@@ -423,7 +425,7 @@ export function ModernHeader({
 
                 {/* Menu Expandido */}
                 {isMenuExpanded && (
-                  <div className="absolute top-full right-0 mt-2 w-72 sm:w-80 bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-2xl shadow-[var(--cl-shadow)] z-50 max-h-[75vh] overflow-hidden animate-slide-down">
+                  <div className="absolute top-full right-0 mt-2 w-72 sm:w-80 bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-2xl shadow-[var(--cl-shadow)] z-50 max-h-[calc(100dvh-var(--app-header-height)-var(--app-top-inset)-var(--app-tabbar-height)-var(--app-bottom-inset)-16px)] overflow-hidden ">
                     <div className="p-3 sm:p-4 overflow-y-auto max-h-[75vh]">
                       {/* Header do Perfil */}
                       <div className="flex items-center space-x-2 sm:space-x-3 pb-3 sm:pb-4 border-b border-[var(--cl-border)] -mx-3 sm:-mx-4 px-3 sm:px-4">
@@ -554,7 +556,7 @@ export function ModernHeader({
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation("/home")}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
+                              className="flex items-center gap-1 text-xs py-2 min-h-11"
                             >
                               <Home className="h-3 w-3" />
                               <span className="truncate">Home</span>
@@ -563,7 +565,7 @@ export function ModernHeader({
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation("/feed")}
-                              className="flex items-center gap-1 text-xs py-1 h-7 text-[var(--cl-teal)]"
+                              className="flex items-center gap-1 text-xs py-2 min-h-11 text-[var(--cl-teal)]"
                             >
                               <Users className="h-3 w-3" />
                               <span className="truncate">
@@ -574,7 +576,7 @@ export function ModernHeader({
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation("/classificados")}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
+                              className="flex items-center gap-1 text-xs py-2 min-h-11"
                             >
                               <Briefcase className="h-3 w-3" />
                               <span className="truncate">
@@ -585,7 +587,7 @@ export function ModernHeader({
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation("/buscar")}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
+                              className="flex items-center gap-1 text-xs py-2 min-h-11"
                             >
                               <Search className="h-3 w-3" />
                               <span className="truncate">
@@ -616,7 +618,7 @@ export function ModernHeader({
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation("/favoritos")}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
+                              className="flex items-center gap-1 text-xs py-2 min-h-11"
                             >
                               <Heart className="h-3 w-3" />
                               <span className="truncate">{t("favorites")}</span>
@@ -625,7 +627,7 @@ export function ModernHeader({
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation("/avaliacoes")}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
+                              className="flex items-center gap-1 text-xs py-2 min-h-11"
                             >
                               <Star className="h-3 w-3" />
                               <span className="truncate">{t("reviews")}</span>
@@ -634,7 +636,7 @@ export function ModernHeader({
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation("/indicacoes")}
-                              className="flex items-center gap-1 text-xs py-1 h-7 bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-900/30"
+                              className="flex items-center gap-1 text-xs py-2 min-h-11 bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-900/30"
                             >
                               <UserPlus className="h-3 w-3 text-green-600 dark:text-green-400" />
                               <span className="truncate text-green-700 dark:text-green-300">
@@ -648,7 +650,7 @@ export function ModernHeader({
                                 openChat();
                                 setIsMenuExpanded(false);
                               }}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
+                              className="flex items-center gap-1 text-xs py-2 min-h-11"
                             >
                               <MessageCircle className="h-3 w-3" />
                               <span className="truncate">Mensagens</span>
@@ -687,7 +689,7 @@ export function ModernHeader({
                               onClick={() =>
                                 handleNavigation("/confipoints/dashboard")
                               }
-                              className="flex items-center gap-1 text-xs py-1 h-7 bg-yellow-50 dark:bg-yellow-950/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30"
+                              className="flex items-center gap-1 text-xs py-2 min-h-11 bg-yellow-50 dark:bg-yellow-950/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30"
                             >
                               <BarChart3 className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
                               <span className="truncate text-yellow-700 dark:text-yellow-300">
@@ -700,7 +702,7 @@ export function ModernHeader({
                               onClick={() =>
                                 handleNavigation("/confipoints/comprar")
                               }
-                              className="flex items-center gap-1 text-xs py-1 h-7 bg-[var(--cl-teal)]/10 hover:bg-[var(--cl-teal)]/20"
+                              className="flex items-center gap-1 text-xs py-2 min-h-11 bg-[var(--cl-teal)]/10 hover:bg-[var(--cl-teal)]/20"
                             >
                               <Crown className="h-3 w-3 text-[var(--cl-teal)]" />
                               <span className="truncate text-[var(--cl-teal)]">
@@ -713,7 +715,7 @@ export function ModernHeader({
                               onClick={() =>
                                 handleNavigation("/confipoints/compras")
                               }
-                              className="flex items-center gap-1 text-xs py-1 h-7 bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-900/30"
+                              className="flex items-center gap-1 text-xs py-2 min-h-11 bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-900/30"
                             >
                               <ShoppingBag className="h-3 w-3 text-green-600 dark:text-green-400" />
                               <span className="truncate text-green-700 dark:text-green-300">
@@ -726,7 +728,7 @@ export function ModernHeader({
                               onClick={() =>
                                 handleNavigation("/confipoints/transferir")
                               }
-                              className="flex items-center gap-1 text-xs py-1 h-7 bg-[var(--cl-mist)] hover:brightness-95"
+                              className="flex items-center gap-1 text-xs py-2 min-h-11 bg-[var(--cl-mist)] hover:brightness-95"
                             >
                               <Send className="h-3 w-3 text-[var(--cl-teal)]" />
                               <span className="truncate text-[var(--cl-ink)]">
@@ -740,7 +742,7 @@ export function ModernHeader({
                                 onClick={() =>
                                   handleNavigation("/gestao-confi/confipoints")
                                 }
-                                className="flex items-center gap-1 text-xs py-1 h-7 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-green-900/30 border border-red-200 dark:border-red-800"
+                                className="flex items-center gap-1 text-xs py-2 min-h-11 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-green-900/30 border border-red-200 dark:border-red-800"
                               >
                                 <BarChart3 className="h-3 w-3 text-red-600 dark:text-red-400" />
                                 <span className="truncate text-red-700 dark:text-red-300">
@@ -773,7 +775,7 @@ export function ModernHeader({
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleNavigation("/portfolio")}
-                                className="flex items-center gap-1 text-xs py-1 h-7"
+                                className="flex items-center gap-1 text-xs py-2 min-h-11"
                               >
                                 <FileText className="h-3 w-3" />
                                 <span className="truncate">
@@ -784,7 +786,7 @@ export function ModernHeader({
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleNavigation("/reputacao")}
-                                className="flex items-center gap-1 text-xs py-1 h-7"
+                                className="flex items-center gap-1 text-xs py-2 min-h-11"
                               >
                                 <Award className="h-3 w-3" />
                                 <span className="truncate">
@@ -891,7 +893,7 @@ export function ModernHeader({
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation("/ajuda")}
-                              className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
+                              className="flex items-center gap-1 text-xs py-2 min-h-11 justify-start"
                             >
                               <HelpCircle className="h-3 w-3" />
                               <span className="truncate">
@@ -902,7 +904,7 @@ export function ModernHeader({
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation("/contato")}
-                              className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
+                              className="flex items-center gap-1 text-xs py-2 min-h-11 justify-start"
                             >
                               <MessageCircle className="h-3 w-3" />
                               <span className="truncate">{t("contact")}</span>
@@ -911,7 +913,7 @@ export function ModernHeader({
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation("/sobre")}
-                              className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
+                              className="flex items-center gap-1 text-xs py-2 min-h-11 justify-start"
                             >
                               <Users className="h-3 w-3" />
                               <span className="truncate">{t("aboutUs")}</span>
@@ -920,7 +922,7 @@ export function ModernHeader({
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation("/termos")}
-                              className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
+                              className="flex items-center gap-1 text-xs py-2 min-h-11 justify-start"
                             >
                               <FileText className="h-3 w-3" />
                               <span className="truncate">Termos de Uso</span>
@@ -929,7 +931,7 @@ export function ModernHeader({
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation("/privacidade")}
-                              className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
+                              className="flex items-center gap-1 text-xs py-2 min-h-11 justify-start"
                             >
                               <Shield className="h-3 w-3" />
                               <span className="truncate">
@@ -942,7 +944,7 @@ export function ModernHeader({
                               onClick={() =>
                                 handleNavigation("/minhas-denuncias")
                               }
-                              className="flex items-center gap-1 text-xs py-1 h-7 justify-start w-full"
+                              className="flex items-center gap-1 text-xs py-2 min-h-11 justify-start w-full"
                             >
                               <Flag className="h-3 w-3" />
                               <span className="truncate">{t("myReports")}</span>
@@ -974,7 +976,7 @@ export function ModernHeader({
                                 onClick={() =>
                                   handleNavigation("/gestao-confi/dashboard")
                                 }
-                                className="flex items-center gap-1 text-xs py-1 h-7 bg-gray-100 hover:bg-gray-200"
+                                className="flex items-center gap-1 text-xs py-2 min-h-11 bg-gray-100 hover:bg-gray-200"
                               >
                                 <ShieldCheck className="h-3 w-3" />
                                 <span className="truncate">

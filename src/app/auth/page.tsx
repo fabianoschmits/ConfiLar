@@ -91,7 +91,7 @@ export default function AuthPage() {
       <div className="min-h-screen bg-[var(--cl-paper)]">
         {/* Header Moderno */}
         <header className="bg-[var(--cl-surface)]/80 backdrop-blur-md border-b border-[var(--cl-border)] sticky top-0 z-50 shadow-sm">
-          <div className="container flex h-16 items-center justify-between px-4">
+          <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
             <div className="flex items-center space-x-3">
               <BrandLogo width={160} height={40} className="object-contain" />
             </div>
@@ -111,7 +111,7 @@ export default function AuthPage() {
         </header>
 
         {/* Main Content Moderno */}
-        <div className="container py-12 md:py-24">
+        <div className="app-page app-page--narrow">
           <div className="mx-auto max-w-md">
             {/* Auth Forms Modernas */}
             <Card className="bg-[var(--cl-surface)]/70 backdrop-blur-sm border border-[var(--cl-border)] shadow-[var(--cl-shadow)] rounded-[var(--cl-radius-card)]">

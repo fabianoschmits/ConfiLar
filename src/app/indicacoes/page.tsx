@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { ReferralDashboardSkeleton } from "@/components/ui/skeleton";
 import { ReferralDashboard } from "@/components/referral/ReferralDashboard";
@@ -31,7 +32,7 @@ export default function IndicacoesPage() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="min-h-screen bg-[var(--cl-paper)] p-6">
+        <div className="app-screen bg-[var(--cl-paper)] p-6">
           <div className="max-w-7xl mx-auto">
             <ReferralDashboardSkeleton />
           </div>
@@ -43,7 +44,7 @@ export default function IndicacoesPage() {
   if (!user) {
     return (
       <MainLayout>
-        <div className="min-h-screen bg-[var(--cl-paper)] flex items-center justify-center p-6">
+        <div className="app-screen bg-[var(--cl-paper)] flex items-center justify-center p-6">
           <EmptyState
             icon={
               <Users className="h-16 w-16 text-gray-400 dark:text-gray-600" />
@@ -63,24 +64,14 @@ export default function IndicacoesPage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-[var(--cl-paper)] p-4 md:p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <div className="app-screen bg-[var(--cl-paper)]">
+        <div className="app-page space-y-6">
           {/* Header */}
-          <div className="text-center space-y-4">
-            <div className="flex items-center justify-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
-                Programa de Indicações
-              </h1>
-            </div>
-            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Indique amigos para o ConfiLar e ganhe recompensas incríveis!
-              Quanto mais pessoas você indicar, mais badges e benefícios você
-              desbloqueia.
-            </p>
-          </div>
+          <PageHeader
+            title="Programa de indicações"
+            description="Convide amigos e acompanhe suas recompensas."
+            icon={Users}
+          />
 
           {/* Quem me indicou / Reivindicar */}
           {!loadingReferrer &&
@@ -117,12 +108,12 @@ export default function IndicacoesPage() {
               >
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
-                  <h3 className="font-semibold text-base md:text-lg text-gray-900 dark:text-white">
+                  <h3 className="font-semibold text-base md:text-lg text-[var(--cl-ink)]">
                     Como Ganhar Pontos
                   </h3>
                 </div>
                 <ChevronDown
-                  className={`w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform ${
+                  className={`w-5 h-5 text-[var(--cl-ink-secondary)] transition-transform ${
                     showPointsTable ? "rotate-180" : ""
                   }`}
                 />
@@ -137,7 +128,7 @@ export default function IndicacoesPage() {
                     >
                       <div className="flex items-center gap-2 md:gap-3">
                         <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-600 dark:bg-green-400 rounded-full" />
-                        <span className="text-sm md:text-base text-gray-900 dark:text-white">
+                        <span className="text-sm md:text-base text-[var(--cl-ink)]">
                           {item.action}
                         </span>
                       </div>
@@ -161,12 +152,12 @@ export default function IndicacoesPage() {
               >
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-[var(--cl-teal)] dark:text-blue-400" />
-                  <h3 className="font-semibold text-sm text-gray-900 dark:text-white">
+                  <h3 className="font-semibold text-sm text-[var(--cl-ink)]">
                     Como Funciona
                   </h3>
                 </div>
                 <ChevronDown
-                  className={`w-4 h-4 text-gray-600 dark:text-gray-400 transition-transform ${
+                  className={`w-4 h-4 text-[var(--cl-ink-secondary)] transition-transform ${
                     showHowItWorks ? "rotate-180" : ""
                   }`}
                 />
@@ -179,10 +170,10 @@ export default function IndicacoesPage() {
                       1
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
+                      <p className="font-medium text-[var(--cl-ink)]">
                         Compartilhe seu link
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-[var(--cl-ink-secondary)]">
                         Use seu código exclusivo para convidar amigos
                       </p>
                     </div>
@@ -193,10 +184,10 @@ export default function IndicacoesPage() {
                       2
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
+                      <p className="font-medium text-[var(--cl-ink)]">
                         Indicações enviam documentos
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-[var(--cl-ink-secondary)]">
                         Cada documento enviado confirma a indicação e te dá
                         pontos
                       </p>
@@ -208,10 +199,10 @@ export default function IndicacoesPage() {
                       3
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
+                      <p className="font-medium text-[var(--cl-ink)]">
                         Ganhe recompensas
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-[var(--cl-ink-secondary)]">
                         Desbloqueie badges e benefícios exclusivos
                       </p>
                     </div>
@@ -231,12 +222,12 @@ export default function IndicacoesPage() {
               >
                 <div className="flex items-center gap-2">
                   <Award className="w-5 h-5 text-[var(--cl-teal)] dark:text-[var(--cl-teal)]" />
-                  <h3 className="font-semibold text-base md:text-lg text-gray-900 dark:text-white">
+                  <h3 className="font-semibold text-base md:text-lg text-[var(--cl-ink)]">
                     Níveis e Benefícios
                   </h3>
                 </div>
                 <ChevronDown
-                  className={`w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform ${
+                  className={`w-5 h-5 text-[var(--cl-ink-secondary)] transition-transform ${
                     showTiersBenefits ? "rotate-180" : ""
                   }`}
                 />
@@ -257,10 +248,10 @@ export default function IndicacoesPage() {
                           size="sm"
                         />
                         <div className="text-center">
-                          <h4 className="font-bold text-xs md:text-sm text-gray-900 dark:text-white">
+                          <h4 className="font-bold text-xs md:text-sm text-[var(--cl-ink)]">
                             {tier.name}
                           </h4>
-                          <p className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400">
+                          <p className="text-[10px] md:text-xs text-[var(--cl-ink-secondary)]">
                             {tier.requirement}
                           </p>
                         </div>
@@ -269,7 +260,7 @@ export default function IndicacoesPage() {
                         {tier.benefits.map((benefit, idx) => (
                           <li
                             key={idx}
-                            className="text-[9px] md:text-[10px] text-gray-600 dark:text-gray-400 flex items-start gap-1"
+                            className="text-[9px] md:text-[10px] text-[var(--cl-ink-secondary)] flex items-start gap-1"
                           >
                             <span className="text-green-600 dark:text-green-400 text-[8px] md:text-[9px]">
                               ✓

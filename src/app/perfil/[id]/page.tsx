@@ -204,11 +204,11 @@ export default function ProfilePage() {
   if (error || !profile) {
     return (
       <MainLayout requireAuth={false}>
-        <div className="min-h-screen bg-[var(--cl-paper)] flex items-center justify-center">
+        <div className="app-screen bg-[var(--cl-paper)] flex items-center justify-center">
           <Card className="max-w-md mx-auto">
             <CardContent className="p-8 text-center">
               <User className="w-16 h-16 text-red-600 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              <h2 className="text-xl font-semibold text-[var(--cl-ink)] mb-2">
                 {error || t("profileNotFound")}
               </h2>
               <Button onClick={() => router.push("/buscar")}>
@@ -227,16 +227,16 @@ export default function ProfilePage() {
   return (
     <MainLayout requireAuth={false}>
       {profile && <AIProfileSchema profile={profile} />}
-      <div className="min-h-screen bg-[var(--cl-paper)] text-foreground transition-colors duration-300">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+      <div className="app-screen bg-[var(--cl-paper)] text-foreground transition-colors duration-300">
+        <div className="app-page app-page--narrow">
           {/* Header Minimalista */}
           {/* Header Minimalista Unificado */}
           <div className="flex flex-col items-center text-center mb-6">
             {/* Identity Card Container */}
             <div className="relative w-full max-w-2xl mx-auto mb-6">
-              <div className="relative px-6 py-10 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl shadow-sm flex flex-col items-center">
+              <div className="relative p-5 sm:p-6 bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-2xl shadow-[var(--cl-shadow)] flex flex-col items-center">
                 {/* Unified Avatar & Info */}
-                <div className="flex flex-col items-center -mt-20 sm:-mt-24 mb-6">
+                <div className="flex flex-col items-center mb-4">
                   <div className="relative p-1.5 rounded-full bg-background/50 backdrop-blur shadow-sm border border-border/50">
                     <UserAvatar
                       src={profile.avatar_url || profile.profile_photo_url}
@@ -247,7 +247,7 @@ export default function ProfilePage() {
                       size="xl"
                       userId={profile.id}
                       showReferralBadge={true}
-                      className="w-32 h-32 sm:w-40 sm:h-40 shadow-inner"
+                      className="w-24 h-24 sm:w-28 sm:h-28"
                     />
                     <ProVerifiedBadge
                       isVerified={profile.is_verified}
@@ -262,7 +262,7 @@ export default function ProfilePage() {
                 <div className="space-y-4 max-w-lg w-full">
                   <div className="space-y-2">
                     <div className="flex items-center justify-center gap-2 flex-wrap">
-                      <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70">
+                      <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--cl-ink)] break-words">
                         {profile.full_name || "Usuário"}
                       </h1>
                       {profile.is_verified && (
@@ -299,7 +299,7 @@ export default function ProfilePage() {
                   {profile.bio && (
                     <div className="mt-4 relative">
                       <Quote className="w-8 h-8 text-primary/10 absolute -top-4 -left-2 transform -scale-x-100" />
-                      <p className="text-base sm:text-lg text-muted-foreground leading-relaxed italic relative z-10 px-4">
+                      <p className="text-sm text-[var(--cl-ink-secondary)] leading-relaxed relative z-10 px-2">
                         {profile.bio}
                       </p>
                       <Quote className="w-8 h-8 text-primary/10 absolute -bottom-4 -right-2" />
@@ -310,19 +310,16 @@ export default function ProfilePage() {
             </div>
 
             {/* Botões de Ação Minimalistas */}
-            <div className="flex flex-wrap justify-center gap-3 mb-6 w-full sm:w-auto">
+            <div className="app-profile-actions mb-6">
               {!isOwnProfile && (
-                <Button
-                  onClick={handleContact}
-                  className="rounded-full px-8 py-6 font-semibold shadow-sm hover:shadow-md transition-all w-full sm:w-auto"
-                >
+                <Button onClick={handleContact} className="font-semibold">
                   <MessageCircle className="w-5 h-5 mr-2" />
                   {t("contact")}
                 </Button>
               )}
               <Button
                 variant="outline"
-                className="rounded-full px-8 py-6 font-medium border-2 hover:bg-muted w-full sm:w-auto"
+                className="font-medium"
                 onClick={handleShare}
               >
                 <Share2 className="w-5 h-5 mr-2" />
@@ -332,7 +329,7 @@ export default function ProfilePage() {
 
             {/* Redes Sociais */}
             <div className="w-full max-w-lg mx-auto mb-6">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--cl-ink-muted)] mb-4">
                 Redes Sociais
               </h3>
               <SocialLinksDisplay profile={profile} />
@@ -341,43 +338,43 @@ export default function ProfilePage() {
             {/* Métricas Clean (Row) */}
             <div className="w-full max-w-3xl mx-auto mb-6">
               <div className="grid grid-cols-4 gap-2 sm:gap-4">
-                <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-3 sm:p-4 shadow-sm transition-all flex flex-col items-center justify-center">
+                <div className="bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-2xl p-3 sm:p-4 shadow-sm transition-all flex flex-col items-center justify-center">
                   <div className="p-1.5 sm:p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl mb-1 sm:mb-2">
                     <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 fill-yellow-500" />
                   </div>
                   <span className="text-base sm:text-lg font-bold text-foreground">
                     {profile.rating.toFixed(1)}
                   </span>
-                  <span className="text-[8px] sm:text-[10px] uppercase tracking-wider font-bold text-muted-foreground mt-0.5 sm:mt-1 text-center">
+                  <span className="text-[11px] sm:text-xs font-medium text-muted-foreground mt-0.5 sm:mt-1 text-center">
                     {t("rating")}
                   </span>
                 </div>
 
-                <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-3 sm:p-4 shadow-sm transition-all flex flex-col items-center justify-center">
+                <div className="bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-2xl p-3 sm:p-4 shadow-sm transition-all flex flex-col items-center justify-center">
                   <div className="p-1.5 sm:p-2 bg-[var(--cl-mist)] dark:bg-blue-900/20 rounded-xl mb-1 sm:mb-2">
                     <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
                   </div>
                   <span className="text-base sm:text-lg font-bold text-foreground">
                     {profile.total_reviews}
                   </span>
-                  <span className="text-[8px] sm:text-[10px] uppercase tracking-wider font-bold text-muted-foreground mt-0.5 sm:mt-1 text-center">
+                  <span className="text-[11px] sm:text-xs font-medium text-muted-foreground mt-0.5 sm:mt-1 text-center">
                     {t("reviews")}
                   </span>
                 </div>
 
-                <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-3 sm:p-4 shadow-sm transition-all flex flex-col items-center justify-center">
+                <div className="bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-2xl p-3 sm:p-4 shadow-sm transition-all flex flex-col items-center justify-center">
                   <div className="p-1.5 sm:p-2 bg-[var(--cl-mist)] dark:bg-purple-900/20 rounded-xl mb-1 sm:mb-2">
                     <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500" />
                   </div>
                   <span className="text-base sm:text-lg font-bold text-foreground">
                     {viewStats?.total_views?.toLocaleString("pt-BR") || "0"}
                   </span>
-                  <span className="text-[8px] sm:text-[10px] uppercase tracking-wider font-bold text-muted-foreground mt-0.5 sm:mt-1 text-center">
+                  <span className="text-[11px] sm:text-xs font-medium text-muted-foreground mt-0.5 sm:mt-1 text-center">
                     {t("views")}
                   </span>
                 </div>
 
-                <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-3 sm:p-4 shadow-sm transition-all flex flex-col items-center justify-center">
+                <div className="bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-2xl p-3 sm:p-4 shadow-sm transition-all flex flex-col items-center justify-center">
                   <div className="p-1.5 sm:p-2 bg-primary/5 rounded-xl mb-1 sm:mb-2">
                     {referralLoading ? (
                       <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
@@ -392,7 +389,7 @@ export default function ProfilePage() {
                   <span className="text-base sm:text-lg font-bold text-foreground">
                     {referralStats?.totalReferrals || 0}
                   </span>
-                  <span className="text-[8px] sm:text-[10px] uppercase tracking-wider font-bold text-muted-foreground mt-0.5 sm:mt-1 text-center">
+                  <span className="text-[11px] sm:text-xs font-medium text-muted-foreground mt-0.5 sm:mt-1 text-center">
                     Convites
                   </span>
                 </div>

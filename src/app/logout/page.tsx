@@ -50,12 +50,12 @@ export default function LogoutPage() {
   return (
     <LightModeLayout>
       <div className="min-h-screen bg-[var(--cl-paper)] flex items-center justify-center p-4">
-        <Card className="max-w-md w-full text-center bg-white/80 backdrop-blur-md border-0 shadow-xl">
+        <Card className="max-w-md w-full text-center bg-[var(--cl-surface)] border-[var(--cl-border)] shadow-[var(--cl-shadow)]">
           <CardContent className="p-8">
             <div className="mx-auto w-20 h-20 bg-gradient-to-br from-blue-500 to-[var(--cl-ink)] rounded-full flex items-center justify-center mb-6 shadow-lg">
               <LogOut className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+            <h1 className="text-2xl font-semibold text-[var(--cl-ink)] mb-4">
               Logout em andamento...
             </h1>
             <p className="text-gray-600 mb-8">

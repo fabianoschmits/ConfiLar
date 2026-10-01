@@ -40,21 +40,21 @@ export default function SobrePage() {
   if (user) {
     return (
       <MainLayout requireAuth={false}>
-        <div className="min-h-screen bg-[var(--cl-paper)]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="app-screen bg-[var(--cl-paper)]">
+          <div className="app-page">
             {/* Header da Página */}
-            <div className="text-center mb-12">
-              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight">
+            <div className="text-center mb-6">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--cl-ink)] mb-6 tracking-tight">
                 {t("title")}
               </h1>
-              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg text-[var(--cl-ink-secondary)] max-w-3xl mx-auto leading-relaxed">
                 {t("subtitle")}
               </p>
             </div>
 
             {/* Benefícios */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">
+            <div className="mb-8">
+              <h2 className="text-xl sm:text-2xl font-bold text-[var(--cl-ink)] text-center mb-6">
                 {t("whyChoose")}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -66,10 +66,10 @@ export default function SobrePage() {
                         className="text-[var(--cl-teal)] dark:text-blue-400"
                       />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                    <h3 className="text-xl font-semibold text-[var(--cl-ink)] mb-4">
                       {t("security.title")}
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-[var(--cl-ink-secondary)]">
                       {t("security.description")}
                     </p>
                   </CardContent>
@@ -83,10 +83,10 @@ export default function SobrePage() {
                         className="text-green-600 dark:text-green-400"
                       />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                    <h3 className="text-xl font-semibold text-[var(--cl-ink)] mb-4">
                       {t("qualified.title")}
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-[var(--cl-ink-secondary)]">
                       {t("qualified.description")}
                     </p>
                   </CardContent>
@@ -100,10 +100,10 @@ export default function SobrePage() {
                         className="text-[var(--cl-teal)] dark:text-[var(--cl-teal)]"
                       />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                    <h3 className="text-xl font-semibold text-[var(--cl-ink)] mb-4">
                       {t("fast.title")}
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-[var(--cl-ink-secondary)]">
                       {t("fast.description")}
                     </p>
                   </CardContent>
@@ -112,8 +112,8 @@ export default function SobrePage() {
             </div>
 
             {/* Serviços */}
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">
+            <div className="mb-8">
+              <h2 className="text-xl sm:text-2xl font-bold text-[var(--cl-ink)] text-center mb-6">
                 {t("services")}
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -165,10 +165,10 @@ export default function SobrePage() {
                   >
                     <CardContent>
                       <div className="text-4xl mb-4">{service.icon}</div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                      <h3 className="text-lg font-semibold text-[var(--cl-ink)] mb-2">
                         {service.title}
                       </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-[var(--cl-ink-secondary)]">
                         {service.desc}
                       </p>
                     </CardContent>
@@ -179,7 +179,7 @@ export default function SobrePage() {
 
             {/* Contato */}
             <div className="text-center">
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+              <h2 className="text-xl sm:text-2xl font-bold text-[var(--cl-ink)] mb-8">
                 Entre em contato
               </h2>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -215,214 +215,195 @@ export default function SobrePage() {
 
   // Se o usuário não estiver logado, mostrar página pública
   return (
-    <div className="min-h-screen bg-[var(--cl-paper)]">
-      {/* Header Moderno */}
-      <div className="bg-[var(--cl-surface)] border-b border-gray-200 dark:border-gray-700 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <BrandLogo width={160} height={40} className="object-contain" />
-            </div>
-            <div className="flex space-x-3">
-              <Link
-                href="/auth"
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-              >
-                Entrar
-              </Link>
+    <MainLayout requireAuth={false}>
+      <div className="app-screen bg-[var(--cl-paper)]">
+        {/* Hero Section */}
+        <div className="app-page">
+          <div className="text-center">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--cl-ink)] mb-6 tracking-tight">
+              Conectando profissionais e clientes
+            </h1>
+            <p className="text-base sm:text-lg text-[var(--cl-ink-secondary)] max-w-3xl mx-auto leading-relaxed mb-8">
+              A plataforma que facilita a contratação de serviços domésticos e
+              comerciais de forma segura e confiável
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/auth?tab=register"
-                className="px-4 py-2 bg-[var(--cl-cta)] text-[var(--cl-on-cta)] rounded-lg hover:brightness-110 transition-colors"
+                className="px-5 py-3 bg-[var(--cl-cta)] text-[var(--cl-on-cta)] rounded-full text-sm font-medium hover:brightness-110 transition-colors"
               >
-                Criar conta
+                Começar agora
+              </Link>
+              <Link
+                href="/buscar"
+                className="px-5 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-full text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                Buscar profissionais
               </Link>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Hero Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight">
-            Conectando profissionais e clientes
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed mb-8">
-            A plataforma que facilita a contratação de serviços domésticos e
-            comerciais de forma segura e confiável
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/auth?tab=register"
-              className="px-8 py-4 bg-[var(--cl-cta)] text-[var(--cl-on-cta)] rounded-lg text-lg font-medium hover:brightness-110 transition-colors"
-            >
-              Começar agora
-            </Link>
-            <Link
-              href="/buscar"
-              className="px-8 py-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-            >
-              Buscar profissionais
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Benefícios */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">
-          Por que escolher o ConfiLar?
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <Card className="p-8 text-center hover:shadow-lg transition-shadow">
-            <CardContent>
-              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Shield
-                  size={32}
-                  className="text-[var(--cl-teal)] dark:text-blue-400"
-                />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                Segurança garantida
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Todos os profissionais são verificados e as transações são
-                protegidas para sua tranquilidade
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="p-8 text-center hover:shadow-lg transition-shadow">
-            <CardContent>
-              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Users
-                  size={32}
-                  className="text-green-600 dark:text-green-400"
-                />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                Profissionais qualificados
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Acesso a uma rede de profissionais experientes e bem avaliados
-                pelos clientes
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="p-8 text-center hover:shadow-lg transition-shadow">
-            <CardContent>
-              <div className="w-16 h-16 bg-[var(--cl-mist)] dark:bg-purple-900/50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Zap
-                  size={32}
-                  className="text-[var(--cl-teal)] dark:text-[var(--cl-teal)]"
-                />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                Processo rápido
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Cadastro simples e navegação intuitiva para encontrar o que você
-                precisa rapidamente
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Serviços */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">
-          Serviços disponíveis
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[
-            {
-              icon: "🏠",
-              title: "Limpeza",
-              desc: "Limpeza residencial e comercial",
-            },
-            {
-              icon: "🔧",
-              title: "Manutenção",
-              desc: "Reparos e manutenção geral",
-            },
-            {
-              icon: "🌱",
-              title: "Jardinagem",
-              desc: "Cuidados com plantas e jardins",
-            },
-            {
-              icon: "📱",
-              title: "Tecnologia",
-              desc: "Suporte técnico e instalações",
-            },
-            {
-              icon: "🎨",
-              title: "Decoração",
-              desc: "Design e organização de espaços",
-            },
-            { icon: "🚗", title: "Transporte", desc: "Serviços de mobilidade" },
-            {
-              icon: "📚",
-              title: "Educação",
-              desc: "Aulas particulares e cursos",
-            },
-            {
-              icon: "💼",
-              title: "Consultoria",
-              desc: "Orientações profissionais",
-            },
-          ].map((service, index) => (
-            <Card
-              key={index}
-              className="p-6 text-center hover:shadow-lg transition-shadow"
-            >
+        {/* Benefícios */}
+        <div className="app-page">
+          <h2 className="text-xl sm:text-2xl font-bold text-[var(--cl-ink)] text-center mb-6">
+            Por que escolher o ConfiLar?
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="p-8 text-center hover:shadow-lg transition-shadow">
               <CardContent>
-                <div className="text-4xl mb-4">{service.icon}</div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  {service.title}
+                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Shield
+                    size={32}
+                    className="text-[var(--cl-teal)] dark:text-blue-400"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold text-[var(--cl-ink)] mb-4">
+                  Segurança garantida
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {service.desc}
+                <p className="text-[var(--cl-ink-secondary)]">
+                  Todos os profissionais são verificados e as transações são
+                  protegidas para sua tranquilidade
                 </p>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      </div>
 
-      {/* Contato */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
-          Entre em contato
-        </h2>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link
-            href="/ajuda"
-            className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors inline-flex items-center"
-          >
-            <Mail className="h-5 w-5 mr-2" />
-            Central de Ajuda
-          </Link>
-          <Link
-            href="/buscar"
-            className="px-6 py-3 bg-[var(--cl-cta)] text-[var(--cl-on-cta)] rounded-lg hover:brightness-110 transition-colors inline-flex items-center"
-          >
-            <Users className="h-5 w-5 mr-2" />
-            Buscar Profissionais
-          </Link>
-          <a
-            href="https://www.instagram.com/appconfilar"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors inline-flex items-center"
-          >
-            <Instagram className="h-5 w-5 mr-2" />
-            @appconfilar
-          </a>
+            <Card className="p-8 text-center hover:shadow-lg transition-shadow">
+              <CardContent>
+                <div className="w-16 h-16 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Users
+                    size={32}
+                    className="text-green-600 dark:text-green-400"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold text-[var(--cl-ink)] mb-4">
+                  Profissionais qualificados
+                </h3>
+                <p className="text-[var(--cl-ink-secondary)]">
+                  Acesso a uma rede de profissionais experientes e bem avaliados
+                  pelos clientes
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="p-8 text-center hover:shadow-lg transition-shadow">
+              <CardContent>
+                <div className="w-16 h-16 bg-[var(--cl-mist)] dark:bg-purple-900/50 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Zap
+                    size={32}
+                    className="text-[var(--cl-teal)] dark:text-[var(--cl-teal)]"
+                  />
+                </div>
+                <h3 className="text-xl font-semibold text-[var(--cl-ink)] mb-4">
+                  Processo rápido
+                </h3>
+                <p className="text-[var(--cl-ink-secondary)]">
+                  Cadastro simples e navegação intuitiva para encontrar o que
+                  você precisa rapidamente
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Serviços */}
+        <div className="app-page">
+          <h2 className="text-xl sm:text-2xl font-bold text-[var(--cl-ink)] text-center mb-6">
+            Serviços disponíveis
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              {
+                icon: "🏠",
+                title: "Limpeza",
+                desc: "Limpeza residencial e comercial",
+              },
+              {
+                icon: "🔧",
+                title: "Manutenção",
+                desc: "Reparos e manutenção geral",
+              },
+              {
+                icon: "🌱",
+                title: "Jardinagem",
+                desc: "Cuidados com plantas e jardins",
+              },
+              {
+                icon: "📱",
+                title: "Tecnologia",
+                desc: "Suporte técnico e instalações",
+              },
+              {
+                icon: "🎨",
+                title: "Decoração",
+                desc: "Design e organização de espaços",
+              },
+              {
+                icon: "🚗",
+                title: "Transporte",
+                desc: "Serviços de mobilidade",
+              },
+              {
+                icon: "📚",
+                title: "Educação",
+                desc: "Aulas particulares e cursos",
+              },
+              {
+                icon: "💼",
+                title: "Consultoria",
+                desc: "Orientações profissionais",
+              },
+            ].map((service, index) => (
+              <Card
+                key={index}
+                className="p-6 text-center hover:shadow-lg transition-shadow"
+              >
+                <CardContent>
+                  <div className="text-4xl mb-4">{service.icon}</div>
+                  <h3 className="text-lg font-semibold text-[var(--cl-ink)] mb-2">
+                    {service.title}
+                  </h3>
+                  <p className="text-sm text-[var(--cl-ink-secondary)]">
+                    {service.desc}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Contato */}
+        <div className="app-page text-center">
+          <h2 className="text-xl sm:text-2xl font-bold text-[var(--cl-ink)] mb-8">
+            Entre em contato
+          </h2>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/ajuda"
+              className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors inline-flex items-center"
+            >
+              <Mail className="h-5 w-5 mr-2" />
+              Central de Ajuda
+            </Link>
+            <Link
+              href="/buscar"
+              className="px-6 py-3 bg-[var(--cl-cta)] text-[var(--cl-on-cta)] rounded-lg hover:brightness-110 transition-colors inline-flex items-center"
+            >
+              <Users className="h-5 w-5 mr-2" />
+              Buscar Profissionais
+            </Link>
+            <a
+              href="https://www.instagram.com/appconfilar"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors inline-flex items-center"
+            >
+              <Instagram className="h-5 w-5 mr-2" />
+              @appconfilar
+            </a>
+          </div>
         </div>
       </div>
-    </div>
+    </MainLayout>
   );
 }

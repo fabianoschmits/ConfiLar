@@ -266,7 +266,7 @@ export default function AdminReportDetailPage() {
   const preview = getPreviewContent();
 
   return (
-    <div className="space-y-3.5 max-w-4xl mx-auto p-2.5 sm:p-5 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-3.5 max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">

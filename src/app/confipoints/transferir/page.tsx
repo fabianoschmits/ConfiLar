@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -128,25 +129,16 @@ export default function TransferirConfiPointsPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-[var(--cl-paper)]">
-        <div className="container py-4">
+      <div className="app-screen bg-[var(--cl-paper)]">
+        <div className="app-page">
           <div className="mx-auto max-w-4xl">
             {/* Header */}
-            <div className="mb-8">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-[var(--cl-radius-card)] flex items-center justify-center">
-                  <Send className="h-6 w-6 text-[var(--cl-teal)]" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-[var(--cl-ink)]">
-                    {t("transferPoints")}
-                  </h1>
-                  <p className="text-sm text-[var(--cl-ink-secondary)]">
-                    {t("sendPointsToUsers")}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <PageHeader
+              title={t("transferPoints")}
+              description={t("sendPointsToUsers")}
+              icon={Send}
+              backHref="/confipoints/dashboard"
+            />
 
             {/* Saldo Atual */}
             {balance && (
@@ -157,10 +149,10 @@ export default function TransferirConfiPointsPage() {
                       <Coins className="w-5 h-5 text-[var(--cl-teal)]" />
                     </div>
                     <div>
-                      <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                      <p className="text-[10px] uppercase tracking-wider text-[var(--cl-ink-muted)] font-medium">
                         {t("availableBalance")}
                       </p>
-                      <p className="text-lg font-bold text-gray-900 dark:text-white">
+                      <p className="text-lg font-bold text-[var(--cl-ink)]">
                         {balance.balance.toLocaleString()} {t("points")}
                       </p>
                     </div>
@@ -217,10 +209,10 @@ export default function TransferirConfiPointsPage() {
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium text-gray-900 dark:text-white">
+                            <p className="font-medium text-[var(--cl-ink)]">
                               {searchedUser.full_name}
                             </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                            <p className="text-sm text-[var(--cl-ink-secondary)]">
                               {searchedUser.email}
                             </p>
                           </div>
@@ -242,7 +234,7 @@ export default function TransferirConfiPointsPage() {
                         disabled={!searchedUser}
                         className="dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                       />
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs text-[var(--cl-ink-muted)]">
                         {t("minimum")}: {MIN_TRANSFER_POINTS.toLocaleString()}{" "}
                         {t("points")}
                       </p>
@@ -266,10 +258,10 @@ export default function TransferirConfiPointsPage() {
                     {pointsValue > 0 && searchedUser && (
                       <div className="p-4 bg-[var(--cl-mist)] rounded-lg">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                          <span className="text-sm text-[var(--cl-ink-secondary)]">
                             {t("youWillSend")}:
                           </span>
-                          <span className="font-bold text-gray-900 dark:text-white text-base">
+                          <span className="font-bold text-[var(--cl-ink)] text-base">
                             {pointsValue.toLocaleString()} {t("points")}
                           </span>
                         </div>
@@ -283,7 +275,7 @@ export default function TransferirConfiPointsPage() {
                           </span>
                         </div>
                         <div className="flex items-center justify-between pt-2 border-t border-[var(--cl-border)]">
-                          <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                          <span className="text-sm font-semibold text-[var(--cl-ink)]">
                             {searchedUser.full_name} vai receber:
                           </span>
                           <span className="font-bold text-[var(--cl-teal)] text-lg">
@@ -345,16 +337,16 @@ export default function TransferirConfiPointsPage() {
                     <CardTitle className="text-lg">Dicas</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 text-sm">
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-[var(--cl-ink-secondary)]">
                       ✨ Você pode enviar pontos para agradecer, presentear ou
                       ajudar outros usuários!
                     </p>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-[var(--cl-ink-secondary)]">
                       🔒 Transferências são registradas e não podem ser
                       revertidas. Certifique-se de que está enviando para a
                       pessoa correta!
                     </p>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-[var(--cl-ink-secondary)]">
                       💬 Deixe uma mensagem para tornar o gesto mais especial!
                     </p>
                   </CardContent>
@@ -403,7 +395,7 @@ export default function TransferirConfiPointsPage() {
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium text-gray-900 dark:text-white truncate">
+                              <p className="text-xs font-medium text-[var(--cl-ink)] truncate">
                                 {isSent ? t("sentTo") : t("receivedFrom")}{" "}
                                 {otherUser?.id ? (
                                   <Link
@@ -416,7 +408,7 @@ export default function TransferirConfiPointsPage() {
                                   tCommon("user")
                                 )}
                               </p>
-                              <p className="text-[10px] text-gray-500 dark:text-gray-400">
+                              <p className="text-[10px] text-[var(--cl-ink-muted)]">
                                 {new Date(
                                   transfer.created_at,
                                 ).toLocaleDateString("pt-BR")}{" "}
@@ -451,7 +443,7 @@ export default function TransferirConfiPointsPage() {
                     })}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <div className="text-center py-8 text-[var(--cl-ink-muted)]">
                     <ArrowLeftRight className="w-12 h-12 mx-auto mb-3 opacity-50" />
                     <p>{t("noTransfersYet")}</p>
                     <p className="text-sm mt-1">

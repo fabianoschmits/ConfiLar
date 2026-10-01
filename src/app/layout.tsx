@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 // Forçar todas as páginas a serem dinâmicas
 export const dynamic = "force-dynamic";
 import "./globals.css";
+import "./native-app.css";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -38,8 +39,6 @@ import { RecaptchaProvider } from "@/components/providers/RecaptchaProvider";
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: "cover",
   themeColor: "#00b0b0",
   interactiveWidget: "resizes-content",

@@ -340,8 +340,8 @@ export default function BuscarPage() {
 
   return (
     <MainLayout requireAuth={false}>
-      <div className="min-h-screen bg-[var(--cl-paper)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="app-screen bg-[var(--cl-paper)]">
+        <div className="app-page">
           {/* Barra de Busca Marketplace */}
           <div className="mb-8">
             <SmartSearchBar
@@ -402,13 +402,13 @@ export default function BuscarPage() {
           </div>
 
           {/* Abas de Filtro por Tipo de Usuário e Controles de Visualização */}
-          <div className="bg-[var(--cl-mist)] py-3 mb-6 rounded-xl px-4">
+          <div className="mb-6">
             <div className="flex justify-center w-full">
               {/* Abas */}
-              <div className="flex items-center justify-center gap-1 sm:gap-2 overflow-x-auto w-full sm:w-auto scrollbar-hide">
+              <div className="app-filter-tabs w-full">
                 <button
                   onClick={() => setActiveTab("all")}
-                  className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
+                  className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-full font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                     activeTab === "all"
                       ? "bg-[var(--cl-surface)] text-[var(--cl-teal)] shadow-sm"
                       : "text-[var(--cl-ink-secondary)] hover:text-[var(--cl-ink)] hover:bg-[var(--cl-surface)]/60"
@@ -426,7 +426,7 @@ export default function BuscarPage() {
 
                 <button
                   onClick={() => setActiveTab("clients")}
-                  className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
+                  className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-full font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                     activeTab === "clients"
                       ? "bg-[var(--cl-surface)] text-[var(--cl-teal)] shadow-sm"
                       : "text-[var(--cl-ink-secondary)] hover:text-[var(--cl-ink)] hover:bg-[var(--cl-surface)]/60"
@@ -447,7 +447,7 @@ export default function BuscarPage() {
 
                 <button
                   onClick={() => setActiveTab("professionals")}
-                  className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
+                  className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-full font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                     activeTab === "professionals"
                       ? "bg-[var(--cl-surface)] text-[var(--cl-teal)] shadow-sm"
                       : "text-[var(--cl-ink-secondary)] hover:text-[var(--cl-ink)] hover:bg-[var(--cl-surface)]/60"
@@ -700,6 +700,7 @@ export default function BuscarPage() {
                   }}
                   disabled={currentPage === 1}
                   className="px-3"
+                  aria-label="Página anterior"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
@@ -782,8 +783,9 @@ export default function BuscarPage() {
                   }}
                   disabled={currentPage === totalPages}
                   className="px-3"
+                  aria-label="Próxima página"
                 >
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight aria-hidden="true" className="h-4 w-4" />
                 </Button>
               </div>
             )}

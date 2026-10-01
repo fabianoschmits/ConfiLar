@@ -73,7 +73,7 @@ const navGroups = [
       },
       {
         href: "/gestao-confi/dashboard/logs",
-        label: "Logs de Sistema",
+        label: "Logs de sistema",
         icon: Activity,
       },
       {
@@ -131,9 +131,9 @@ export function AdminSidebar({ onNavigate }: AdminSidebarProps) {
                       variant={isActive ? "secondary" : "ghost"}
                       size="sm"
                       className={cn(
-                        "w-full justify-start h-9 px-3 rounded-xl transition-all",
+                        "w-full justify-start min-h-11 px-3 rounded-xl",
                         isActive
-                          ? "bg-[var(--cl-mist)] text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 font-semibold"
+                          ? "bg-[var(--cl-mist)] text-[var(--cl-ink)] font-semibold"
                           : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
                       )}
                       asChild

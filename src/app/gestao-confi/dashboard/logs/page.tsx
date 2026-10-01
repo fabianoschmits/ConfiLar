@@ -314,10 +314,10 @@ export default function AdminLogsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-2xl md:text-3xl font-bold text-[var(--cl-ink)]">
           Logs do Supabase
         </h1>
-        <p className="mt-2 text-sm md:text-base text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-sm md:text-base text-[var(--cl-ink-secondary)]">
           Visualize logs diretamente do banco de dados Supabase
         </p>
       </div>
@@ -484,7 +484,7 @@ export default function AdminLogsPage() {
                 return (
                   <Card
                     key={log.id}
-                    className="flex flex-col h-full hover:shadow-xl transition-all duration-300 border-border/40 bg-white/40 backdrop-blur-md overflow-hidden group rounded-2xl sm:rounded-[24px]"
+                    className="flex flex-col h-full  border-border/40 bg-white/40 backdrop-blur-md overflow-hidden group rounded-2xl sm:rounded-[24px]"
                   >
                     {/* Header: Level & Service */}
                     <div className="p-3 pb-0 flex items-center justify-between">

@@ -56,22 +56,23 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
       <main
         className={cn(
-          "min-h-screen bg-[var(--cl-paper)] transition-all duration-300 ease-in-out pb-24 lg:pb-0 pt-16 sm:pt-20 lg:pt-24",
+          "app-shell app-shell-main min-h-screen bg-[var(--cl-paper)]",
+          pathname?.startsWith("/gestao-confi") && "app-shell-admin",
           isCollapsed ? "lg:ml-16" : "lg:ml-56",
         )}
       >
         {requireAuth && !isLoggedIn ? (
           // Mostrar prompt de login se a página requer autenticação
-          <div className="flex items-center justify-center min-h-screen">
-            <div className="text-center space-y-4 max-w-md mx-auto p-6 md:p-8">
+          <div className="app-access-screen">
+            <div className="app-access-card text-center space-y-4">
               <div className="h-10 flex items-center">
                 <BrandLogo width={120} height={28} />
               </div>
               <div>
-                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
+                <h2 className="text-xl font-semibold text-[var(--cl-ink)] mb-2">
                   Acesso Restrito
                 </h2>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-sm leading-relaxed text-[var(--cl-ink-secondary)]">
                   Esta página requer que você esteja logado para acessar o
                   conteúdo.
                 </p>
@@ -86,10 +87,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         )}
       </main>
 
-      {/* Bottom Navigation para mobile - COMENTADO PARA TESTAR NOVO QUICK ACTION MENU */}
-      {/* <ModernBottomNavigation /> */}
-
-      {/* Quick Action Menu para mobile - NOVO MENU EM TESTE - FLUTUANTE ACIMA DO TICKER */}
       {!pathname?.startsWith("/gestao-confi") && <QuickActionMenu />}
 
       {/* Anúncio de IA para Profissionais */}

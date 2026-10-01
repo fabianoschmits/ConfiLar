@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, Suspense, useEffect } from "react";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { MainLayout } from "@/components/layout/MainLayout";
 import {
   Search,
@@ -169,7 +170,7 @@ function AjudaContent() {
 
   if (showSupport) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="app-page app-page--narrow">
         <Button
           variant="ghost"
           size="sm"
@@ -188,31 +189,21 @@ function AjudaContent() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <div className="app-page">
       {/* Search Header */}
-      <div className="text-center mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
-        <Badge
-          variant="secondary"
-          className="mb-4 px-4 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest bg-primary/10 text-primary border-none"
-        >
-          Central de Ajuda
-        </Badge>
-        <h1 className="text-3xl sm:text-5xl font-extrabold text-foreground mb-4 tracking-tight">
-          Como podemos <span className="text-primary italic">ajudar?</span>
-        </h1>
-        <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-          Pesquise por temas, artigos ou entre em contato com nosso time de
-          especialistas.
-        </p>
-
-        <div className="relative max-w-xl mx-auto group">
+      <div className="mb-6">
+        <PageHeader
+          title="Como podemos ajudar?"
+          description="Pesquise por temas e artigos ou entre em contato com nossa equipe."
+        />
+        <div className="relative max-w-xl group">
           <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-primary transition-colors" />
             <Input
               type="text"
               placeholder="Ex: Como funciona o sistema de indicações..."
-              className="w-full pl-12 h-14 bg-background/50 backdrop-blur-sm border-2 border-border/50 focus:border-primary/50 text-base rounded-2xl shadow-sm transition-all"
+              className="w-full pl-12"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -221,7 +212,7 @@ function AjudaContent() {
       </div>
 
       {/* Quick Links / Categories */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 mb-6">
         {categories.map((cat) => {
           const IconStyle = cat.icon;
           const isActive = selectedCategory === cat.id;
@@ -502,10 +493,10 @@ function AjudaContent() {
 export default function AjudaPage() {
   return (
     <ClientOnly>
-      <MainLayout requireAuth={true}>
+      <MainLayout requireAuth={false}>
         <Suspense
           fallback={
-            <div className="flex items-center justify-center min-h-screen">
+            <div className="flex items-center justify-center app-screen">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
             </div>
           }

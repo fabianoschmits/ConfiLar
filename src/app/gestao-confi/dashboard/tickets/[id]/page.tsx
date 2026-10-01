@@ -245,12 +245,12 @@ export default function AdminTicketDetailPage() {
             <div className="space-y-4">
               <Card className="bg-muted/30 border-dashed p-2.5 sm:p-3">
                 <div className="flex items-center justify-between">
-                  <Label className="text-[8px] sm:text-[11px] font-bold uppercase flex items-center gap-1 sm:gap-2">
+                  <Label className="text-[11px] sm:text-[11px] font-bold uppercase flex items-center gap-1 sm:gap-2">
                     <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-500" />{" "}
                     Macros
                   </Label>
                   <Select onValueChange={(v) => handleSendMessage(v)}>
-                    <SelectTrigger className="w-[110px] sm:w-[200px] h-6 sm:h-8 text-[8px] sm:text-[11px] rounded-lg">
+                    <SelectTrigger className="w-[110px] sm:w-[200px] h-6 sm:h-8 text-[11px] sm:text-[11px] rounded-lg">
                       <SelectValue placeholder="Responder..." />
                     </SelectTrigger>
                     <SelectContent>

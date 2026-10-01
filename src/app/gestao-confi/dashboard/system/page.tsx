@@ -106,14 +106,14 @@ export default function AdminSystemPage() {
                 <h4 className="text-[10px] sm:text-sm font-black uppercase tracking-tight truncate">
                   Status Global
                 </h4>
-                <p className="text-[8px] sm:text-[10px] font-bold opacity-60 truncate">
+                <p className="text-[11px] sm:text-[10px] font-bold opacity-60 truncate">
                   Serviços OK
                 </p>
               </div>
             </div>
             <Badge
               className={cn(
-                "rounded-full h-5 sm:h-6 px-2 sm:px-3 text-[8px] sm:text-[10px] font-black uppercase tracking-widest border-0 shrink-0",
+                "rounded-full h-5 sm:h-6 px-2 sm:px-3 text-[11px] sm:text-[10px] font-black uppercase tracking-widest border-0 shrink-0",
                 healthStatus === "healthy"
                   ? "bg-emerald-500 hover:bg-emerald-600 text-white"
                   : "bg-rose-500 text-white",
@@ -152,7 +152,7 @@ export default function AdminSystemPage() {
               <h4 className="text-[10px] sm:text-sm font-black uppercase tracking-tight truncate">
                 DB Size
               </h4>
-              <p className="text-[8px] sm:text-[10px] font-bold opacity-60 truncate">
+              <p className="text-[11px] sm:text-[10px] font-bold opacity-60 truncate">
                 Supabase PG
               </p>
             </div>
@@ -160,7 +160,7 @@ export default function AdminSystemPage() {
           <div className="text-lg sm:text-2xl font-black truncate">
             {systemInfo ? formatBytes(systemInfo.databaseSize) : "---"}
           </div>
-          <div className="text-[8px] sm:text-[10px] font-bold opacity-40 uppercase tracking-widest mt-0.5 sm:mt-1">
+          <div className="text-[11px] sm:text-[10px] font-bold opacity-40 uppercase tracking-widest mt-0.5 sm:mt-1">
             Armazenamento
           </div>
         </div>
@@ -186,7 +186,7 @@ export default function AdminSystemPage() {
           <div className="bg-[var(--cl-surface)] border border-border/40 rounded-2xl sm:rounded-[32px] p-4 sm:p-8 space-y-4 sm:space-y-6 shadow-sm">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
               <div className="space-y-1">
-                <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest opacity-40 flex items-center gap-2">
+                <span className="text-[11px] sm:text-[10px] font-black uppercase tracking-widest opacity-40 flex items-center gap-2">
                   <Globe className="h-2.5 w-2.5 sm:h-3 w-3" /> API Endpoint
                 </span>
                 <p className="text-[10px] sm:text-xs font-mono bg-muted/30 p-2 sm:p-3 rounded-xl break-all border">
@@ -194,7 +194,7 @@ export default function AdminSystemPage() {
                 </p>
               </div>
               <div className="space-y-1">
-                <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest opacity-40 flex items-center gap-2">
+                <span className="text-[11px] sm:text-[10px] font-black uppercase tracking-widest opacity-40 flex items-center gap-2">
                   <Settings className="h-2.5 w-2.5 sm:h-3 w-3" /> Versão Core
                 </span>
                 <p className="text-lg sm:text-xl font-black">

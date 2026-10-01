@@ -35,7 +35,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center animate-fade-in",
+        "app-empty-state flex flex-col items-center justify-center",
         isCentered && "min-h-[400px]",
         isMinimal ? "py-8" : "py-12 px-4",
         className,
@@ -48,7 +48,7 @@ export function EmptyState({
           className={cn(
             "mb-4 flex items-center justify-center",
             isMinimal ? "w-16 h-16" : "w-24 h-24",
-            "rounded-full bg-gray-100 dark:bg-gray-900",
+            "rounded-2xl bg-[var(--cl-mist)] text-[var(--cl-ink-muted)]",
           )}
         >
           {icon}
@@ -57,7 +57,7 @@ export function EmptyState({
 
       <h3
         className={cn(
-          "font-semibold text-gray-900 dark:text-white mb-2",
+          "font-semibold text-[var(--cl-ink)] mb-2 text-center",
           isMinimal ? "text-base" : "text-lg",
         )}
       >
@@ -66,7 +66,7 @@ export function EmptyState({
 
       <p
         className={cn(
-          "text-gray-500 dark:text-gray-400 mb-6 text-center",
+          "text-[var(--cl-ink-secondary)] mb-6 text-center leading-relaxed",
           isMinimal ? "text-sm max-w-sm" : "text-base max-w-md",
         )}
       >
@@ -74,11 +74,11 @@ export function EmptyState({
       </p>
 
       {(action || secondaryAction) && (
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <div className="flex w-full max-w-sm flex-col sm:flex-row gap-3 justify-center">
           {action && (
             <Button
               onClick={action.onClick}
-              className="transition-smooth hover:scale-105 active:scale-95"
+              className="w-full sm:w-auto"
               aria-label={action.label}
             >
               {action.label}
@@ -88,7 +88,7 @@ export function EmptyState({
             <Button
               onClick={secondaryAction.onClick}
               variant="outline"
-              className="transition-smooth hover:scale-105 active:scale-95"
+              className="w-full sm:w-auto"
               aria-label={secondaryAction.label}
             >
               {secondaryAction.label}

@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { createAdminSupabaseClient } from "@/lib/supabase";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -72,12 +73,12 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
     return (
       <MainLayout requireAuth={false}>
-        <div className="bg-[var(--cl-paper)] min-h-screen py-20">
-          <div className="max-w-7xl mx-auto px-4 text-center">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        <div className="bg-[var(--cl-paper)] app-screen">
+          <div className="app-page text-center">
+            <h1 className="text-3xl font-bold text-[var(--cl-ink)]">
               Categoria "{serviceId}" não encontrada
             </h1>
-            <p className="mt-4 text-gray-600 dark:text-gray-400">
+            <p className="mt-4 text-[var(--cl-ink-secondary)]">
               Não encontramos uma categoria exata para sua busca, mas talvez
               você esteja procurando por:
             </p>
@@ -207,26 +208,30 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="bg-[var(--cl-paper)] min-h-screen py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-12">
-            <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-              {service.icon} {service.name}
-            </h1>
-            <p className="mt-4 text-xl text-gray-600 dark:text-gray-400 max-w-3xl">
-              Lista de profissionais de {service.name.toLowerCase()} verificados
-              e prontos para atender você com segurança e qualidade.
-            </p>
-          </div>
+      <div className="bg-[var(--cl-paper)] app-screen">
+        <div className="app-page">
+          <PageHeader
+            title={
+              <>
+                {service.icon} {service.name}
+              </>
+            }
+            description={
+              "Encontre profissionais de " +
+              service.name.toLowerCase() +
+              " e conheça seus trabalhos."
+            }
+            backHref="/buscar"
+          />
 
           {!professionals || professionals.length === 0 ? (
             <div className="space-y-12">
-              <div className="bg-[var(--cl-surface)] rounded-3xl p-12 text-center border border-gray-100 dark:border-gray-800 shadow-sm">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <div className="bg-[var(--cl-surface)] rounded-2xl p-6 text-center border border-gray-100 dark:border-gray-800 shadow-sm">
+                <h2 className="text-xl font-semibold text-[var(--cl-ink)]">
                   Ainda não temos profissionais nesta categoria com indexação
                   ativa.
                 </h2>
-                <p className="mt-2 text-gray-600 dark:text-gray-400">
+                <p className="mt-2 text-[var(--cl-ink-secondary)]">
                   Tente buscar em uma região diferente ou explore as sugestões
                   abaixo.
                 </p>
@@ -241,7 +246,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               {recommendedProfessionals.length > 0 && (
                 <div className="mt-16">
                   <div className="text-center mb-8">
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <h3 className="text-2xl font-bold text-[var(--cl-ink)]">
                       Não encontramos {service.name}, mas estes profissionais
                       podem ajudar:
                     </h3>
@@ -265,7 +270,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                                 />
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-1.5">
-                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">
+                                    <h3 className="text-lg font-bold text-[var(--cl-ink)] truncate">
                                       {prof.full_name}
                                     </h3>
                                     <ProVerifiedBadge
@@ -277,7 +282,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                                       iconSize={3}
                                     />
                                   </div>
-                                  <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                  <div className="flex items-center gap-1 text-sm text-[var(--cl-ink-muted)] mt-1">
                                     <MapPin className="w-3.5 h-3.5" />
                                     <span className="truncate">
                                       {prof.location_city} -{" "}
@@ -306,7 +311,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                                     <UiBadge
                                       key={s}
                                       variant="secondary"
-                                      className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-none font-medium"
+                                      className="bg-[var(--cl-mist)] text-gray-600 dark:text-gray-300 border-none font-medium"
                                     >
                                       {s}
                                     </UiBadge>
@@ -338,7 +343,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                           />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">
+                              <h3 className="text-lg font-bold text-[var(--cl-ink)] truncate">
                                 {prof.full_name}
                               </h3>
                               <ProVerifiedBadge
@@ -348,7 +353,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                                 iconSize={2.5}
                               />
                             </div>
-                            <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            <div className="flex items-center gap-1 text-sm text-[var(--cl-ink-muted)] mt-1">
                               <MapPin className="w-3.5 h-3.5" />
                               <span className="truncate">
                                 {prof.location_city} - {prof.location_state}
@@ -371,7 +376,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                             <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
                               Avaliações
                             </span>
-                            <span className="text-sm font-medium text-gray-900 dark:text-white mt-1">
+                            <span className="text-sm font-medium text-[var(--cl-ink)] mt-1">
                               {prof.total_reviews || 0}
                             </span>
                           </div>
@@ -384,7 +389,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                               <UiBadge
                                 key={s}
                                 variant="secondary"
-                                className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-none font-medium"
+                                className="bg-[var(--cl-mist)] text-gray-600 dark:text-gray-300 border-none font-medium"
                               >
                                 {s}
                               </UiBadge>

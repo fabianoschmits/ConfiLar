@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -42,44 +43,25 @@ export default function TermosPage() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-[var(--cl-paper)] py-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="app-screen bg-[var(--cl-paper)]">
+        <div className="app-page app-page--narrow">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center mb-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                <FileText className="h-6 w-6 text-[var(--cl-teal)]" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white dark:text-white">
-                  {t("title")}
-                </h1>
-                <p className="text-gray-600">{t("subtitle")}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
-              <div className="flex items-center">
-                <Calendar className="h-4 w-4 mr-1" />
-                {t("lastUpdate")}
-              </div>
-              <div className="flex items-center">
-                <Shield className="h-4 w-4 mr-1" />
-                {t("version")}
-              </div>
-            </div>
-          </div>
+          <PageHeader
+            title={t("title")}
+            description={t("subtitle")}
+            icon={FileText}
+          />
 
           {/* Aviso Importante */}
-          <Card className="mb-8 border-amber-200 bg-amber-50">
+          <Card className="mb-8 border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20">
             <CardContent className="p-6">
               <div className="flex items-start">
                 <AlertTriangle className="h-6 w-6 text-amber-600 mr-3 mt-0.5" />
                 <div>
-                  <h3 className="font-semibold text-amber-800 mb-2">
+                  <h3 className="font-semibold text-amber-800 dark:text-amber-200 mb-2">
                     {t("importantNotice")}
                   </h3>
-                  <p className="text-amber-700 text-sm">
+                  <p className="text-amber-700 dark:text-amber-300 text-sm">
                     {t("importantNoticeText")}
                   </p>
                 </div>
@@ -87,13 +69,13 @@ export default function TermosPage() {
             </CardContent>
           </Card>
 
-          <ScrollArea className="h-[calc(100vh-200px)]">
+          <div>
             <div className="space-y-8">
               {/* 1. Definições */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">
+                    <span className="bg-[var(--cl-mist)] text-[var(--cl-teal)] text-sm font-medium px-2.5 py-0.5 rounded mr-3">
                       1
                     </span>
                     {t("section1.title")}
@@ -101,7 +83,7 @@ export default function TermosPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">
+                    <h4 className="font-semibold text-[var(--cl-ink)] mb-2">
                       {t("section1.subtitle")}
                     </h4>
                     <ul className="space-y-2 text-gray-700">
@@ -133,7 +115,7 @@ export default function TermosPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">
+                    <span className="bg-[var(--cl-mist)] text-[var(--cl-teal)] text-sm font-medium px-2.5 py-0.5 rounded mr-3">
                       2
                     </span>
                     {t("section2.title")}
@@ -166,7 +148,7 @@ export default function TermosPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">
+                    <span className="bg-[var(--cl-mist)] text-[var(--cl-teal)] text-sm font-medium px-2.5 py-0.5 rounded mr-3">
                       3
                     </span>
                     {t("section3.title")}
@@ -176,7 +158,7 @@ export default function TermosPage() {
                   <p className="text-gray-700">{t("section3.description")}</p>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <h4 className="font-semibold text-gray-900 dark:text-white">
+                      <h4 className="font-semibold text-[var(--cl-ink)]">
                         {t("section3.forClients")}
                       </h4>
                       <ul className="space-y-1 text-gray-700 text-sm">
@@ -188,7 +170,7 @@ export default function TermosPage() {
                       </ul>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-semibold text-gray-900 dark:text-white">
+                      <h4 className="font-semibold text-[var(--cl-ink)]">
                         {t("section3.forProfessionals")}
                       </h4>
                       <ul className="space-y-1 text-gray-700 text-sm">
@@ -207,7 +189,7 @@ export default function TermosPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">
+                    <span className="bg-[var(--cl-mist)] text-[var(--cl-teal)] text-sm font-medium px-2.5 py-0.5 rounded mr-3">
                       4
                     </span>
                     {t("section4.title")}
@@ -215,7 +197,7 @@ export default function TermosPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">
+                    <h4 className="font-semibold text-[var(--cl-ink)] mb-2">
                       {t("section4.requirements")}
                     </h4>
                     <ul className="space-y-2 text-gray-700">
@@ -228,7 +210,7 @@ export default function TermosPage() {
                   </div>
 
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">
+                    <h4 className="font-semibold text-[var(--cl-ink)] mb-2">
                       {t("section4.responsibilities")}
                     </h4>
                     <ul className="space-y-2 text-gray-700">
@@ -245,7 +227,7 @@ export default function TermosPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">
+                    <span className="bg-[var(--cl-mist)] text-[var(--cl-teal)] text-sm font-medium px-2.5 py-0.5 rounded mr-3">
                       5
                     </span>
                     {t("section5.title")}
@@ -286,7 +268,7 @@ export default function TermosPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">
+                    <span className="bg-[var(--cl-mist)] text-[var(--cl-teal)] text-sm font-medium px-2.5 py-0.5 rounded mr-3">
                       6
                     </span>
                     {t("section6.title")}
@@ -294,7 +276,7 @@ export default function TermosPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">
+                    <h4 className="font-semibold text-[var(--cl-ink)] mb-2">
                       {t("section6.rightsTitle")}
                     </h4>
                     <p className="text-gray-700 mb-2">
@@ -303,7 +285,7 @@ export default function TermosPage() {
                   </div>
 
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">
+                    <h4 className="font-semibold text-[var(--cl-ink)] mb-2">
                       {t("section6.userContentTitle")}
                     </h4>
                     <p className="text-gray-700 mb-2">
@@ -317,7 +299,7 @@ export default function TermosPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">
+                    <span className="bg-[var(--cl-mist)] text-[var(--cl-teal)] text-sm font-medium px-2.5 py-0.5 rounded mr-3">
                       7
                     </span>
                     {t("section7.title")}
@@ -336,7 +318,7 @@ export default function TermosPage() {
                   </p>
 
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">
+                    <h4 className="font-semibold text-[var(--cl-ink)] mb-2">
                       {t("section7.rightsTitle")}
                     </h4>
                     <ul className="space-y-2 text-gray-700">
@@ -354,7 +336,7 @@ export default function TermosPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">
+                    <span className="bg-[var(--cl-mist)] text-[var(--cl-teal)] text-sm font-medium px-2.5 py-0.5 rounded mr-3">
                       8
                     </span>
                     {t("section8.title")}
@@ -376,7 +358,7 @@ export default function TermosPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">
+                    <span className="bg-[var(--cl-mist)] text-[var(--cl-teal)] text-sm font-medium px-2.5 py-0.5 rounded mr-3">
                       9
                     </span>
                     {t("section9.title")}
@@ -397,7 +379,7 @@ export default function TermosPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">
+                    <span className="bg-[var(--cl-mist)] text-[var(--cl-teal)] text-sm font-medium px-2.5 py-0.5 rounded mr-3">
                       10
                     </span>
                     {t("section10.title")}
@@ -405,7 +387,7 @@ export default function TermosPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">
+                    <h4 className="font-semibold text-[var(--cl-ink)] mb-2">
                       {t("section10.byUserTitle")}
                     </h4>
                     <p className="text-gray-700">
@@ -414,7 +396,7 @@ export default function TermosPage() {
                   </div>
 
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">
+                    <h4 className="font-semibold text-[var(--cl-ink)] mb-2">
                       {t("section10.byConfilarTitle")}
                     </h4>
                     <p className="text-gray-700">
@@ -428,7 +410,7 @@ export default function TermosPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">
+                    <span className="bg-[var(--cl-mist)] text-[var(--cl-teal)] text-sm font-medium px-2.5 py-0.5 rounded mr-3">
                       11
                     </span>
                     {t("section11.title")}
@@ -443,7 +425,7 @@ export default function TermosPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">
+                    <span className="bg-[var(--cl-mist)] text-[var(--cl-teal)] text-sm font-medium px-2.5 py-0.5 rounded mr-3">
                       12
                     </span>
                     {t("section12.title")}
@@ -485,17 +467,17 @@ export default function TermosPage() {
                 </CardContent>
               </Card>
             </div>
-          </ScrollArea>
+          </div>
 
           {/* Footer */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="mt-8 pt-6 border-t border-[var(--cl-border)]">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="text-sm text-gray-500 mb-4 md:mb-0">
                 <p>{t("footer.copyright")}</p>
                 <p>{t("footer.validFrom")}</p>
               </div>
 
-              <div className="flex space-x-4">
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/privacidade">
                     <Shield className="h-4 w-4 mr-2" />

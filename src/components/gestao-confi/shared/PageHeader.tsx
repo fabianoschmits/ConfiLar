@@ -1,5 +1,6 @@
 "use client";
 
+import { PageHeader as AppPageHeader } from "@/components/layout/PageHeader";
 import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
@@ -18,26 +19,22 @@ export function PageHeader({
   actions,
 }: PageHeaderProps) {
   return (
-    <div className="flex items-center justify-between mb-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        {title}
-      </h1>
-      <div className="flex items-center gap-2">
-        {actions}
-        {onRefresh && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onRefresh}
-            disabled={loading}
-          >
-            <RefreshCw
-              className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
-            />
-            Atualizar
-          </Button>
-        )}
-      </div>
-    </div>
+    <AppPageHeader
+      title={title}
+      actions={
+        <>
+          {actions}
+          {onRefresh && (
+            <Button variant="outline" onClick={onRefresh} disabled={loading}>
+              <RefreshCw
+                aria-hidden="true"
+                className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"}
+              />
+              Atualizar
+            </Button>
+          )}
+        </>
+      }
+    />
   );
 }

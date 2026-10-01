@@ -51,8 +51,13 @@ export function SimpleHeaderBell({ className = "" }: SimpleHeaderBellProps) {
         <PopoverTrigger asChild>
           <Button
             variant="ghost"
-            size="sm"
-            className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            size="icon"
+            className="relative hover:bg-[var(--cl-mist)]"
+            aria-label={
+              unreadCount > 0
+                ? `Notificações: ${unreadCount} não lidas`
+                : "Notificações"
+            }
           >
             {/* Sino sempre visível */}
             <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -67,7 +72,7 @@ export function SimpleHeaderBell({ className = "" }: SimpleHeaderBellProps) {
         </PopoverTrigger>
 
         <PopoverContent
-          className="w-80 max-w-[calc(100vw-2rem)] p-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-xl rounded-2xl animate-slide-down"
+          className="w-80 max-w-[calc(100vw-2rem)] p-0 bg-[var(--cl-surface)] border border-[var(--cl-border)] shadow-xl rounded-2xl"
           align="end"
           sideOffset={8}
           side="bottom"

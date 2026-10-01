@@ -81,13 +81,13 @@ export function ProfessionalCard({
       {profile.user_type === "professional" &&
         profile.professional_services &&
         profile.professional_services.length > 0 && (
-          <div className="absolute top-2 right-2 z-30">
+          <div className="flex justify-end px-4 pt-2">
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 py-0 px-2 text-[10px] sm:text-xs text-primary-600 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-950/20 transition-colors uppercase font-bold tracking-wider"
+                  className="min-h-11 py-2 px-3 text-xs text-primary-600 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-950/20 transition-colors uppercase font-bold tracking-wider"
                 >
                   <Wrench className="h-3 w-3 mr-1" />
                   Serviços
@@ -101,7 +101,7 @@ export function ProfessionalCard({
                 <div className="p-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5">
                   <div className="flex items-center space-x-2">
                     <Briefcase className="h-4 w-4 text-primary-500" />
-                    <h4 className="font-bold text-sm text-gray-900 dark:text-white uppercase tracking-tight">
+                    <h4 className="font-bold text-sm text-[var(--cl-ink)] uppercase tracking-tight">
                       Serviços Oferecidos
                     </h4>
                   </div>
@@ -132,9 +132,9 @@ export function ProfessionalCard({
           </div>
         )}
 
-      <CardContent className="p-5 sm:p-6 flex-1 flex flex-col h-full overflow-hidden">
+      <CardContent className="p-4 pt-2 sm:p-5 sm:pt-2 flex-1 flex flex-col min-w-0">
         {/* Header - Interactive for Auth, Static for Guest */}
-        <div className="flex items-start space-x-4 mb-4">
+        <div className="flex items-center gap-3 mb-4">
           <div
             className={cn("flex-shrink-0", !isGuest && "cursor-pointer")}
             onClick={() => !isGuest && handleProfileClick(profile.id)}
@@ -147,7 +147,7 @@ export function ProfessionalCard({
               userId={profile.id}
               showReferralBadge={!isGuest}
               className={cn(
-                "w-14 h-14 sm:w-16 sm:h-16 ring-1 ring-gray-100 dark:ring-gray-800",
+                "w-16 h-16 sm:w-[72px] sm:h-[72px] ring-1 ring-[var(--cl-border)]",
                 !isGuest &&
                   "hover:ring-2 hover:ring-primary-400 transition-all duration-300",
               )}
@@ -160,7 +160,7 @@ export function ProfessionalCard({
               onClick={() => !isGuest && handleProfileClick(profile.id)}
             >
               <div className="flex items-center gap-1">
-                <h3 className="font-bold text-base sm:text-lg text-gray-900 dark:text-white truncate transition-colors group-hover/name:text-primary-600 dark:group-hover/name:text-primary-400">
+                <h3 className="font-bold text-base sm:text-lg text-[var(--cl-ink)] truncate transition-colors group-hover/name:text-primary-600 dark:group-hover/name:text-primary-400">
                   {profile.full_name}
                 </h3>
                 <ProVerifiedBadge
@@ -178,7 +178,7 @@ export function ProfessionalCard({
                   profile.user_type === "professional" ? "default" : "secondary"
                 }
                 className={cn(
-                  "text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 uppercase tracking-wider h-5",
+                  "text-[11px] font-medium px-2 py-1 rounded-full flex items-center gap-1",
                   profile.user_type === "professional"
                     ? "bg-primary-50 text-primary-700 border-primary-100 dark:bg-primary-950/30 dark:text-primary-400 dark:border-primary-900"
                     : "bg-[var(--cl-mist)] text-[var(--cl-teal)] border-purple-100 dark:bg-purple-950/30 dark:text-[var(--cl-teal)] dark:border-purple-900",
@@ -197,7 +197,7 @@ export function ProfessionalCard({
               <Badge
                 variant={isAvailable ? "default" : "secondary"}
                 className={cn(
-                  "text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 uppercase tracking-wider h-5",
+                  "text-[11px] font-medium px-2 py-1 rounded-full flex items-center gap-1",
                   isAvailable
                     ? "bg-green-50 text-green-700 border-green-100 dark:bg-green-950/30 dark:text-green-400 dark:border-green-900"
                     : "bg-red-50 text-red-700 border-red-100 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900",
@@ -214,8 +214,8 @@ export function ProfessionalCard({
                   : t?.("unavailable") || "Indisponível"}
               </Badge>
 
-              <div className="flex items-center text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-tighter sm:tracking-normal whitespace-nowrap">
-                <MapPin className="h-2.5 w-2.5 mr-1 text-gray-400" />
+              <div className="flex w-full min-w-0 items-center text-xs text-[var(--cl-ink-muted)]">
+                <MapPin className="h-3.5 w-3.5 mr-1 shrink-0" />
                 {profile.location_city}
                 {profile.location_city && profile.location_state && ", "}
                 {profile.location_state}
@@ -234,7 +234,7 @@ export function ProfessionalCard({
           className="flex-1 flex flex-col"
         >
           {/* Bio */}
-          <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-2 italic h-[2.5rem] mb-4">
+          <p className="text-[var(--cl-ink-secondary)] text-sm leading-relaxed line-clamp-2 min-h-[2.5rem] mb-4">
             {profile.bio ||
               "Este perfil ainda não possui uma biografia detalhada."}
           </p>
@@ -254,7 +254,7 @@ export function ProfessionalCard({
                     )}
                   />
                 ))}
-                <span className="text-xs font-bold text-gray-900 dark:text-white ml-1.5">
+                <span className="text-xs font-bold text-[var(--cl-ink)] ml-1.5">
                   {stats.rating > 0 ? stats.rating.toFixed(1) : "N/A"}
                 </span>
               </div>
@@ -267,7 +267,7 @@ export function ProfessionalCard({
             <div className="h-8 w-px bg-gray-200 dark:bg-gray-800" />
 
             <div className="flex flex-col items-center">
-              <div className="flex items-center text-gray-900 dark:text-white font-bold text-xs">
+              <div className="flex items-center text-[var(--cl-ink)] font-bold text-xs">
                 <Eye className="h-3 w-3 mr-1 text-blue-500" />
                 {views || 0}
               </div>
@@ -278,10 +278,10 @@ export function ProfessionalCard({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-center mt-auto pt-4 px-2 border-t border-gray-100 dark:border-gray-800/50 overflow-x-auto scrollbar-hide">
+          <div className="mt-auto pt-4 border-t border-[var(--cl-border)]">
             <div
               onClick={(e) => e.stopPropagation()}
-              className="flex items-center justify-between w-full gap-1 sm:gap-2 flex-nowrap min-w-max pb-1"
+              className="grid grid-cols-2 w-full gap-2"
             >
               <FavoriteButton
                 userId={profile.id}
@@ -328,10 +328,12 @@ export function ProfessionalCard({
                 <Button
                   size="sm"
                   onClick={handleContactClick}
-                  className="h-9 w-9 min-w-[36px] p-0 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md transition-all active:scale-95 flex items-center justify-center shrink-0"
+                  className="min-h-11 w-full px-3 bg-[var(--cl-cta)] text-[var(--cl-on-cta)]"
+                  aria-label={t?.("contact") || "Contatar"}
                   title={t?.("contact") || "Contatar"}
                 >
-                  <MessageCircle className="h-4.5 w-4.5" />
+                  <MessageCircle className="h-4 w-4" />
+                  <span>{t?.("contact") || "Contatar"}</span>
                 </Button>
               )}
             </div>

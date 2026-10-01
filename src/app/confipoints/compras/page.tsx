@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -153,7 +154,7 @@ export default function ComprasPage() {
   if (loading) {
     return (
       <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-[var(--cl-paper)] p-4 sm:p-6">
+        <div className="app-screen bg-[var(--cl-paper)]">
           <div className="max-w-7xl mx-auto">
             <div className="animate-pulse space-y-6">
               <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-1/4"></div>
@@ -175,50 +176,33 @@ export default function ComprasPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-[var(--cl-paper)] p-4 sm:p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <div className="app-screen bg-[var(--cl-paper)]">
+        <div className="app-page space-y-6">
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-[var(--cl-surface)] border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center">
-                  <ShoppingBag className="h-6 w-6 text-[var(--cl-teal)] dark:text-[var(--cl-teal)]" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    Minhas Compras
-                  </h1>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Acompanhe seu histórico de aquisição de ConfiPoints
-                  </p>
-                </div>
-              </div>
-              <Link href="/confipoints/comprar">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hidden sm:flex gap-2"
-                >
-                  <Package className="w-4 h-4" />
-                  Nova Compra
-                </Button>
-              </Link>
-            </div>
-          </div>
+          <PageHeader
+            title="Minhas compras"
+            description="Acompanhe suas aquisições de ConfiPoints."
+            icon={ShoppingBag}
+            actions={
+              <Button asChild>
+                <Link href="/confipoints/comprar">Nova compra</Link>
+              </Button>
+            }
+          />
 
           {/* Estatísticas - Ajustadas com Detalhe da Marca */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-[var(--cl-surface)]">
+            <Card className="border-[var(--cl-border)] shadow-none bg-[var(--cl-surface)]">
               <CardContent className="p-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex-shrink-0 p-2 bg-[var(--cl-mist)] rounded-lg">
                     <ShoppingBag className="w-5 h-5 text-[var(--cl-teal)]" />
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                    <p className="text-[10px] uppercase tracking-wider text-[var(--cl-ink-muted)] font-medium">
                       Totais
                     </p>
-                    <p className="text-base font-bold text-gray-900 dark:text-white">
+                    <p className="text-base font-bold text-[var(--cl-ink)]">
                       {stats.total}
                     </p>
                   </div>
@@ -226,17 +210,17 @@ export default function ComprasPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-[var(--cl-surface)]">
+            <Card className="border-[var(--cl-border)] shadow-none bg-[var(--cl-surface)]">
               <CardContent className="p-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex-shrink-0 p-2 bg-[var(--cl-mist)] rounded-lg">
                     <CheckCircle2 className="w-5 h-5 text-[var(--cl-teal)]" />
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                    <p className="text-[10px] uppercase tracking-wider text-[var(--cl-ink-muted)] font-medium">
                       Aprovadas
                     </p>
-                    <p className="text-base font-bold text-gray-900 dark:text-white">
+                    <p className="text-base font-bold text-[var(--cl-ink)]">
                       {stats.approved}
                     </p>
                   </div>
@@ -244,17 +228,17 @@ export default function ComprasPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-[var(--cl-surface)]">
+            <Card className="border-[var(--cl-border)] shadow-none bg-[var(--cl-surface)]">
               <CardContent className="p-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex-shrink-0 p-2 bg-[var(--cl-mist)] rounded-lg">
                     <Clock className="w-5 h-5 text-[var(--cl-teal)]" />
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                    <p className="text-[10px] uppercase tracking-wider text-[var(--cl-ink-muted)] font-medium">
                       Pendentes
                     </p>
-                    <p className="text-base font-bold text-gray-900 dark:text-white">
+                    <p className="text-base font-bold text-[var(--cl-ink)]">
                       {stats.pending}
                     </p>
                   </div>
@@ -262,17 +246,17 @@ export default function ComprasPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-gray-200 dark:border-gray-800 shadow-none bg-[var(--cl-surface)]">
+            <Card className="border-[var(--cl-border)] shadow-none bg-[var(--cl-surface)]">
               <CardContent className="p-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex-shrink-0 p-2 bg-[var(--cl-mist)] rounded-lg">
                     <CreditCard className="w-5 h-5 text-[var(--cl-teal)]" />
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                    <p className="text-[10px] uppercase tracking-wider text-[var(--cl-ink-muted)] font-medium">
                       Investido
                     </p>
-                    <p className="text-base font-bold text-gray-900 dark:text-white">
+                    <p className="text-base font-bold text-[var(--cl-ink)]">
                       {formatCurrency(stats.totalSpent)}
                     </p>
                   </div>
@@ -287,7 +271,7 @@ export default function ComprasPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Buscar por ID..."
-                className="pl-9 h-9 text-sm border-gray-200 dark:border-gray-800 focus-visible:ring-purple-500"
+                className="pl-9 h-9 text-sm border-[var(--cl-border)] focus-visible:ring-purple-500"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -331,11 +315,11 @@ export default function ComprasPage() {
                   <CardContent className="p-3">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[var(--cl-surface)] border border-gray-200 dark:border-gray-800 rounded-lg flex items-center justify-center">
+                        <div className="w-10 h-10 bg-[var(--cl-surface)] border border-[var(--cl-border)] rounded-lg flex items-center justify-center">
                           <Coins className="h-5 w-5 text-[var(--cl-teal)]" />
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                          <p className="text-sm font-semibold text-[var(--cl-ink)] flex items-center gap-2">
                             Compra de Pontos
                             <Badge
                               variant="outline"
@@ -361,7 +345,7 @@ export default function ComprasPage() {
 
                       <div className="flex items-center justify-between md:justify-end gap-6 md:gap-8 pt-3 md:pt-0 border-t md:border-0 border-gray-100 dark:border-gray-800">
                         <div className="text-left md:text-right">
-                          <p className="text-sm font-bold text-gray-900 dark:text-white">
+                          <p className="text-sm font-bold text-[var(--cl-ink)]">
                             {(purchase.points_received || 0).toLocaleString()}{" "}
                             pts
                           </p>

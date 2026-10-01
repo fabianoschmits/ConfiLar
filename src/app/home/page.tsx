@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useAdvancedSearch } from "@/hooks/useAdvancedSearch";
 import { ReferralBadge } from "@/components/referral/ReferralBadge";
@@ -164,66 +165,59 @@ export default function HomePage() {
 
   return (
     <MainLayout requireAuth={false}>
-      <div className="min-h-screen bg-[var(--cl-paper)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="app-screen bg-[var(--cl-paper)]">
+        <div className="app-page">
           {/* Header da Página */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center px-4 py-2 bg-[var(--cl-mist)] text-[var(--cl-ink)] rounded-full text-sm font-medium mb-6">
-              <Shield className="h-4 w-4 mr-2" />
-              {t("platform")}
-            </div>
-            <h1 className="text-4xl lg:text-6xl font-bold text-[var(--cl-ink)] mb-6">
-              {t("welcome")}
-            </h1>
-            <p className="text-xl text-[var(--cl-ink-secondary)] max-w-3xl mx-auto leading-relaxed">
-              {t("description")}
-            </p>
-          </div>
+          <PageHeader
+            title={t("welcome")}
+            description={t("description")}
+            icon={Shield}
+          />
 
           {/* Estatísticas - Card Compacto */}
-          <Card className="mb-8 hover:shadow-xl transition-all duration-300">
+          <Card className="mb-8 ">
             <CardContent className="py-2 px-3 sm:py-3 sm:px-4">
               <div className="flex flex-row items-center justify-around gap-1 sm:gap-2">
                 {/* Total de Usuários */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
-                  <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                  <Users className="h-3 w-3 sm:h-4 sm:w-4 text-[var(--cl-ink-secondary)] mb-0.5" />
+                  <p className="text-xs text-[var(--cl-ink-muted)] text-center">
                     {t("stats.total")}
                   </p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                  <p className="text-sm sm:text-base font-bold text-[var(--cl-ink)]">
                     {stats?.totalUsers || 0}
                   </p>
                 </div>
 
                 {/* Profissionais */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
-                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[var(--cl-ink-secondary)] mb-0.5" />
+                  <p className="text-xs text-[var(--cl-ink-muted)] text-center">
                     {t("stats.professionals")}
                   </p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                  <p className="text-sm sm:text-base font-bold text-[var(--cl-ink)]">
                     {stats?.professionalsCount || 0}
                   </p>
                 </div>
 
                 {/* Clientes */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
-                  <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                  <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 text-[var(--cl-ink-secondary)] mb-0.5" />
+                  <p className="text-xs text-[var(--cl-ink-muted)] text-center">
                     {t("stats.clients")}
                   </p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                  <p className="text-sm sm:text-base font-bold text-[var(--cl-ink)]">
                     {stats?.clientsCount || 0}
                   </p>
                 </div>
 
                 {/* Verificados */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
-                  <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                  <Star className="h-3 w-3 sm:h-4 sm:w-4 text-[var(--cl-ink-secondary)] mb-0.5" />
+                  <p className="text-xs text-[var(--cl-ink-muted)] text-center">
                     {t("stats.verified")}
                   </p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                  <p className="text-sm sm:text-base font-bold text-[var(--cl-ink)]">
                     {stats?.verifiedCount || 0}
                   </p>
                 </div>
@@ -232,28 +226,28 @@ export default function HomePage() {
           </Card>
 
           {/* Seção: Programa de Indicações */}
-          <section className="mb-16">
-            <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-2 border-green-200 dark:border-green-800 overflow-hidden">
-              <CardContent className="p-8">
-                <div className="flex flex-col lg:flex-row items-center gap-8">
+          <section className="mb-8">
+            <Card className="overflow-hidden">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col lg:flex-row items-start gap-4">
                   {/* Ícone */}
                   <div className="flex-shrink-0">
-                    <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
-                      <UserPlus className="w-10 h-10 text-white" />
+                    <div className="w-11 h-11 bg-[var(--cl-mist)] rounded-2xl flex items-center justify-center">
+                      <UserPlus className="w-5 h-5 text-[var(--cl-teal)]" />
                     </div>
                   </div>
 
                   {/* Conteúdo */}
-                  <div className="flex-1 text-center lg:text-left">
-                    <div className="flex items-center gap-3 justify-center lg:justify-start mb-3">
-                      <h2 className="text-2xl lg:text-3xl font-bold text-[var(--cl-ink)]">
+                  <div className="flex-1 min-w-0 text-left">
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <h2 className="text-xl sm:text-2xl font-bold text-[var(--cl-ink)]">
                         {t("referralProgram.title")}
                       </h2>
                       <Badge className="bg-green-600 hover:bg-green-700 text-white">
                         {t("referralProgram.new")}
                       </Badge>
                     </div>
-                    <p className="text-lg text-[var(--cl-ink-secondary)] mb-4">
+                    <p className="text-sm leading-relaxed text-[var(--cl-ink-secondary)] mb-4">
                       {t("referralProgram.description")}
                       Quanto mais pessoas você indicar, mais badges e benefícios
                       você desbloqueia.
@@ -307,10 +301,10 @@ export default function HomePage() {
                     <Button
                       onClick={() => router.push("/indicacoes")}
                       size="lg"
-                      className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all"
+                      className="w-full sm:w-auto"
                     >
                       <UserPlus className="w-5 h-5 mr-2" />
-                      Começar a Indicar Agora
+                      Convidar amigos
                       <ArrowRight className="w-5 h-5 ml-2" />
                     </Button>
                   </div>
@@ -349,7 +343,7 @@ export default function HomePage() {
           </section>
 
           {/* Seção: Para Clientes */}
-          <section className="mb-16">
+          <section className="mb-8">
             <div className="text-center mb-12">
               <div className="inline-flex items-center px-4 py-2 bg-[var(--cl-mist)] text-[var(--cl-ink)] rounded-full text-sm font-medium mb-4">
                 <Users className="h-4 w-4 mr-2" />
@@ -403,7 +397,7 @@ export default function HomePage() {
           </section>
 
           {/* Seção: Para Profissionais */}
-          <section className="mb-16">
+          <section className="mb-8">
             <div className="text-center mb-12">
               <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium mb-4">
                 <Briefcase className="h-4 w-4 mr-2" />

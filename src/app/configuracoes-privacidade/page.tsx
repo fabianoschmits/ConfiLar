@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -92,11 +93,11 @@ export default function ConfiguracoesPrivacidadePage() {
   if (!user) {
     return (
       <MainLayout>
-        <div className="min-h-screen bg-[var(--cl-paper)] flex items-center justify-center">
+        <div className="app-screen bg-[var(--cl-paper)] flex items-center justify-center">
           <Card className="w-full max-w-md">
             <CardContent className="p-8 text-center">
               <Lock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white dark:text-white mb-2">
+              <h2 className="text-xl font-semibold text-[var(--cl-ink)] mb-2">
                 {t("restrictedAccess")}
               </h2>
               <p className="text-gray-600 mb-4">{t("loginRequired")}</p>
@@ -179,33 +180,25 @@ export default function ConfiguracoesPrivacidadePage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-[var(--cl-paper)] py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="app-screen bg-[var(--cl-paper)]">
+        <div className="app-page">
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-                <Shield className="h-6 w-6 text-green-600" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white dark:text-white">
-                  {t("title")}
-                </h1>
-                <p className="text-gray-600">{t("description")}</p>
-              </div>
-            </div>
-          </div>
+          <PageHeader
+            title={t("title")}
+            description={t("description")}
+            icon={Shield}
+          />
 
           {/* Status LGPD */}
-          <Card className="mb-8 border-green-200 bg-green-50">
+          <Card className="mb-8 border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20">
             <CardContent className="p-6">
               <div className="flex items-center">
                 <CheckCircle className="h-6 w-6 text-green-600 mr-3" />
                 <div>
-                  <h3 className="font-semibold text-green-800">
+                  <h3 className="font-semibold text-green-800 dark:text-green-200">
                     {t("lgpdCompliance")}
                   </h3>
-                  <p className="text-green-700 text-sm">
+                  <p className="text-green-700 dark:text-green-300 text-sm">
                     {t("lgpdComplianceDescription")}
                   </p>
                 </div>
@@ -216,7 +209,7 @@ export default function ConfiguracoesPrivacidadePage() {
           <div className="space-y-8">
             {/* Configurações de Privacidade */}
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white dark:text-white flex items-center">
+              <h2 className="text-xl font-semibold text-[var(--cl-ink)] flex items-center">
                 <Settings className="h-5 w-5 mr-2" />
                 {t("privacySettings")}
               </h2>
@@ -224,13 +217,13 @@ export default function ConfiguracoesPrivacidadePage() {
               {privacySettings.map((setting, index) => (
                 <Card key={index}>
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex items-center space-x-3">
                         <div className="text-[var(--cl-teal)]">
                           {setting.icon}
                         </div>
                         <div>
-                          <h3 className="font-medium text-gray-900 dark:text-white dark:text-white">
+                          <h3 className="font-medium text-[var(--cl-ink)]">
                             {setting.title}
                           </h3>
                           <p className="text-sm text-gray-600">
@@ -241,7 +234,7 @@ export default function ConfiguracoesPrivacidadePage() {
                       <div className="flex items-center space-x-2">
                         <Badge
                           variant="secondary"
-                          className="bg-green-100 text-green-800"
+                          className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200"
                         >
                           {setting.status}
                         </Badge>
@@ -276,7 +269,7 @@ export default function ConfiguracoesPrivacidadePage() {
               <Card>
                 <CardContent className="p-6 space-y-4">
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <h4 className="font-medium">Cookies Essenciais</h4>
                         <p className="text-sm text-gray-500">
@@ -287,7 +280,7 @@ export default function ConfiguracoesPrivacidadePage() {
                       <Badge variant="secondary">Sempre Ativo</Badge>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-2 border-t">
                       <div>
                         <h4 className="font-medium">Cookies de Desempenho</h4>
                         <p className="text-sm text-gray-500">
@@ -310,7 +303,7 @@ export default function ConfiguracoesPrivacidadePage() {
                       </Button>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-2 border-t">
                       <div>
                         <h4 className="font-medium">Cookies de Marketing</h4>
                         <p className="text-sm text-gray-500">
@@ -339,7 +332,7 @@ export default function ConfiguracoesPrivacidadePage() {
 
             {/* Direitos LGPD */}
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white dark:text-white flex items-center">
+              <h2 className="text-xl font-semibold text-[var(--cl-ink)] flex items-center">
                 <Shield className="h-5 w-5 mr-2" />
                 {t("yourRights")}
               </h2>
@@ -347,13 +340,13 @@ export default function ConfiguracoesPrivacidadePage() {
               {lgpdRights.map((right, index) => (
                 <Card key={index}>
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex items-center space-x-3">
                         <div className={`text-${right.color}-600`}>
                           {right.icon}
                         </div>
                         <div>
-                          <h3 className="font-medium text-gray-900 dark:text-white dark:text-white">
+                          <h3 className="font-medium text-[var(--cl-ink)]">
                             {right.title}
                           </h3>
                           <p className="text-sm text-gray-600">
@@ -400,7 +393,7 @@ export default function ConfiguracoesPrivacidadePage() {
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                  <h4 className="font-semibold text-[var(--cl-ink)] mb-2">
                     {t("privacyContact")}
                   </h4>
                   <ul className="text-sm text-gray-700 space-y-1">
@@ -410,7 +403,7 @@ export default function ConfiguracoesPrivacidadePage() {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                  <h4 className="font-semibold text-[var(--cl-ink)] mb-2">
                     {t("legalDocuments")}
                   </h4>
                   <ul className="text-sm text-gray-700 space-y-1">

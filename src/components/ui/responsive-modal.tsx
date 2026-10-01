@@ -50,8 +50,9 @@ export function ResponsiveModal({
         />
 
         <DialogPrimitive.Content
+          data-slot="responsive-modal"
           className={cn(
-            "fixed z-[201] flex flex-col bg-background shadow-2xl",
+            "app-modal fixed z-[201] flex flex-col text-[var(--cl-ink)] shadow-2xl",
             centered
               ? [
                   // Centered on ALL screen sizes
@@ -66,7 +67,7 @@ export function ResponsiveModal({
                   "bottom-0 left-0 right-0 rounded-t-3xl w-full",
                   "data-[state=open]:animate-in data-[state=closed]:animate-out",
                   "data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full",
-                  "duration-500 ease-in-out",
+                  "duration-200 ease-out",
                   // Desktop (Centered)
                   "md:bottom-auto md:left-1/2 md:top-1/2 md:right-auto md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:max-w-2xl md:max-h-[85vh]",
                   "md:data-[state=open]:zoom-in-95 md:data-[state=closed]:zoom-out-95 md:data-[state=open]:slide-in-from-bottom-0 md:data-[state=closed]:slide-out-to-bottom-0",
@@ -85,45 +86,37 @@ export function ResponsiveModal({
           )}
         >
           {/* Acessibilidade: Sempre ter um título */}
-          <VisuallyHidden>
-            <DialogPrimitive.Title>
-              {typeof title === "string" ? title : "Modal"}
-            </DialogPrimitive.Title>
-          </VisuallyHidden>
-
-          {description && (
+          {!title && (
             <VisuallyHidden>
-              <DialogPrimitive.Description>
-                {typeof description === "string"
-                  ? description
-                  : "Descrição do modal"}
-              </DialogPrimitive.Description>
+              <DialogPrimitive.Title>Detalhes</DialogPrimitive.Title>
             </VisuallyHidden>
           )}
 
           {(title || description) && (
             <div
               className={cn(
-                "p-6 pb-2 flex-shrink-0",
-                showHeaderBorder && "border-b md:border-none",
+                "app-modal-header p-4 pr-16 sm:p-6 sm:pr-16 flex-shrink-0",
+                showHeaderBorder && "border-b border-[var(--cl-border)]",
               )}
             >
               {title && (
-                <div className="text-lg font-bold leading-none tracking-tight">
-                  {title}
-                </div>
+                <DialogPrimitive.Title asChild>
+                  <div className="text-lg font-bold leading-snug">{title}</div>
+                </DialogPrimitive.Title>
               )}
               {description && (
-                <div className="text-sm text-muted-foreground mt-2">
-                  {description}
-                </div>
+                <DialogPrimitive.Description asChild>
+                  <div className="text-sm text-[var(--cl-ink-secondary)] mt-2">
+                    {description}
+                  </div>
+                </DialogPrimitive.Description>
               )}
             </div>
           )}
 
           <div
             className={cn(
-              "flex-1 overflow-y-auto p-6 scroll-smooth",
+              "min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6",
               (title || description) && "pt-4",
               fullContent && "p-0",
             )}
@@ -134,8 +127,8 @@ export function ResponsiveModal({
           {(footer || (showCloseButton && !fullContent)) && (
             <div
               className={cn(
-                "p-6 pt-2 flex-shrink-0 flex items-center justify-end gap-2",
-                showFooterBorder && "border-t md:border-none",
+                "app-modal-footer p-4 sm:p-6 flex-shrink-0 flex flex-wrap items-center justify-end gap-2",
+                showFooterBorder && "border-t border-[var(--cl-border)]",
               )}
             >
               {footer}
@@ -150,7 +143,7 @@ export function ResponsiveModal({
           )}
 
           {showCloseButton && (
-            <DialogPrimitive.Close className="absolute right-4 top-4 rounded-full p-2 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none bg-accent text-accent-foreground md:bg-transparent">
+            <DialogPrimitive.Close className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full ring-offset-background transition-colors hover:bg-[var(--cl-mist)] focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none bg-[var(--cl-mist)] text-[var(--cl-ink-secondary)]">
               <X className="h-4 w-4" />
               <span className="sr-only">Fechar</span>
             </DialogPrimitive.Close>

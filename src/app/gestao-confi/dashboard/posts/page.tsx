@@ -277,7 +277,7 @@ export default function AdminPostsPage() {
         </div>
         <Badge
           variant="outline"
-          className="text-[8px] uppercase font-black tracking-tighter h-4 px-1.5 border-0 bg-muted/50"
+          className="text-[11px] uppercase font-black tracking-tighter h-4 px-1.5 border-0 bg-muted/50"
         >
           {item.type}
         </Badge>
@@ -325,7 +325,7 @@ export default function AdminPostsPage() {
           </div>
           <div className="min-w-0">
             <div className="text-lg sm:text-2xl font-black">{stats.total}</div>
-            <div className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground truncate">
+            <div className="text-[11px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground truncate">
               Total Posts
             </div>
           </div>
@@ -338,7 +338,7 @@ export default function AdminPostsPage() {
             <div className="text-lg sm:text-2xl font-black">
               {stats.premium}
             </div>
-            <div className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground truncate">
+            <div className="text-[11px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground truncate">
               Premium
             </div>
           </div>
@@ -351,7 +351,7 @@ export default function AdminPostsPage() {
             <div className="text-lg sm:text-2xl font-black">
               {stats.featured}
             </div>
-            <div className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground truncate">
+            <div className="text-[11px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground truncate">
               Destaques
             </div>
           </div>

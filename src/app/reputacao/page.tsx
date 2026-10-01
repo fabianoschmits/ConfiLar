@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { PageHeader } from "@/components/layout/PageHeader";
 import {
   Card,
   CardContent,
@@ -495,8 +496,8 @@ export default function ReputacaoPage() {
     return (
       <ClientOnly>
         <MainLayout requireAuth={true}>
-          <div className="min-h-screen bg-[var(--cl-paper)]">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="app-screen bg-[var(--cl-paper)]">
+            <div className="app-page">
               <ReviewListSkeleton count={5} />
             </div>
           </div>
@@ -508,32 +509,24 @@ export default function ReputacaoPage() {
   return (
     <ClientOnly>
       <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-[var(--cl-paper)]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="app-screen bg-[var(--cl-paper)]">
+          <div className="app-page">
             {/* Header */}
-            <div className="text-center mb-8">
-              <div className="flex justify-center mb-4">
-                <div className="p-4 bg-blue-100 rounded-full">
-                  <Award className="h-12 w-12 text-[var(--cl-teal)]" />
-                </div>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                {t("title")}
-              </h1>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                {t("manageReputation")}
-              </p>
-            </div>
+            <PageHeader
+              title={t("title")}
+              description={t("manageReputation")}
+              icon={Award}
+            />
 
             {/* Sistema de Abas */}
             <div className="mb-8">
               <div className="border-b border-gray-200">
-                <nav className="-mb-px flex flex-wrap gap-2 sm:gap-4 lg:gap-8">
+                <nav className="app-filter-tabs">
                   <button
                     onClick={() => setActiveTab("overview")}
                     className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                       activeTab === "overview"
-                        ? "border-gray-500 text-gray-900 dark:text-white"
+                        ? "border-gray-500 text-[var(--cl-ink)]"
                         : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                     }`}
                   >
@@ -547,7 +540,7 @@ export default function ReputacaoPage() {
                     onClick={() => setActiveTab("reviews")}
                     className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                       activeTab === "reviews"
-                        ? "border-gray-700 text-gray-900 dark:text-white"
+                        ? "border-gray-700 text-[var(--cl-ink)]"
                         : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400"
                     }`}
                   >
@@ -601,7 +594,7 @@ export default function ReputacaoPage() {
             {activeTab === "overview" && (
               <>
                 {/* Estatísticas Compactas */}
-                <Card className="mb-6 sm:mb-8 hover:shadow-xl transition-all duration-300">
+                <Card className="mb-6 sm:mb-8 ">
                   <CardContent className="py-2 px-3 sm:py-3 sm:px-4">
                     <div className="flex flex-row items-center justify-around gap-1 sm:gap-2">
                       {/* Visualizações */}
@@ -610,7 +603,7 @@ export default function ReputacaoPage() {
                         <p className="text-xs text-gray-500 text-center">
                           {t("views")}
                         </p>
-                        <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                        <p className="text-sm sm:text-base font-bold text-[var(--cl-ink)]">
                           {stats.totalViews}
                         </p>
                       </div>
@@ -621,7 +614,7 @@ export default function ReputacaoPage() {
                         <p className="text-xs text-gray-500 text-center">
                           {t("recommendations")}
                         </p>
-                        <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                        <p className="text-sm sm:text-base font-bold text-[var(--cl-ink)]">
                           {stats.totalRecommendations}
                         </p>
                       </div>
@@ -632,7 +625,7 @@ export default function ReputacaoPage() {
                         <p className="text-xs text-gray-500 text-center">
                           {t("reviews")}
                         </p>
-                        <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                        <p className="text-sm sm:text-base font-bold text-[var(--cl-ink)]">
                           {stats.totalReviews}
                         </p>
                       </div>
@@ -644,7 +637,7 @@ export default function ReputacaoPage() {
                           <p className="text-xs text-gray-500 text-center">
                             {t("averageRating")}
                           </p>
-                          <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                          <p className="text-sm sm:text-base font-bold text-[var(--cl-ink)]">
                             {stats.averageRating.toFixed(1)}
                           </p>
                         </div>
@@ -712,12 +705,12 @@ export default function ReputacaoPage() {
                   {/* Abas de Avaliações */}
                   <div className="mb-6">
                     <div className="border-b border-gray-200">
-                      <nav className="-mb-px flex flex-wrap gap-2 sm:gap-4 lg:gap-8">
+                      <nav className="app-filter-tabs">
                         <button
                           onClick={() => setReviewsSubTab("received")}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             reviewsSubTab === "received"
-                              ? "border-gray-500 text-gray-900 dark:text-white"
+                              ? "border-gray-500 text-[var(--cl-ink)]"
                               : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                           }`}
                         >
@@ -735,7 +728,7 @@ export default function ReputacaoPage() {
                           onClick={() => setReviewsSubTab("given")}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             reviewsSubTab === "given"
-                              ? "border-gray-700 text-gray-900 dark:text-white"
+                              ? "border-gray-700 text-[var(--cl-ink)]"
                               : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400"
                           }`}
                         >
@@ -813,7 +806,7 @@ export default function ReputacaoPage() {
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
                                 <div className="min-w-0">
-                                  <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+                                  <h4 className="font-semibold text-[var(--cl-ink)] truncate">
                                     {reviewsSubTab === "received"
                                       ? review.reviewer.full_name
                                       : review.reviewed.full_name}
@@ -915,12 +908,12 @@ export default function ReputacaoPage() {
                   {/* Abas de Recomendações */}
                   <div className="mb-6">
                     <div className="border-b border-gray-200">
-                      <nav className="-mb-px flex flex-wrap gap-2 sm:gap-4 lg:gap-8">
+                      <nav className="app-filter-tabs">
                         <button
                           onClick={() => setRecommendationsSubTab("received")}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             recommendationsSubTab === "received"
-                              ? "border-gray-500 text-gray-900 dark:text-white"
+                              ? "border-gray-500 text-[var(--cl-ink)]"
                               : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                           }`}
                         >
@@ -938,7 +931,7 @@ export default function ReputacaoPage() {
                           onClick={() => setRecommendationsSubTab("given")}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             recommendationsSubTab === "given"
-                              ? "border-gray-700 text-gray-900 dark:text-white"
+                              ? "border-gray-700 text-[var(--cl-ink)]"
                               : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400"
                           }`}
                         >
@@ -1016,7 +1009,7 @@ export default function ReputacaoPage() {
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
                                 <div className="min-w-0">
-                                  <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+                                  <h4 className="font-semibold text-[var(--cl-ink)] truncate">
                                     {recommendationsSubTab === "received"
                                       ? rec.recommender.full_name
                                       : rec.recommended.full_name}
@@ -1077,7 +1070,7 @@ export default function ReputacaoPage() {
                   ) : (
                     <div className="text-center py-8">
                       <ThumbsUp className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                      <h3 className="text-lg font-semibold text-[var(--cl-ink)] mb-2">
                         {searchTerm || filterType !== "all"
                           ? t("noRecommendationsFound")
                           : t("noRecommendations")}

@@ -36,7 +36,7 @@ export function BrandLogo({
         sizes={`(max-width: 768px) ${width * 1.5}px, ${retinaWidth}px`}
         style={{
           width: `${width}px`,
-          height: "auto",
+          height: `${height}px`,
           maxWidth: "100%",
         }}
         className="block dark:hidden object-contain"
@@ -52,7 +52,7 @@ export function BrandLogo({
         sizes={`(max-width: 768px) ${width * 1.5}px, ${retinaWidth}px`}
         style={{
           width: `${width}px`,
-          height: "auto",
+          height: `${height}px`,
           maxWidth: "100%",
         }}
         className="hidden dark:block object-contain"

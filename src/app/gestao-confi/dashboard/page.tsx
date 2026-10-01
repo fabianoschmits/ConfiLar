@@ -60,11 +60,12 @@ function QuickLink({
   color: string;
 }) {
   return (
-    <Link href={href} className="block group">
-      <Button
-        variant="outline"
-        className="w-full h-16 sm:h-20 flex flex-col gap-1 sm:gap-2 hover:bg-muted/50 transition-all border-border/50 shadow-sm rounded-xl sm:rounded-2xl"
-      >
+    <Button
+      asChild
+      variant="outline"
+      className="w-full h-16 sm:h-20 flex flex-col gap-1 sm:gap-2 hover:bg-muted/50 transition-all border-border/50 shadow-sm rounded-xl sm:rounded-2xl"
+    >
+      <Link href={href} className="group">
         <div
           className={cn(
             "p-1 sm:p-1.5 rounded-lg bg-card border border-border group-hover:scale-110 transition-transform",
@@ -73,11 +74,11 @@ function QuickLink({
         >
           <Icon className="h-4 w-4 sm:h-5 w-5" />
         </div>
-        <span className="text-[8px] sm:text-xs font-bold uppercase tracking-widest text-muted-foreground/80">
+        <span className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-muted-foreground/80">
           {label}
         </span>
-      </Button>
-    </Link>
+      </Link>
+    </Button>
   );
 }
 
@@ -333,7 +334,7 @@ export default function AdminDashboardPage() {
                           </p>
                           <div className="flex items-center gap-2">
                             {log.userName && (
-                              <span className="text-[8px] sm:text-[10px] font-bold text-[var(--cl-teal)] dark:text-blue-400">
+                              <span className="text-[11px] sm:text-[10px] font-bold text-[var(--cl-teal)] dark:text-blue-400">
                                 {log.userName}
                               </span>
                             )}
@@ -347,7 +348,7 @@ export default function AdminDashboardPage() {
                             >
                               {log.action}
                             </span>
-                            <p className="text-[8px] sm:text-[10px] text-muted-foreground font-medium">
+                            <p className="text-[11px] sm:text-[10px] text-muted-foreground font-medium">
                               {format(
                                 new Date(log.created_at),
                                 "HH:mm '•' dd MMM",

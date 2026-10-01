@@ -34,7 +34,7 @@ export default function AtendimentoHubPage() {
         onValueChange={setActiveTab}
         className="w-full space-y-6 sm:space-y-8"
       >
-        <div className="bg-white/80 dark:bg-gray-950/80 backdrop-blur-md p-1.5 rounded-2xl border shadow-sm sticky top-[72px] md:top-4 z-20">
+        <div className="bg-[var(--cl-surface)] p-1 rounded-2xl border border-[var(--cl-border)] sticky top-[calc(var(--app-header-height)+var(--app-top-inset)+8px)] z-20">
           <TabsList className="bg-transparent w-full justify-start gap-1 sm:gap-2 h-10 sm:h-11 overflow-x-auto no-scrollbar">
             <TabsTrigger
               value="tickets"
