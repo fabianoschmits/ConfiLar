@@ -556,7 +556,7 @@ export default function ComprarPontosPage() {
                         } ${isExpanded ? "ring-2 ring-gray-900 dark:ring-gray-100" : ""}`}
                       >
                         {pkg.popular && (
-                          <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-2 py-0.5 text-xs border-0">
+                          <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gray-900 dark:bg-[var(--cl-cta)] text-white dark:text-[var(--cl-on-cta)] px-2 py-0.5 text-xs border-0">
                             ⭐
                           </Badge>
                         )}

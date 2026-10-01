@@ -101,13 +101,17 @@ export default async function RootLayout({
             __html: `
               (function() {
                 try {
-                  var theme = localStorage.getItem('confilar-theme');
+                  var theme = localStorage.getItem('confilar-theme-state') || localStorage.getItem('confilar-theme');
                   if (theme) {
                     try {
                       var themeData = JSON.parse(theme);
                       theme = themeData.theme || theme;
                     } catch(e) {
                       // Se não for JSON, usar o valor direto
+                    }
+                    if (theme === 'dark' || theme === 'light') {
+                      // Normaliza o valor legado para a chave usada pelo next-themes.
+                      localStorage.setItem('confilar-theme', theme);
                     }
                     if (theme === 'dark') {
                       document.documentElement.classList.add('dark');

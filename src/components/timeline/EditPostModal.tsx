@@ -232,7 +232,7 @@ export function EditPostModal({
           disabled={!editedPost.description.trim() || isLoading}
           isLoading={isLoading}
           size="sm"
-          className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:hover:bg-gray-200 dark:text-black min-w-[80px] transition-colors"
+          className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-[var(--cl-cta)] dark:text-[var(--cl-on-cta)] dark:hover:brightness-110 min-w-[80px] transition-colors"
         >
           {isLoading ? "Salvando..." : "Salvar"}
         </LoadingButton>

@@ -469,7 +469,7 @@ export function UserHistoryModal({
         <div className="p-6 bg-slate-50/50 dark:bg-slate-900/50 border-t border-border/40 flex justify-end">
           <Button
             onClick={() => onOpenChange(false)}
-            className="rounded-2xl px-8 h-11 bg-slate-900 hover:bg-black text-white dark:bg-white dark:hover:bg-slate-100 dark:text-black font-black text-xs uppercase tracking-widest transition-all"
+            className="rounded-2xl px-8 h-11 bg-slate-900 hover:bg-black text-white dark:bg-[var(--cl-cta)] dark:text-[var(--cl-on-cta)] dark:hover:brightness-110 font-black text-xs uppercase tracking-widest transition-all"
           >
             Fechar
           </Button>

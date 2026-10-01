@@ -118,7 +118,7 @@ export const AppointmentMessage: React.FC<AppointmentMessageProps> = ({
           className={cn(
             "max-w-md",
             isOwnMessage
-              ? "bg-[var(--cl-cta)] dark:bg-white dark:text-gray-900 text-[var(--cl-on-cta)] border-[var(--cl-teal)] dark:border-gray-300"
+              ? "bg-[var(--cl-cta)] text-[var(--cl-on-cta)] border-[var(--cl-teal)] dark:border-[var(--cl-cta)]"
               : "bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700",
           )}
         >
@@ -237,7 +237,7 @@ export const AppointmentMessage: React.FC<AppointmentMessageProps> = ({
           className={cn(
             "max-w-md",
             isOwnMessage
-              ? "bg-green-600 dark:bg-white dark:text-gray-900 text-white border-green-600 dark:border-gray-300"
+              ? "bg-green-600 text-white border-green-600 dark:border-green-500"
               : "bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700",
           )}
         >

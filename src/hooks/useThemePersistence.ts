@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 
-const THEME_STORAGE_KEY = "confilar-theme";
+const THEME_STATE_STORAGE_KEY = "confilar-theme-state";
+const LEGACY_THEME_STORAGE_KEY = "confilar-theme";
 const THEME_STORAGE_VERSION = "v1";
 
 interface ThemeState {
@@ -31,10 +32,10 @@ export function useThemePersistence() {
     };
 
     try {
-      localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(themeState));
+      localStorage.setItem(THEME_STATE_STORAGE_KEY, JSON.stringify(themeState));
 
       // Também salvar em sessionStorage como backup
-      sessionStorage.setItem(THEME_STORAGE_KEY, newTheme);
+      sessionStorage.setItem(THEME_STATE_STORAGE_KEY, newTheme);
 
       console.log("✅ Tema salvo:", newTheme);
     } catch (error) {
@@ -48,7 +49,7 @@ export function useThemePersistence() {
 
     try {
       // Tentar carregar do localStorage primeiro
-      const stored = localStorage.getItem(THEME_STORAGE_KEY);
+      const stored = localStorage.getItem(THEME_STATE_STORAGE_KEY);
 
       if (stored) {
         try {
@@ -67,10 +68,23 @@ export function useThemePersistence() {
       }
 
       // Fallback para sessionStorage
-      const sessionTheme = sessionStorage.getItem(THEME_STORAGE_KEY);
+      const sessionTheme = sessionStorage.getItem(THEME_STATE_STORAGE_KEY);
       if (sessionTheme) {
         console.log("✅ Tema carregado do sessionStorage:", sessionTheme);
         return sessionTheme;
+      }
+
+      // Compatibilidade com a versão que compartilhava a chave do next-themes.
+      // Objetos antigos são lidos uma única vez; a chave principal volta a conter
+      // somente "light" ou "dark", como o next-themes espera.
+      const legacyTheme = localStorage.getItem(LEGACY_THEME_STORAGE_KEY);
+      if (legacyTheme) {
+        try {
+          const legacyState: ThemeState = JSON.parse(legacyTheme);
+          if (legacyState.theme) return legacyState.theme;
+        } catch {
+          return legacyTheme;
+        }
       }
 
       return null;
@@ -109,7 +123,7 @@ export function useThemePersistence() {
     if (typeof window === "undefined") return;
 
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === THEME_STORAGE_KEY && e.newValue) {
+      if (e.key === THEME_STATE_STORAGE_KEY && e.newValue) {
         try {
           const themeState: ThemeState = JSON.parse(e.newValue);
           if (themeState.theme !== theme) {

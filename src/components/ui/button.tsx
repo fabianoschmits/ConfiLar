@@ -25,7 +25,7 @@ const buttonVariants = cva(
         warning:
           "bg-warning-500 text-white shadow-sm hover:bg-warning-600 active:scale-[0.98] focus-visible:ring-warning-500/20",
         premium:
-          "bg-[var(--cl-teal)] text-white shadow-md hover:brightness-95 active:scale-[0.98] focus-visible:ring-[var(--cl-teal)]/20",
+          "bg-[var(--cl-teal)] text-[var(--cl-on-cta)] shadow-md hover:brightness-95 active:scale-[0.98] focus-visible:ring-[var(--cl-teal)]/20",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

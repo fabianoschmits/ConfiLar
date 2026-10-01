@@ -101,7 +101,7 @@ export function LikedBy({ postId, likesCount }: LikedByProps) {
             return (
               <Avatar
                 key={u.id}
-                className="w-5 h-5 border-2 border-white dark:border-black flex-shrink-0"
+                className="w-5 h-5 border-2 border-white dark:border-[var(--cl-surface)] flex-shrink-0"
                 style={{
                   zIndex: avatarsToShow.length - index,
                   transform: `translateY(${verticalOffset})`,
@@ -153,7 +153,7 @@ export function LikedBy({ postId, likesCount }: LikedByProps) {
             return (
               <Avatar
                 key={u.id}
-                className="w-5 h-5 border-2 border-white dark:border-black flex-shrink-0"
+                className="w-5 h-5 border-2 border-white dark:border-[var(--cl-surface)] flex-shrink-0"
                 style={{
                   zIndex: avatarsToShow.length - index,
                   transform: `translateY(${verticalOffset})`,
@@ -212,7 +212,7 @@ export function LikedBy({ postId, likesCount }: LikedByProps) {
             return (
               <Avatar
                 key={u.id}
-                className="w-5 h-5 border-2 border-white dark:border-black flex-shrink-0"
+                className="w-5 h-5 border-2 border-white dark:border-[var(--cl-surface)] flex-shrink-0"
                 style={{
                   zIndex: avatarsToShow.length - index,
                   transform: `translateY(${verticalOffset})`,

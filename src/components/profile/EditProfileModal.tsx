@@ -222,7 +222,7 @@ export function EditProfileModal({
                       className={cn(
                         "flex-none flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold border transition-all",
                         isActive
-                          ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white"
+                          ? "bg-gray-900 dark:bg-[var(--cl-cta)] text-white dark:text-[var(--cl-on-cta)] border-gray-900 dark:border-[var(--cl-cta)]"
                           : "bg-[var(--cl-surface)] text-gray-500 border-gray-200 dark:border-gray-800",
                       )}
                     >

@@ -72,7 +72,7 @@ const NOTIFICATION_COLORS = {
   message: "bg-blue-500",
   review: "bg-yellow-500",
   booking: "bg-green-500",
-  system: "bg-gray-50 dark:bg-gray-9000",
+  system: "bg-gray-50 dark:bg-gray-900",
   achievement: "bg-[var(--cl-teal)]",
   verification: "bg-indigo-500",
   success: "bg-emerald-500",
@@ -339,7 +339,7 @@ export function ModernNotificationCenter({
                   const iconColor =
                     NOTIFICATION_COLORS[
                       notification.type as keyof typeof NOTIFICATION_COLORS
-                    ] || "bg-gray-50 dark:bg-gray-9000";
+                    ] || "bg-gray-50 dark:bg-gray-900";
                   const priorityColor =
                     PRIORITY_COLORS[
                       notification.priority as keyof typeof PRIORITY_COLORS

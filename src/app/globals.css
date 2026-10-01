@@ -1094,44 +1094,49 @@ textarea {
     --chart-5: 27 87% 67%;
   }
 
-  .dark {
-    /* OLED dark: página preta, painéis quase pretos, CTA sem lavar de branco */
-    --cl-ink: #fafafa;
-    --cl-ink-secondary: #a3a3a3;
-    --cl-ink-muted: #737373;
-    --cl-paper: #000000;
-    --cl-surface: #0a0a0a;
-    --cl-mist: #141414;
-    --cl-border: #262626;
-    --cl-muted: #737373;
-    --cl-service: #4ade80;
-    --cl-service-bg: #052e16;
-    --cl-request: #38bdf8;
-    --cl-request-bg: #082f49;
-    --cl-shadow: 0 2px 16px rgba(0, 0, 0, 0.65);
-    /* CTA no escuro = teal da marca (não branco — evita UI “lavada”) */
-    --cl-cta: #00b0b0;
-    --cl-on-cta: #ffffff;
+  html.dark {
+    /*
+     * Tema escuro ConfiLar
+     *
+     * Uma tela escura precisa de mais do que inverter branco por preto. Esta
+     * escala mantém três níveis de profundidade (canvas, superfície e elevação)
+     * para que cartões, controles e estados continuem legíveis sem brilho.
+     */
+    --cl-ink: #f2f7f9;
+    --cl-ink-secondary: #bac9d1;
+    --cl-ink-muted: #8297a3;
+    --cl-paper: #0a1117;
+    --cl-surface: #101c25;
+    --cl-mist: #172933;
+    --cl-border: #29414e;
+    --cl-muted: #8297a3;
+    --cl-service: #69dba4;
+    --cl-service-bg: #102f25;
+    --cl-request: #75c7f5;
+    --cl-request-bg: #102d43;
+    --cl-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+    --cl-cta: #18b8b4;
+    --cl-on-cta: #042d2e;
 
-    --background: 0 0% 0%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 4%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 4%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 180 100% 35%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 8%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 8%;
-    --muted-foreground: 0 0% 55%;
-    --accent: 0 0% 8%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 15%;
-    --input: 0 0% 10%;
-    --ring: 180 100% 35%;
+    --background: 204 40% 7%;
+    --foreground: 190 29% 96%;
+    --card: 205 40% 10%;
+    --card-foreground: 190 29% 96%;
+    --popover: 205 40% 10%;
+    --popover-foreground: 190 29% 96%;
+    --primary: 179 77% 41%;
+    --primary-foreground: 180 80% 10%;
+    --secondary: 201 37% 15%;
+    --secondary-foreground: 190 29% 96%;
+    --muted: 201 37% 15%;
+    --muted-foreground: 199 16% 57%;
+    --accent: 201 37% 15%;
+    --accent-foreground: 190 29% 96%;
+    --destructive: 0 54% 42%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 199 31% 24%;
+    --input: 201 37% 15%;
+    --ring: 179 77% 41%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -1226,134 +1231,367 @@ textarea {
   }
 
   /*
-   * Dark remaps com !important: utilitários Tailwind (bg-white, bg-gray-50…)
-   * vencem rules sem !important e deixavam a UI clara no tema escuro.
+   * Utilitários legados sem variante `dark:`. O :where reduz a especificidade
+   * desta camada, permitindo que uma variante `dark:*` declarada no componente
+   * sempre tenha precedência. Isto evita que botões, skeletons e estados ativos
+   * acabem com a mesma cor de fundo.
    */
-  .dark .bg-white {
-    background-color: var(--cl-surface) !important;
+  :where(.dark) .bg-white {
+    background-color: var(--cl-surface);
   }
 
-  .dark .bg-gray-50,
-  .dark .bg-slate-50,
-  .dark .bg-gray-100,
-  .dark .bg-slate-100,
-  .dark .bg-gray-200,
-  .dark .bg-gray-300 {
-    background-color: var(--cl-mist) !important;
+  :where(.dark) .bg-gray-50,
+  :where(.dark) .bg-slate-50 {
+    background-color: var(--cl-paper);
   }
 
-  .dark .bg-gray-700,
-  .dark .bg-gray-800,
-  .dark .bg-gray-900,
-  .dark .bg-zinc-800,
-  .dark .bg-zinc-900,
-  .dark .bg-zinc-950,
-  .dark .bg-neutral-900,
-  .dark .bg-neutral-950 {
-    background-color: var(--cl-surface) !important;
+  :where(.dark) .bg-gray-100,
+  :where(.dark) .bg-slate-100 {
+    background-color: var(--cl-mist);
   }
 
-  .dark .bg-white\/95,
-  .dark .bg-white\/90,
-  .dark .bg-zinc-950\/95,
-  .dark .bg-gray-950\/95 {
-    background-color: color-mix(
-      in srgb,
-      var(--cl-surface) 96%,
-      transparent
-    ) !important;
+  :where(.dark) .bg-gray-200,
+  :where(.dark) .bg-slate-200 {
+    background-color: #203640;
   }
 
-  .dark .bg-white\/80,
-  .dark .bg-white\/70 {
-    background-color: color-mix(
-      in srgb,
-      var(--cl-surface) 85%,
-      transparent
-    ) !important;
+  :where(.dark) .bg-gray-300,
+  :where(.dark) .bg-slate-300 {
+    background-color: #2c4551;
   }
 
-  .dark .bg-white\/50,
-  .dark .bg-white\/40 {
-    background-color: color-mix(
-      in srgb,
-      var(--cl-mist) 70%,
-      transparent
-    ) !important;
+  :where(.dark) .bg-gray-700,
+  :where(.dark) .bg-slate-700,
+  :where(.dark) .bg-zinc-700,
+  :where(.dark) .bg-neutral-700 {
+    background-color: #29414e;
   }
 
-  .dark .bg-white\/20,
-  .dark .bg-white\/10 {
-    background-color: color-mix(
-      in srgb,
-      var(--cl-mist) 35%,
-      transparent
-    ) !important;
+  :where(.dark) .bg-gray-800,
+  :where(.dark) .bg-slate-800,
+  :where(.dark) .bg-zinc-800,
+  :where(.dark) .bg-neutral-800 {
+    background-color: #1b2e39;
   }
 
-  .dark .border-gray-50,
-  .dark .border-gray-100,
-  .dark .border-gray-200,
-  .dark .border-gray-300,
-  .dark .border-gray-600,
-  .dark .border-gray-700,
-  .dark .border-gray-800,
-  .dark .border-slate-200 {
-    border-color: var(--cl-border) !important;
+  :where(.dark) .bg-gray-900,
+  :where(.dark) .bg-slate-900,
+  :where(.dark) .bg-zinc-900,
+  :where(.dark) .bg-neutral-900 {
+    background-color: #203843;
   }
 
-  /* Pastéis → fundos escuros sólidos (sem glow lavado) */
-  .dark .bg-green-50,
-  .dark .bg-emerald-50 {
-    background-color: #052e16 !important;
+  :where(.dark) .bg-zinc-950,
+  :where(.dark) .bg-neutral-950,
+  :where(.dark) .bg-gray-950,
+  :where(.dark) .bg-slate-950 {
+    background-color: var(--cl-paper);
   }
 
-  .dark .bg-yellow-50,
-  .dark .bg-amber-50,
-  .dark .bg-orange-50 {
-    background-color: #451a03 !important;
+  :where(.dark) .bg-white\/95,
+  :where(.dark) .bg-white\/90 {
+    background-color: color-mix(in srgb, var(--cl-surface) 94%, transparent);
   }
 
-  .dark .bg-red-50,
-  .dark .bg-rose-50 {
-    background-color: #450a0a !important;
+  :where(.dark) .bg-white\/80,
+  :where(.dark) .bg-white\/70 {
+    background-color: color-mix(in srgb, var(--cl-surface) 82%, transparent);
   }
 
-  .dark .bg-blue-50,
-  .dark .bg-sky-50,
-  .dark .bg-cyan-50,
-  .dark .bg-primary-50 {
-    background-color: #042f2e !important;
+  :where(.dark) .bg-white\/50,
+  :where(.dark) .bg-white\/40 {
+    background-color: color-mix(in srgb, var(--cl-surface) 66%, transparent);
   }
 
-  .dark .text-green-800,
-  .dark .text-emerald-800 {
-    color: #86efac !important;
+  :where(.dark) .bg-white\/20,
+  :where(.dark) .bg-white\/10 {
+    background-color: color-mix(in srgb, var(--cl-mist) 46%, transparent);
   }
 
-  .dark .text-yellow-800,
-  .dark .text-amber-800,
-  .dark .text-orange-800 {
-    color: #fde68a !important;
+  :where(.dark) .bg-zinc-950\/90,
+  :where(.dark) .bg-zinc-900\/95,
+  :where(.dark) .bg-gray-950\/90,
+  :where(.dark) .bg-gray-900\/95 {
+    background-color: color-mix(in srgb, var(--cl-surface) 92%, transparent);
   }
 
-  .dark .text-red-800,
-  .dark .text-rose-800 {
-    color: #fca5a5 !important;
+  :where(.dark) .bg-gray-950\/80,
+  :where(.dark) .bg-gray-900\/80,
+  :where(.dark) .bg-zinc-900\/80 {
+    background-color: color-mix(in srgb, var(--cl-surface) 80%, transparent);
   }
 
-  .dark .text-blue-800,
-  .dark .text-blue-700,
-  .dark .text-cyan-800 {
-    color: #67e8f9 !important;
+  :where(.dark) .bg-gray-950\/50,
+  :where(.dark) .bg-gray-900\/50,
+  :where(.dark) .bg-zinc-900\/50,
+  :where(.dark) .bg-slate-900\/50 {
+    background-color: color-mix(in srgb, var(--cl-surface) 50%, transparent);
   }
 
-  /* Força fundo preto real no documento */
+  :where(.dark) .bg-gray-900\/30,
+  :where(.dark) .bg-gray-900\/20,
+  :where(.dark) .bg-gray-900\/10,
+  :where(.dark) .bg-slate-900\/20,
+  :where(.dark) .bg-slate-900\/10 {
+    background-color: color-mix(in srgb, var(--cl-mist) 38%, transparent);
+  }
+
+  :where(.dark) .bg-gray-800\/50,
+  :where(.dark) .bg-gray-800\/30,
+  :where(.dark) .bg-gray-800\/20,
+  :where(.dark) .bg-gray-800\/10,
+  :where(.dark) .bg-zinc-800\/20 {
+    background-color: color-mix(in srgb, var(--cl-mist) 48%, transparent);
+  }
+
+  /* A marca permanece viva no escuro, com texto escuro para contraste AA. */
+  :where(.dark) .bg-\[var\(--cl-teal\)\] {
+    color: var(--cl-on-cta);
+  }
+
+  .dark
+    .group:hover
+    .group-hover\:bg-\[var\(--cl-teal\)\].group-hover\:text-white,
+  .dark
+    [data-state="active"].data-\[state\=active\]\:bg-\[var\(--cl-teal\)\].data-\[state\=active\]\:text-white {
+    color: var(--cl-on-cta);
+  }
+
+  /* Ações e avisos que ainda usam a paleta Tailwind diretamente. */
+  :where(.dark) .bg-blue-400,
+  :where(.dark) .bg-blue-500,
+  :where(.dark) .bg-blue-600,
+  :where(.dark) .bg-sky-500,
+  :where(.dark) .bg-sky-600 {
+    background-color: #174d6e;
+  }
+
+  :where(.dark) .bg-green-400,
+  :where(.dark) .bg-green-500,
+  :where(.dark) .bg-green-600,
+  :where(.dark) .bg-emerald-500,
+  :where(.dark) .bg-emerald-600 {
+    background-color: #14533d;
+  }
+
+  :where(.dark) .bg-red-400,
+  :where(.dark) .bg-red-500,
+  :where(.dark) .bg-red-600,
+  :where(.dark) .bg-rose-500,
+  :where(.dark) .bg-rose-600 {
+    background-color: #682335;
+  }
+
+  :where(.dark) .bg-yellow-400,
+  :where(.dark) .bg-yellow-500,
+  :where(.dark) .bg-amber-400,
+  :where(.dark) .bg-amber-500,
+  :where(.dark) .bg-orange-500 {
+    background-color: #59450d;
+  }
+
+  :where(.dark) .bg-purple-500,
+  :where(.dark) .bg-indigo-500 {
+    background-color: #45326f;
+  }
+
+  :where(.dark) .bg-green-50,
+  :where(.dark) .bg-green-100,
+  :where(.dark) .bg-emerald-50,
+  :where(.dark) .bg-emerald-100 {
+    background-color: var(--cl-service-bg);
+  }
+
+  :where(.dark) .bg-yellow-50,
+  :where(.dark) .bg-yellow-100,
+  :where(.dark) .bg-amber-50,
+  :where(.dark) .bg-amber-100,
+  :where(.dark) .bg-orange-50,
+  :where(.dark) .bg-orange-100 {
+    background-color: #3c2f11;
+  }
+
+  :where(.dark) .bg-red-50,
+  :where(.dark) .bg-red-100,
+  :where(.dark) .bg-rose-50,
+  :where(.dark) .bg-rose-100 {
+    background-color: #3e1d29;
+  }
+
+  :where(.dark) .bg-blue-50,
+  :where(.dark) .bg-blue-100,
+  :where(.dark) .bg-sky-50,
+  :where(.dark) .bg-sky-100,
+  :where(.dark) .bg-cyan-50,
+  :where(.dark) .bg-cyan-100,
+  :where(.dark) .bg-primary-50,
+  :where(.dark) .bg-primary-100 {
+    background-color: var(--cl-request-bg);
+  }
+
+  :where(.dark) .border-black,
+  :where(.dark) .border-gray-50,
+  :where(.dark) .border-gray-100,
+  :where(.dark) .border-gray-200,
+  :where(.dark) .border-gray-300,
+  :where(.dark) .border-gray-600,
+  :where(.dark) .border-gray-700,
+  :where(.dark) .border-gray-800,
+  :where(.dark) .border-slate-200,
+  :where(.dark) .border-slate-300,
+  :where(.dark) .border-zinc-800 {
+    border-color: var(--cl-border);
+  }
+
+  :where(.dark) .text-black {
+    color: var(--cl-ink);
+  }
+
+  :where(.dark) .text-green-700,
+  :where(.dark) .text-green-800,
+  :where(.dark) .text-green-900,
+  :where(.dark) .text-emerald-700,
+  :where(.dark) .text-emerald-800,
+  :where(.dark) .text-emerald-900 {
+    color: #8be3b2;
+  }
+
+  :where(.dark) .text-yellow-700,
+  :where(.dark) .text-yellow-800,
+  :where(.dark) .text-yellow-900,
+  :where(.dark) .text-amber-700,
+  :where(.dark) .text-amber-800,
+  :where(.dark) .text-amber-900,
+  :where(.dark) .text-orange-700,
+  :where(.dark) .text-orange-800,
+  :where(.dark) .text-orange-900 {
+    color: #f5cf7b;
+  }
+
+  :where(.dark) .text-red-700,
+  :where(.dark) .text-red-800,
+  :where(.dark) .text-red-900,
+  :where(.dark) .text-rose-700,
+  :where(.dark) .text-rose-800,
+  :where(.dark) .text-rose-900 {
+    color: #ff9bac;
+  }
+
+  :where(.dark) .text-blue-700,
+  :where(.dark) .text-blue-800,
+  :where(.dark) .text-blue-900,
+  :where(.dark) .text-cyan-700,
+  :where(.dark) .text-cyan-800,
+  :where(.dark) .text-cyan-900 {
+    color: #82cff7;
+  }
+
+  /* Variantes dark declaradas pelos componentes — escala equivalente aos tokens. */
+  .dark .dark\:bg-gray-950,
+  .dark .dark\:bg-zinc-950 {
+    background-color: var(--cl-paper);
+  }
+
+  .dark .dark\:bg-gray-900,
+  .dark .dark\:bg-slate-900,
+  .dark .dark\:bg-zinc-900 {
+    background-color: var(--cl-surface);
+  }
+
+  .dark .dark\:bg-gray-800,
+  .dark .dark\:bg-slate-800,
+  .dark .dark\:bg-zinc-800 {
+    background-color: var(--cl-mist);
+  }
+
+  .dark .dark\:bg-gray-200,
+  .dark .dark\:bg-slate-200 {
+    background-color: #203640;
+  }
+
+  .dark .dark\:bg-gray-600 {
+    background-color: #314d5a;
+  }
+
+  .dark .dark\:bg-gray-700 {
+    background-color: #29414e;
+  }
+
+  .dark .dark\:bg-gray-950\/95,
+  .dark .dark\:bg-zinc-950\/95,
+  .dark .dark\:bg-gray-900\/95 {
+    background-color: color-mix(in srgb, var(--cl-surface) 95%, transparent);
+  }
+
+  .dark .dark\:bg-gray-950\/80,
+  .dark .dark\:bg-gray-900\/80 {
+    background-color: color-mix(in srgb, var(--cl-surface) 80%, transparent);
+  }
+
+  .dark .dark\:bg-zinc-900\/95 {
+    background-color: color-mix(in srgb, var(--cl-surface) 95%, transparent);
+  }
+
+  .dark .dark\:bg-gray-950\/50,
+  .dark .dark\:bg-gray-900\/50,
+  .dark .dark\:bg-slate-900\/50 {
+    background-color: color-mix(in srgb, var(--cl-surface) 50%, transparent);
+  }
+
+  .dark .dark\:bg-gray-950\/40 {
+    background-color: color-mix(in srgb, var(--cl-surface) 40%, transparent);
+  }
+
+  .dark .dark\:bg-gray-800\/50 {
+    background-color: color-mix(in srgb, var(--cl-mist) 50%, transparent);
+  }
+
+  .dark .dark\:bg-gray-900\/30,
+  .dark .dark\:bg-gray-900\/20,
+  .dark .dark\:bg-gray-900\/10,
+  .dark .dark\:bg-slate-900\/20,
+  .dark .dark\:bg-slate-900\/10 {
+    background-color: color-mix(in srgb, var(--cl-mist) 38%, transparent);
+  }
+
+  .dark .dark\:bg-gray-800\/30,
+  .dark .dark\:bg-gray-800\/20,
+  .dark .dark\:bg-zinc-800\/20 {
+    background-color: color-mix(in srgb, var(--cl-mist) 48%, transparent);
+  }
+
+  .dark .dark\:bg-gray-700\/50 {
+    background-color: color-mix(in srgb, #29414e 50%, transparent);
+  }
+
+  .dark .dark\:border-gray-800,
+  .dark .dark\:border-gray-700,
+  .dark .dark\:border-zinc-800,
+  .dark .dark\:border-slate-800 {
+    border-color: var(--cl-border);
+  }
+
+  .dark .dark\:text-white,
+  .dark .dark\:text-gray-100 {
+    color: var(--cl-ink);
+  }
+
+  .dark .dark\:text-gray-200,
+  .dark .dark\:text-gray-300 {
+    color: var(--cl-ink-secondary);
+  }
+
+  .dark .dark\:text-gray-400,
+  .dark .dark\:text-gray-500 {
+    color: var(--cl-ink-muted);
+  }
+
   html.dark,
   html.dark body,
   .dark body {
-    background-color: #000000 !important;
+    background-color: var(--cl-paper);
     color: var(--cl-ink);
+    color-scheme: dark;
   }
 
   /* Utilitário CTA com contraste correto nos dois temas */
@@ -1427,6 +1665,142 @@ textarea {
   .font-black {
     font-weight: 900;
   }
+}
+
+/*
+ * Compatibilidade para utilitários legados do Tailwind.
+ *
+ * Este bloco fica fora de @layer base para ser emitido após os utilitários do
+ * Tailwind. A especificidade de html.dark garante que uma classe clara sem
+ * `dark:` não reintroduza texto ou superfícies claras no tema escuro; variantes
+ * `dark:` continuam tratadas pelas regras específicas acima.
+ */
+html.dark .text-black,
+html.dark .text-gray-900,
+html.dark .text-gray-800,
+html.dark .text-slate-900,
+html.dark .text-slate-800 {
+  color: var(--cl-ink);
+}
+
+html.dark .text-gray-700,
+html.dark .text-gray-600,
+html.dark .text-slate-700,
+html.dark .text-slate-600 {
+  color: var(--cl-ink-secondary);
+}
+
+html.dark .text-gray-500,
+html.dark .text-gray-400,
+html.dark .text-slate-500,
+html.dark .text-slate-400 {
+  color: var(--cl-ink-muted);
+}
+
+html.dark .bg-white {
+  background-color: var(--cl-surface);
+}
+
+html.dark .bg-gray-50,
+html.dark .bg-slate-50,
+html.dark .bg-zinc-50 {
+  background-color: var(--cl-paper);
+}
+
+html.dark .bg-gray-100,
+html.dark .bg-slate-100,
+html.dark .bg-zinc-100 {
+  background-color: var(--cl-mist);
+}
+
+html.dark .bg-gray-200,
+html.dark .bg-slate-200 {
+  background-color: #203640;
+}
+
+html.dark .bg-gray-300,
+html.dark .bg-slate-300 {
+  background-color: #2c4551;
+}
+
+html.dark .bg-gray-700,
+html.dark .bg-slate-700,
+html.dark .bg-zinc-700 {
+  background-color: #29414e;
+}
+
+html.dark .bg-gray-800,
+html.dark .bg-slate-800,
+html.dark .bg-zinc-800 {
+  background-color: var(--cl-mist);
+}
+
+html.dark .bg-gray-900,
+html.dark .bg-slate-900,
+html.dark .bg-zinc-900 {
+  background-color: var(--cl-surface);
+}
+
+html.dark .bg-gray-950,
+html.dark .bg-slate-950,
+html.dark .bg-zinc-950 {
+  background-color: var(--cl-paper);
+}
+
+html.dark .bg-white\/95,
+html.dark .bg-white\/90,
+html.dark .bg-zinc-950\/90,
+html.dark .bg-zinc-900\/95,
+html.dark .bg-gray-950\/90,
+html.dark .bg-gray-900\/95 {
+  background-color: color-mix(in srgb, var(--cl-surface) 92%, transparent);
+}
+
+html.dark .bg-white\/80,
+html.dark .bg-white\/70,
+html.dark .bg-gray-950\/80,
+html.dark .bg-gray-900\/80 {
+  background-color: color-mix(in srgb, var(--cl-surface) 80%, transparent);
+}
+
+html.dark .bg-white\/50,
+html.dark .bg-white\/40,
+html.dark .bg-gray-950\/50,
+html.dark .bg-gray-900\/50,
+html.dark .bg-zinc-900\/50,
+html.dark .bg-slate-900\/50 {
+  background-color: color-mix(in srgb, var(--cl-surface) 50%, transparent);
+}
+
+html.dark .bg-gray-900\/30,
+html.dark .bg-gray-900\/20,
+html.dark .bg-gray-900\/10,
+html.dark .bg-slate-900\/20,
+html.dark .bg-slate-900\/10,
+html.dark .bg-gray-800\/50,
+html.dark .bg-gray-800\/30,
+html.dark .bg-gray-800\/20,
+html.dark .bg-gray-800\/10,
+html.dark .bg-zinc-800\/20 {
+  background-color: color-mix(in srgb, var(--cl-mist) 46%, transparent);
+}
+
+html.dark .bg-\[var\(--cl-teal\)\] {
+  color: var(--cl-on-cta);
+}
+
+html.dark .border-black,
+html.dark .border-gray-50,
+html.dark .border-gray-100,
+html.dark .border-gray-200,
+html.dark .border-gray-300,
+html.dark .border-gray-600,
+html.dark .border-gray-700,
+html.dark .border-gray-800,
+html.dark .border-slate-200,
+html.dark .border-slate-300,
+html.dark .border-zinc-800 {
+  border-color: var(--cl-border);
 }
 
 /* Garantir que os toasts do Sonner usem a fonte Gilroy */
