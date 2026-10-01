@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { MainLayout } from "@/components/layout/MainLayout";
-import { Plus, Search, MessageCircle, Loader2, RefreshCw } from "lucide-react";
+import { Plus, Search, MessageCircle, Loader2 } from "lucide-react";
 import { useUnifiedTimeline } from "@/hooks/useUnifiedTimeline";
 import { useTimelineRealtime } from "@/hooks/useTimelineRealtime";
 import { usePostRanking } from "@/hooks/usePostRanking";
@@ -245,34 +245,49 @@ export default function FeedPage() {
         />
       )}
 
-      <div className="min-h-screen bg-[var(--cl-paper)]">
-        <header className="bg-[var(--cl-paper)] border-b border-[var(--cl-border)]">
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-center justify-between px-4 py-3 bg-[var(--cl-paper)]">
-              <h1 className="text-xl font-bold text-[var(--cl-ink)]">
-                ConfiLar
-              </h1>
-              <div className="flex items-center gap-2">
-                {profile && (
-                  <button
-                    onClick={() => setShowNewPost(true)}
-                    className="p-2 hover:bg-[var(--cl-mist)] rounded-full"
-                  >
-                    <Plus className="h-5 w-5 text-[var(--cl-ink)]" />
-                  </button>
-                )}
+      <div className="social-feed min-h-screen">
+        <div className="social-feed-shell">
+          <header className="social-feed-masthead">
+            <div className="social-feed-title-row">
+              <div>
+                <h1>Feed social</h1>
+                <p>O que acontece na sua comunidade</p>
+              </div>
+
+              <div className="social-feed-actions">
                 <button
+                  type="button"
                   onClick={() => setShowSearch(!showSearch)}
-                  className={`p-2 rounded-full ${showSearch || searchQuery ? "text-[var(--cl-teal)]" : ""}`}
+                  className={cn(
+                    "social-feed-icon-button",
+                    (showSearch || searchQuery) &&
+                      "social-feed-icon-button--active",
+                  )}
+                  aria-label={showSearch ? "Fechar busca" : "Buscar no feed"}
+                  aria-pressed={showSearch}
                 >
                   <Search className="h-5 w-5" />
                 </button>
+
                 {profile && (
                   <button
+                    type="button"
                     onClick={() => openChat()}
-                    className="p-2 hover:bg-[var(--cl-mist)] rounded-full"
+                    className="social-feed-icon-button"
+                    aria-label="Abrir conversas"
                   >
-                    <MessageCircle className="h-5 w-5 text-[var(--cl-ink)]" />
+                    <MessageCircle className="h-5 w-5" />
+                  </button>
+                )}
+
+                {profile && (
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPost(true)}
+                    className="social-feed-create-button"
+                  >
+                    <Plus className="h-[18px] w-[18px]" />
+                    <span>Criar</span>
                   </button>
                 )}
               </div>
@@ -287,136 +302,166 @@ export default function FeedPage() {
               />
             )}
 
-            <div className="flex px-4 pt-1">
+            <div
+              className="social-feed-tabs"
+              role="tablist"
+              aria-label="Conteúdo do feed"
+            >
               {(["all", "posts", "notifications"] as const)
                 .filter((tab) => (profile ? true : tab !== "notifications"))
                 .map((tab) => (
                   <button
                     key={tab}
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`mr-6 pb-2 border-b-2 transition-all font-medium text-sm capitalize ${
-                      activeTab === tab
-                        ? "border-[var(--cl-teal)] text-[var(--cl-ink)]"
-                        : "border-transparent text-[var(--cl-ink-muted)]"
-                    }`}
+                    className={cn(
+                      "social-feed-tab",
+                      activeTab === tab && "social-feed-tab--active",
+                    )}
                   >
                     {t(tab)}
                   </button>
                 ))}
             </div>
-          </div>
-        </header>
+          </header>
 
-        {/* Stories Section */}
-        <div className="bg-[var(--cl-surface)] border-b border-[var(--cl-border)] overflow-hidden">
-          <div className="max-w-2xl mx-auto py-4">
-            <div className="flex gap-4 overflow-x-auto px-4 pb-2 scrollbar-none no-scrollbar">
-              {displayStories.map((group, index) => (
-                <div
-                  key={group.id}
-                  className="flex flex-col items-center gap-1 min-w-[72px] cursor-pointer"
-                  onClick={() => {
-                    if (group.id === "my-story" && group.stories.length === 0) {
-                      setShowCreateStory(true);
-                    } else {
-                      setSelectedStoryGroupIndex(index);
-                      setSelectedStoryIndex(0);
-                      setShowStoryViewer(true);
-                    }
-                  }}
-                >
-                  <div className="relative p-[2.5px]">
-                    {/* Story border ring */}
-                    <div
-                      className={cn(
-                        "absolute inset-0 rounded-full",
-                        group.hasNew
-                          ? "p-[2.5px] bg-gradient-to-tr from-[var(--cl-teal)] via-[var(--cl-teal)] to-[var(--cl-ink)]"
-                          : group.stories.length > 0
-                            ? "border-2 border-[var(--cl-border)]"
-                            : "border-2 border-dashed border-[var(--cl-border)]",
-                      )}
-                    />
-
-                    {/* Avatar background to separate from ring */}
-                    <div className="relative bg-[var(--cl-surface)] p-[2px] rounded-full">
-                      <div className="relative w-14 h-14">
+          {displayStories.length > 0 && (
+            <section className="social-feed-stories" aria-label="Stories">
+              <div className="social-feed-stories-track">
+                {displayStories.map((group, index) => (
+                  <button
+                    key={group.id}
+                    type="button"
+                    className="social-feed-story"
+                    onClick={() => {
+                      if (
+                        group.id === "my-story" &&
+                        group.stories.length === 0
+                      ) {
+                        setShowCreateStory(true);
+                      } else {
+                        setSelectedStoryGroupIndex(index);
+                        setSelectedStoryIndex(0);
+                        setShowStoryViewer(true);
+                      }
+                    }}
+                  >
+                    <span className="social-feed-story-avatar">
+                      <span
+                        className={cn(
+                          "social-feed-story-ring",
+                          group.hasNew
+                            ? "social-feed-story-ring--new"
+                            : group.stories.length > 0
+                              ? "social-feed-story-ring--seen"
+                              : "social-feed-story-ring--empty",
+                        )}
+                      />
+                      <span className="social-feed-story-image">
                         <UserAvatar
                           src={group.userAvatar}
                           alt={group.userName}
                           size="lg"
                           showReferralBadge={false}
-                          className="w-full h-full object-cover"
+                          className="h-full w-full object-cover"
                         />
-
-                        {/* Plus button for your own story if empty */}
                         {group.id === "my-story" &&
                           group.stories.length === 0 && (
-                            <div className="absolute bottom-0 right-0 bg-[var(--cl-teal)] text-white rounded-full p-0.5 border-2 border-[var(--cl-surface)]">
+                            <span className="social-feed-story-add">
                               <Plus className="h-3.5 w-3.5" />
-                            </div>
+                            </span>
                           )}
-                      </div>
-                    </div>
-                  </div>
-                  <span className="text-[11px] font-medium text-[var(--cl-ink-secondary)] truncate w-16 text-center">
-                    {group.id === "my-story" ? "Seu story" : group.userName}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div
-          id="feed-container"
-          ref={containerRef}
-          className="max-w-2xl mx-auto pb-20 relative pt-6"
-        >
-          <PullToRefresh
-            isPulling={isPulling}
-            isRefreshing={isRefreshing}
-            pullDistance={pullDistance}
-            shouldRefresh={pullDistance >= 80}
-          />
-          {isLoading ? (
-            <div className="space-y-4">
-              <InstagramPostSkeleton />
-            </div>
-          ) : filteredItems.length === 0 ? (
-            <div className="text-center py-20 px-4">
-              <p className="text-[var(--cl-ink-muted)]">
-                Nenhum post encontrado
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4 px-4 sm:px-0">
-              {filteredItems.map(
-                (item) =>
-                  item.type === "post" && (
-                    <PostCard
-                      key={item.id}
-                      post={item}
-                      onLike={() => handleLike(item.id)}
-                      onEdit={handleEditPost}
-                      onDelete={handleDeletePost}
-                      onRenewPremium={(postId: string) => {
-                        setRenewingPostId(postId);
-                        setShowRenewPremiumModal(true);
-                      }}
-                      isTrending={trendingPosts.some((t) => t.id === item.id)}
-                      isDeleting={deletingPostId === item.id}
-                      isHighlighted={item.id === highlightPostId}
-                    />
-                  ),
-              )}
-              {hasNextPage && (
-                <div ref={loadingRef} className="flex justify-center py-8">
-                  <Loader2 className="animate-spin" />
-                </div>
-              )}
-            </div>
+                      </span>
+                    </span>
+                    <span className="social-feed-story-name">
+                      {group.id === "my-story" ? "Seu story" : group.userName}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
           )}
+
+          {profile && (
+            <section
+              className="social-feed-composer"
+              aria-label="Criar publicação"
+            >
+              <button
+                type="button"
+                onClick={() => setShowNewPost(true)}
+                className="social-feed-composer-button"
+              >
+                <UserAvatar
+                  src={profile.avatar_url}
+                  alt={profile.full_name || "Seu perfil"}
+                  fallback={profile.full_name?.charAt(0) || "U"}
+                  size="md"
+                  showReferralBadge={false}
+                  className="h-10 w-10"
+                />
+                <span className="social-feed-composer-copy">
+                  Compartilhe uma novidade
+                </span>
+                <span className="social-feed-composer-action">
+                  <Plus className="h-4 w-4" />
+                  Publicar
+                </span>
+              </button>
+            </section>
+          )}
+
+          <div
+            id="feed-container"
+            ref={containerRef}
+            className="social-feed-content"
+          >
+            <PullToRefresh
+              isPulling={isPulling}
+              isRefreshing={isRefreshing}
+              pullDistance={pullDistance}
+              shouldRefresh={pullDistance >= 80}
+            />
+            {isLoading ? (
+              <div className="social-feed-loading">
+                <InstagramPostSkeleton />
+              </div>
+            ) : filteredItems.length === 0 ? (
+              <div className="social-feed-empty">
+                <p>Nenhuma publicação encontrada</p>
+                <span>Tente uma nova busca ou volte mais tarde.</span>
+              </div>
+            ) : (
+              <div className="social-feed-posts">
+                {filteredItems.map(
+                  (item) =>
+                    item.type === "post" && (
+                      <PostCard
+                        key={item.id}
+                        post={item}
+                        onLike={() => handleLike(item.id)}
+                        onEdit={handleEditPost}
+                        onDelete={handleDeletePost}
+                        onRenewPremium={(postId: string) => {
+                          setRenewingPostId(postId);
+                          setShowRenewPremiumModal(true);
+                        }}
+                        isTrending={trendingPosts.some((t) => t.id === item.id)}
+                        isDeleting={deletingPostId === item.id}
+                        isHighlighted={item.id === highlightPostId}
+                      />
+                    ),
+                )}
+                {hasNextPage && (
+                  <div ref={loadingRef} className="social-feed-loading-more">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

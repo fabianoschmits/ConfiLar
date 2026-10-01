@@ -51,7 +51,7 @@ export function FeedSearchHeader({
   };
 
   return (
-    <div className="w-full space-y-3 bg-[var(--cl-paper)] p-4 pb-2">
+    <div className="social-feed-search w-full space-y-3">
       <div className="flex items-center gap-2">
         <form onSubmit={handleSearchSubmit} className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--cl-ink-muted)]" />

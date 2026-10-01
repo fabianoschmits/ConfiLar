@@ -245,31 +245,31 @@ export function PostCard({
   return (
     <article
       id={`post-${post.id}`}
-      className={`relative bg-[var(--cl-surface)] border rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 scroll-mt-24 ${
+      className={`social-post relative overflow-hidden border scroll-mt-24 ${
         isHighlighted
           ? "border-blue-400 dark:border-blue-700 z-10 shadow-lg shadow-blue-500/20"
           : isActivePremium
-            ? "ring-2 ring-[var(--cl-teal)]/50 dark:ring-[var(--cl-teal)]/40 border-[var(--cl-teal)]/30 dark:border-[var(--cl-teal)]/20 bg-gradient-to-br from-[var(--cl-teal)]/5 to-transparent dark:from-[var(--cl-teal)]/10 dark:to-transparent shadow-[0_15px_40px_-15px_rgba(0,176,176,0.4)] dark:shadow-[0_15px_40px_-15px_rgba(0,176,176,0.2)] premium-border-shine"
-            : "border-gray-200 dark:border-gray-800"
+            ? "ring-2 ring-[var(--cl-teal)]/45 border-[var(--cl-teal)]/35 shadow-[0_12px_30px_-22px_rgba(0,176,176,0.5)] premium-border-shine"
+            : "border-[var(--cl-border)]"
       }`}
     >
       {isHighlighted && (
-        <div className="absolute inset-0 rounded-xl ring-4 ring-blue-500 dark:ring-blue-600 animate-pulse pointer-events-none z-10 shadow-[0_0_20px_rgba(59,130,246,0.5)]" />
+        <div className="absolute inset-0 ring-4 ring-blue-500 dark:ring-blue-600 pointer-events-none z-10 shadow-[0_0_20px_rgba(59,130,246,0.5)]" />
       )}
 
       {isGuest && (
         <div className="absolute top-0 left-0 right-0 z-30 px-4 pt-4 pb-2 border-b border-transparent pointer-events-none">
           <div className="flex items-center gap-3">
             <Link href={`/perfil/${userId}`} className="pointer-events-auto">
-              <Avatar className="w-10 h-10 border-2 border-gray-100 dark:border-gray-800 transition-transform hover:scale-105">
+              <Avatar className="w-10 h-10 border-2 border-[var(--cl-border)] transition-transform hover:scale-105">
                 <AvatarImage src={userAvatar} alt={displayUserName} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-white font-semibold">
+                <AvatarFallback className="bg-[var(--cl-mist)] text-[var(--cl-ink)] font-semibold">
                   {displayUserName.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             </Link>
             <Link href={`/perfil/${userId}`} className="pointer-events-auto">
-              <p className="font-semibold text-base text-gray-900 dark:text-white hover:underline transition-all leading-none">
+              <p className="font-semibold text-base text-[var(--cl-ink)] hover:underline transition-all leading-none">
                 {displayUserName}
               </p>
             </Link>
@@ -281,9 +281,9 @@ export function PostCard({
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <Link href={`/perfil/${userId}`}>
-              <Avatar className="w-10 h-10 border-2 border-gray-200 dark:border-gray-800">
+              <Avatar className="w-10 h-10 border-2 border-[var(--cl-border)]">
                 <AvatarImage src={userAvatar} alt={displayUserName} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-white font-semibold">
+                <AvatarFallback className="bg-[var(--cl-mist)] text-[var(--cl-ink)] font-semibold">
                   {displayUserName.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -291,7 +291,7 @@ export function PostCard({
             <div>
               <Link href={`/perfil/${userId}`}>
                 <div className="flex items-center gap-1">
-                  <p className="font-semibold text-sm text-gray-900 dark:text-white">
+                  <p className="font-semibold text-sm text-[var(--cl-ink)]">
                     {displayUserName}
                   </p>
                   <ProVerifiedBadge
@@ -302,7 +302,7 @@ export function PostCard({
                   />
                 </div>
               </Link>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-[var(--cl-ink-muted)]">
                 {post.location_city &&
                   post.location_city !== "null" &&
                   `${post.location_city}, ${post.location_state || ""}`}
@@ -313,7 +313,7 @@ export function PostCard({
             {serviceCategory && (
               <Badge
                 variant="secondary"
-                className="text-[10px] font-medium px-2 py-0.5 rounded-full text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border-none items-center"
+                className="text-[10px] font-medium px-2 py-0.5 rounded-full text-[var(--cl-ink-secondary)] bg-[var(--cl-mist)] hover:brightness-95 border-none items-center"
               >
                 {serviceCategory.name}
               </Badge>
@@ -359,12 +359,12 @@ export function PostCard({
             />
             {finalDisplayText && (
               <div className="px-4 py-3">
-                <p className="text-sm text-gray-900 dark:text-white whitespace-pre-wrap break-words leading-relaxed">
+                <p className="text-sm text-[var(--cl-ink)] whitespace-pre-wrap break-words leading-relaxed">
                   <MentionText text={finalDisplayText} />
                   {shouldTruncate && !showFull && (
                     <button
                       onClick={() => setShowFull(true)}
-                      className="text-gray-500 dark:text-gray-400 ml-1 font-medium hover:text-gray-700 dark:hover:text-gray-300"
+                      className="text-[var(--cl-ink-muted)] ml-1 font-medium hover:text-[var(--cl-ink)]"
                     >
                       mais
                     </button>
@@ -376,12 +376,12 @@ export function PostCard({
         ) : (
           finalDisplayText && (
             <div className="px-4 py-4 relative">
-              <p className="text-sm text-gray-900 dark:text-white whitespace-pre-wrap break-words leading-relaxed">
+              <p className="text-sm text-[var(--cl-ink)] whitespace-pre-wrap break-words leading-relaxed">
                 {finalDisplayText}
                 {shouldTruncate && !showFull && (
                   <button
                     onClick={() => setShowFull(true)}
-                    className="text-gray-500 dark:text-gray-400 ml-1 font-medium hover:text-gray-700 dark:hover:text-gray-300"
+                    className="text-[var(--cl-ink-muted)] ml-1 font-medium hover:text-[var(--cl-ink)]"
                   >
                     mais
                   </button>
@@ -419,22 +419,22 @@ export function PostCard({
           )
         )}
 
-        <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800/50">
+        <div className="social-post-actions px-4 py-2.5 border-t border-[var(--cl-border)]">
           <div className="flex items-center gap-2">
             <button
               onClick={handleLikeClick}
               disabled={isLiking || isReactionLoading}
               aria-label={isLikedByUser ? "Descurtir post" : "Curtir post"}
-              className="min-h-[44px] min-w-[44px] p-2 transition-transform active:scale-125 disabled:opacity-50 flex items-center gap-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="min-h-[44px] min-w-[44px] p-2 transition-transform active:scale-125 disabled:opacity-50 flex items-center gap-1.5 rounded-lg hover:bg-[var(--cl-mist)]"
             >
               <Heart
                 className={`h-5 w-5 transition-all ${
                   isLikedByUser
                     ? "text-red-500 fill-red-500"
-                    : "text-gray-700 dark:text-gray-300"
+                    : "text-[var(--cl-ink-secondary)]"
                 }`}
               />
-              <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+              <span className="text-sm text-[var(--cl-ink-secondary)] font-medium">
                 {likesCount > 0 ? likesCount.toLocaleString("pt-BR") : "0"}
               </span>
             </button>
@@ -456,16 +456,16 @@ export function PostCard({
                 showComments ? "Ocultar comentários" : "Ver comentários"
               }
               aria-expanded={showComments}
-              className="min-h-[44px] min-w-[44px] p-2 transition-transform active:scale-125 flex items-center gap-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="min-h-[44px] min-w-[44px] p-2 transition-transform active:scale-125 flex items-center gap-1.5 rounded-lg hover:bg-[var(--cl-mist)]"
             >
               <MessageCircle
                 className={`h-5 w-5 transition-all ${
                   showComments
                     ? "text-primary-600 dark:text-primary-400"
-                    : "text-gray-700 dark:text-gray-300"
+                    : "text-[var(--cl-ink-secondary)]"
                 }`}
               />
-              <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+              <span className="text-sm text-[var(--cl-ink-secondary)] font-medium">
                 {(commentsCount ?? 0).toLocaleString("pt-BR")}
               </span>
             </button>
@@ -473,10 +473,10 @@ export function PostCard({
             <button
               onClick={() => setShowShareModal(true)}
               aria-label="Compartilhar post"
-              className="min-h-[44px] min-w-[44px] p-2 transition-transform active:scale-125 flex items-center gap-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="min-h-[44px] min-w-[44px] p-2 transition-transform active:scale-125 flex items-center gap-1.5 rounded-lg hover:bg-[var(--cl-mist)]"
             >
-              <Share2 className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-              <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+              <Share2 className="h-5 w-5 text-[var(--cl-ink-secondary)]" />
+              <span className="text-sm text-[var(--cl-ink-secondary)] font-medium">
                 {sharesCount > 0 ? sharesCount.toLocaleString("pt-BR") : "0"}
               </span>
             </button>
@@ -681,7 +681,7 @@ export function PostCard({
 
         <div className="px-4 pb-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase">
+            <p className="social-post-timestamp">
               {new Date(post.created_at).toLocaleDateString("pt-BR", {
                 day: "numeric",
                 month: "short",
