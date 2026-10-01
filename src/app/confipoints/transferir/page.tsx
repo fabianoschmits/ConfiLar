@@ -304,7 +304,7 @@ export default function TransferirConfiPointsPage() {
                         !balance ||
                         balance.balance < pointsValue
                       }
-                      className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white rounded-xl"
+                      className="w-full bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)] rounded-xl"
                     >
                       {isCreating ? (
                         <>

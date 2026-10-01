@@ -83,37 +83,37 @@ export default function AdminAnalyticsPage() {
         <TabsList className="bg-transparent h-auto p-0 flex flex-wrap gap-1.5 sm:gap-2">
           <TabsTrigger
             value="users"
-            className="h-9 sm:h-11 px-3 sm:px-6 rounded-xl sm:rounded-2xl font-black uppercase text-[9px] sm:text-[10px] tracking-widest data-[state=active]:bg-[var(--cl-ink)] data-[state=active]:text-white data-[state=active]:shadow-lg transition-all border border-border/30 bg-white gap-1.5 sm:gap-2"
+            className="h-9 sm:h-11 px-3 sm:px-6 rounded-xl sm:rounded-2xl font-black uppercase text-[9px] sm:text-[10px] tracking-widest data-[state=active]:bg-[var(--cl-cta)] data-[state=active]:text-[var(--cl-on-cta)] data-[state=active]:shadow-lg transition-all border border-border/30 bg-white gap-1.5 sm:gap-2"
           >
             <Users className="h-3.5 w-3.5 sm:h-4 w-4" /> Usuários
           </TabsTrigger>
           <TabsTrigger
             value="geo"
-            className="h-9 sm:h-11 px-3 sm:px-6 rounded-xl sm:rounded-2xl font-black uppercase text-[9px] sm:text-[10px] tracking-widest data-[state=active]:bg-[var(--cl-ink)] data-[state=active]:text-white data-[state=active]:shadow-lg transition-all border border-border/30 bg-white gap-1.5 sm:gap-2"
+            className="h-9 sm:h-11 px-3 sm:px-6 rounded-xl sm:rounded-2xl font-black uppercase text-[9px] sm:text-[10px] tracking-widest data-[state=active]:bg-[var(--cl-cta)] data-[state=active]:text-[var(--cl-on-cta)] data-[state=active]:shadow-lg transition-all border border-border/30 bg-white gap-1.5 sm:gap-2"
           >
             <Globe className="h-3.5 w-3.5 sm:h-4 w-4" /> Geografia
           </TabsTrigger>
           <TabsTrigger
             value="activity"
-            className="h-9 sm:h-11 px-3 sm:px-6 rounded-xl sm:rounded-2xl font-black uppercase text-[9px] sm:text-[10px] tracking-widest data-[state=active]:bg-[var(--cl-ink)] data-[state=active]:text-white data-[state=active]:shadow-lg transition-all border border-border/30 bg-white gap-1.5 sm:gap-2"
+            className="h-9 sm:h-11 px-3 sm:px-6 rounded-xl sm:rounded-2xl font-black uppercase text-[9px] sm:text-[10px] tracking-widest data-[state=active]:bg-[var(--cl-cta)] data-[state=active]:text-[var(--cl-on-cta)] data-[state=active]:shadow-lg transition-all border border-border/30 bg-white gap-1.5 sm:gap-2"
           >
             <Activity className="h-3.5 w-3.5 sm:h-4 w-4" /> Sistema
           </TabsTrigger>
           <TabsTrigger
             value="support"
-            className="h-9 sm:h-11 px-3 sm:px-6 rounded-xl sm:rounded-2xl font-black uppercase text-[9px] sm:text-[10px] tracking-widest data-[state=active]:bg-[var(--cl-ink)] data-[state=active]:text-white data-[state=active]:shadow-lg transition-all border border-border/30 bg-white gap-1.5 sm:gap-2"
+            className="h-9 sm:h-11 px-3 sm:px-6 rounded-xl sm:rounded-2xl font-black uppercase text-[9px] sm:text-[10px] tracking-widest data-[state=active]:bg-[var(--cl-cta)] data-[state=active]:text-[var(--cl-on-cta)] data-[state=active]:shadow-lg transition-all border border-border/30 bg-white gap-1.5 sm:gap-2"
           >
             <LifeBuoy className="h-3.5 w-3.5 sm:h-4 w-4" /> Atendimento
           </TabsTrigger>
           <TabsTrigger
             value="finance"
-            className="h-9 sm:h-11 px-3 sm:px-6 rounded-xl sm:rounded-2xl font-black uppercase text-[9px] sm:text-[10px] tracking-widest data-[state=active]:bg-[var(--cl-ink)] data-[state=active]:text-white data-[state=active]:shadow-lg transition-all border border-border/30 bg-white gap-1.5 sm:gap-2"
+            className="h-9 sm:h-11 px-3 sm:px-6 rounded-xl sm:rounded-2xl font-black uppercase text-[9px] sm:text-[10px] tracking-widest data-[state=active]:bg-[var(--cl-cta)] data-[state=active]:text-[var(--cl-on-cta)] data-[state=active]:shadow-lg transition-all border border-border/30 bg-white gap-1.5 sm:gap-2"
           >
             <Coins className="h-3.5 w-3.5 sm:h-4 w-4" /> Financeiro
           </TabsTrigger>
           <TabsTrigger
             value="content"
-            className="h-9 sm:h-11 px-3 sm:px-6 rounded-xl sm:rounded-2xl font-black uppercase text-[9px] sm:text-[10px] tracking-widest data-[state=active]:bg-[var(--cl-ink)] data-[state=active]:text-white data-[state=active]:shadow-lg transition-all border border-border/30 bg-white gap-1.5 sm:gap-2"
+            className="h-9 sm:h-11 px-3 sm:px-6 rounded-xl sm:rounded-2xl font-black uppercase text-[9px] sm:text-[10px] tracking-widest data-[state=active]:bg-[var(--cl-cta)] data-[state=active]:text-[var(--cl-on-cta)] data-[state=active]:shadow-lg transition-all border border-border/30 bg-white gap-1.5 sm:gap-2"
           >
             <FileText className="h-3.5 w-3.5 sm:h-4 w-4" /> Conteúdo
           </TabsTrigger>

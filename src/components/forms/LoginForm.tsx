@@ -247,7 +247,7 @@ export function LoginForm() {
 
           <LoadingButton
             type="submit"
-            className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white py-3"
+            className="w-full bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)] py-3"
             disabled={
               !isMounted || isLoading || authLoading || !executeRecaptcha
             }

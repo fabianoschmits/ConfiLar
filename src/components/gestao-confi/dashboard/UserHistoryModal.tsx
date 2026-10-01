@@ -361,7 +361,7 @@ export function UserHistoryModal({
           <div className="flex items-center gap-4">
             <Avatar className="h-14 w-14 ring-4 ring-white dark:ring-slate-900 shadow-xl">
               <AvatarImage src={user?.avatar_url} />
-              <AvatarFallback className="bg-[var(--cl-ink)] text-white font-bold">
+              <AvatarFallback className="bg-[var(--cl-cta)] text-[var(--cl-on-cta)] font-bold">
                 {user?.full_name?.substring(0, 2).toUpperCase() || "??"}
               </AvatarFallback>
             </Avatar>

@@ -173,7 +173,7 @@ export function NotificationPreferences() {
           <Button
             onClick={handleSavePreferences}
             disabled={isSaving}
-            className="bg-[var(--cl-ink)] hover:brightness-110"
+            className="bg-[var(--cl-cta)] hover:brightness-110"
           >
             {isSaving ? (
               <>

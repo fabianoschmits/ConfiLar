@@ -377,6 +377,9 @@
   --cl-request-bg: #e8f1fb;
   --cl-heart: #e53e3e;
   --cl-shadow: 0 2px 14px rgba(29, 38, 51, 0.06);
+  /* CTA: fundo escuro no claro / claro no escuro */
+  --cl-cta: #1d2633;
+  --cl-on-cta: #ffffff;
   --cl-radius-card: 16px;
   --cl-radius-pill: 9999px;
   --cl-radius-control: 16px;
@@ -536,7 +539,7 @@ html {
   }
 
   .modern-button-primary {
-    @apply modern-button bg-[var(--cl-ink)] text-white hover:brightness-110 focus:ring-[var(--cl-ink)];
+    @apply modern-button bg-[var(--cl-cta)] text-[var(--cl-on-cta)] hover:brightness-110 focus:ring-[var(--cl-cta)];
   }
 
   .modern-button-secondary {
@@ -581,23 +584,23 @@ html {
 
   /* Modern Typography */
   .modern-heading-1 {
-    @apply text-3xl font-black text-gray-900 tracking-tight;
+    @apply text-3xl font-black text-[var(--cl-ink)] tracking-tight;
   }
 
   .modern-heading-2 {
-    @apply text-2xl font-extrabold text-gray-900 tracking-tight;
+    @apply text-2xl font-extrabold text-[var(--cl-ink)] tracking-tight;
   }
 
   .modern-heading-3 {
-    @apply text-xl font-extrabold text-gray-900;
+    @apply text-xl font-extrabold text-[var(--cl-ink)];
   }
 
   .modern-body {
-    @apply text-base text-gray-600 leading-relaxed;
+    @apply text-base text-[var(--cl-ink-secondary)] leading-relaxed;
   }
 
   .modern-caption {
-    @apply text-sm text-gray-500;
+    @apply text-sm text-[var(--cl-ink-muted)];
   }
 }
 
@@ -1092,7 +1095,7 @@ textarea {
   }
 
   .dark {
-    /* Escuro: preto + zinc (contraste do app) */
+    /* Escuro: preto + zinc com contraste legível */
     --cl-ink: #f8fafc;
     --cl-ink-secondary: #cbd5e1;
     --cl-ink-muted: #94a3b8;
@@ -1106,6 +1109,8 @@ textarea {
     --cl-request: #63b3ed;
     --cl-request-bg: rgba(66, 153, 225, 0.18);
     --cl-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+    --cl-cta: #f8fafc;
+    --cl-on-cta: #0a0a0a;
 
     --background: 0 0% 0%;
     --foreground: 210 40% 98%;
@@ -1176,7 +1181,7 @@ textarea {
     background-color: var(--cl-paper);
   }
 
-  /* Hierarquia tipográfica alinhada ao mock */
+  /* Hierarquia tipográfica — sem !important para não quebrar dark:text-* */
   h1,
   h2,
   h3,
@@ -1186,31 +1191,109 @@ textarea {
     color: var(--cl-ink);
   }
 
-  /* Remapeia cinzas Tailwind comuns → tokens do mock (não mexe em text-white) */
+  /* Tipografia cinza → tokens (sem !important: dark:text-* continua vencendo) */
   .text-gray-900,
   .text-gray-800,
   .text-slate-900,
   .text-slate-800 {
-    color: var(--cl-ink) !important;
+    color: var(--cl-ink);
   }
 
   .text-gray-700,
   .text-gray-600,
   .text-slate-700,
   .text-slate-600 {
-    color: var(--cl-ink-secondary) !important;
+    color: var(--cl-ink-secondary);
   }
 
   .text-gray-500,
   .text-gray-400,
   .text-slate-500,
   .text-slate-400 {
-    color: var(--cl-ink-muted) !important;
+    color: var(--cl-ink-muted);
   }
 
+  /* Superfícies cinza claras → mist (painel), não paper (fundo da tela) */
   .bg-gray-50,
   .bg-slate-50 {
-    background-color: var(--cl-paper) !important;
+    background-color: var(--cl-mist);
+  }
+
+  .bg-gray-100,
+  .bg-slate-100 {
+    background-color: var(--cl-mist);
+  }
+
+  /* bg-white sólido → surface no escuro (não mexe em bg-white/opacity) */
+  .dark .bg-white {
+    background-color: var(--cl-surface);
+  }
+
+  .dark .bg-white\/95 {
+    background-color: color-mix(in srgb, var(--cl-surface) 95%, transparent);
+  }
+
+  .dark .bg-white\/80 {
+    background-color: color-mix(in srgb, var(--cl-surface) 80%, transparent);
+  }
+
+  .dark .border-gray-200,
+  .dark .border-gray-100,
+  .dark .border-slate-200 {
+    border-color: var(--cl-border);
+  }
+
+  .dark .bg-gray-200,
+  .dark .bg-gray-300 {
+    background-color: var(--cl-mist);
+  }
+
+  .dark .bg-gray-700,
+  .dark .bg-gray-800,
+  .dark .bg-gray-900,
+  .dark .bg-zinc-900,
+  .dark .bg-zinc-800 {
+    background-color: var(--cl-mist);
+  }
+
+  .dark .border-gray-300,
+  .dark .border-gray-600,
+  .dark .border-gray-700 {
+    border-color: var(--cl-border);
+  }
+
+  /* Utilitário CTA com contraste correto nos dois temas */
+  .bg-cl-cta {
+    background-color: var(--cl-cta) !important;
+    color: var(--cl-on-cta) !important;
+  }
+
+  .text-cl-ink {
+    color: var(--cl-ink);
+  }
+
+  .text-cl-secondary {
+    color: var(--cl-ink-secondary);
+  }
+
+  .text-cl-muted {
+    color: var(--cl-ink-muted);
+  }
+
+  .bg-cl-surface {
+    background-color: var(--cl-surface);
+  }
+
+  .bg-cl-paper {
+    background-color: var(--cl-paper);
+  }
+
+  .bg-cl-mist {
+    background-color: var(--cl-mist);
+  }
+
+  .border-cl {
+    border-color: var(--cl-border);
   }
 
   /* Mapeamento de font-weight para os pesos disponíveis da Gilroy */
@@ -1445,13 +1528,8 @@ textarea {
 }
 
 .classifieds-chip--active {
-  background: var(--cl-ink);
-  color: #fff;
-}
-
-.dark .classifieds-chip--active {
-  background: #f7fafc;
-  color: #1a202c;
+  background: var(--cl-cta);
+  color: var(--cl-on-cta);
 }
 
 .classifieds-chip--idle {
@@ -1461,6 +1539,10 @@ textarea {
 
 .classifieds-chip--idle:hover {
   filter: brightness(0.97);
+}
+
+.dark .classifieds-chip--idle:hover {
+  filter: brightness(1.12);
 }
 
 .classifieds-tag {
@@ -1479,31 +1561,29 @@ textarea {
   height: 2.25rem !important;
   padding-left: 1rem !important;
   padding-right: 0.875rem !important;
-  background: var(--cl-ink) !important;
-  color: #fff !important;
+  background: var(--cl-cta) !important;
+  color: var(--cl-on-cta) !important;
   font-weight: 600 !important;
   box-shadow: none !important;
-}
-
-.dark .classifieds-cta {
-  background: #f7fafc !important;
-  color: #1a202c !important;
 }
 
 .classifieds-cta:hover {
   filter: brightness(1.08);
 }
 
+.dark .classifieds-cta:hover {
+  filter: brightness(0.95);
+}
+
 .classifieds-fab {
   border-radius: var(--cl-radius-pill);
-  background: var(--cl-ink);
-  color: #fff;
+  background: var(--cl-cta);
+  color: var(--cl-on-cta);
   box-shadow: 0 8px 24px rgba(26, 32, 44, 0.28);
 }
 
 .dark .classifieds-fab {
-  background: #f7fafc;
-  color: #1a202c;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
 }
 
 @media (prefers-reduced-motion: reduce) {

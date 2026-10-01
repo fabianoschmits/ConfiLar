@@ -309,7 +309,7 @@ export default function RecuperarSenhaPage() {
 
                   <LoadingButton
                     type="submit"
-                    className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white py-3"
+                    className="w-full bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)] py-3"
                     disabled={isLoading}
                     isLoading={isLoading}
                     loadingText="Verificando..."
@@ -398,7 +398,7 @@ export default function RecuperarSenhaPage() {
 
                   <LoadingButton
                     type="submit"
-                    className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white py-3"
+                    className="w-full bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)] py-3"
                     disabled={isLoading}
                     isLoading={isLoading}
                     loadingText="Enviando..."

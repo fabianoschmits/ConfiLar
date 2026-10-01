@@ -145,7 +145,7 @@ export function AIAnnouncement() {
             <div className="flex gap-3">
               <Button
                 size="sm"
-                className="flex-1 bg-[var(--cl-ink)] hover:brightness-110 text-white font-semibold shadow-md active:scale-95 transition-all dark:bg-primary-600 dark:hover:bg-primary-700"
+                className="flex-1 bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)] font-semibold shadow-md active:scale-95 transition-all dark:bg-primary-600 dark:hover:bg-primary-700"
                 onClick={handleActivate}
               >
                 {t("activateNow")}

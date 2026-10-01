@@ -217,7 +217,7 @@ export function WelcomeUserPost({
                 onClick={() =>
                   openChat(post.user_id || "", post.metadata?.user || "Usuário")
                 }
-                className="bg-[var(--cl-ink)] hover:brightness-110"
+                className="bg-[var(--cl-cta)] hover:brightness-110"
                 title="Contatar"
               >
                 <MessageCircle className="h-4 w-4" />

@@ -266,7 +266,7 @@ export default function ProfilePage() {
                         {profile.full_name || "Usuário"}
                       </h1>
                       {profile.is_verified && (
-                        <Badge className="bg-blue-500 hover:bg-[var(--cl-ink)] text-white flex items-center gap-1 rounded-full px-3 py-1 border-0 shadow-sm">
+                        <Badge className="bg-blue-500 hover:bg-[var(--cl-cta)] text-[var(--cl-on-cta)] flex items-center gap-1 rounded-full px-3 py-1 border-0 shadow-sm">
                           <CheckCircle className="w-3.5 h-3.5" />
                           <span className="text-[10px] uppercase tracking-wider font-bold">
                             Verificado

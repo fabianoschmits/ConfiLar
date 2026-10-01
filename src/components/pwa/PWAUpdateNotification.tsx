@@ -78,7 +78,7 @@ export function PWAUpdateNotification() {
             <Button
               onClick={handleUpdate}
               disabled={isUpdating}
-              className="flex-1 bg-[var(--cl-ink)] hover:brightness-110 text-white"
+              className="flex-1 bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)]"
               size="sm"
             >
               {isUpdating ? (

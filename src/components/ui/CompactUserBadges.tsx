@@ -75,7 +75,7 @@ export function CompactUserBadges({
             <Badge
               className={`text-xs font-medium px-2 py-1 shadow-lg ${
                 userType === "professional"
-                  ? "bg-[var(--cl-ink)] hover:brightness-110"
+                  ? "bg-[var(--cl-cta)] hover:brightness-110"
                   : "bg-[var(--cl-teal)] hover:brightness-95"
               }`}
             >

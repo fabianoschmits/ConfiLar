@@ -271,7 +271,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="space-y-3">
               <button
                 onClick={this.handleRetry}
-                className="w-full bg-[var(--cl-ink)] text-white px-4 py-3 rounded-lg hover:brightness-110 transition-colors font-medium flex items-center justify-center gap-2"
+                className="w-full bg-[var(--cl-cta)] text-[var(--cl-on-cta)] px-4 py-3 rounded-lg hover:brightness-110 transition-colors font-medium flex items-center justify-center gap-2"
                 disabled={this.retryCount >= this.maxRetries}
               >
                 <RefreshCw className="w-4 h-4" />

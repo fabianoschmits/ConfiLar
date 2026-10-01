@@ -200,7 +200,7 @@ export function TutorialOverlay() {
               <Button
                 size="sm"
                 onClick={nextStep}
-                className="bg-[var(--cl-ink)] hover:brightness-110 text-white shadow-lg shadow-blue-500/20"
+                className="bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)] shadow-lg shadow-blue-500/20"
               >
                 {isLast ? (
                   <span className="flex items-center gap-1">

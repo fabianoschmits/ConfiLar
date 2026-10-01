@@ -248,7 +248,7 @@ export function DataPortabilityModal({
             <Button
               onClick={handleExportData}
               disabled={isExporting}
-              className="bg-[var(--cl-ink)] hover:brightness-110 dark:bg-blue-500 dark:hover:bg-[var(--cl-ink)]"
+              className="bg-[var(--cl-cta)] hover:brightness-110 dark:bg-blue-500 dark:hover:bg-[var(--cl-cta)]"
             >
               {isExporting ? (
                 <>

@@ -33,7 +33,7 @@ export function MobileFloatingMenu() {
         <Button
           onClick={() => setIsOpen(!isOpen)}
           size="lg"
-          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-[var(--cl-ink)] hover:brightness-110 text-white"
+          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)]"
         >
           {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </Button>
@@ -42,11 +42,11 @@ export function MobileFloatingMenu() {
       {/* Menu expandido */}
       {isOpen && (
         <div className="fixed bottom-24 right-6 z-50 md:hidden">
-          <Card className="w-72 max-h-[80vh] overflow-y-auto shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+          <Card className="w-72 max-h-[80vh] overflow-y-auto shadow-xl border-0 bg-[var(--cl-surface)]/95 backdrop-blur-sm">
             <CardContent className="p-4 space-y-2">
               <div className="text-center mb-4">
-                <h3 className="font-semibold text-gray-900">Menu</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="font-semibold text-[var(--cl-ink)]">Menu</h3>
+                <p className="text-sm text-[var(--cl-ink-secondary)]">
                   Acesse as principais funcionalidades
                 </p>
               </div>
@@ -71,7 +71,7 @@ export function MobileFloatingMenu() {
                 </h4>
                 <Link href="/auth" onClick={handleClose}>
                   <Button
-                    className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white justify-start"
+                    className="w-full bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)] justify-start"
                     size="lg"
                   >
                     <LogIn className="h-4 w-4 mr-2" />

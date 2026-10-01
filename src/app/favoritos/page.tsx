@@ -447,7 +447,7 @@ export default function FavoritesPage() {
                             className={`${
                               favorite.professional?.user_type ===
                               "professional"
-                                ? "bg-[var(--cl-ink)] hover:brightness-110"
+                                ? "bg-[var(--cl-cta)] hover:brightness-110"
                                 : "bg-[var(--cl-ink-muted)] hover:brightness-110"
                             } text-white`}
                             title={tProfile("contact")}

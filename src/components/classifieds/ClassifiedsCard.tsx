@@ -370,7 +370,7 @@ export function ClassifiedsCard({
                   >
                     <ChevronRight className="w-7 h-7" />
                   </button>
-                  <div className="absolute bottom-2 right-2 bg-[var(--cl-ink)]/75 text-white text-[11px] font-semibold px-2 py-0.5 rounded-lg pointer-events-none">
+                  <div className="absolute bottom-2 right-2 bg-[var(--cl-cta)]/75 text-[var(--cl-on-cta)] text-[11px] font-semibold px-2 py-0.5 rounded-lg pointer-events-none">
                     +{images.length - 1}
                   </div>
                 </>

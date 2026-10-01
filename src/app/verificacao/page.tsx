@@ -133,7 +133,7 @@ export default function EmailVerificationSuccess() {
               <div className="space-y-3">
                 <Button
                   onClick={handleGoToLogin}
-                  className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white py-3"
+                  className="w-full bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)] py-3"
                 >
                   <Shield className="w-4 h-4 mr-2" />
                   Fazer Login
@@ -177,7 +177,7 @@ export default function EmailVerificationSuccess() {
                   <Button
                     onClick={handleResendEmail}
                     disabled={isResending}
-                    className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white py-3"
+                    className="w-full bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)] py-3"
                   >
                     {isResending ? (
                       <>

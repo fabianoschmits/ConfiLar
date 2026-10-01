@@ -232,7 +232,7 @@ export default function SobrePage() {
               </Link>
               <Link
                 href="/auth?tab=register"
-                className="px-4 py-2 bg-[var(--cl-ink)] text-white rounded-lg hover:brightness-110 transition-colors"
+                className="px-4 py-2 bg-[var(--cl-cta)] text-[var(--cl-on-cta)] rounded-lg hover:brightness-110 transition-colors"
               >
                 Criar conta
               </Link>
@@ -254,7 +254,7 @@ export default function SobrePage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/auth?tab=register"
-              className="px-8 py-4 bg-[var(--cl-ink)] text-white rounded-lg text-lg font-medium hover:brightness-110 transition-colors"
+              className="px-8 py-4 bg-[var(--cl-cta)] text-[var(--cl-on-cta)] rounded-lg text-lg font-medium hover:brightness-110 transition-colors"
             >
               Começar agora
             </Link>
@@ -407,7 +407,7 @@ export default function SobrePage() {
           </Link>
           <Link
             href="/buscar"
-            className="px-6 py-3 bg-[var(--cl-ink)] text-white rounded-lg hover:brightness-110 transition-colors inline-flex items-center"
+            className="px-6 py-3 bg-[var(--cl-cta)] text-[var(--cl-on-cta)] rounded-lg hover:brightness-110 transition-colors inline-flex items-center"
           >
             <Users className="h-5 w-5 mr-2" />
             Buscar Profissionais

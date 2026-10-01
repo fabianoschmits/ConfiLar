@@ -480,7 +480,7 @@ export function SmartSearchBar({
           {!isClassifieds && (
             <Button
               onClick={handleSearch}
-              className="h-12 px-5 bg-[var(--cl-ink)] hover:brightness-110 text-white font-semibold rounded-full shadow-sm transition-all active:scale-[0.98] shrink-0"
+              className="h-12 px-5 bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)] font-semibold rounded-full shadow-sm transition-all active:scale-[0.98] shrink-0"
             >
               <Search className="h-4 w-4 sm:hidden" />
               <span className="hidden sm:inline">Buscar</span>
@@ -636,7 +636,7 @@ export function SmartSearchBar({
                   service: e.target.value,
                 }))
               }
-              className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
+              className="w-full p-2.5 text-sm border border-[var(--cl-border)] bg-[var(--cl-surface)] text-[var(--cl-ink)] rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--cl-teal)]/40 transition-all"
             >
               <option value="all">Todos os serviços</option>
               {services.map((service) => (
@@ -669,7 +669,7 @@ export function SmartSearchBar({
                         rating: e.target.value,
                       }))
                     }
-                    className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
+                    className="w-full p-2.5 text-sm border border-[var(--cl-border)] bg-[var(--cl-surface)] text-[var(--cl-ink)] rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--cl-teal)]/40 transition-all"
                   >
                     <option value="all">Qualquer</option>
                     <option value="4">4+ estrelas ⭐</option>
@@ -690,7 +690,7 @@ export function SmartSearchBar({
                         availability: e.target.value,
                       }))
                     }
-                    className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
+                    className="w-full p-2.5 text-sm border border-[var(--cl-border)] bg-[var(--cl-surface)] text-[var(--cl-ink)] rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--cl-teal)]/40 transition-all"
                   >
                     <option value="all">Qualquer</option>
                     <option value="manha">Manhã</option>
@@ -713,7 +713,7 @@ export function SmartSearchBar({
                         userType: e.target.value,
                       }))
                     }
-                    className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
+                    className="w-full p-2.5 text-sm border border-[var(--cl-border)] bg-[var(--cl-surface)] text-[var(--cl-ink)] rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--cl-teal)]/40 transition-all"
                   >
                     <option value="all">Todos</option>
                     <option value="professional">Profissionais</option>
@@ -741,7 +741,7 @@ export function SmartSearchBar({
                       adType: e.target.value,
                     }))
                   }
-                  className="w-full p-2.5 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
+                  className="w-full p-2.5 text-sm border border-[var(--cl-border)] bg-[var(--cl-surface)] text-[var(--cl-ink)] rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--cl-teal)]/40 transition-all"
                 >
                   <option value="all">Todos</option>
                   <option value="oferecer">Ofertas de serviços</option>

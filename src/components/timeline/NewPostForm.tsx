@@ -403,7 +403,7 @@ export function NewPostForm({
             disabled={!post.description.trim() || isLoading}
             isLoading={isLoading}
             size="sm"
-            className="text-xs sm:text-sm font-medium bg-[var(--cl-ink)] hover:brightness-110 text-white px-3 sm:px-4"
+            className="text-xs sm:text-sm font-medium bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)] px-3 sm:px-4"
           >
             {isLoading ? "Publicando..." : "Publicar"}
           </LoadingButton>

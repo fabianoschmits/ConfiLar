@@ -154,7 +154,7 @@ export default function AlterarEmailPage() {
 
               <Button
                 onClick={handleBackToHome}
-                className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white py-3"
+                className="w-full bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)] py-3"
               >
                 Voltar para página inicial
               </Button>
@@ -313,7 +313,7 @@ export default function AlterarEmailPage() {
                       !confirmEmail ||
                       newEmail !== confirmEmail
                     }
-                    className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white py-3"
+                    className="w-full bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)] py-3"
                   >
                     {isLoading ? "Atualizando..." : "Atualizar email"}
                   </Button>

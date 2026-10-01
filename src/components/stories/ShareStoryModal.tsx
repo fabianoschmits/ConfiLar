@@ -520,7 +520,7 @@ export function ShareStoryModal({
                 <Button
                   onClick={handleShare}
                   disabled={selectedUsers.length === 0 || isSharing}
-                  className="bg-[var(--cl-ink)] hover:brightness-110 text-white"
+                  className="bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)]"
                 >
                   {isSharing ? (
                     <>
@@ -602,7 +602,7 @@ export function ShareStoryModal({
                 </Button>
                 <Button
                   onClick={handleShareMessenger}
-                  className="flex-1 bg-[var(--cl-ink)] hover:brightness-110 text-white justify-center"
+                  className="flex-1 bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)] justify-center"
                   size="sm"
                 >
                   <svg

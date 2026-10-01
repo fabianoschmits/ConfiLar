@@ -325,7 +325,7 @@ export function AdvancedSearchBar({
             </Button>
             <Button
               onClick={handleSearch}
-              className="h-8 px-4 bg-[var(--cl-ink)] hover:brightness-110"
+              className="h-8 px-4 bg-[var(--cl-cta)] hover:brightness-110"
             >
               Buscar
             </Button>
@@ -544,7 +544,7 @@ export function AdvancedSearchBar({
                 handleSearch();
                 setShowAdvancedFilters(false);
               }}
-              className="bg-[var(--cl-ink)] hover:brightness-110"
+              className="bg-[var(--cl-cta)] hover:brightness-110"
             >
               Aplicar Filtros
             </Button>

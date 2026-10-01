@@ -699,7 +699,7 @@ export function BansManagement() {
                             setSelectedBan(ban);
                             setShowReviewModal(true);
                           }}
-                          className="flex-1 bg-[var(--cl-ink)] hover:brightness-110 text-white text-xs"
+                          className="flex-1 bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)] text-xs"
                           size="sm"
                         >
                           <Eye className="h-3 w-3 mr-1" />

@@ -108,7 +108,7 @@ export function AdminSidebar({ onNavigate }: AdminSidebarProps) {
     <div className="flex flex-col h-full py-6 space-y-6">
       <div className="px-6">
         <div className="flex items-center gap-2 mb-8">
-          <div className="bg-[var(--cl-ink)] p-1.5 rounded-lg shadow-lg shadow-blue-500/20">
+          <div className="bg-[var(--cl-cta)] p-1.5 rounded-lg shadow-lg shadow-black/20">
             <Shield className="h-5 w-5 text-white" />
           </div>
           <h2 className="text-xl font-bold tracking-tight">Admin</h2>

@@ -452,7 +452,7 @@ export const NotificationDropdown: React.FC = () => {
                   onClick={savePreferences}
                   disabled={saving}
                   size="sm"
-                  className="bg-[var(--cl-ink)] hover:brightness-110 text-white"
+                  className="bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)]"
                 >
                   {saving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

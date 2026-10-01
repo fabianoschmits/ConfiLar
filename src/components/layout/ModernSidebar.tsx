@@ -394,7 +394,7 @@ export function ModernSidebar() {
           <button
             onClick={toggleCollapsed}
             className={cn(
-              "p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors",
+              "p-1.5 rounded-lg hover:bg-[var(--cl-mist)] text-[var(--cl-ink-muted)] transition-colors",
               isCollapsed ? "" : "ml-2",
             )}
             title={isCollapsed ? "Expandir" : "Recolher"}
@@ -413,7 +413,7 @@ export function ModernSidebar() {
             <div key={section.id}>
               {/* Divider between sections (not before first) */}
               {sectionIndex > 0 && (
-                <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
+                <div className="my-1 border-t border-[var(--cl-border)]" />
               )}
 
               {/* Section header — hide when collapsed */}

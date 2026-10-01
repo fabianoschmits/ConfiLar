@@ -878,7 +878,7 @@ export function ReportsManagement() {
                     handleReportAction(selectedReport.id, "review")
                   }
                   size="sm"
-                  className="bg-[var(--cl-ink)] hover:brightness-110 text-white"
+                  className="bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)]"
                 >
                   Revisar
                 </Button>

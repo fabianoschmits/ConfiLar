@@ -1124,7 +1124,7 @@ export default function ClassificadosPage() {
                           onClick={() => goToPage(pageNumber)}
                           className={`px-3 rounded-xl ${
                             currentPage === pageNumber
-                              ? "bg-slate-800 text-white hover:bg-slate-900"
+                              ? "bg-[var(--cl-cta)] text-[var(--cl-on-cta)] hover:brightness-110"
                               : ""
                           }`}
                         >

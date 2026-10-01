@@ -175,7 +175,7 @@ export default function IndicacoesPage() {
               {showHowItWorks && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 px-6 pb-6 pt-4 border-t border-blue-200 dark:border-blue-800">
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-[var(--cl-ink)] dark:bg-blue-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                    <div className="w-8 h-8 bg-[var(--cl-cta)] dark:bg-blue-500 text-[var(--cl-on-cta)] rounded-full flex items-center justify-center font-bold flex-shrink-0">
                       1
                     </div>
                     <div>
@@ -189,7 +189,7 @@ export default function IndicacoesPage() {
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-[var(--cl-ink)] dark:bg-blue-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                    <div className="w-8 h-8 bg-[var(--cl-cta)] dark:bg-blue-500 text-[var(--cl-on-cta)] rounded-full flex items-center justify-center font-bold flex-shrink-0">
                       2
                     </div>
                     <div>
@@ -204,7 +204,7 @@ export default function IndicacoesPage() {
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-[var(--cl-ink)] dark:bg-blue-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                    <div className="w-8 h-8 bg-[var(--cl-cta)] dark:bg-blue-500 text-[var(--cl-on-cta)] rounded-full flex items-center justify-center font-bold flex-shrink-0">
                       3
                     </div>
                     <div>

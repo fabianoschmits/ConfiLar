@@ -38,7 +38,7 @@ export default function AtendimentoHubPage() {
           <TabsList className="bg-transparent w-full justify-start gap-1 sm:gap-2 h-10 sm:h-11 overflow-x-auto no-scrollbar">
             <TabsTrigger
               value="tickets"
-              className="flex-1 sm:flex-none px-3 sm:px-6 rounded-xl data-[state=active]:bg-[var(--cl-ink)] data-[state=active]:text-white font-bold text-[11px] sm:text-xs transition-all gap-2"
+              className="flex-1 sm:flex-none px-3 sm:px-6 rounded-xl data-[state=active]:bg-[var(--cl-cta)] data-[state=active]:text-[var(--cl-on-cta)] font-bold text-[11px] sm:text-xs transition-all gap-2"
             >
               <MessageSquare className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Tickets de Suporte</span>
@@ -46,7 +46,7 @@ export default function AtendimentoHubPage() {
             </TabsTrigger>
             <TabsTrigger
               value="reports"
-              className="flex-1 sm:flex-none px-3 sm:px-6 rounded-xl data-[state=active]:bg-[var(--cl-ink)] data-[state=active]:text-white font-bold text-[11px] sm:text-xs transition-all gap-2"
+              className="flex-1 sm:flex-none px-3 sm:px-6 rounded-xl data-[state=active]:bg-[var(--cl-cta)] data-[state=active]:text-[var(--cl-on-cta)] font-bold text-[11px] sm:text-xs transition-all gap-2"
             >
               <Flag className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Denúncias & Posts</span>
@@ -54,7 +54,7 @@ export default function AtendimentoHubPage() {
             </TabsTrigger>
             <TabsTrigger
               value="verifications"
-              className="flex-1 sm:flex-none px-3 sm:px-6 rounded-xl data-[state=active]:bg-[var(--cl-ink)] data-[state=active]:text-white font-bold text-[11px] sm:text-xs transition-all gap-2"
+              className="flex-1 sm:flex-none px-3 sm:px-6 rounded-xl data-[state=active]:bg-[var(--cl-cta)] data-[state=active]:text-[var(--cl-on-cta)] font-bold text-[11px] sm:text-xs transition-all gap-2"
             >
               <ShieldCheck className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Verificações ID</span>
@@ -62,7 +62,7 @@ export default function AtendimentoHubPage() {
             </TabsTrigger>
             <TabsTrigger
               value="bans"
-              className="flex-1 sm:flex-none px-3 sm:px-6 rounded-xl data-[state=active]:bg-[var(--cl-ink)] data-[state=active]:text-white font-bold text-[11px] sm:text-xs transition-all gap-2"
+              className="flex-1 sm:flex-none px-3 sm:px-6 rounded-xl data-[state=active]:bg-[var(--cl-cta)] data-[state=active]:text-[var(--cl-on-cta)] font-bold text-[11px] sm:text-xs transition-all gap-2"
             >
               <Ban className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Gestão de Bans</span>

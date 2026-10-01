@@ -754,7 +754,7 @@ export default function BuscarPage() {
                         }}
                         className={`px-3 ${
                           currentPage === pageNumber
-                            ? "bg-[var(--cl-ink)] text-white hover:brightness-110"
+                            ? "bg-[var(--cl-cta)] text-[var(--cl-on-cta)] hover:brightness-110"
                             : ""
                         }`}
                       >

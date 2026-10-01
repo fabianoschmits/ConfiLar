@@ -151,7 +151,7 @@ export function ClassifiedsLocationSelector({
                 type="button"
                 size="sm"
                 onClick={applyLocation}
-                className="flex-1 rounded-xl bg-slate-800 hover:bg-slate-900 text-white"
+                className="flex-1 rounded-xl bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)]"
               >
                 Aplicar
               </Button>

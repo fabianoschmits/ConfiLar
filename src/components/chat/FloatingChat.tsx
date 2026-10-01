@@ -763,7 +763,7 @@ export function FloatingChat() {
                                     onClick={() =>
                                       startConversationWithFavorite(favorite)
                                     }
-                                    className="flex-1 bg-blue-500 hover:bg-[var(--cl-ink)] text-white text-xs py-1.5 h-auto"
+                                    className="flex-1 bg-blue-500 hover:bg-[var(--cl-cta)] text-[var(--cl-on-cta)] text-xs py-1.5 h-auto"
                                   >
                                     <MessageCircle className="h-3 w-3 mr-1" />
                                     Chat
@@ -896,7 +896,7 @@ export function FloatingChat() {
                                     </span>
                                   )}
                                   {unreadCount > 0 && (
-                                    <Badge className="bg-[var(--cl-ink)] text-white font-medium text-[10px] h-5 min-w-[20px] rounded-full flex items-center justify-center px-1 shadow-sm">
+                                    <Badge className="bg-[var(--cl-cta)] text-[var(--cl-on-cta)] font-medium text-[10px] h-5 min-w-[20px] rounded-full flex items-center justify-center px-1 shadow-sm">
                                       {unreadCount}
                                     </Badge>
                                   )}
@@ -1153,7 +1153,7 @@ export function FloatingChat() {
                                           editingContent.trim() ===
                                             message.content
                                         }
-                                        className="h-6 px-2 text-xs bg-blue-500 hover:bg-[var(--cl-ink)] text-white rounded-lg"
+                                        className="h-6 px-2 text-xs bg-blue-500 hover:bg-[var(--cl-cta)] text-[var(--cl-on-cta)] rounded-lg"
                                       >
                                         <Check className="h-3 w-3" />
                                       </Button>

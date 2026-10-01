@@ -185,7 +185,7 @@ export function NotificationSettings() {
                   <Button
                     onClick={handleRequestPermission}
                     disabled={isLoading}
-                    className="bg-[var(--cl-ink)] hover:brightness-110"
+                    className="bg-[var(--cl-cta)] hover:brightness-110"
                   >
                     {isLoading ? "Solicitando..." : "Solicitar Permissão"}
                   </Button>

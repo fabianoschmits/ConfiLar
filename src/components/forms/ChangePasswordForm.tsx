@@ -238,7 +238,7 @@ export function ChangePasswordForm({
               <Button
                 onClick={handleRequestOTP}
                 disabled={isReauthLoading}
-                className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white"
+                className="w-full bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)]"
               >
                 {isReauthLoading
                   ? "Enviando..."
@@ -270,7 +270,7 @@ export function ChangePasswordForm({
                 disabled={isReauthLoading}
                 isLoading={isReauthLoading}
                 loadingText="Verificando..."
-                className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white"
+                className="w-full bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)]"
               >
                 Verificar código
               </LoadingButton>
@@ -441,7 +441,7 @@ export function ChangePasswordForm({
             <LoadingButton
               type="submit"
               disabled={isLoading || passwordStrength.strength === "weak"}
-              className="flex-1 bg-[var(--cl-ink)] hover:brightness-110 text-white"
+              className="flex-1 bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)]"
               isLoading={isLoading}
               loadingText="Atualizando..."
             >

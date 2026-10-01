@@ -92,7 +92,7 @@ export function ProfilePageLayout({
                       onClick={onSave}
                       disabled={isSaving}
                       size="sm"
-                      className="bg-[var(--cl-ink)] hover:brightness-110"
+                      className="bg-[var(--cl-cta)] hover:brightness-110"
                     >
                       {isSaving ? (
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
@@ -203,7 +203,7 @@ export function ProfileInfo({
       {editable && onEdit && (
         <Button
           onClick={onEdit}
-          className="bg-blue-500 text-white border-2 border-black hover:bg-[var(--cl-ink)] font-black"
+          className="bg-blue-500 text-[var(--cl-on-cta)] border-2 border-black hover:bg-[var(--cl-cta)] font-black"
         >
           <Edit className="h-4 w-4" />
         </Button>

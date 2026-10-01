@@ -320,7 +320,7 @@ export function IdentityVerificationForm() {
                 onClick={handleUpload}
                 isLoading={loading}
                 disabled={selectedFiles.length === 0}
-                className="w-full bg-[var(--cl-ink)] hover:brightness-110 text-white rounded-xl h-12 text-base font-bold shadow-lg shadow-blue-200 dark:shadow-none transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full bg-[var(--cl-cta)] hover:brightness-110 text-[var(--cl-on-cta)] rounded-xl h-12 text-base font-bold shadow-lg shadow-blue-200 dark:shadow-none transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 {loading ? "Enviando..." : "Enviar para Verificação"}
               </LoadingButton>
