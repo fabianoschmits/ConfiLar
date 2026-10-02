@@ -10,7 +10,12 @@ import { useAutoRedirect } from "@/hooks/useAutoRedirect";
 import { useProfileCheck } from "@/hooks/useProfileCheck";
 import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/common/BrandLogo";
-import { AIAnnouncement } from "@/components/profile/AIAnnouncement";
+import dynamic from "next/dynamic";
+const AIAnnouncement = dynamic(() =>
+  import("@/components/profile/AIAnnouncement").then(
+    (module) => module.AIAnnouncement,
+  ),
+);
 import { cn } from "@/lib/utils";
 
 import { useSidebar } from "@/contexts/SidebarContext";
@@ -90,7 +95,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       {!pathname?.startsWith("/gestao-confi") && <QuickActionMenu />}
 
       {/* Anúncio de IA para Profissionais */}
-      <AIAnnouncement />
+      {profile?.user_type === "professional" &&
+        !profile.allow_ai_indexing &&
+        !profile.hide_ai_announcement && <AIAnnouncement />}
     </>
   );
 };

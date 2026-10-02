@@ -3,6 +3,7 @@
 import {
   QueryClient,
   QueryClientProvider,
+  useQueryClient,
   dehydrate,
   hydrate,
 } from "@tanstack/react-query";
@@ -212,12 +213,23 @@ export function QueryProvider({ children }: QueryProviderProps) {
     saveCache();
 
     // Salvar periodicamente a cada 30 segundos
-    const saveInterval = setInterval(saveCache, 30000);
+    let dirty = false;
+    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+      if (event.type === "updated" && event.action.type === "success")
+        dirty = true;
+    });
+    const saveInterval = setInterval(() => {
+      if (dirty && !document.hidden) {
+        dirty = false;
+        void saveCache();
+      }
+    }, 30000);
 
     // Salvar quando queries mudarem (usando MutationObserver seria ideal, mas vamos usar intervalo)
 
     return () => {
       clearInterval(saveInterval);
+      unsubscribe();
       // Salvar antes de desmontar
       saveCache();
     };
@@ -236,7 +248,7 @@ export function QueryProvider({ children }: QueryProviderProps) {
 
 // Hook para invalidar cache específico
 export function useQueryInvalidation() {
-  const queryClient = new QueryClient();
+  const queryClient = useQueryClient();
 
   return {
     // Invalidar perfis

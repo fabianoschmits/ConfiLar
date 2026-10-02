@@ -30,6 +30,7 @@ export interface TimelinePost extends TimelineItem {
   comments_count: number;
   is_liked?: boolean;
   is_featured?: boolean;
+  pagination_featured?: boolean | null;
   is_premium?: boolean;
   tags?: string[];
   premium_points_spent?: number;

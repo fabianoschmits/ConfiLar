@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import { financialFetch } from "@/lib/financial-fetch";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -32,6 +33,7 @@ export function usePremiumLikes(postId: string) {
   const { user } = useAuthContext();
   const queryClient = useQueryClient();
 
+  const premiumPending = useRef(false);
   // Buscar curtidas do post
   const { data: likes, isLoading: loadingLikes } = useQuery<PremiumLike[]>({
     queryKey: ["post-likes", postId],
@@ -77,12 +79,13 @@ export function usePremiumLikes(postId: string) {
 
   // Curtir post premium - permite múltiplos cliques sem esperar
   const premiumLikeMutation = useMutation({
+    networkMode: "always",
     mutationFn: async () => {
       if (!user?.id) throw new Error("Usuário não autenticado");
 
       // Usar API route para operações de pontos
       // Nota: Backend usa sempre o usuário autenticado dos cookies, não o userId do body
-      const response = await fetch("/api/points/premium-like", {
+      const response = await financialFetch("/api/points/premium-like", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -249,6 +252,9 @@ export function usePremiumLikes(postId: string) {
         toast.error(error.message || "❌ Erro ao enviar curtida premium");
       }
     },
+    onSettled: () => {
+      premiumPending.current = false;
+    },
     onSuccess: (data) => {
       // Invalidar cache para sincronizar com o servidor periodicamente
       // Usar um debounce para evitar muitas invalidações quando há múltiplos cliques
@@ -334,7 +340,12 @@ export function usePremiumLikes(postId: string) {
     userPremiumLiked: userPremiumLiked || false,
     userPremiumLikesCount: userPremiumLikesCount || 0,
     loadingLikes,
-    premiumLike: premiumLikeMutation.mutate,
+    premiumLike: () => {
+      if (!premiumPending.current) {
+        premiumPending.current = true;
+        premiumLikeMutation.mutate();
+      }
+    },
     normalLike: normalLikeMutation.mutate,
     unlike: unlikeMutation.mutate,
     isPremiumLiking: premiumLikeMutation.isPending,

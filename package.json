@@ -24,13 +24,15 @@
     "env:validate": "node scripts/validate-env.js",
     "clean": "powershell -ExecutionPolicy Bypass -File scripts/clean-cache.ps1",
     "clean:hard": "powershell -ExecutionPolicy Bypass -File scripts/clean-cache.ps1 && npm install",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:e2e": "playwright test",
+    "metrics:mobile": "node scripts/database-audit.cjs supabase/tests/mobile-metrics-report.sql"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.2.1",
-    "@next/bundle-analyzer": "^15.5.3",
+    "@next/bundle-analyzer": "^15.5.27",
     "@phosphor-icons/react": "^2.1.10",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -69,6 +71,7 @@
     "@tanstack/query-persist-client-core": "5.91.8",
     "@tanstack/react-query": "5.90.9",
     "@tanstack/react-query-devtools": "^5.89.0",
+    "@tanstack/react-virtual": "^3.14.13",
     "@types/web-push": "^3.6.4",
     "@use-gesture/react": "^10.3.1",
     "aceternity-ui": "^0.2.2",
@@ -89,7 +92,7 @@
     "input-otp": "^1.4.2",
     "isomorphic-dompurify": "^2.34.0",
     "lucide-react": "^0.539.0",
-    "next": "15.4.8",
+    "next": "^15.5.27",
     "next-intl": "^4.5.5",
     "next-themes": "^0.4.6",
     "react": "19.1.2",
@@ -123,12 +126,13 @@
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "canvas": "^3.2.0",
     "eslint": "^9",
-    "eslint-config-next": "15.4.8",
+    "eslint-config-next": "^15.5.27",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
     "prettier": "^3.5.0",
@@ -140,5 +144,10 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
+  },
+  "overrides": {
+    "supabase": {
+      "tar": "7.5.22"
+    }
   }
 }

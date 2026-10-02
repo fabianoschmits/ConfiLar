@@ -339,3 +339,12 @@ RESUMO_CORRECOES_*.md
 # - .gitignore (este arquivo)
 !docs/
 !docs/database-audit-20261001.md
+!docs/mobile-performance-20261002.md
+!/tests/
+!/tests/mobile-performance.test.cjs
+!/tests/e2e/
+!/tests/e2e/*.spec.ts
+!supabase/tests/mobile-purchases.sql
+!supabase/tests/mobile-metrics-report.sql
+test-results/
+playwright-report/

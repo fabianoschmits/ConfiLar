@@ -1,0 +1,67 @@
+BEGIN;
+SET LOCAL statement_timeout = '45s';
+CREATE TEMP TABLE mobile_results(scenario text, passed boolean);
+DO $$
+DECLARE a uuid; b uuid; post_id uuid; request_key uuid := gen_random_uuid(); first_result jsonb; repeated jsonb; balance integer; args jsonb; package_id uuid; item_id uuid; amount integer; source_ad public.classified_ads; credits integer;
+BEGIN
+ SELECT id INTO a FROM public.profiles LIMIT 1;
+ SELECT id INTO b FROM public.profiles WHERE id<>a LIMIT 1;
+ IF a IS NULL OR b IS NULL THEN RAISE EXCEPTION 'Missing fixtures'; END IF;
+ UPDATE public.profiles SET points_balance=10000 WHERE id IN(a,b);
+ INSERT INTO public.feed_posts(user_id,professional_id,title,description,is_public,is_active) VALUES(b,b,'Temporary idempotency fixture','Rolled back',true,true) RETURNING id INTO post_id;
+ PERFORM set_config('request.jwt.claims','{"role":"service_role"}',true);
+ args := jsonb_build_object('p_kind','POST','p_content_id',post_id);
+ first_result := public.execute_purchase_once(a,request_key,'premium-like',repeat('a',64),args);
+ repeated := public.execute_purchase_once(a,request_key,'premium-like',repeat('a',64),args);
+ SELECT points_balance INTO balance FROM public.profiles WHERE id=a;
+ IF balance<>9900 OR first_result->'result' <> repeated->'result' OR repeated->>'replayed'<>'true' THEN RAISE EXCEPTION 'Duplicate charged twice'; END IF;
+ INSERT INTO mobile_results VALUES('Repeated premium like debits once and replays original result',true);
+ BEGIN
+  PERFORM public.execute_purchase_once(a,request_key,'premium-like',repeat('b',64),args);
+  RAISE EXCEPTION 'Changed payload accepted';
+ EXCEPTION WHEN raise_exception THEN IF SQLERRM <> 'Idempotency key already used for another request' THEN RAISE; END IF; END;
+ INSERT INTO mobile_results VALUES('Same key with different fingerprint rejected',true);
+ SELECT * INTO source_ad FROM public.classified_ads WHERE is_active LIMIT 1;
+ UPDATE public.profiles SET credits_ad_premium_1d=2 WHERE id=a;
+ args := jsonb_build_object('p_kind','AD','p_record_id',null,'p_points',0,'p_credit','1d','p_payload',jsonb_build_object('user_id',a,'title','Temporary idempotent ad','description','Rolled back','category',source_ad.category,'location_city',source_ad.location_city,'location_state',source_ad.location_state,'ad_type',source_ad.ad_type,'is_active',true,'is_premium',true,'is_featured',true,'premium_expires_at',now()+interval '1 day','premium_points_spent',0));
+ request_key:=gen_random_uuid();
+ first_result := public.execute_purchase_once(a,request_key,'premium-content',repeat('f',64),args);
+ repeated := public.execute_purchase_once(a,request_key,'premium-content',repeat('f',64),args);
+ SELECT credits_ad_premium_1d INTO credits FROM public.profiles WHERE id=a;
+ IF credits<>1 OR first_result->'result'<>repeated->'result' THEN RAISE EXCEPTION 'Ad purchase duplicated'; END IF;
+ INSERT INTO mobile_results VALUES('Premium ad retry consumes one credit and replays the same ad',true);
+ args := jsonb_build_object('p_to_user_id',b,'p_points_amount',100,'p_message',null);
+ request_key := gen_random_uuid();
+ first_result := public.execute_purchase_once(a,request_key,'transfer',repeat('c',64),args);
+ repeated := public.execute_purchase_once(a,request_key,'transfer',repeat('c',64),args);
+ IF first_result->'result'<>repeated->'result' THEN RAISE EXCEPTION 'Transfer not replayed'; END IF;
+ INSERT INTO mobile_results VALUES('Transfer has a single transaction ID on retry',true);
+ SELECT id INTO package_id FROM public.points_packages WHERE is_active LIMIT 1;
+ IF package_id IS NOT NULL THEN
+  args := jsonb_build_object('p_package_id',package_id,'p_payment_method','pix'); request_key:=gen_random_uuid();
+  first_result := public.execute_purchase_once(a,request_key,'points-purchase',repeat('d',64),args);
+  repeated := public.execute_purchase_once(a,request_key,'points-purchase',repeat('d',64),args);
+  IF first_result->'result'<>repeated->'result' THEN RAISE EXCEPTION 'Points purchase duplicated'; END IF;
+  INSERT INTO mobile_results VALUES('Point package purchase replays the same purchase',true);
+ END IF;
+ SELECT id,points_price INTO item_id,amount FROM public.points_store_items WHERE is_active ORDER BY points_price LIMIT 1;
+ IF item_id IS NOT NULL THEN
+  UPDATE public.profiles SET points_balance=amount+10000 WHERE id=a;
+  args := jsonb_build_object('p_item_id',item_id); request_key:=gen_random_uuid();
+  first_result := public.execute_purchase_once(a,request_key,'store',repeat('e',64),args);
+  repeated := public.execute_purchase_once(a,request_key,'store',repeat('e',64),args);
+  SELECT points_balance INTO balance FROM public.profiles WHERE id=a;
+  IF balance<>10000 OR first_result->'result'<>repeated->'result' THEN RAISE EXCEPTION 'Store debit incorrect'; END IF;
+  INSERT INTO mobile_results VALUES('Store debits item price once on retry',true);
+ END IF;
+ PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',a,'role','authenticated')::text,true);
+ EXECUTE 'SET LOCAL ROLE authenticated';
+ BEGIN PERFORM public.execute_purchase_once(a,request_key,'store',repeat('e',64),args); RAISE EXCEPTION 'Client can call purchase receipt RPC'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ BEGIN PERFORM count(*) FROM public.purchase_request_receipts; RAISE EXCEPTION 'Client can read receipts'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ BEGIN INSERT INTO public.mobile_telemetry(name,value,route,mobile) VALUES('ERROR',1,'/feed',true); RAISE EXCEPTION 'Client can bypass telemetry validation'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ EXECUTE 'RESET ROLE';
+ INSERT INTO mobile_results VALUES('Receipt and telemetry RLS prevent direct client access',true);
+END;
+$$;
+SELECT * FROM mobile_results;
+ROLLBACK;

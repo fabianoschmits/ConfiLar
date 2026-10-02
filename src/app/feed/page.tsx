@@ -3,6 +3,7 @@
 export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useRef } from "react";
+import lazyComponent from "next/dynamic";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -12,20 +13,39 @@ import { useTimelineRealtime } from "@/hooks/useTimelineRealtime";
 import { usePostRanking } from "@/hooks/usePostRanking";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
-import { NewPostForm } from "@/components/timeline/NewPostForm";
-import { PremiumPostForm } from "@/components/timeline/PremiumPostForm";
+const NewPostForm = lazyComponent(() =>
+  import("@/components/timeline/NewPostForm").then((m) => m.NewPostForm),
+);
+const PremiumPostForm = lazyComponent(() =>
+  import("@/components/timeline/PremiumPostForm").then(
+    (m) => m.PremiumPostForm,
+  ),
+);
 import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { InstagramPostSkeleton } from "@/components/ui/skeleton";
-import { EditPostModal } from "@/components/timeline/EditPostModal";
+const EditPostModal = lazyComponent(() =>
+  import("@/components/timeline/EditPostModal").then((m) => m.EditPostModal),
+);
 import { FeedSearchHeader } from "@/components/feed/FeedSearchHeader";
 import { useFeedSearch } from "@/hooks/useFeedSearch";
 import { useStories } from "@/hooks/useStories";
-import { StoryViewer } from "@/components/stories/StoryViewer";
-import { CreateStoryModal } from "@/components/stories/CreateStoryModal";
+const StoryViewer = lazyComponent(() =>
+  import("@/components/stories/StoryViewer").then((m) => m.StoryViewer),
+);
+const CreateStoryModal = lazyComponent(() =>
+  import("@/components/stories/CreateStoryModal").then(
+    (m) => m.CreateStoryModal,
+  ),
+);
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import { useNavigationShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useProfileCheck } from "@/hooks/useProfileCheck";
-import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
+const OnboardingModal = lazyComponent(() =>
+  import("@/components/onboarding/OnboardingModal").then(
+    (m) => m.OnboardingModal,
+  ),
+);
+import { VirtualFeedList } from "@/components/feed/VirtualFeedList";
 import { PostCard } from "@/components/timeline/PostCard";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
@@ -112,7 +132,7 @@ export default function FeedPage() {
     threshold: 400,
   });
 
-  useTimelineRealtime();
+  useTimelineRealtime(activeTab !== "posts");
 
   const { trendingPosts } = usePostRanking({
     location_city: profile?.location_city,
@@ -216,14 +236,16 @@ export default function FeedPage() {
 
   return (
     <MainLayout requireAuth={false}>
-      <OnboardingModal
-        isOpen={needsOnboarding}
-        onComplete={() => {
-          checkProfile();
-          refetch();
-          router.push("/home");
-        }}
-      />
+      {needsOnboarding && (
+        <OnboardingModal
+          isOpen={needsOnboarding}
+          onComplete={() => {
+            checkProfile();
+            refetch();
+            router.push("/home");
+          }}
+        />
+      )}
 
       {showStoryViewer && (
         <StoryViewer
@@ -433,8 +455,9 @@ export default function FeedPage() {
               </div>
             ) : (
               <div className="social-feed-posts">
-                {filteredItems.map(
-                  (item) =>
+                <VirtualFeedList
+                  items={filteredItems}
+                  renderItem={(item) =>
                     item.type === "post" && (
                       <PostCard
                         key={item.id}
@@ -450,8 +473,9 @@ export default function FeedPage() {
                         isDeleting={deletingPostId === item.id}
                         isHighlighted={item.id === highlightPostId}
                       />
-                    ),
-                )}
+                    )
+                  }
+                />
                 {hasNextPage && (
                   <div ref={loadingRef} className="social-feed-loading-more">
                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -544,8 +568,8 @@ export default function FeedPage() {
             }
           }}
           onCancel={() => setShowPremiumPost(false)}
-          isLoading={false}
-          postStatus="idle"
+          isLoading={isPosting}
+          postStatus={postStatus}
         />
       </ResponsiveModal>
 
@@ -622,14 +646,22 @@ export default function FeedPage() {
               <PremiumPostForm
                 isRenewal={isActuallyRenewal}
                 onSubmit={async (data) => {
-                  await renewPremiumPost(
-                    renewingPostId,
-                    data.pointsToSpend,
-                    data.durationDays,
-                  );
-                  setShowRenewPremiumModal(false);
-                  setRenewingPostId(null);
-                  refetch();
+                  if (isPosting) return;
+                  setIsPosting(true);
+                  setPostStatus("sending");
+                  try {
+                    await renewPremiumPost(
+                      renewingPostId,
+                      data.pointsToSpend,
+                      data.durationDays,
+                    );
+                    setShowRenewPremiumModal(false);
+                    setRenewingPostId(null);
+                    refetch();
+                  } finally {
+                    setIsPosting(false);
+                    setPostStatus("idle");
+                  }
                 }}
                 onCancel={() => {
                   setShowRenewPremiumModal(false);

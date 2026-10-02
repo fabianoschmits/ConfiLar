@@ -28,7 +28,10 @@ import { PostMedia } from "@/components/timeline/PostMedia";
 import { MentionText } from "@/components/ui/MentionText";
 import { MentionInput } from "@/components/ui/MentionInput";
 import { CommentOptionsMenu } from "@/components/timeline/CommentOptionsMenu";
-import { SharePostModal } from "@/components/timeline/SharePostModal";
+import dynamic from "next/dynamic";
+const SharePostModal = dynamic(() =>
+  import("@/components/timeline/SharePostModal").then((m) => m.SharePostModal),
+);
 import { PremiumLikeButton } from "@/components/points/PremiumLikeButton";
 import { LikedBy } from "@/components/timeline/LikedBy";
 import { PremiumTimeRemaining } from "@/components/timeline/PremiumTimeRemaining";
@@ -672,17 +675,19 @@ export function PostCard({
           </div>
         )}
 
-        <SharePostModal
-          isOpen={showShareModal}
-          onClose={() => setShowShareModal(false)}
-          postId={post.id}
-          postTitle={post.title || post.description || "Post"}
-          onShareRecorded={() => {
-            queryClient.invalidateQueries({
-              queryKey: ["post-shares", post.id],
-            });
-          }}
-        />
+        {showShareModal && (
+          <SharePostModal
+            isOpen={showShareModal}
+            onClose={() => setShowShareModal(false)}
+            postId={post.id}
+            postTitle={post.title || post.description || "Post"}
+            onShareRecorded={() => {
+              queryClient.invalidateQueries({
+                queryKey: ["post-shares", post.id],
+              });
+            }}
+          />
+        )}
 
         <div className="px-4 pb-3">
           <div className="flex items-center gap-2 flex-wrap">

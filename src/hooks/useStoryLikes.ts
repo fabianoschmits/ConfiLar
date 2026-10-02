@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { financialFetch } from "@/lib/financial-fetch";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { NotificationService } from "@/services/NotificationService";
@@ -26,6 +27,7 @@ export function useStoryLikes({
   const queryClient = useQueryClient();
   const [isLiking, setIsLiking] = useState(false);
   const [isPremiumLiking, setIsPremiumLiking] = useState(false);
+  const premiumPending = useRef(false);
 
   // UMA ÚNICA QUERY para buscar TUDO (otimizado)
   const { data: likesData } = useQuery({
@@ -168,6 +170,7 @@ export function useStoryLikes({
 
   // Mutation para like premium (permite múltiplos likes)
   const premiumLikeMutation = useMutation({
+    networkMode: "always",
     mutationFn: async () => {
       const {
         data: { user },
@@ -177,7 +180,7 @@ export function useStoryLikes({
       setIsPremiumLiking(true);
 
       // Chamar API para processar like premium (deduzir pontos, etc)
-      const response = await fetch("/api/points/premium-like-story", {
+      const response = await financialFetch("/api/points/premium-like-story", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -208,6 +211,7 @@ export function useStoryLikes({
     },
     onSettled: () => {
       setIsPremiumLiking(false);
+      premiumPending.current = false;
     },
   });
 
@@ -218,7 +222,9 @@ export function useStoryLikes({
   };
 
   const givePremiumLike = () => {
-    if (!isPremiumLiking) {
+    if (!premiumPending.current) {
+      premiumPending.current = true;
+      setIsPremiumLiking(true);
       premiumLikeMutation.mutate();
     }
   };

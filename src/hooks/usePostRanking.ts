@@ -32,8 +32,8 @@ export function usePostRanking(filters: {
     error,
   } = useQuery({
     queryKey: ["trending-posts", filters],
-    queryFn: async () => {
-      const { data, error } = await supabase
+    queryFn: async ({ signal }) => {
+      let query = supabase
         .from("feed_posts")
         .select(
           `
@@ -58,49 +58,25 @@ export function usePostRanking(filters: {
         .eq("is_active", true)
         .eq("is_public", true)
         .order("created_at", { ascending: false });
+      if (filters.location_city)
+        query = query.eq("location_city", filters.location_city);
+      if (filters.location_state)
+        query = query.eq("location_state", filters.location_state);
+      const days =
+        filters.time_range === "30d" ? 30 : filters.time_range === "7d" ? 7 : 1;
+      query = query.gte(
+        "created_at",
+        new Date(Date.now() - days * 86400000).toISOString(),
+      );
+      const { data, error } = await query.limit(120).abortSignal(signal);
 
       if (error) throw error;
 
-      // Buscar contagens de visualizações para cada post
-      const postsWithViews = await Promise.all(
-        (data || []).map(async (post) => {
-          try {
-            const { data: viewsData, error } = await supabase
-              .from("post_views")
-              .select("id")
-              .eq("post_id", post.id);
-
-            // Se houver erro de permissão ou tabela não existir, usar 0
-            if (
-              error &&
-              (error.code === "PGRST205" ||
-                error.code === "42501" ||
-                error.message?.includes("403") ||
-                error.message?.includes("permission denied"))
-            ) {
-              console.log(
-                "Sem permissão para acessar post_views, usando 0 visualizações",
-              );
-              return {
-                ...post,
-                views_count: 0,
-              };
-            }
-
-            return {
-              ...post,
-              views_count: viewsData?.length || 0,
-            };
-          } catch (error) {
-            console.log("Erro ao buscar visualizações, usando 0:", error);
-            return {
-              ...post,
-              views_count: 0,
-            };
-          }
-        }),
-      );
-
+      // Do not issue one request per post. Views are private analytics, not a public ranking input.
+      const postsWithViews = (data || []).map((post) => ({
+        ...post,
+        views_count: 0,
+      }));
       // Calcular score de engajamento
       const postsWithScore = postsWithViews.map((post) => {
         const engagementScore = calculateEngagementScore(post);

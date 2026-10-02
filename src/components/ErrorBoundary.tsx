@@ -1,6 +1,7 @@
 "use client";
 
 import React, { Component, ErrorInfo, ReactNode } from "react";
+import { canMeasure, metricRoute } from "@/lib/mobile-metrics";
 import { logger } from "@/lib/logger";
 import { soundManager } from "@/lib/soundManager";
 import { AlertTriangle, RefreshCw, Home, Bug } from "lucide-react";
@@ -93,8 +94,16 @@ export class ErrorBoundary extends Component<Props, State> {
 
     // Log estruturado do erro
     logger.error("ErrorBoundary caught error", {
-      error,
-      data: { componentStack: errorInfo.componentStack },
+      data:
+        process.env.NODE_ENV === "production"
+          ? {
+              kind: "REACT_ERROR",
+              route: metricRoute(window.location.pathname),
+            }
+          : {
+              message: error.message,
+              componentStack: errorInfo.componentStack,
+            },
     });
 
     // Salvar detalhes do erro no estado
@@ -128,7 +137,30 @@ export class ErrorBoundary extends Component<Props, State> {
 
     // Reportar para serviços externos em produção
     if (process.env.NODE_ENV === "production") {
-      this.reportToExternalServices(errorContext);
+      this.reportToExternalServices({
+        kind: "REACT_ERROR",
+        route: metricRoute(window.location.pathname),
+        timestamp: errorContext.timestamp,
+      });
+      if (canMeasure() && navigator.onLine)
+        navigator.sendBeacon(
+          "/api/telemetry",
+          new Blob(
+            [
+              JSON.stringify({
+                metrics: [
+                  {
+                    name: "REACT_ERROR",
+                    value: 1,
+                    route: metricRoute(window.location.pathname),
+                    mobile: window.innerWidth < 768,
+                  },
+                ],
+              }),
+            ],
+            { type: "application/json" },
+          ),
+        );
     }
   }
 
@@ -169,6 +201,12 @@ export class ErrorBoundary extends Component<Props, State> {
     try {
       const savedErrors = JSON.parse(
         localStorage.getItem("error-reports") || "[]",
+      ).filter(
+        (row: any) =>
+          row?.kind === "REACT_ERROR" &&
+          Object.keys(row).every((key) =>
+            ["kind", "route", "timestamp"].includes(key),
+          ),
       );
       savedErrors.push(errorContext);
 

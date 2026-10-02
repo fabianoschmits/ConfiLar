@@ -6,6 +6,7 @@ for (const file of [
   "social-flows",
   "premium-purchase",
   "private-profile",
+  "mobile-purchases",
 ]) {
   console.log(`Testing ${file} (rolled back)`);
   const result = spawnSync(

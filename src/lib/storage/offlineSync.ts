@@ -54,7 +54,7 @@ class OfflineSyncManager {
   private startPeriodicSync() {
     // Sincronizar a cada 30 segundos quando online
     this.syncInterval = setInterval(() => {
-      if (this.isOnline && !this.isSyncing) {
+      if (this.isOnline && !document.hidden && !this.isSyncing) {
         this.syncPendingActions();
       }
     }, 30000); // 30 segundos

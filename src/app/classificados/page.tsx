@@ -2,7 +2,9 @@
 
 // Desabilitar SSG para esta página
 export const dynamic = "force-dynamic";
+import { financialFetch } from "@/lib/financial-fetch";
 
+import lazyComponent from "next/dynamic";
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -108,22 +110,36 @@ import { useClassifiedSearch } from "@/hooks/useClassifiedSearch";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { ValidationUtils } from "@/lib/validation";
-import { ShareAdModal } from "@/components/classifieds/ShareAdModal";
+const ShareAdModal = lazyComponent(() =>
+  import("@/components/classifieds/ShareAdModal").then((m) => m.ShareAdModal),
+);
 import { services } from "@/data/services";
 import { ClassifiedsListSkeleton } from "@/components/ui/skeleton";
 import { ClassifiedsCard } from "@/components/classifieds/ClassifiedsCard";
-import { ClassifiedAdDetailModal } from "@/components/classifieds/ClassifiedAdDetailModal";
+const ClassifiedAdDetailModal = lazyComponent(() =>
+  import("@/components/classifieds/ClassifiedAdDetailModal").then(
+    (m) => m.ClassifiedAdDetailModal,
+  ),
+);
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ClientOnly } from "@/components/ClientOnly";
 import { SmartSearchBar } from "@/components/search/SmartSearchBar";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { PullToRefresh } from "@/components/ui/PullToRefresh";
 
-import { RenewPremiumAdForm } from "@/components/classifieds/RenewPremiumAdForm";
+const RenewPremiumAdForm = lazyComponent(() =>
+  import("@/components/classifieds/RenewPremiumAdForm").then(
+    (m) => m.RenewPremiumAdForm,
+  ),
+);
 import { PremiumTimeRemaining } from "@/components/classifieds/PremiumTimeRemaining";
 import { ReportButton } from "@/components/ReportButton";
 import { useTranslations } from "next-intl";
-import { UnifiedCreateAdForm } from "@/components/classifieds/UnifiedCreateAdForm";
+const UnifiedCreateAdForm = lazyComponent(() =>
+  import("@/components/classifieds/UnifiedCreateAdForm").then(
+    (m) => m.UnifiedCreateAdForm,
+  ),
+);
 import { ClassifiedsLocationSelector } from "@/components/classifieds/ClassifiedsLocationSelector";
 import { useIsSuperAdmin } from "@/hooks/useAdmin";
 import { useClassifiedEngagement } from "@/hooks/useClassifiedEngagement";
@@ -409,7 +425,7 @@ export default function ClassificadosPage() {
     try {
       if (data.isPremium) {
         // Usar a nova API Route segura para criar anúncio premium
-        const response = await fetch("/api/classifieds/premium", {
+        const response = await financialFetch("/api/classifieds/premium", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -936,7 +952,7 @@ export default function ClassificadosPage() {
                           setIsEditingAd(true);
 
                           if (data.isPremium && !selectedAd?.is_premium) {
-                            const response = await fetch(
+                            const response = await financialFetch(
                               "/api/classifieds/premium",
                               {
                                 method: "POST",

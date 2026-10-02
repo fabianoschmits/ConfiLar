@@ -1,3 +1,4 @@
+import { purchaseOnce } from "@/lib/purchase-once";
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/authenticatedRoute";
 import { createAdminSupabaseClient } from "@/lib/supabase";
@@ -25,8 +26,11 @@ export const POST = withAuth(
 
       // Criar compra para o usuário autenticado (Admin Client para bypass REVOKE)
       const supabaseAdmin = createAdminSupabaseClient();
-      const { data, error } = await supabaseAdmin.rpc(
-        "create_points_purchase",
+      const { data, error, replayed } = await purchaseOnce(
+        supabaseAdmin,
+        request,
+        body,
+        "points-purchase",
         {
           p_user_id: user.id, // 🔒 Sempre ID autenticado
           p_package_id: package_id,
@@ -59,7 +63,7 @@ export const POST = withAuth(
       }
 
       // Criar notificação para o usuário sobre a compra
-      if (purchase) {
+      if (purchase && !replayed) {
         const packageData = purchase.package as any;
         const pointsAmount = packageData?.points_amount || 0;
         const price = packageData?.price || 0;

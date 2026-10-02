@@ -41,10 +41,13 @@ import {
 import { AccountShortcuts } from "@/components/navigation/AccountShortcuts";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { cn } from "@/lib/utils";
-import {
-  EditProfileModal,
-  ProfileTab,
-} from "@/components/profile/EditProfileModal";
+import type { ProfileTab } from "@/components/profile/EditProfileModal";
+import dynamic from "next/dynamic";
+const EditProfileModal = dynamic(() =>
+  import("@/components/profile/EditProfileModal").then(
+    (m) => m.EditProfileModal,
+  ),
+);
 
 interface ModernHeaderProps {
   showBackButton?: boolean;
@@ -809,11 +812,13 @@ export function ModernHeader({
       )}
 
       {/* Modal de Perfil Unificado */}
-      <EditProfileModal
-        isOpen={isProfileModalOpen}
-        onOpenChange={setIsProfileModalOpen}
-        initialTab={activeProfileTab}
-      />
+      {isProfileModalOpen && (
+        <EditProfileModal
+          isOpen={isProfileModalOpen}
+          onOpenChange={setIsProfileModalOpen}
+          initialTab={activeProfileTab}
+        />
+      )}
     </>
   );
 }

@@ -1,3 +1,4 @@
+import { purchaseOnce } from "@/lib/purchase-once";
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/authenticatedRoute";
 import { createAdminSupabaseClient } from "@/lib/supabase";
@@ -6,18 +7,25 @@ import { createAdminSupabaseClient } from "@/lib/supabase";
 export const POST = withAuth(
   async (request: NextRequest, _supabaseAuth, user) => {
     try {
-      const { storyId } = await request.json();
+      const body = await request.json();
+      const { storyId } = body;
       if (!storyId)
         return NextResponse.json(
           { error: "Conteúdo não informado." },
           { status: 400 },
         );
       const admin = createAdminSupabaseClient();
-      const { data, error } = await admin.rpc("purchase_premium_like", {
-        p_user_id: user.id,
-        p_kind: "STORY",
-        p_content_id: storyId,
-      });
+      const { data, error } = await purchaseOnce(
+        admin,
+        request,
+        body,
+        "premium-like",
+        {
+          p_user_id: user.id,
+          p_kind: "STORY",
+          p_content_id: storyId,
+        },
+      );
       if (error || !data?.success)
         return NextResponse.json(
           {
@@ -30,7 +38,7 @@ export const POST = withAuth(
     } catch {
       return NextResponse.json(
         { error: "Dados inválidos para curtida premium." },
-        { status: 400 },
+        { status: 503 },
       );
     }
   },

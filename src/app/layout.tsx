@@ -15,6 +15,7 @@ import { LoadingProvider } from "@/hooks/useLoading";
 import { LoadingOverlayProvider } from "@/components/ui/LoadingOverlayProvider";
 import { QueryProvider } from "@/lib/queryClient";
 import { ToasterWithSounds } from "@/components/ui/ToasterWithSounds";
+import { MobileTelemetry } from "@/components/performance/MobileTelemetry";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Suspense } from "react";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
@@ -29,11 +30,11 @@ import { LocaleProvider } from "@/contexts/LocaleContext";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getLocale } from "next-intl/server";
 import { TutorialProvider } from "@/contexts/TutorialContext";
-import { TutorialOverlay } from "@/components/tutorial/TutorialOverlay";
+import { LazyTutorialOverlay } from "@/components/tutorial/LazyTutorialOverlay";
 import { FontSizeApplier } from "@/components/ui/FontSizeApplier";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import "@/utils/errorInterceptor"; // Interceptor de erros
-import { RecaptchaProvider } from "@/components/providers/RecaptchaProvider";
+
 // import { AuthContextDebug } from "@/components/debug/AuthContextDebug"
 
 export const viewport = {
@@ -168,7 +169,7 @@ export default async function RootLayout({
           enableColorScheme={true}
           nonce={undefined}
         >
-          <RecaptchaProvider>
+          <>
             <ErrorBoundary>
               <QueryProvider>
                 <NextIntlClientProvider messages={messages}>
@@ -200,7 +201,8 @@ export default async function RootLayout({
                                     <NewNotificationSystem />
                                     <CookieConsentBanner />
                                     <PWAManager />
-                                    <TutorialOverlay />
+                                    <MobileTelemetry />
+                                    <LazyTutorialOverlay />
                                     <ToasterWithSounds
                                       position="top-right"
                                       richColors
@@ -218,7 +220,7 @@ export default async function RootLayout({
                 </NextIntlClientProvider>
               </QueryProvider>
             </ErrorBoundary>
-          </RecaptchaProvider>
+          </>
         </ThemeProvider>
       </body>
     </html>

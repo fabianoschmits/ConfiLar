@@ -145,7 +145,7 @@ export interface StorePurchase {
   item_id: string;
   points_spent: number;
   is_active: boolean;
-  created_at: string;
+  purchased_at: string;
   expires_at?: string;
   used_at?: string;
 }

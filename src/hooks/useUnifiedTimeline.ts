@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { financialFetch } from "@/lib/financial-fetch";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import {
@@ -13,7 +14,17 @@ import { isValidUUID, validateUUIDs } from "@/lib/utils";
 import { getEstadoBySigla, getEstadoByNome } from "@/lib/ibge";
 import { updateReferralMilestone } from "@/hooks/useReferralTracking";
 
+import {
+  feedCursorFilter,
+  oldestFeedCursor,
+  type FeedCursor,
+} from "@/lib/feed-cursor";
 const ITEMS_PER_PAGE = 20;
+type PageCursor = {
+  page: number;
+  posts: FeedCursor | null;
+  activities: { id: string; created_at: string } | null;
+};
 
 const normalizeStateForQuery = async (inputState: string) => {
   if (!inputState) return null;
@@ -54,9 +65,10 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
     refetch,
   } = useInfiniteQuery({
     queryKey,
-    initialPageParam: 0,
-    queryFn: async ({ pageParam = 0 }) => {
-      const page = pageParam as number;
+    initialPageParam: { page: 0, posts: null, activities: null } as PageCursor,
+    queryFn: async ({ pageParam, signal }) => {
+      const page = pageParam?.page || 0;
+      const cursor = pageParam?.posts;
 
       // Definir selectFields uma vez para uso em todos os casos
       const selectFields = `
@@ -245,15 +257,18 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       // Agora incluímos recomendações e reviews como posts reais pois são valiosos
       if (filters.onlyRealPosts) {
         postsQuery = postsQuery.or(
-          "metadata->>type.is.null,metadata->>type.eq.premium,metadata->>type.eq.recommendation,metadata->>type.eq.review",
+          "metadata->>type.is.null,metadata->>type.eq.premium",
         );
       }
 
+      if (cursor) postsQuery = postsQuery.or(feedCursorFilter(cursor));
       // --- EXECUTE QUERY FINAL ---
       const { data: unifiedPosts, error: unifiedError } = await postsQuery
-        .order("is_featured", { ascending: false })
+        .order("is_featured", { ascending: false, nullsFirst: false })
         .order("created_at", { ascending: false })
-        .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
+        .order("id", { ascending: false })
+        .limit(ITEMS_PER_PAGE)
+        .abortSignal(signal);
 
       // Use these results and SKIP legacy logic by setting a flag or early exit if possible.
       // But we can't early return inside hook easily.
@@ -298,7 +313,8 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           "classified_posted",
         ])
         .order("created_at", { ascending: false })
-        .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
+        .order("id", { ascending: false })
+        .limit(ITEMS_PER_PAGE);
 
       // Aplicar filtros de localização nas atividades também
       if (filters.location_filter && filters.location_filter.type !== "all") {
@@ -359,8 +375,15 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         activitiesQuery = activitiesQuery.or(orConditions);
       }
 
-      const { data: activities, error: activitiesError } =
-        await activitiesQuery;
+      if (pageParam?.activities) {
+        const c = pageParam.activities;
+        activitiesQuery = activitiesQuery.or(
+          `created_at.lt.${c.created_at},and(created_at.eq.${c.created_at},id.lt.${c.id})`,
+        );
+      }
+      const { data: activities, error: activitiesError } = filters.onlyRealPosts
+        ? { data: [], error: null }
+        : await activitiesQuery.abortSignal(signal);
 
       if (activitiesError) {
         console.warn("Erro ao buscar atividades:", activitiesError);
@@ -437,6 +460,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           comments_count: post.comments_count || 0,
           is_liked: likedPosts.has(post.id),
           is_featured: isActiveFeatured,
+          pagination_featured: post.is_featured ?? null,
           tags: post.tags || [],
           is_premium: isActivePremium,
           premium_points_spent: post.premium_points_spent,
@@ -489,6 +513,8 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         ...timelineNotifications,
       ]
         .sort((a, b) => {
+          if (a.id === filters.pinPostId) return -1;
+          if (b.id === filters.pinPostId) return 1;
           // Verificar se são posts e se premium expirou
           const aIsPost = a.type === "post";
           const bIsPost = b.type === "post";
@@ -504,10 +530,21 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
               : false;
 
           // Só considerar featured se não tiver expirado
-          const aIsFeatured = (a.is_featured || false) && !aPremiumExpired;
-          const bIsFeatured = (b.is_featured || false) && !bPremiumExpired;
+          const aIsFeatured =
+            a.type === "post" && a.pagination_featured === true;
+          const bIsFeatured =
+            b.type === "post" && b.pagination_featured === true;
 
-          // Priorizar posts destacados (is_featured) que não expiraram
+          const rank = (item: typeof a) =>
+            item.type === "post"
+              ? item.pagination_featured === true
+                ? 0
+                : item.pagination_featured === false
+                  ? 1
+                  : 2
+              : 1;
+          if (rank(a) !== rank(b)) return rank(a) - rank(b);
+          // Use the same stable order as the database cursor.
           if (aIsFeatured && !bIsFeatured) return -1;
           if (!aIsFeatured && bIsFeatured) return 1;
 
@@ -520,21 +557,43 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
 
           // Se ambos são destacados ou ambos não são, ordenar por data
           return (
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime() || b.id.localeCompare(a.id)
           );
         })
-        .slice(0, ITEMS_PER_PAGE);
+        .slice(
+          0,
+          filters.onlyRealPosts && page === 0 && filters.pinPostId
+            ? ITEMS_PER_PAGE + 1
+            : ITEMS_PER_PAGE,
+        );
 
       return allItems;
     },
-    getNextPageParam: (lastPage, allPages) => {
-      console.log("📄 getNextPageParam:", {
-        lastPageLength: lastPage.length,
-        itemsPerPage: ITEMS_PER_PAGE,
-        allPagesLength: allPages.length,
-        hasNext: lastPage.length === ITEMS_PER_PAGE,
-      });
-      return lastPage.length === ITEMS_PER_PAGE ? allPages.length : undefined;
+    getNextPageParam: (
+      lastPage,
+      _allPages,
+      previous,
+    ): PageCursor | undefined => {
+      if (lastPage.length < ITEMS_PER_PAGE) return undefined;
+      const posts = lastPage.filter(
+        (item) => item.type === "post" && item.id !== filters.pinPostId,
+      );
+      const activities = lastPage
+        .filter((item) => item.type === "activity")
+        .sort(
+          (a, b) =>
+            b.created_at.localeCompare(a.created_at) ||
+            b.id.localeCompare(a.id),
+        );
+      const lastActivity = activities.at(-1);
+      return {
+        page: (previous?.page || 0) + 1,
+        posts: oldestFeedCursor(posts) || previous?.posts || null,
+        activities: lastActivity
+          ? { id: lastActivity.id, created_at: lastActivity.created_at }
+          : previous?.activities || null,
+      };
     },
     staleTime: 1000 * 30, // Cache por 30 segundos (evita refetches muito frequentes)
     gcTime: 1000 * 60 * 5, // Manter no cache por 5 minutos
@@ -782,6 +841,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           comments_count: data.comments_count || 0,
           is_liked: false,
           is_featured: data.is_featured || false,
+          pagination_featured: data.is_featured ?? null,
           tags: data.tags || [],
           metadata: data.metadata, // Metadata já inclui youtube_video_id se houver
         } as UnifiedTimelineItem;
@@ -1226,7 +1286,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         console.log("👑 [addPremiumPost] Criando post premium via API");
 
         // Chamar API Route segura para post premium
-        const response = await fetch("/api/posts/premium", {
+        const response = await financialFetch("/api/posts/premium", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -1273,6 +1333,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           comments_count: 0,
           is_liked: false,
           is_featured: true,
+          pagination_featured: true,
           is_premium: true,
           premium_points_spent: data.premium_points_spent,
           premium_expires_at: data.premium_expires_at,
@@ -1329,7 +1390,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       try {
         console.log("👑 [renewPremiumPost] Renovando post premium:", postId);
 
-        const response = await fetch("/api/posts/premium", {
+        const response = await financialFetch("/api/posts/premium", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -1412,6 +1473,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
             comments_count: fullPostData.comments_count || 0,
             is_liked: likedPosts.has(fullPostData.id),
             is_featured: isActiveFeatured,
+            pagination_featured: fullPostData.is_featured ?? null,
             tags: fullPostData.tags || [],
             is_premium: isActivePremium,
             premium_points_spent: fullPostData.premium_points_spent,

@@ -4,6 +4,7 @@ import { useState, Suspense, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
+import { RecaptchaProvider } from "@/components/providers/RecaptchaProvider";
 import { LoginForm } from "@/components/forms/LoginForm";
 import { BasicSignupForm } from "@/components/forms/BasicSignupForm";
 import { ArrowLeft } from "lucide-react";
@@ -87,117 +88,119 @@ export default function AuthPage() {
   };
 
   return (
-    <LightModeLayout>
-      <div className="min-h-screen bg-[var(--cl-paper)]">
-        {/* Header Moderno */}
-        <header className="bg-[var(--cl-surface)]/80 backdrop-blur-md border-b border-[var(--cl-border)] sticky top-0 z-50 shadow-sm">
-          <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-            <div className="flex items-center space-x-3">
-              <BrandLogo width={160} height={40} className="object-contain" />
-            </div>
+    <RecaptchaProvider>
+      <LightModeLayout>
+        <div className="min-h-screen bg-[var(--cl-paper)]">
+          {/* Header Moderno */}
+          <header className="bg-[var(--cl-surface)]/80 backdrop-blur-md border-b border-[var(--cl-border)] sticky top-0 z-50 shadow-sm">
+            <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+              <div className="flex items-center space-x-3">
+                <BrandLogo width={160} height={40} className="object-contain" />
+              </div>
 
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={handleBackToHome}
-                variant="ghost"
-                size="sm"
-                className="text-[var(--cl-ink-secondary)] hover:text-[var(--cl-ink)] transition-colors flex items-center gap-2"
-              >
-                <ArrowLeft size={16} />
-                <span>{tNav("backToHome")}</span>
-              </Button>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content Moderno */}
-        <div className="app-page app-page--narrow">
-          <div className="mx-auto max-w-md">
-            {/* Auth Forms Modernas */}
-            <Card className="bg-[var(--cl-surface)]/70 backdrop-blur-sm border border-[var(--cl-border)] shadow-[var(--cl-shadow)] rounded-[var(--cl-radius-card)]">
-              <CardContent className="p-6">
-                {/* Título de Boas-vindas */}
-                <div className="text-center mb-6">
-                  <h1 className="text-2xl font-semibold text-[var(--cl-ink)]">
-                    {t("welcome")}
-                  </h1>
-                </div>
-
-                <Tabs
-                  value={activeTab}
-                  onValueChange={setActiveTab}
-                  className="w-full"
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleBackToHome}
+                  variant="ghost"
+                  size="sm"
+                  className="text-[var(--cl-ink-secondary)] hover:text-[var(--cl-ink)] transition-colors flex items-center gap-2"
                 >
-                  <TabsList className="grid w-full grid-cols-2 mb-6 bg-[var(--cl-mist)] rounded-xl">
-                    <TabsTrigger
-                      value="login"
-                      className="text-sm font-medium data-[state=active]:bg-[var(--cl-surface)] data-[state=active]:text-[var(--cl-ink)] data-[state=active]:shadow-sm rounded-lg"
-                    >
-                      {t("login")}
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="register"
-                      className="text-sm font-medium data-[state=active]:bg-[var(--cl-surface)] data-[state=active]:text-[var(--cl-ink)] data-[state=active]:shadow-sm rounded-lg"
-                    >
-                      {tNav("createAccountTab")}
-                    </TabsTrigger>
-                  </TabsList>
+                  <ArrowLeft size={16} />
+                  <span>{tNav("backToHome")}</span>
+                </Button>
+              </div>
+            </div>
+          </header>
 
-                  <TabsContent value="login" className="space-y-4">
-                    <Suspense
-                      fallback={
-                        <div className="text-center py-8">
-                          <div className="w-8 h-8 bg-[var(--cl-cta)] rounded-xl mx-auto animate-pulse"></div>
-                          <p className="text-[var(--cl-ink-secondary)] font-medium mt-2">
-                            {tCommon("loading")}
-                          </p>
-                        </div>
-                      }
-                    >
-                      <LoginForm />
-                    </Suspense>
-                  </TabsContent>
-
-                  <TabsContent value="register" className="space-y-4">
-                    <Suspense
-                      fallback={
-                        <div className="text-center py-8">
-                          <div className="w-8 h-8 bg-[var(--cl-cta)] rounded-xl mx-auto animate-pulse"></div>
-                          <p className="text-[var(--cl-ink-secondary)] font-medium mt-2">
-                            {tCommon("loading")}
-                          </p>
-                        </div>
-                      }
-                    >
-                      <BasicSignupForm />
-                    </Suspense>
-                  </TabsContent>
-                </Tabs>
-
-                <div className="mt-6">
-                  <div className="h-px bg-[var(--cl-border)] my-4"></div>
-                  <div className="text-center text-sm text-[var(--cl-ink-secondary)]">
-                    {tNav("termsAgreement")}{" "}
-                    <a
-                      href="/termos"
-                      className="text-[var(--cl-teal)] underline hover:brightness-90 font-medium"
-                    >
-                      {tNav("termsOfUse")}
-                    </a>{" "}
-                    {tNav("and")}{" "}
-                    <a
-                      href="/privacidade"
-                      className="text-[var(--cl-teal)] underline hover:brightness-90 font-medium"
-                    >
-                      {tNav("privacyPolicy")}
-                    </a>
+          {/* Main Content Moderno */}
+          <div className="app-page app-page--narrow">
+            <div className="mx-auto max-w-md">
+              {/* Auth Forms Modernas */}
+              <Card className="bg-[var(--cl-surface)]/70 backdrop-blur-sm border border-[var(--cl-border)] shadow-[var(--cl-shadow)] rounded-[var(--cl-radius-card)]">
+                <CardContent className="p-6">
+                  {/* Título de Boas-vindas */}
+                  <div className="text-center mb-6">
+                    <h1 className="text-2xl font-semibold text-[var(--cl-ink)]">
+                      {t("welcome")}
+                    </h1>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+
+                  <Tabs
+                    value={activeTab}
+                    onValueChange={setActiveTab}
+                    className="w-full"
+                  >
+                    <TabsList className="grid w-full grid-cols-2 mb-6 bg-[var(--cl-mist)] rounded-xl">
+                      <TabsTrigger
+                        value="login"
+                        className="text-sm font-medium data-[state=active]:bg-[var(--cl-surface)] data-[state=active]:text-[var(--cl-ink)] data-[state=active]:shadow-sm rounded-lg"
+                      >
+                        {t("login")}
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="register"
+                        className="text-sm font-medium data-[state=active]:bg-[var(--cl-surface)] data-[state=active]:text-[var(--cl-ink)] data-[state=active]:shadow-sm rounded-lg"
+                      >
+                        {tNav("createAccountTab")}
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="login" className="space-y-4">
+                      <Suspense
+                        fallback={
+                          <div className="text-center py-8">
+                            <div className="w-8 h-8 bg-[var(--cl-cta)] rounded-xl mx-auto animate-pulse"></div>
+                            <p className="text-[var(--cl-ink-secondary)] font-medium mt-2">
+                              {tCommon("loading")}
+                            </p>
+                          </div>
+                        }
+                      >
+                        <LoginForm />
+                      </Suspense>
+                    </TabsContent>
+
+                    <TabsContent value="register" className="space-y-4">
+                      <Suspense
+                        fallback={
+                          <div className="text-center py-8">
+                            <div className="w-8 h-8 bg-[var(--cl-cta)] rounded-xl mx-auto animate-pulse"></div>
+                            <p className="text-[var(--cl-ink-secondary)] font-medium mt-2">
+                              {tCommon("loading")}
+                            </p>
+                          </div>
+                        }
+                      >
+                        <BasicSignupForm />
+                      </Suspense>
+                    </TabsContent>
+                  </Tabs>
+
+                  <div className="mt-6">
+                    <div className="h-px bg-[var(--cl-border)] my-4"></div>
+                    <div className="text-center text-sm text-[var(--cl-ink-secondary)]">
+                      {tNav("termsAgreement")}{" "}
+                      <a
+                        href="/termos"
+                        className="text-[var(--cl-teal)] underline hover:brightness-90 font-medium"
+                      >
+                        {tNav("termsOfUse")}
+                      </a>{" "}
+                      {tNav("and")}{" "}
+                      <a
+                        href="/privacidade"
+                        className="text-[var(--cl-teal)] underline hover:brightness-90 font-medium"
+                      >
+                        {tNav("privacyPolicy")}
+                      </a>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
-      </div>
-    </LightModeLayout>
+      </LightModeLayout>
+    </RecaptchaProvider>
   );
 }

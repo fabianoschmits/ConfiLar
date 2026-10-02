@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { financialFetch } from "@/lib/financial-fetch";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import {
@@ -36,9 +37,9 @@ export function usePointsPackages() {
       return data as PointsPackage[];
     },
     enabled: true,
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnWindowFocus: true,
+    staleTime: 60000,
+    gcTime: 300000,
+    refetchOnWindowFocus: false,
   });
 
   return {
@@ -81,16 +82,17 @@ export function usePointsPurchases(userId?: string) {
       return data;
     },
     enabled: !!userId,
-    staleTime: 0, // Sempre considerar stale para permitir atualizações imediatas
-    gcTime: 0,
-    refetchOnWindowFocus: true, // Refetch quando a janela ganha foco
+    staleTime: 30000,
+    gcTime: 300000,
+    refetchOnWindowFocus: false,
     refetchOnMount: true, // Refetch quando o componente monta
   });
 
   const createPurchaseMutation = useMutation({
+    networkMode: "always",
     mutationFn: async (request: CreatePointsPurchaseRequest) => {
       // Usar API Route segura em vez de RPC direta (REVOKE aplicado no banco)
-      const response = await fetch("/api/economy/purchase/create", {
+      const response = await financialFetch("/api/economy/purchase/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -228,9 +230,10 @@ export function usePointsTransfers(userId?: string) {
   });
 
   const createTransferMutation = useMutation({
+    networkMode: "always",
     mutationFn: async (request: CreateTransferRequest) => {
       // Usar a rota de API segura em vez de RPC direta
-      const response = await fetch("/api/economy/transfer/create", {
+      const response = await financialFetch("/api/economy/transfer/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -310,40 +313,31 @@ export function usePointsStore(userId?: string) {
     queryKey: ["store-purchases", userId],
     queryFn: async () => {
       if (!userId) return [];
-
       const { data, error } = await supabase
         .from("points_store_purchases")
-        .select(
-          `
-          *,
-          item:points_store_items(*)
-        `,
-        )
+        .select("*,item:points_store_items(*)")
         .eq("user_id", userId)
         .eq("is_active", true)
-        .order("created_at", { ascending: false });
-
+        .order("purchased_at", { ascending: false });
       if (error) throw error;
       return data;
     },
     enabled: !!userId,
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 1000 * 60 * 5,
   });
 
   const purchaseItemMutation = useMutation({
+    networkMode: "always",
     mutationFn: async (itemId: string) => {
-      const { data, error } = await supabase
-        .from("points_store_purchases")
-        .insert({
-          user_id: userId,
-          item_id: itemId,
-          points_spent: items?.find((i) => i.id === itemId)?.points_price || 0,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      const response = await financialFetch("/api/economy/store/purchase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ item_id: itemId }),
+      });
+      const result = await response.json();
+      if (!response.ok)
+        throw new Error(result.error || "Não foi possível confirmar a compra.");
+      return result.purchase;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["store-purchases", userId] });

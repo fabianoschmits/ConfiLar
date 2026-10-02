@@ -1,3 +1,4 @@
+import { purchaseOnce } from "@/lib/purchase-once";
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/authenticatedRoute";
 import { createAdminSupabaseClient } from "@/lib/supabase";
@@ -28,8 +29,11 @@ export const POST = withAuth(
 
       // Utilizar a RPC segura e atômica para efetuar a compra (Admin Client para bypass REVOKE)
       const supabaseAdmin = createAdminSupabaseClient();
-      const { data: purchaseId, error: rpcError } = await supabaseAdmin.rpc(
-        "purchase_store_item",
+      const { data: purchaseId, error: rpcError } = await purchaseOnce(
+        supabaseAdmin,
+        request,
+        body,
+        "store",
         {
           p_user_id: user.id, // 🔒 Sempre ID autenticado
           p_item_id: item_id,

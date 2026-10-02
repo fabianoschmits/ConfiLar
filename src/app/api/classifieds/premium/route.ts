@@ -1,3 +1,4 @@
+import { purchaseOnce } from "@/lib/purchase-once";
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/authenticatedRoute";
 import { createAdminSupabaseClient } from "@/lib/supabase";
@@ -6,6 +7,7 @@ import { validPremiumPurchase } from "@/lib/premium-purchase";
 export const POST = withAuth(
   async (request: NextRequest, _supabaseAuth, user) => {
     try {
+      const body = await request.json();
       const {
         adId,
         title,
@@ -20,7 +22,7 @@ export const POST = withAuth(
         pointsToSpend,
         durationDays,
         useCreditType,
-      } = await request.json();
+      } = body;
       if (
         !validPremiumPurchase(
           "AD",
@@ -87,14 +89,20 @@ export const POST = withAuth(
         ).toISOString(),
         premium_highlight_color: "#FFD700",
       };
-      const { data: ad, error } = await admin.rpc("purchase_premium_content", {
-        p_user_id: user.id,
-        p_kind: "AD",
-        p_record_id: adId || null,
-        p_payload: payload,
-        p_points: pointsToSpend,
-        p_credit: useCreditType || null,
-      });
+      const { data: ad, error } = await purchaseOnce(
+        admin,
+        request,
+        body,
+        "premium-content",
+        {
+          p_user_id: user.id,
+          p_kind: "AD",
+          p_record_id: adId || null,
+          p_payload: payload,
+          p_points: pointsToSpend,
+          p_credit: useCreditType || null,
+        },
+      );
       if (error || !ad)
         return NextResponse.json(
           {
@@ -107,7 +115,7 @@ export const POST = withAuth(
     } catch {
       return NextResponse.json(
         { error: "Dados inválidos ou falha ao processar o anúncio." },
-        { status: 400 },
+        { status: 503 },
       );
     }
   },

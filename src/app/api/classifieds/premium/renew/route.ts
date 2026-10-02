@@ -1,3 +1,4 @@
+import { purchaseOnce } from "@/lib/purchase-once";
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/authenticatedRoute";
 import { createAdminSupabaseClient } from "@/lib/supabase";
@@ -6,8 +7,8 @@ import { validPremiumPurchase } from "@/lib/premium-purchase";
 export const POST = withAuth(
   async (request: NextRequest, _supabaseAuth, user) => {
     try {
-      const { adId, pointsToSpend, durationDays, useCreditType } =
-        await request.json();
+      const body = await request.json();
+      const { adId, pointsToSpend, durationDays, useCreditType } = body;
       if (
         !adId ||
         !validPremiumPurchase("AD", durationDays, pointsToSpend, useCreditType)
@@ -33,23 +34,29 @@ export const POST = withAuth(
           { error: "Permissão negada" },
           { status: 403 },
         );
-      const { data: ad, error } = await admin.rpc("purchase_premium_content", {
-        p_user_id: user.id,
-        p_kind: "AD",
-        p_record_id: adId,
-        p_points: pointsToSpend,
-        p_credit: useCreditType || null,
-        p_payload: {
-          user_id: user.id,
-          is_premium: true,
-          is_featured: true,
-          premium_points_spent: useCreditType ? 0 : pointsToSpend,
-          premium_expires_at: new Date(
-            Date.now() + durationDays * 86400000,
-          ).toISOString(),
-          updated_at: new Date().toISOString(),
+      const { data: ad, error } = await purchaseOnce(
+        admin,
+        request,
+        body,
+        "premium-content",
+        {
+          p_user_id: user.id,
+          p_kind: "AD",
+          p_record_id: adId,
+          p_points: pointsToSpend,
+          p_credit: useCreditType || null,
+          p_payload: {
+            user_id: user.id,
+            is_premium: true,
+            is_featured: true,
+            premium_points_spent: useCreditType ? 0 : pointsToSpend,
+            premium_expires_at: new Date(
+              Date.now() + durationDays * 86400000,
+            ).toISOString(),
+            updated_at: new Date().toISOString(),
+          },
         },
-      });
+      );
       if (error || !ad)
         return NextResponse.json(
           {
@@ -62,7 +69,7 @@ export const POST = withAuth(
     } catch {
       return NextResponse.json(
         { error: "Dados inválidos ou falha ao processar a renovação." },
-        { status: 400 },
+        { status: 503 },
       );
     }
   },

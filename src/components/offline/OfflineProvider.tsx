@@ -5,11 +5,13 @@
 
 "use client";
 
+import { ConnectionStatus } from "./ConnectionStatus";
 import { useEffect } from "react";
-import { initOfflineSync } from "@/lib/storage/offlineSync";
+import type { initOfflineSync } from "@/lib/storage/offlineSync";
 import {
   cleanupExpiredData,
   cleanupCompletedActions,
+  getPendingOfflineActions,
 } from "@/lib/storage/indexedDB";
 interface OfflineProviderProps {
   children: React.ReactNode;
@@ -19,8 +21,18 @@ export function OfflineProvider({ children }: OfflineProviderProps) {
   // Funcionalidade offline simplificada - removido useOfflineActions complexo
 
   useEffect(() => {
-    // Inicializar sincronizador offline
-    initOfflineSync();
+    let disposed = false;
+    let legacySync: ReturnType<typeof initOfflineSync> | undefined;
+    // No current screen queues writes offline. Drain existing legacy actions only
+    // when present, without loading the writer or polling an empty queue globally.
+    const resumePending = async () => {
+      const actions = await getPendingOfflineActions();
+      if (!disposed && actions.length) {
+        const offlineModule = await import("@/lib/storage/offlineSync");
+        if (!disposed) legacySync = offlineModule.initOfflineSync();
+      }
+    };
+    void resumePending().catch(() => {});
 
     // Limpar dados expirados na inicialização
     cleanupExpiredData();
@@ -59,8 +71,7 @@ export function OfflineProvider({ children }: OfflineProviderProps) {
     // Listener para mensagens do Service Worker
     const handleMessage = async (event: MessageEvent) => {
       if (event.data?.type === "SYNC_PENDING_ACTIONS") {
-        console.log("🔄 Service Worker solicitou sincronização de ações");
-        // A sincronização será feita automaticamente pelo sistema offline
+        void resumePending().catch(() => {});
       }
     };
 
@@ -70,6 +81,8 @@ export function OfflineProvider({ children }: OfflineProviderProps) {
     }
 
     return () => {
+      disposed = true;
+      legacySync?.stop();
       clearInterval(cleanupInterval);
       // Remover event listener apenas se Service Worker estiver disponível
       if ("serviceWorker" in navigator) {
@@ -80,5 +93,10 @@ export function OfflineProvider({ children }: OfflineProviderProps) {
 
   // Funcionalidade offline simplificada - indicadores removidos com useOfflineActions
 
-  return <>{children}</>;
+  return (
+    <>
+      <ConnectionStatus />
+      {children}
+    </>
+  );
 }

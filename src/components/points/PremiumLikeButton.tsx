@@ -96,7 +96,7 @@ export function PremiumLikeButton({
   const hasEnoughPoints = (balance?.balance ?? 0) >= PREMIUM_PRICES.LIKE.POINTS;
 
   const handlePremiumLike = () => {
-    if (isOwnPost) {
+    if (isOwnPost || isPremiumLiking) {
       return; // Não pode curtir próprio post
     }
 
@@ -130,7 +130,7 @@ export function PremiumLikeButton({
         <TooltipTrigger asChild>
           <button
             onClick={handlePremiumLike}
-            disabled={isOwnPost || !hasEnoughPoints}
+            disabled={isOwnPost || !hasEnoughPoints || isPremiumLiking}
             className={cn(
               "transition-transform active:scale-125 disabled:opacity-50 flex items-center gap-1.5",
               isOwnPost && "cursor-not-allowed",

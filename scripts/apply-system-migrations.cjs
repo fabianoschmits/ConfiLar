@@ -18,6 +18,10 @@ const migrations = [
   "supabase/migrations/20261001250000_private_profile_details.sql",
   "supabase/migrations/20261001260000_guard_admin_rpcs.sql",
   "supabase/migrations/20261001270000_story_view_counters.sql",
+  "supabase/migrations/202610020001_mobile_purchase_idempotency.sql",
+  "supabase/migrations/202610020002_mobile_telemetry.sql",
+  "supabase/migrations/202610020003_canonical_wallet_checks.sql",
+  "supabase/migrations/202610020004_mobile_telemetry_retention.sql",
 ];
 async function main() {
   const token = process.env.SUPABASE_ACCESS_TOKEN;
@@ -34,7 +38,7 @@ async function main() {
     "BEGIN;\n" +
     migrations
       .map((file) =>
-        fs.readFileSync(file, "utf8").replace(/^BEGIN;\s*|^COMMIT;\s*/gm, ""),
+        fs.readFileSync(file, "utf8").replace(/^BEGIN;\s*|^COMMIT;\s*/gim, ""),
       )
       .join("\n") +
     "\nCOMMIT;";

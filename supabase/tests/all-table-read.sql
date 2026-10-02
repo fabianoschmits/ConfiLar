@@ -21,7 +21,7 @@ DO $$ DECLARE r record; uid uuid; role_name text; outcome text; BEGIN
 END $$;
 DO $$ BEGIN
  IF EXISTS(SELECT 1 FROM read_results WHERE outcome<>'read query valid' AND NOT
-  (role_name='anon' AND outcome='permission denied' AND table_name IN('notifications','profile_private_details'))) THEN
+  ((role_name='anon' AND outcome='permission denied' AND table_name IN('notifications','profile_private_details')) OR (outcome='permission denied' AND table_name IN('purchase_request_receipts','mobile_telemetry')))) THEN
   RAISE EXCEPTION 'Unexpected table read/RLS failure';
  END IF;
 END $$;

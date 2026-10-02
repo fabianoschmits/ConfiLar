@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { financialFetch } from "@/lib/financial-fetch";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -33,11 +34,12 @@ export function usePremiumAd({ onSuccess, onError }: UsePremiumAdProps) {
   const queryClient = useQueryClient();
 
   const premiumAdMutation = useMutation({
+    networkMode: "always",
     mutationFn: async (adData: CreatePremiumAdData) => {
       if (!user) throw new Error("Usuário não autenticado");
 
       // Usar a nova API Route segura para criar anúncio premium
-      const response = await fetch("/api/classifieds/premium", {
+      const response = await financialFetch("/api/classifieds/premium", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -96,6 +98,7 @@ export function usePremiumAd({ onSuccess, onError }: UsePremiumAdProps) {
 
   // Função para renovar anúncio premium
   const renewPremiumAdMutation = useMutation({
+    networkMode: "always",
     mutationFn: async ({
       adId,
       pointsToSpend,
@@ -110,7 +113,7 @@ export function usePremiumAd({ onSuccess, onError }: UsePremiumAdProps) {
       if (!user) throw new Error("Usuário não autenticado");
 
       // Usar a nova API Route segura para renovar anúncio premium
-      const response = await fetch("/api/classifieds/premium/renew", {
+      const response = await financialFetch("/api/classifieds/premium/renew", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

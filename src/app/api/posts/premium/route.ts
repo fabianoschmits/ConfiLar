@@ -1,3 +1,4 @@
+import { purchaseOnce } from "@/lib/purchase-once";
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/authenticatedRoute";
 import { createAdminSupabaseClient } from "@/lib/supabase";
@@ -7,6 +8,7 @@ import { validPremiumPurchase } from "@/lib/premium-purchase";
 export const POST = withAuth(
   async (request: NextRequest, _supabaseAuth, user) => {
     try {
+      const body = await request.json();
       const {
         action = "create",
         postId,
@@ -18,7 +20,7 @@ export const POST = withAuth(
         service_category_id,
         pointsToSpend,
         durationDays,
-      } = await request.json();
+      } = body;
       if (
         !validPremiumPurchase("POST", durationDays, pointsToSpend) ||
         !["create", "renew"].includes(action) ||
@@ -98,8 +100,11 @@ export const POST = withAuth(
           tags: ["premium"],
         });
       }
-      const { data: post, error } = await admin.rpc(
-        "purchase_premium_content",
+      const { data: post, error } = await purchaseOnce(
+        admin,
+        request,
+        body,
+        "premium-content",
         {
           p_user_id: user.id,
           p_kind: "POST",
@@ -121,7 +126,7 @@ export const POST = withAuth(
     } catch {
       return NextResponse.json(
         { error: "Dados inválidos ou falha ao processar a publicação." },
-        { status: 400 },
+        { status: 503 },
       );
     }
   },
