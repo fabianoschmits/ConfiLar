@@ -130,7 +130,10 @@ export function LoginForm() {
         setIsLoading(false);
       } else {
         console.log("🎉 [LoginForm] Login bem-sucedido!");
-        toast.success("Login realizado com sucesso!");
+        toast.success("Login realizado com sucesso", {
+          id: "login-success",
+          description: "Você já pode continuar no ConfiLar.",
+        });
         router.push(redirectPath);
         setIsLoading(false);
       }

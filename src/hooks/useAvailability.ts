@@ -86,53 +86,23 @@ export const useAvailability = () => {
 
       // Mostrar mensagem de feedback com tema moderno
       if (newAvailability) {
-        toast.success("✅ Disponível para orçamentos!", {
+        toast.success("Disponível para orçamentos", {
           description:
             "Agora você está disponível para receber orçamentos e ofertas de clientes",
-          style: {
-            background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
-            color: "#FFFFFF",
-            border: "1px solid #10B981",
-            borderRadius: "12px",
-            boxShadow: "0 10px 25px rgba(16, 185, 129, 0.3)",
-            fontWeight: "500",
-            fontSize: "14px",
-            padding: "16px 20px",
-          },
         });
 
         // Mensagem informativa sobre inativação automática
         setTimeout(() => {
-          toast.info("ℹ️ Importante: Inativação Automática", {
+          toast.info("Disponibilidade automática", {
             description:
               "Você será automaticamente marcado como indisponível se ficar 7 dias sem acessar o site",
             duration: 6000,
-            style: {
-              background: "linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)",
-              color: "#FFFFFF",
-              border: "1px solid #3B82F6",
-              borderRadius: "12px",
-              boxShadow: "0 10px 25px rgba(59, 130, 246, 0.3)",
-              fontWeight: "500",
-              fontSize: "14px",
-              padding: "16px 20px",
-            },
           });
         }, 2000);
       } else {
-        toast.info("⏸️ Indisponível", {
+        toast.info("Indisponível para orçamentos", {
           description:
             "Você não está mais disponível para receber orçamentos e ofertas",
-          style: {
-            background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
-            color: "#FFFFFF",
-            border: "1px solid #EF4444",
-            borderRadius: "12px",
-            boxShadow: "0 10px 25px rgba(239, 68, 68, 0.3)",
-            fontWeight: "500",
-            fontSize: "14px",
-            padding: "16px 20px",
-          },
         });
       }
 
@@ -149,18 +119,8 @@ export const useAvailability = () => {
       }));
 
       // Mostrar erro com tema moderno
-      toast.error("❌ Erro ao alterar disponibilidade", {
+      toast.error("Não foi possível alterar sua disponibilidade", {
         description: "Tente novamente em alguns instantes",
-        style: {
-          background: "linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)",
-          color: "#FFFFFF",
-          border: "1px solid #DC2626",
-          borderRadius: "12px",
-          boxShadow: "0 10px 25px rgba(220, 38, 38, 0.3)",
-          fontWeight: "500",
-          fontSize: "14px",
-          padding: "16px 20px",
-        },
       });
 
       return null;
@@ -213,53 +173,23 @@ export const useAvailability = () => {
 
         // Mostrar mensagem de feedback com tema moderno
         if (available) {
-          toast.success("✅ Disponível para orçamentos!", {
+          toast.success("Disponível para orçamentos", {
             description:
               "Agora você está disponível para receber orçamentos e ofertas de clientes",
-            style: {
-              background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
-              color: "#FFFFFF",
-              border: "1px solid #10B981",
-              borderRadius: "12px",
-              boxShadow: "0 10px 25px rgba(16, 185, 129, 0.3)",
-              fontWeight: "500",
-              fontSize: "14px",
-              padding: "16px 20px",
-            },
           });
 
           // Mensagem informativa sobre inativação automática
           setTimeout(() => {
-            toast.info("ℹ️ Importante: Inativação Automática", {
+            toast.info("Disponibilidade automática", {
               description:
                 "Você será automaticamente marcado como indisponível se ficar 7 dias sem acessar o site",
               duration: 6000,
-              style: {
-                background: "linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)",
-                color: "#FFFFFF",
-                border: "1px solid #3B82F6",
-                borderRadius: "12px",
-                boxShadow: "0 10px 25px rgba(59, 130, 246, 0.3)",
-                fontWeight: "500",
-                fontSize: "14px",
-                padding: "16px 20px",
-              },
             });
           }, 2000);
         } else {
-          toast.info("⏸️ Indisponível", {
+          toast.info("Indisponível para orçamentos", {
             description:
               "Você não está mais disponível para receber orçamentos e ofertas",
-            style: {
-              background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
-              color: "#FFFFFF",
-              border: "1px solid #EF4444",
-              borderRadius: "12px",
-              boxShadow: "0 10px 25px rgba(239, 68, 68, 0.3)",
-              fontWeight: "500",
-              fontSize: "14px",
-              padding: "16px 20px",
-            },
           });
         }
 
@@ -276,18 +206,8 @@ export const useAvailability = () => {
         }));
 
         // Mostrar erro com tema moderno
-        toast.error("❌ Erro ao alterar disponibilidade", {
+        toast.error("Não foi possível alterar sua disponibilidade", {
           description: "Tente novamente em alguns instantes",
-          style: {
-            background: "linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)",
-            color: "#FFFFFF",
-            border: "1px solid #DC2626",
-            borderRadius: "12px",
-            boxShadow: "0 10px 25px rgba(220, 38, 38, 0.3)",
-            fontWeight: "500",
-            fontSize: "14px",
-            padding: "16px 20px",
-          },
         });
 
         return null;

@@ -1,12 +1,11 @@
 "use client";
-
 import { Trash2, Check, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { NotificationIcon } from "./NotificationIcon";
 
-interface DesktopNotificationItemProps {
+export interface NotificationItemProps {
   notification: {
     id: string;
     title: string;
@@ -15,127 +14,102 @@ interface DesktopNotificationItemProps {
     is_read: boolean;
     created_at: string;
     action_url?: string;
-    metadata?: any;
+    metadata?: { type?: string; post_title?: string; [key: string]: unknown };
   };
   onDelete: (id: string, title: string) => void;
   onMarkAsRead: (id: string) => void;
-  onClick: (notification: any) => void;
+  onClick: (notification: NotificationItemProps["notification"]) => void;
   expanded?: boolean;
 }
-
 export function DesktopNotificationItem({
   notification,
   onDelete,
   onMarkAsRead,
   onClick,
   expanded = false,
-}: DesktopNotificationItemProps) {
-  const getNotificationColor = (type: string) => {
-    switch (type) {
-      case "message":
-        return "text-[var(--cl-teal)]";
-      case "favorite":
-        return "text-red-600";
-      case "recommendation":
-        return "text-yellow-600";
-      case "review":
-        return "text-yellow-600";
-      case "system":
-        return "text-gray-600";
-      case "info":
-        return "text-green-600"; // Para posts compartilhados
-      default:
-        return "text-gray-600";
-    }
-  };
-
+}: NotificationItemProps) {
+  const date = new Date(notification.created_at);
+  const sharedTitle =
+    notification.metadata?.type === "shared_post" &&
+    typeof notification.metadata.post_title === "string"
+      ? notification.metadata.post_title
+      : null;
   return (
-    <div
+    <article
       id={`notification-${notification.id}`}
-      className={`p-3 rounded-lg border cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 relative group ${
-        !notification.is_read
-          ? "bg-[var(--cl-mist)] dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
-          : "bg-[var(--cl-surface)] border-gray-200 dark:border-gray-700"
-      }`}
-      onClick={() => onClick(notification)}
+      data-read={notification.is_read}
+      className={`notification-item flex items-start gap-1 rounded-2xl border border-[var(--cl-border)] p-3 text-[var(--cl-ink)] ${notification.is_read ? "bg-[var(--cl-surface)]" : "bg-[var(--cl-mist)]"}`}
     >
-      <div className="flex items-start gap-3">
+      <button
+        type="button"
+        onClick={() => onClick(notification)}
+        className="flex min-w-0 flex-1 items-start gap-3 rounded-xl text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--cl-teal)]"
+        aria-label={`Abrir notificação: ${notification.title}`}
+      >
         <NotificationIcon type={notification.type} />
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h4
-              className={`font-medium text-sm ${getNotificationColor(notification.type)}`}
-            >
+        <span className="min-w-0 flex-1">
+          <span className="flex items-start gap-2">
+            <span className="min-w-0 break-words text-sm font-extrabold leading-5">
               {notification.title}
-            </h4>
+            </span>
             {!notification.is_read && (
-              <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
+              <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[var(--cl-teal)]">
+                <span className="sr-only">Não lida</span>
+              </span>
             )}
-          </div>
-
-          <p
-            className={`text-sm text-gray-600 dark:text-gray-300 mt-1 ${expanded ? "" : "line-clamp-2"}`}
+          </span>
+          <span
+            className={`mt-1 block break-words text-sm leading-5 text-[var(--cl-ink-secondary)] ${expanded ? "" : "line-clamp-2"}`}
           >
             {notification.message}
-          </p>
-
-          {/* Informações extras para posts compartilhados */}
-          {notification.metadata?.type === "shared_post" &&
-            notification.metadata?.post_title && (
-              <div className="mt-2 p-2 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded border border-green-200 dark:border-green-800 hover:border-green-300 dark:hover:border-green-700 transition-colors">
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                  📄 Post:
-                </p>
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-200 line-clamp-1 mb-1">
-                  {notification.metadata.post_title}
-                </p>
-                <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 font-medium">
-                  <ExternalLink className="h-3 w-3" />
-                  <span>Clique para ver o post</span>
-                </div>
-              </div>
-            )}
-
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            {formatDistanceToNow(new Date(notification.created_at), {
-              addSuffix: true,
-              locale: ptBR,
-            })}
-          </p>
-        </div>
-
-        {/* Botões de ação - sempre visíveis */}
-        <div className="flex flex-col gap-1">
-          {!notification.is_read && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onMarkAsRead(notification.id);
-              }}
-              className="h-6 w-6 p-0 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/30 opacity-0 group-hover:opacity-100 transition-opacity"
-              title="Marcar como lida"
-            >
-              <Check className="h-3 w-3" />
-            </Button>
+          </span>
+          {sharedTitle && (
+            <span className="mt-2 block rounded-xl border border-[var(--cl-border)] bg-[var(--cl-surface)] p-2.5">
+              <span className="block text-xs text-[var(--cl-ink-muted)]">
+                Publicação compartilhada
+              </span>
+              <span className="mt-1 block line-clamp-2 text-sm font-medium">
+                {sharedTitle}
+              </span>
+              <span className="mt-1 flex items-center gap-1 text-xs text-[var(--cl-teal)]">
+                <ExternalLink className="h-3 w-3" />
+                Ver publicação
+              </span>
+            </span>
           )}
-
+          <span className="mt-2 block text-xs text-[var(--cl-ink-muted)]">
+            {Number.isNaN(date.getTime())
+              ? "Agora"
+              : formatDistanceToNow(date, { addSuffix: true, locale: ptBR })}
+          </span>
+        </span>
+      </button>
+      <div className="flex shrink-0 flex-col gap-1">
+        {!notification.is_read && (
           <Button
+            type="button"
             variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(notification.id, notification.title);
-            }}
-            className="h-6 w-6 p-0 text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 opacity-100"
-            title="Deletar notificação"
+            size="icon"
+            aria-label="Marcar como lida"
+            title="Marcar como lida"
+            onClick={() => onMarkAsRead(notification.id)}
+            className="h-10 w-10 text-[var(--cl-teal)]"
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <Check className="h-4 w-4" />
           </Button>
-        </div>
+        )}
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label="Excluir notificação"
+          title="Excluir notificação"
+          onClick={() => onDelete(notification.id, notification.title)}
+          className="h-10 w-10 text-[var(--cl-ink-muted)] hover:text-red-700 dark:hover:text-red-300"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </div>
-    </div>
+    </article>
   );
 }

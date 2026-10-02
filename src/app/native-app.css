@@ -736,3 +736,180 @@
     font-size: 16px;
   }
 }
+/* Shared feedback for authentication, user actions and administration. */
+.notification-toolbar-button {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--cl-ink-secondary);
+}
+.notification-toolbar-button:hover {
+  background: var(--cl-mist);
+}
+.notification-toolbar-button:focus-visible {
+  outline: 2px solid var(--cl-teal);
+  outline-offset: 2px;
+}
+.confilar-toaster {
+  --normal-bg: var(--cl-surface);
+  --normal-text: var(--cl-ink);
+  --normal-border: var(--cl-border);
+}
+.confilar-toaster[data-sonner-toaster] [data-sonner-toast][data-styled="true"] {
+  gap: 12px;
+  padding: 16px 48px 16px 16px;
+  border: 1px solid var(--cl-border);
+  border-radius: 20px;
+  background: var(--cl-surface);
+  color: var(--cl-ink);
+  box-shadow: var(--cl-shadow);
+  font-family: "Gilroy", system-ui, sans-serif;
+}
+.confilar-toaster[data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"]
+  [data-content] {
+  min-width: 0;
+  gap: 4px;
+  flex: 1;
+}
+.confilar-toaster[data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"]
+  [data-title] {
+  color: var(--cl-ink);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.confilar-toaster[data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"]
+  [data-description] {
+  color: var(--cl-ink-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.confilar-toaster[data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"]
+  [data-icon] {
+  margin: 0;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--cl-mist);
+  color: #087c7c;
+}
+.dark
+  .confilar-toaster[data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"]
+  [data-icon] {
+  color: #63d4cc;
+}
+.confilar-toaster[data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"]
+  [data-icon]
+  svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.8;
+}
+.confilar-toaster[data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"]
+  [data-icon]
+  > span {
+  width: 32px;
+  height: 32px;
+  color: inherit;
+}
+.confilar-toaster[data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"][data-type="error"]
+  [data-icon] {
+  color: #b42335;
+}
+.confilar-toaster[data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"][data-type="warning"]
+  [data-icon] {
+  color: #8a5a12;
+}
+.dark
+  .confilar-toaster[data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"][data-type="error"]
+  [data-icon] {
+  color: #f4a4ab;
+}
+.dark
+  .confilar-toaster[data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"][data-type="warning"]
+  [data-icon] {
+  color: #edc485;
+}
+.confilar-toaster[data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"]
+  [data-button] {
+  height: auto;
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--cl-cta);
+  color: var(--cl-on-cta);
+  font: inherit;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.confilar-toaster[data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"]
+  [data-cancel] {
+  background: var(--cl-mist);
+  color: var(--cl-ink-secondary);
+}
+.confilar-toaster[data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"]
+  [data-close-button] {
+  top: 4px;
+  right: 4px;
+  left: auto;
+  transform: none;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  color: var(--cl-ink-muted);
+}
+.confilar-toaster[data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"]
+  [data-close-button]:hover {
+  background: var(--cl-mist);
+  color: var(--cl-ink);
+}
+.confilar-toaster[data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"]
+  button:focus-visible {
+  outline: 2px solid var(--cl-teal);
+  outline-offset: 2px;
+}
+@media (max-width: 480px) {
+  .confilar-toaster[data-sonner-toaster]
+    [data-sonner-toast][data-styled="true"] {
+    gap: 10px;
+    padding: 14px 46px 14px 14px;
+  }
+  .confilar-toaster[data-sonner-toaster]
+    [data-sonner-toast][data-styled="true"]:has([data-button])
+    [data-content] {
+    flex-basis: calc(100% - 42px);
+  }
+  .confilar-toaster[data-sonner-toaster]
+    [data-sonner-toast][data-styled="true"]:has([data-button]) {
+    flex-wrap: wrap;
+  }
+  .confilar-toaster[data-sonner-toaster]
+    [data-sonner-toast][data-styled="true"]
+    [data-button] {
+    margin-left: 42px;
+    min-height: 40px;
+  }
+}

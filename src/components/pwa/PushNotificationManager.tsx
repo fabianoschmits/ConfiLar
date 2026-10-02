@@ -228,7 +228,7 @@ export function PushNotificationManager({
         <CardHeader className="relative">
           <CardTitle className="flex items-center gap-2">
             <BellOff className="w-5 h-5 text-gray-400" />
-            Notificações Não Suportadas
+            Notificações indisponíveis
           </CardTitle>
           <CardDescription>
             Seu navegador não suporta notificações push ou Service Worker.
@@ -236,7 +236,8 @@ export function PushNotificationManager({
           <Button
             variant="ghost"
             size="sm"
-            className="absolute top-2 right-2 h-7 w-7 p-0"
+            className="absolute top-2 right-2 h-10 w-10 p-0"
+            aria-label="Dispensar aviso de notificações"
             onClick={handleDismiss}
           >
             <XCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
@@ -253,7 +254,7 @@ export function PushNotificationManager({
       <CardHeader className="relative">
         <CardTitle className="flex items-center gap-2">
           <Bell className="w-5 h-5" />
-          Notificações Push
+          Notificações no celular
         </CardTitle>
         <CardDescription>
           Receba notificações sobre mensagens, avaliações e atualizações.
@@ -261,7 +262,8 @@ export function PushNotificationManager({
         <Button
           variant="ghost"
           size="sm"
-          className="absolute top-2 right-2 h-7 w-7 p-0"
+          className="absolute top-2 right-2 h-10 w-10 p-0"
+          aria-label="Dispensar aviso de notificações"
           onClick={handleDismiss}
         >
           <XCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
@@ -274,7 +276,10 @@ export function PushNotificationManager({
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">Status:</span>
             {permission.granted && (
-              <Badge variant="default" className="bg-green-100 text-green-800">
+              <Badge
+                variant="secondary"
+                className="bg-[var(--cl-mist)] text-[var(--cl-ink)]"
+              >
                 <CheckCircle className="w-3 h-3 mr-1" />
                 Ativado
               </Badge>
@@ -300,7 +305,10 @@ export function PushNotificationManager({
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">Inscrição:</span>
               {subscription ? (
-                <Badge variant="default" className="bg-blue-100 text-blue-800">
+                <Badge
+                  variant="secondary"
+                  className="bg-[var(--cl-mist)] text-[var(--cl-ink)]"
+                >
                   <CheckCircle className="w-3 h-3 mr-1" />
                   Ativa
                 </Badge>

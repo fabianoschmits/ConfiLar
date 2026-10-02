@@ -224,7 +224,7 @@ export function FullNotificationList() {
   if (showSettings) {
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-4 bg-card p-4 rounded-xl border shadow-sm">
+        <div className="flex items-center gap-4 bg-[var(--cl-surface)] p-4 rounded-2xl border border-[var(--cl-border)] shadow-[var(--cl-shadow)]">
           <Button
             variant="ghost"
             size="sm"
@@ -235,7 +235,7 @@ export function FullNotificationList() {
             Voltar para lista
           </Button>
         </div>
-        <NotificationSettingsView className="rounded-xl border shadow-sm" />
+        <NotificationSettingsView className="rounded-2xl border border-[var(--cl-border)] shadow-[var(--cl-shadow)]" />
       </div>
     );
   }
@@ -243,7 +243,7 @@ export function FullNotificationList() {
   return (
     <div className="space-y-4">
       {/* Controls Header */}
-      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-card p-4 rounded-xl border shadow-sm">
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-[var(--cl-surface)] p-4 rounded-2xl border border-[var(--cl-border)] shadow-[var(--cl-shadow)]">
         <NotificationCategoryFilter
           currentCategory={filter}
           onSelectCategory={setFilter}
@@ -252,11 +252,12 @@ export function FullNotificationList() {
         <div className="flex items-center gap-2 w-full md:w-auto">
           <NotificationSearch value={search} onChange={setSearch} />
 
-          <div className="flex items-center gap-1 border-l pl-2 ml-2">
+          <div className="flex items-center gap-1 border-l border-[var(--cl-border)] pl-2 ml-2">
             <Button
               variant="ghost"
               size="icon"
               title="Marcar todas como lidas"
+              aria-label="Marcar todas como lidas"
               onClick={() => markAllAsRead()}
               disabled={
                 notifications.filter((n: any) => !n.is_read).length === 0
@@ -268,6 +269,7 @@ export function FullNotificationList() {
               variant="ghost"
               size="icon"
               title="Configurações"
+              aria-label="Configurações de notificações"
               onClick={() => setShowSettings(true)}
             >
               <Settings className="h-4 w-4" />
@@ -299,7 +301,7 @@ export function FullNotificationList() {
             />
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center py-20 text-center bg-card rounded-xl border border-dashed">
+          <div className="flex flex-col items-center justify-center px-4 py-12 text-center bg-[var(--cl-surface)] rounded-2xl border border-dashed border-[var(--cl-border)]">
             <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
               <Bell className="h-8 w-8 text-muted-foreground" />
             </div>
@@ -309,7 +311,7 @@ export function FullNotificationList() {
             <p className="text-sm text-muted-foreground max-w-sm mt-2">
               {search || filter !== "all"
                 ? "Tente ajustar seus filtros de busca ou categoria."
-                : "Você não tem nenhuma notificação no momento. Fique tranquilo, avisaremos quando algo acontecer!"}
+                : "Suas novas mensagens e atividades aparecerão aqui."}
             </p>
             {(search || filter !== "all") && (
               <Button

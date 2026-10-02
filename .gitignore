@@ -342,6 +342,7 @@ RESUMO_CORRECOES_*.md
 !docs/mobile-performance-20261002.md
 !/tests/
 !/tests/mobile-performance.test.cjs
+!/tests/notifications-ui.test.cjs
 !/tests/e2e/
 !/tests/e2e/*.spec.ts
 !supabase/tests/mobile-purchases.sql

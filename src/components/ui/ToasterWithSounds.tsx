@@ -1,45 +1,69 @@
 "use client";
 
-import { useEffect } from "react";
-import { Toaster } from "sonner";
-import { toast as sonnerToast } from "sonner";
+import { useEffect, useRef } from "react";
+import { Toaster, useSonner, type ToasterProps } from "sonner";
+import { useTheme } from "next-themes";
+import {
+  CheckCircle2,
+  CircleAlert,
+  Info,
+  TriangleAlert,
+  X,
+} from "lucide-react";
 import { soundManager } from "@/lib/soundManager";
 
-// Interceptar toast.error para tocar som
-const originalError = sonnerToast.error;
-
-// Sobrescrever o método error para adicionar som
-sonnerToast.error = (message, data?) => {
-  // Tocar som de erro
-  soundManager.play("/sounds/New/error.mp3", { volume: 0.5 });
-
-  // Chamar o toast original
-  return originalError(message, data);
-};
-
-interface ToasterWithSoundsProps {
-  position?:
-    | "top-left"
-    | "top-center"
-    | "top-right"
-    | "bottom-left"
-    | "bottom-center"
-    | "bottom-right";
-  richColors?: boolean;
-  [key: string]: any;
-}
-
+/** Shared user/admin feedback without mutating the toast API. */
 export function ToasterWithSounds({
-  position = "top-right",
-  richColors = true,
+  toastOptions,
+  className,
   ...props
-}: ToasterWithSoundsProps) {
+}: ToasterProps) {
+  const { resolvedTheme } = useTheme();
+  const { toasts } = useSonner();
+  const sounded = useRef(new Set<string | number>());
   useEffect(() => {
-    // Pré-carregar som de erro
-    soundManager.preload("/sounds/New/error.mp3").catch((err) => {
-      console.warn("⚠️ Erro ao pré-carregar som de erro:", err);
-    });
-  }, []);
-
-  return <Toaster position={position} richColors={richColors} {...props} />;
+    for (const toast of toasts) {
+      if (toast.type !== "error" || sounded.current.has(toast.id)) continue;
+      sounded.current.add(toast.id);
+      void soundManager
+        .play("/sounds/New/error.mp3", { volume: 0.5 })
+        .catch(() => {});
+    }
+    if (sounded.current.size > 100) {
+      sounded.current = new Set(
+        toasts
+          .filter((toast) => toast.type === "error")
+          .map((toast) => toast.id),
+      );
+    }
+  }, [toasts]);
+  return (
+    <Toaster
+      position="top-center"
+      theme={resolvedTheme === "dark" ? "dark" : "light"}
+      closeButton
+      duration={4500}
+      visibleToasts={3}
+      gap={10}
+      offset={20}
+      mobileOffset={{
+        top: "calc(env(safe-area-inset-top, 0px) + 12px)",
+        left: 12,
+        right: 12,
+        bottom: "calc(env(safe-area-inset-bottom, 0px) + 90px)",
+      }}
+      containerAriaLabel="Avisos do ConfiLar"
+      icons={{
+        success: <CheckCircle2 />,
+        error: <CircleAlert />,
+        info: <Info />,
+        warning: <TriangleAlert />,
+        close: <X />,
+      }}
+      {...props}
+      richColors={false}
+      className={`confilar-toaster ${className || ""}`}
+      toastOptions={{ ...toastOptions, closeButtonAriaLabel: "Fechar aviso" }}
+    />
+  );
 }

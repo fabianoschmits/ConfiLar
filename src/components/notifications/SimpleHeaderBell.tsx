@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,42 +11,15 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { AdaptiveNotificationCenter } from "./AdaptiveNotificationCenter";
-import { soundManager } from "@/lib/soundManager";
 
-interface SimpleHeaderBellProps {
-  className?: string;
-}
-
-export function SimpleHeaderBell({ className = "" }: SimpleHeaderBellProps) {
+export function SimpleHeaderBell({ className = "" }: { className?: string }) {
   const { user } = useAuthContext();
   const { unreadCount } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
-
-  console.log(
-    "🔔 SimpleHeaderBell: Renderizando com user:",
-    user?.id || "null",
-    "unreadCount:",
-    unreadCount,
-  );
-
-  if (!user) {
-    console.log(
-      "🔔 SimpleHeaderBell: Usuário não autenticado, não renderizando",
-    );
-    return null;
-  }
-
-  const handleOpenChange = (open: boolean) => {
-    if (open) {
-      // Tocar som ao abrir o sino de notificações
-      soundManager.play("/sounds/New/very-fast.mp3", { volume: 0.3 });
-    }
-    setIsOpen(open);
-  };
-
+  if (!user) return null;
   return (
     <div className={`relative ${className}`}>
-      <Popover open={isOpen} onOpenChange={handleOpenChange}>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="ghost"
@@ -59,53 +31,26 @@ export function SimpleHeaderBell({ className = "" }: SimpleHeaderBellProps) {
                 : "Notificações"
             }
           >
-            {/* Sino sempre visível */}
-            <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-
-            {/* Badge de contador - sempre sobreposto */}
+            <Bell className="h-5 w-5 text-[var(--cl-ink-secondary)]" />
             {unreadCount > 0 && (
-              <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-5 h-5 flex items-center justify-center px-1 z-10">
+              <Badge className="absolute -right-1 -top-1 z-10 flex h-5 min-w-5 items-center justify-center border-0 bg-[var(--cl-cta)] px-1 text-[10px] text-[var(--cl-on-cta)]">
                 {unreadCount > 99 ? "99+" : unreadCount}
               </Badge>
             )}
           </Button>
         </PopoverTrigger>
-
         <PopoverContent
-          className="w-80 max-w-[calc(100vw-2rem)] p-0 bg-[var(--cl-surface)] border border-[var(--cl-border)] shadow-xl rounded-2xl"
+          aria-label="Central de notificações"
+          className="w-[380px] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-2xl border border-[var(--cl-border)] bg-[var(--cl-surface)] p-0 shadow-[var(--cl-shadow)]"
           align="end"
           sideOffset={8}
+          collisionPadding={12}
           side="bottom"
         >
-          {/* Header */}
-          <div className="p-2 border-b border-gray-100 dark:border-gray-700">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-[var(--cl-ink)] rounded-full flex items-center justify-center">
-                <Bell className="w-3 h-3 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                  Notificações
-                  {unreadCount > 0 && (
-                    <Badge className="bg-red-500 text-white font-medium px-1.5 py-0.5 rounded-full ml-1.5 text-[10px]">
-                      {unreadCount}
-                    </Badge>
-                  )}
-                </h3>
-                <p className="text-xs text-gray-600 dark:text-gray-400">
-                  Gerencie suas notificações e alertos
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Conteúdo */}
-          <div className="max-h-[500px] md:max-h-[600px] overflow-hidden">
-            <AdaptiveNotificationCenter
-              isOpen={isOpen}
-              onClose={() => setIsOpen(false)}
-            />
-          </div>
+          <AdaptiveNotificationCenter
+            isOpen={isOpen}
+            onClose={() => setIsOpen(false)}
+          />
         </PopoverContent>
       </Popover>
     </div>

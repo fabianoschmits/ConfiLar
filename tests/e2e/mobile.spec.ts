@@ -2,6 +2,121 @@ import { test, expect } from "@playwright/test";
 import dotenv from "dotenv";
 dotenv.config({ quiet: true });
 
+for (const theme of ["light", "dark"] as const) {
+  test(`notifications use shared mobile presentation in ${theme} mode`, async ({
+    page,
+  }, testInfo) => {
+    let readUpdates = 0;
+    let rows = [
+      {
+        id: "33333333-3333-4333-8333-333333333333",
+        user_id: owner,
+        title: "Nova mensagem de suporte",
+        message:
+          "Você recebeu uma resposta. Abra a notificação para consultar os detalhes.",
+        type: "support",
+        is_read: false,
+        created_at: "2026-10-01T10:00:00Z",
+        metadata: {},
+      },
+    ];
+    await page.addInitScript((theme) => {
+      localStorage.setItem("confilar-theme", theme);
+      localStorage.setItem("confilar-theme-state", JSON.stringify({ theme }));
+      localStorage.setItem("push-prompt-dismissed", "true");
+    }, theme);
+    if (theme === "dark")
+      await page.route(/\/rest\/v1\/profiles(?:\?|$)/, (route) =>
+        route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify([{ ...profile, user_type: "admin" }]),
+        }),
+      );
+    await page.route(/\/rest\/v1\/notifications(?:\?|$)/, (route) => {
+      if (route.request().method() === "PATCH") {
+        readUpdates++;
+        rows = rows.map((row) => ({ ...row, is_read: true }));
+      }
+      if (route.request().method() === "DELETE") rows = [];
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(rows),
+      });
+    });
+    await page.goto("/classificados");
+    await page
+      .getByRole("button", { name: "Notificações: 1 não lidas", exact: true })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "Notificações", exact: true }),
+    ).toHaveCount(1);
+    await page.screenshot({
+      path: testInfo.outputPath(`notification-menu-${theme}.png`),
+      animations: "disabled",
+    });
+    await page
+      .getByRole("button", { name: "Fechar notificações", exact: true })
+      .click();
+    expect(readUpdates).toBe(0);
+    await page
+      .getByRole("button", { name: "Notificações: 1 não lidas", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Marcar todas como lidas", exact: true })
+      .click();
+    await expect(
+      page.locator('.notification-item[data-read="true"]'),
+    ).toHaveCount(1);
+    await page
+      .getByRole("button", { name: "Fechar notificações", exact: true })
+      .click();
+    await page.goto("/notificacoes");
+    await page
+      .getByRole("button", { name: "Excluir notificação", exact: true })
+      .click();
+    const toast = page.locator('[data-sonner-toast][data-type="success"]');
+    await expect(
+      toast.getByText("Notificação removida", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      toast.getByRole("button", { name: "Fechar aviso" }),
+    ).toBeVisible();
+    await expect
+      .poll(() => toast.evaluate((el) => el.getBoundingClientRect().top))
+      .toBeGreaterThanOrEqual(11);
+    expect(
+      await toast.evaluate((el) => {
+        const card = el.getBoundingClientRect();
+        const close = el
+          .querySelector("[data-close-button]")!
+          .getBoundingClientRect();
+        return (
+          close.left >= card.left &&
+          close.right <= card.right &&
+          close.top >= card.top &&
+          close.bottom <= card.bottom
+        );
+      }),
+    ).toBe(true);
+    expect(
+      await toast.evaluate((el) => getComputedStyle(el).backgroundColor),
+    ).toBe(theme === "dark" ? "rgb(16, 28, 37)" : "rgb(255, 255, 255)");
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: testInfo.outputPath(`notifications-${theme}.png`),
+      animations: "disabled",
+    });
+    await toast.getByRole("button", { name: "Fechar aviso" }).click();
+    await expect(toast).toHaveCount(0);
+  });
+}
+
 const owner = "11111111-1111-4111-8111-111111111111";
 const profile = {
   id: owner,

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { NotificationIcon } from "./NotificationIcon";
 import { supabase } from "@/lib/supabase";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useNotificationSound } from "@/hooks/useNotificationSound";
@@ -163,6 +164,8 @@ export const NotificationProviderSimple: React.FC<
 
     // Mostrar toast
     toast(notification.title, {
+      id: `notification-${newNotification.id}`,
+      icon: <NotificationIcon type={notification.type} />,
       description: notification.message,
     });
   };
@@ -380,6 +383,8 @@ export const NotificationProviderSimple: React.FC<
             newNotification.title?.toLowerCase().includes("chamado");
 
           toast(newNotification.title, {
+            id: `notification-${newNotification.id}`,
+            icon: <NotificationIcon type={newNotification.type} />,
             description: newNotification.message,
             action: newNotification.action_url
               ? {

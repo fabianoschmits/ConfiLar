@@ -203,10 +203,7 @@ export default async function RootLayout({
                                     <PWAManager />
                                     <MobileTelemetry />
                                     <LazyTutorialOverlay />
-                                    <ToasterWithSounds
-                                      position="top-right"
-                                      richColors
-                                    />
+                                    <ToasterWithSounds />
                                   </TutorialProvider>
                                 </NotificationProviderSimple>
                               </FloatingChatProviderSimple>

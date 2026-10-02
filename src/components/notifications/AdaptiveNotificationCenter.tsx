@@ -86,12 +86,7 @@ function FloatingNotificationContent({
     }
   }, []);
 
-  // Marcar todas como lidas ao fechar o menu
-  useEffect(() => {
-    if (!isOpen && unreadCount > 0) {
-      markAllAsRead();
-    }
-  }, [isOpen, unreadCount, markAllAsRead]);
+  // Closing the menu is not evidence that a notification has been read.
 
   // Função para deletar notificação individual
   const handleDeleteNotification = async (
@@ -300,99 +295,91 @@ function FloatingNotificationContent({
   }
 
   return (
-    <div className="flex flex-col bg-[var(--cl-surface)]">
-      {/* Header */}
-      <div className="p-2 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Bell className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-            <h3 className="text-xs font-semibold text-gray-900 dark:text-white">
-              Notificações
-            </h3>
-            {unreadCount > 0 && (
-              <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
-                {unreadCount}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-0.5">
-            <button
-              onClick={() => {
-                onClose();
-                window.location.href = "/notificacoes";
-              }}
-              className="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
-              title="Ver todas (Expandir)"
-            >
-              <Maximize2 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-            </button>
-            <button
-              onClick={() => setShowSettings(true)}
-              className="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
-              title="Configurações"
-            >
-              <Settings className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-            </button>
-            <button
-              onClick={onClose}
-              className="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
-            >
-              <X className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-            </button>
-          </div>
+    <div className="flex flex-col bg-[var(--cl-surface)] text-[var(--cl-ink)]">
+      <div className="flex items-center justify-between gap-2 border-b border-[var(--cl-border)] px-4 py-3">
+        <div className="min-w-0">
+          <h3 className="text-base font-extrabold">Notificações</h3>
+          <p className="text-xs text-[var(--cl-ink-muted)]">
+            {unreadCount > 0
+              ? `${unreadCount} não lida${unreadCount === 1 ? "" : "s"}`
+              : "Você está em dia"}
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center">
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              window.location.href = "/notificacoes";
+            }}
+            className="notification-toolbar-button"
+            aria-label="Ver todas as notificações"
+            title="Ver todas"
+          >
+            <Maximize2 className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowSettings(true)}
+            className="notification-toolbar-button"
+            aria-label="Configurações de notificações"
+            title="Configurações"
+          >
+            <Settings className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="notification-toolbar-button"
+            aria-label="Fechar notificações"
+            title="Fechar"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       </div>
-
-      {/* Filtros e Limpar todas - mesma linha */}
       {notifications.length > 0 && (
-        <div className="p-2 border-b border-gray-100 dark:border-gray-700 bg-[var(--cl-surface)]">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5">
+        <div className="space-y-2 border-b border-[var(--cl-border)] px-4 py-3">
+          <div className="flex gap-2">
+            {(["all", "unread"] as const).map((value) => (
               <button
-                onClick={() => setFilter("all")}
-                className={`px-2 py-0.5 text-[10px] transition-colors ${
-                  filter === "all"
-                    ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                    : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
-                }`}
+                key={value}
+                type="button"
+                aria-pressed={filter === value}
+                onClick={() => setFilter(value)}
+                className={`min-h-10 rounded-full px-4 text-sm font-semibold ${filter === value ? "bg-[var(--cl-cta)] text-[var(--cl-on-cta)]" : "bg-[var(--cl-mist)] text-[var(--cl-ink-secondary)]"}`}
               >
-                Todas
+                {value === "all" ? "Todas" : "Não lidas"}
               </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-1">
+            {unreadCount > 0 && (
               <button
-                onClick={() => setFilter("unread")}
-                className={`px-2 py-0.5 text-[10px] transition-colors ${
-                  filter === "unread"
-                    ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                    : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
-                }`}
+                type="button"
+                onClick={() => void markAllAsRead()}
+                className="min-h-10 rounded-lg px-1 text-xs font-semibold text-[var(--cl-teal)]"
               >
-                Não lidas
+                Marcar todas como lidas
               </button>
-              <button
-                onClick={handleDeleteAll}
-                className="flex items-center gap-1.5 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-xs font-medium px-2 py-0.5"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                Limpar todas
-              </button>
-            </div>
-            <span className="text-[10px] text-gray-500 dark:text-gray-400">
-              {filteredNotifications.length} notificação
-              {filteredNotifications.length !== 1 ? "ões" : ""}
-            </span>
+            )}
+            <button
+              type="button"
+              onClick={handleDeleteAll}
+              className="flex min-h-10 items-center gap-1.5 rounded-lg px-1 text-xs text-[var(--cl-ink-muted)] hover:text-red-700 dark:hover:text-red-300"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Limpar todas
+            </button>
           </div>
         </div>
       )}
-
-      {/* Notificações Push - Sugestão Proativa dentro do menu */}
       {!isSubscribed && (
-        <div className="p-2 border-b border-gray-100 dark:border-gray-700">
+        <div className="border-b border-[var(--cl-border)] p-3 empty:hidden">
           <PushNotificationManager />
         </div>
       )}
-
-      {/* Lista de Notificações */}
-      <div className="divide-y divide-gray-100 dark:divide-gray-700 overflow-y-auto max-h-[400px] md:max-h-[500px] bg-[var(--cl-surface)]">
+      <div className="max-h-[min(400px,50dvh)] space-y-2 overflow-y-auto overscroll-contain p-3 md:max-h-[500px]">
         {filteredNotifications.map((notification) => (
           <DesktopNotificationItem
             key={notification.id}
@@ -408,20 +395,20 @@ function FloatingNotificationContent({
             onClick={handleNotificationClick}
           />
         ))}
+        {filteredNotifications.length === 0 && (
+          <div className="flex flex-col items-center justify-center px-3 py-8 text-center">
+            <Bell className="mb-3 h-8 w-8 text-[var(--cl-ink-muted)]" />
+            <p className="text-sm font-extrabold">
+              {filter === "unread"
+                ? "Nenhuma notificação não lida"
+                : "Nenhuma notificação por aqui"}
+            </p>
+            <p className="mt-1 text-xs text-[var(--cl-ink-muted)]">
+              Suas novidades aparecerão aqui.
+            </p>
+          </div>
+        )}
       </div>
-
-      {/* Estado vazio */}
-      {filteredNotifications.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-8 text-center bg-[var(--cl-surface)]">
-          <Bell className="h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" />
-          <p className="text-gray-500 dark:text-gray-400">
-            Nenhuma notificação
-          </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Você receberá notificações aqui
-          </p>
-        </div>
-      )}
     </div>
   );
 }
