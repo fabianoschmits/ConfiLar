@@ -24,6 +24,7 @@ interface RecommendationButtonProps {
   customLabel?: string;
   activeLabel?: string;
   vertical?: boolean;
+  compact?: boolean;
   onStatusChange?: (isRecommended: boolean) => void;
 }
 
@@ -37,6 +38,7 @@ export function RecommendationButton({
   customLabel,
   activeLabel,
   vertical = false,
+  compact = false,
   onStatusChange,
 }: RecommendationButtonProps) {
   const { user } = useAuthContext();
@@ -139,14 +141,22 @@ export function RecommendationButton({
         size={size}
         onClick={handleShowRecommendationModal}
         disabled={isLoading || user?.id === userId}
+        aria-label={`${isRecommended ? "Ver indicação" : "Ver ou indicar"}: ${userName}`}
+        data-active={isRecommended}
         className={cn(
           "bg-transparent hover:bg-transparent shadow-none border-none p-0 h-auto transition-all ring-0 focus-visible:ring-0",
           vertical ? "flex-col gap-1.5" : "flex-row gap-2 items-center",
           isRecommended ? "text-[var(--cl-teal)]" : "text-gray-400",
+          compact && "profile-card-action",
           className,
         )}
       >
-        <div className="h-6 w-6 relative inline-flex items-center justify-center">
+        <div
+          className={cn(
+            "h-6 w-6 relative inline-flex items-center justify-center",
+            compact && "profile-card-action-icon",
+          )}
+        >
           <ThumbsUp
             className={cn(
               "h-6 w-6 transition-colors",
@@ -155,8 +165,13 @@ export function RecommendationButton({
                 : "stroke-gray-950",
             )}
           />
-          {showCount && recommendationCount > 0 && (
-            <span className="absolute -top-3.5 -right-4 text-xs sm:text-[13px] font-bold text-gray-950 dark:text-white">
+          {showCount && (compact || recommendationCount > 0) && (
+            <span
+              className={cn(
+                "absolute -top-3.5 -right-4 text-xs sm:text-[13px] font-bold text-gray-950 dark:text-white",
+                compact && "profile-card-action-count",
+              )}
+            >
               {recommendationCount}
             </span>
           )}
@@ -167,6 +182,7 @@ export function RecommendationButton({
               "text-[11px] sm:text-xs font-bold uppercase",
               isRecommended ? "text-gray-950" : "text-gray-500",
               !vertical && "ml-2",
+              compact && "profile-card-action-label",
             )}
           >
             {isRecommended

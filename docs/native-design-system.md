@@ -30,6 +30,14 @@ O dropdown usa uma coluna nas telas menores que 380 px para preservar a leitura.
 
 ## Verificação
 
+### Cards da busca de usuários
+
+`ProfessionalCard` usa o modo compacto dos botões de favorito, indicação e avaliação somente dentro da busca. O cabeçalho reúne avatar de 56 px, nome completo, tipo de conta, disponibilidade e cidade; não há uma linha vazia reservada para serviços no topo. Biografia, nota, avaliações e visualizações vêm em seguida, com acesso à lista completa de serviços.
+
+As três ações sociais ficam numa faixa única, sem bordas, com contadores em fluxo normal ao lado dos ícones. Estados ativos usam preenchimento, rótulo e cores discretas; favorito também expõe `aria-pressed`. Perfil e Contato ficam juntos no rodapé. As áreas de toque permanecem com pelo menos 44 px e o foco por teclado deve continuar visível.
+
+Use as cores de superfície/texto do tema; disponibilidade tem apenas um ponto verde suave, estrelas usam dourado dessaturado e favoritos usam rosa discreto. Não adicionar pulsação automática, contadores flutuantes ou badges coloridos decorativos. No tema escuro, a ação de contato usa contraste neutro em vez de turquesa saturado.
+
 `node --test tests/native-ui.test.cjs` verifica contratos dos componentes, atributos de formulário, acessibilidade básica, destinos da navegação administrativa, cobertura dos atalhos no dropdown, ações do chat, personalização da home e retornos de login. Execute também `npm run type-check`, ESLint e `npm run build`.
 
 A revisão visual deve incluir 320 e 390 px, desktop, ambos os temas, texto longo, rodapés, campos, filtros e modais. Nenhum teste deve publicar conteúdo, transferir pontos ou alterar configurações reais apenas para conferir o visual.

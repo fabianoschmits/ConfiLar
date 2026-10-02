@@ -19,6 +19,7 @@ interface FavoriteButtonProps {
   customLabel?: string;
   activeLabel?: string;
   vertical?: boolean;
+  compact?: boolean;
   onStatusChange?: (isFavorited: boolean) => void;
 }
 
@@ -33,6 +34,7 @@ export function FavoriteButton({
   customLabel,
   activeLabel,
   vertical = false,
+  compact = false,
   onStatusChange,
 }: FavoriteButtonProps) {
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -137,24 +139,34 @@ export function FavoriteButton({
       size={size}
       onClick={handleToggleFavorite}
       disabled={loading}
+      aria-pressed={isFavorited}
+      aria-label={`${isFavorited ? "Remover dos favoritos" : "Favoritar"}: ${userName}`}
+      data-active={isFavorited}
       className={cn(
         "bg-transparent hover:bg-transparent shadow-none border-none p-0 h-auto transition-all ring-0 focus-visible:ring-0",
         vertical ? "flex-col gap-1.5" : "flex-row gap-1.5 items-center",
         isFavorited ? "text-red-600 hover:text-red-700" : "text-gray-400",
+        compact && "profile-card-action",
         className,
       )}
     >
-      <div className="h-6 w-6 relative inline-flex items-center justify-center">
+      <div
+        className={cn(
+          "h-6 w-6 relative inline-flex items-center justify-center",
+          compact && "profile-card-action-icon",
+        )}
+      >
         {isFavorited ? (
           <HeartFilled className="h-6 w-6 stroke-gray-950 fill-red-500" />
         ) : (
           <Heart className="h-6 w-6 stroke-gray-950" />
         )}
-        {showCount && favoriteCount > 0 && (
+        {showCount && (compact || favoriteCount > 0) && (
           <span
             className={cn(
               "absolute -top-3.5 -right-4 font-bold text-gray-950 dark:text-white",
               vertical ? "text-xs" : "text-[13px]",
+              compact && "profile-card-action-count",
             )}
           >
             {favoriteCount}
@@ -167,6 +179,7 @@ export function FavoriteButton({
             "text-[11px] sm:text-xs font-bold uppercase",
             isFavorited ? "text-gray-950" : "text-gray-500",
             !vertical && "ml-2",
+            compact && "profile-card-action-label",
           )}
         >
           {isFavorited

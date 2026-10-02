@@ -18,6 +18,7 @@ interface RequestEvaluationButtonProps {
   className?: string;
   evaluationCount?: number;
   showCount?: boolean;
+  compact?: boolean;
 }
 
 export function RequestEvaluationButton({
@@ -26,6 +27,7 @@ export function RequestEvaluationButton({
   className,
   evaluationCount = 0,
   showCount = true,
+  compact = false,
 }: RequestEvaluationButtonProps) {
   const { user } = useAuthContext();
   const [isLoading, setIsLoading] = useState(false);
@@ -190,6 +192,12 @@ export function RequestEvaluationButton({
         variant={buttonState.variant}
         size="sm"
         onClick={buttonState.onClick}
+        aria-label={`${buttonState.text}: ${targetUserName}`}
+        data-active={
+          buttonState.variant === "default" ||
+          hasReviewed ||
+          buttonState.text === "Concluída"
+        }
         className={cn(
           "bg-transparent hover:bg-transparent shadow-none border-none p-0 h-auto transition-all ring-0 focus-visible:ring-0",
           "flex flex-col items-center gap-1.5 group/eval",
@@ -197,10 +205,16 @@ export function RequestEvaluationButton({
             ? "text-gray-950 group-hover/eval:text-gray-950"
             : "text-gray-950 group-hover/eval:text-gray-950",
           className,
+          compact && "profile-card-action",
         )}
         disabled={buttonState.disabled}
       >
-        <div className="h-6 w-6 relative inline-flex items-center justify-center">
+        <div
+          className={cn(
+            "h-6 w-6 relative inline-flex items-center justify-center",
+            compact && "profile-card-action-icon",
+          )}
+        >
           {React.isValidElement(buttonState.icon) &&
             React.cloneElement(buttonState.icon as React.ReactElement<any>, {
               className: cn(
@@ -214,10 +228,11 @@ export function RequestEvaluationButton({
                 buttonState.text === "Concluída" && "fill-emerald-400",
               ),
             })}
-          {showCount && evaluationCount > 0 && (
+          {showCount && (compact || evaluationCount > 0) && (
             <span
               className={cn(
                 "absolute -top-3.5 -right-4 font-bold text-gray-950 dark:text-white text-xs",
+                compact && "profile-card-action-count",
               )}
             >
               {evaluationCount}
@@ -232,6 +247,7 @@ export function RequestEvaluationButton({
               buttonState.text === "Concluída"
               ? "text-gray-950"
               : "text-gray-500",
+            compact && "profile-card-action-label",
           )}
         >
           {buttonState.text}

@@ -45,6 +45,55 @@ const { Card, CardHeader, CardTitle, CardContent } = load("src/components/ui/car
 const { PageHeader } = load("src/components/layout/PageHeader.tsx");
 const html = (component, props, children) => renderToStaticMarkup(React.createElement(component, props, children));
 
+function loadDiscoveryCard(currentUserId = "viewer") {
+  const filename = path.join(root, "src/components/professional/ProfessionalCard.tsx");
+  const output = ts.transpileModule(fs.readFileSync(filename, "utf8"), {
+    compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, esModuleInterop: true },
+  }).outputText;
+  const passthrough = ({ children }) => React.createElement("div", {}, children);
+  const mocks = {
+    "@/lib/utils": load("src/lib/utils.ts"),
+    "next/link": ({ children, ...props }) => React.createElement("a", props, children),
+    "next/navigation": { useRouter: () => ({ push() {} }) },
+    "next-intl": { useTranslations: () => (key) => ({ available: "Disponível", unavailable: "Indisponível", views: "visitas", contact: "Contato" })[key] },
+    "@/contexts/AuthContext": { useAuthContext: () => ({ user: currentUserId ? { id: currentUserId } : null }) },
+    "@/contexts/FloatingChatContextSimple": { useFloatingChat: () => ({ openChat() {} }) },
+    "@/contexts/AvailabilityContext": { useAvailabilityContext: () => ({ userAvailability: {} }) },
+    "@/components/ui/UserAvatar": { UserAvatar: ({ alt }) => React.createElement("img", { alt }) },
+    "@/components/ui/ProVerifiedBadge": { ProVerifiedBadge: () => React.createElement("span", {}, "Verificado") },
+    "@/components/auth/GuestBlurOverlay": { GuestBlurOverlay: passthrough },
+    "@/components/ui/popover": { Popover: passthrough, PopoverContent: passthrough, PopoverTrigger: passthrough },
+    "@/components/ui/FavoriteButton": { FavoriteButton: ({ compact, customLabel }) => React.createElement("button", { "data-compact": compact }, customLabel) },
+    "@/components/ui/RecommendationButton": { RecommendationButton: ({ compact, customLabel }) => React.createElement("button", { "data-compact": compact }, customLabel) },
+    "@/components/chat/RequestEvaluationButton": { RequestEvaluationButton: ({ compact }) => React.createElement("button", { "data-compact": compact }, "Avaliar") },
+  };
+  const module = { exports: {} };
+  new Function("require", "module", "exports", output)((name) => mocks[name] || (name.startsWith("@/") ? load("src/" + name.slice(2) + ".tsx") : require(name)), module, module.exports);
+  return module.exports.ProfessionalCard;
+}
+
+test("compact discovery cards preserve profile information and all actions", () => {
+  const output = html(loadDiscoveryCard(), {
+    profile: { id: "professional", full_name: "Carla Mendes", user_type: "professional", is_available: true, location_city: "Venâncio Aires", location_state: "RS", bio: "Biografia completa do perfil", professional_services: ["Educação", "Aulas particulares"] },
+    stats: { rating: 4.5, reviewCount: 39 }, views: 12,
+  });
+  for (const label of ["Carla Mendes", "Profissional", "Disponível", "Venâncio Aires", "Biografia completa", "4.5", "39", "12", "Educação", "Aulas particulares", "Favoritar", "Indicar", "Avaliar", "Perfil", "Contato"]) assert.ok(output.includes(label), label);
+  assert.equal((output.match(/data-compact="true"/g) || []).length, 3);
+  assert.match(output, /profile-card-social-actions/);
+  assert.match(output, /profile-card-primary-actions/);
+  assert.match(output, /href="\/perfil\/professional"/);
+});
+
+test("compact discovery cards retain owner and guest evaluation restrictions", () => {
+  const profile = { id: "owner", full_name: "Meu perfil", user_type: "professional" };
+  const own = html(loadDiscoveryCard("owner"), { profile });
+  assert.doesNotMatch(own, />Avaliar<|>Contato</);
+  assert.match(own, />Perfil</);
+  const guest = html(loadDiscoveryCard(null), { profile, isGuest: true });
+  assert.doesNotMatch(guest, />Avaliar</);
+  assert.match(guest, /href="\/auth"/);
+});
+
 test("buttons preserve disabled state, accessible names and native sizing", () => {
   const output = html(Button, { disabled: true, size: "icon", "aria-label": "Buscar" });
   assert.match(output, /disabled=""/);
