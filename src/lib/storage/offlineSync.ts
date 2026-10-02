@@ -121,8 +121,10 @@ class OfflineSyncManager {
         await this.syncComment(action.payload);
         break;
       case "transfer_points":
-        await this.syncTransferPoints(action.payload);
-        break;
+        // Financial operations must be confirmed online, never silently retried.
+        throw new Error(
+          "Transferências precisam ser confirmadas online na tela de ConfiPoints.",
+        );
       case "update_profile":
         await this.syncUpdateProfile(action.payload);
         break;
@@ -163,11 +165,6 @@ class OfflineSyncManager {
       .select()
       .single();
 
-    if (error) throw error;
-  }
-
-  private async syncTransferPoints(payload: any): Promise<void> {
-    const { error } = await supabase.rpc("transfer_points", payload);
     if (error) throw error;
   }
 
@@ -224,6 +221,11 @@ export async function queueOfflineAction(
     | "update_profile",
   payload: any,
 ): Promise<number> {
+  if (type === "transfer_points") {
+    throw new Error(
+      "Transferências precisam ser confirmadas online na tela de ConfiPoints.",
+    );
+  }
   if (navigator.onLine) {
     // Se estiver online, tentar executar imediatamente
     try {

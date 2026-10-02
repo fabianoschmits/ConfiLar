@@ -208,3 +208,44 @@ test('classified migration matches profile embeds and enforces RLS, uniqueness a
   assert.match(sql, /AFTER INSERT OR DELETE/);
   assert.match(sql, /SET search_path = public/);
 });
+
+const { validPremiumPurchase } = load('src/lib/premium-purchase.ts');
+test('private profile details are fetched only with a session and merge authorized fields', async () => {
+  let called = false;
+  const fixture = session => load('src/lib/private-profile.ts', {
+    '@/lib/supabase': { supabase: {
+      auth: { getSession: async () => ({ data: { session } }) },
+      rpc: async () => { called = true; return { data: { birth_date: '2000-01-01' }, error: null }; },
+    } },
+  }).withPrivateProfile;
+  const profile = { id: 'own', full_name: 'Owner', birth_date: null };
+  assert.deepEqual(await fixture(null)(profile),profile);
+  assert.equal(called,false);
+  assert.equal((await fixture({ user: { id: 'own' } })(profile)).birth_date,'2000-01-01');
+  assert.equal(called,true);
+  assert.equal(profile.birth_date,null);
+});
+test('premium purchases reject altered prices, durations and mismatched credits', () => {
+  for (const [kind, days, cost] of [['POST',1,1000],['POST',7,6000],['POST',14,10000],['POST',30,18000],['AD',1,2000],['AD',7,12000],['AD',14,20000],['AD',30,35000]]) {
+    assert.equal(validPremiumPurchase(kind,days,cost),true);
+    for (const fake of [0,1,-1,String(cost),null]) assert.equal(validPremiumPurchase(kind,days,fake),false);
+  }
+  assert.equal(validPremiumPurchase('AD',1,0,'1d'),true);
+  assert.equal(validPremiumPurchase('AD',7,0,'7d'),true);
+  for (const args of [['AD',30,0,'1d'],['AD',7,0,'fake'],['POST',1,0,'1d'],['AD',365,2000],['AD','1',2000],['AD',1,2000,'1d']]) assert.equal(validPremiumPurchase(...args),false);
+});
+
+test('premium endpoints validate quotes before reaching payment or admin client', async () => {
+  for (const file of ['src/app/api/posts/premium/route.ts','src/app/api/classifieds/premium/route.ts','src/app/api/classifieds/premium/renew/route.ts']) {
+    const route = load(file, {
+      '@/lib/authenticatedRoute': { withAuth: handler => request => handler(request, {}, { id: 'user' }) },
+      '@/lib/supabase': { createAdminSupabaseClient: () => { throw new Error('Must not reach payment'); } },
+    });
+    const response = await route.POST(new NextRequest('https://confilar.test/api/test', {
+      method: 'POST', body: JSON.stringify({ durationDays: 30, pointsToSpend: 0, adId: 'ad', postId: 'post' }),
+      headers: { 'Content-Type': 'application/json' },
+    }));
+    assert.equal(response.status,400);
+    assert.match((await response.json()).error,/Plano premium/);
+  }
+});

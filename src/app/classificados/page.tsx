@@ -105,7 +105,6 @@ import { useIBGE } from "@/hooks/useIBGE";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
 import { useClassifiedSearch } from "@/hooks/useClassifiedSearch";
-import { usePremiumNotifications } from "@/hooks/usePremiumNotifications";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { ValidationUtils } from "@/lib/validation";
@@ -226,7 +225,6 @@ export default function ClassificadosPage() {
   const { openChat } = useFloatingChat();
 
   // Verificar notificações premium automaticamente
-  usePremiumNotifications();
 
   // Opções de categorias para o Combobox
   const categoryOptions = services.map((service) => ({

@@ -85,7 +85,13 @@ async function getProfileData(supabase: any, userId: string) {
     .eq("id", userId)
     .single();
 
-  return error ? [] : [data];
+  if (error) throw error;
+  const { data: privateData, error: privateError } = await supabase.rpc(
+    "get_private_profile",
+    { p_user_id: userId },
+  );
+  if (privateError) throw privateError;
+  return [{ ...data, ...(privateData || {}) }];
 }
 
 async function getMessagesData(supabase: any, userId: string) {

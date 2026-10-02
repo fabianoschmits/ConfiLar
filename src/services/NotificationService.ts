@@ -157,21 +157,19 @@ export class NotificationService {
    */
   static async createNotification(notification: NotificationData) {
     try {
-      const { data, error } = await supabase
-        .from("notifications")
-        .insert({
-          user_id: notification.user_id,
-          type: notification.type,
-          title: notification.title,
-          message: notification.message,
-          action_url: notification.action_url,
-          priority: notification.priority || "normal",
-          metadata: notification.metadata || {},
-          is_read: false,
-          created_at: new Date().toISOString(),
-        })
-        .select()
-        .single();
+      const data = {
+        id: crypto.randomUUID(),
+        user_id: notification.user_id,
+        type: notification.type,
+        title: notification.title,
+        message: notification.message,
+        action_url: notification.action_url,
+        priority: notification.priority || "normal",
+        metadata: notification.metadata || {},
+        is_read: false,
+        created_at: new Date().toISOString(),
+      };
+      const { error } = await supabase.from("notifications").insert(data);
 
       if (error) {
         console.error("Erro ao criar notificação:", error);

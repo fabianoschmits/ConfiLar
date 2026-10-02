@@ -263,20 +263,7 @@ export function useStories() {
         viewer_id: user.id,
       });
 
-      // Incrementar contador de visualizações
-      // Buscar o valor atual e incrementar
-      const { data: currentStory } = await supabase
-        .from("stories")
-        .select("views_count")
-        .eq("id", storyId)
-        .single();
-
-      if (currentStory) {
-        await supabase
-          .from("stories")
-          .update({ views_count: (currentStory.views_count || 0) + 1 })
-          .eq("id", storyId);
-      }
+      // The database updates the counter; viewers cannot edit another user's story.
     },
     onSuccess: () => {
       // Invalidar cache para atualizar na próxima vez que for necessário

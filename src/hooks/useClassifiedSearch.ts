@@ -118,7 +118,7 @@ export function useClassifiedSearch() {
           .select(
             `
             id, user_id, user_name, user_type, title, description, category,
-            location_state, location_city, created_at, is_active, views, likes_count,
+            location_state, location_city, created_at, is_active, views, likes_count, comments_count,
             ad_type, is_premium, is_featured, premium_points_spent,
             premium_expires_at, premium_highlight_color, price_range,
             contact_phone, contact_email, images
@@ -151,6 +151,7 @@ export function useClassifiedSearch() {
           is_active,
           views,
           likes_count,
+          comments_count,
           ad_type,
           is_premium,
           is_featured,

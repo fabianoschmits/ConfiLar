@@ -215,13 +215,18 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
       try {
         const { data: profileData } = await supabase
           .from("profiles")
-          .select("cpf_cnpj, email")
+          .select("id, cpf_cnpj, email")
           .eq("id", user.id)
           .maybeSingle();
 
-        if (profileData?.cpf_cnpj) {
-          setUserCpf(profileData.cpf_cnpj);
-          setValue("cpf_cnpj", profileData.cpf_cnpj);
+        const { data: privateData } = await supabase.rpc(
+          "get_private_profile",
+          { p_user_id: user.id },
+        );
+        if (privateData?.cpf_cnpj || profileData?.cpf_cnpj) {
+          const cpf = privateData?.cpf_cnpj || profileData.cpf_cnpj;
+          setUserCpf(cpf);
+          setValue("cpf_cnpj", cpf);
         }
       } catch (err) {
         console.error("❌ [OnboardingModal] Erro ao buscar CPF:", err);

@@ -1,0 +1,36 @@
+BEGIN;
+SET LOCAL lock_timeout='3s';
+SET LOCAL statement_timeout='45s';
+CREATE TEMP TABLE private_results(scenario text,passed boolean);
+DO $$ DECLARE a uuid; b uuid; details jsonb; n integer; BEGIN
+ SELECT id INTO a FROM public.profiles WHERE NOT public.is_admin(id) LIMIT 1;
+ SELECT id INTO b FROM public.profiles WHERE id<>a AND NOT public.is_admin(id) LIMIT 1;
+ PERFORM set_config('request.jwt.claim.sub',a::text,true);
+ PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',a,'role','authenticated')::text,true);
+ EXECUTE 'SET LOCAL ROLE authenticated';
+ UPDATE public.profiles SET birth_date='2000-01-01',selfie_document_url='temporary-private-reference' WHERE id=a;
+ details := public.get_private_profile(a);
+ IF details->>'birth_date'<>'2000-01-01' OR details->>'selfie_document_url'<>'temporary-private-reference' THEN RAISE EXCEPTION 'Private fields were not stored'; END IF;
+ SELECT count(*) INTO n FROM public.profiles WHERE id=a AND (birth_date IS NOT NULL OR selfie_document_url IS NOT NULL);
+ IF n<>0 THEN RAISE EXCEPTION 'Private fields leaked into public profile'; END IF;
+ EXECUTE 'RESET ROLE';
+ INSERT INTO private_results VALUES('Own private details update/read succeeds; public fields stay empty',true);
+ PERFORM set_config('request.jwt.claim.sub',b::text,true);
+ PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',b,'role','authenticated')::text,true);
+ EXECUTE 'SET LOCAL ROLE authenticated';
+ details := public.get_private_profile(a);
+ IF details<>'{}'::jsonb THEN RAISE EXCEPTION 'Other user can read private details'; END IF;
+ SELECT count(*) INTO n FROM public.profile_private_details WHERE user_id=a;
+ IF n<>0 THEN RAISE EXCEPTION 'Private table RLS leak'; END IF;
+ EXECUTE 'RESET ROLE';
+ INSERT INTO private_results VALUES('Other user cannot read details through RPC or table',true);
+ EXECUTE 'SET LOCAL ROLE anon';
+ BEGIN
+  PERFORM public.get_private_profile(a);
+  RAISE EXCEPTION 'Guest can invoke private RPC';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ EXECUTE 'RESET ROLE';
+ INSERT INTO private_results VALUES('Guest private access rejected',true);
+END $$;
+SELECT * FROM private_results;
+ROLLBACK;

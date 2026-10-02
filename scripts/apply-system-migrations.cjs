@@ -5,6 +5,19 @@ const fs = require("node:fs");
 const migrations = [
   "supabase/migrations/20261001_add_classified_engagement.sql",
   "supabase/migrations/20261001120000_classified_shares.sql",
+  "supabase/migrations/20261001150000_harden_live_permissions.sql",
+  "supabase/migrations/20261001160000_protect_privileged_profile_fields.sql",
+  "supabase/migrations/20261001170000_fix_chat_membership.sql",
+  "supabase/migrations/20261001180000_serialize_payments_and_credits.sql",
+  "supabase/migrations/20261001190000_validate_notification_producers.sql",
+  "supabase/migrations/20261001200000_fix_notification_triggers.sql",
+  "supabase/migrations/20261001210000_protect_private_feed.sql",
+  "supabase/migrations/20261001220000_atomic_premium_content.sql",
+  "supabase/migrations/20261001230000_storage_ownership.sql",
+  "supabase/migrations/20261001240000_atomic_premium_likes.sql",
+  "supabase/migrations/20261001250000_private_profile_details.sql",
+  "supabase/migrations/20261001260000_guard_admin_rpcs.sql",
+  "supabase/migrations/20261001270000_story_view_counters.sql",
 ];
 async function main() {
   const token = process.env.SUPABASE_ACCESS_TOKEN;
@@ -16,7 +29,7 @@ async function main() {
   if (!/^[a-z0-9]+\.supabase\.co$/.test(url.hostname))
     throw new Error("Unrecognized Supabase project URL");
   const ref = url.hostname.split(".")[0];
-  // One transaction across both files prevents partial schema installation.
+  // One transaction across all files prevents partial schema installation.
   const query =
     "BEGIN;\n" +
     migrations

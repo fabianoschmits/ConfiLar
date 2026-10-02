@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useReducer } from "react";
 import { supabase } from "@/lib/supabase";
+import { withPrivateProfile } from "@/lib/private-profile";
 import { Profile } from "@/types/database";
 import { Session } from "@supabase/supabase-js";
 import { logger } from "@/lib/logger";
@@ -307,6 +308,7 @@ export function useAuth(
 
         if (data) {
           // Validar dados do perfil
+          Object.assign(data, await withPrivateProfile(data));
           const validation = ProfileSchema.safeParse(data);
           if (!validation.success) {
             logger.warn("auth", `Profile validation failed for ${userId}`, {
@@ -1022,6 +1024,7 @@ export function useAuth(
             "auth",
             `Profile updated successfully for user ${state.user.id}`,
           );
+          Object.assign(data, await withPrivateProfile(data));
           dispatch({ type: "SET_PROFILE", payload: data as Profile });
           return { data: data as Profile, error: null };
         }

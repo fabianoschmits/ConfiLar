@@ -135,7 +135,7 @@ export const POST = withAuth(
 
         // Notificação para quem ENVIOU a transferência (confirmação)
         try {
-          await supabaseAuth.from("notifications").insert({
+          await supabaseAdmin.from("notifications").insert({
             user_id: user.id,
             type: "info",
             title: "✅ Transferência Enviada!",

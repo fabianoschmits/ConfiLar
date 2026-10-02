@@ -42,12 +42,9 @@ export async function checkCpfExists(cpf: string): Promise<boolean> {
 
   if (cleanCpf.length < 11) return false; // CPF/CNPJ inválido
 
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("cpf_cnpj", cleanCpf)
-    .limit(1)
-    .maybeSingle(); // Use maybeSingle para evitar erro se não encontrar
+  const { data, error } = await supabase.rpc("check_cpf_exists", {
+    p_cpf: cleanCpf,
+  });
 
   // Se encontrou um registro, o CPF já existe
   return !!data && !error;

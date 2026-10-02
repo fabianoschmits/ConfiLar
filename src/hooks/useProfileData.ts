@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { withPrivateProfile } from "@/lib/private-profile";
 import { supabase } from "@/lib/supabase";
 
 export interface CompleteProfileData {
@@ -196,7 +197,7 @@ export function useProfileData(userId: string) {
           return;
         }
 
-        setProfile(data);
+        setProfile(await withPrivateProfile(data));
       } catch (err: any) {
         console.error("Erro ao buscar perfil:", err);
         setError("Erro ao carregar perfil");

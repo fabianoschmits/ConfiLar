@@ -76,7 +76,7 @@ export function ImageUploadFeed({
         const compressedFile = file;
 
         const fileExt = file.name.split(".").pop();
-        const fileName = `feed/${Date.now()}-${Math.random().toString(36).substring(2)}-${i}.${fileExt}`;
+        const fileName = `feed/${user.id}/${Date.now()}-${Math.random().toString(36).substring(2)}-${i}.${fileExt}`;
 
         const { data, error } = await supabase.storage
           .from("feed-images")

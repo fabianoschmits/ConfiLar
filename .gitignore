@@ -159,6 +159,9 @@ scripts/*
 !scripts/start-dev.js
 !scripts/audit-system.cjs
 !scripts/apply-system-migrations.cjs
+!scripts/database-audit.cjs
+!scripts/test-database.cjs
+!scripts/data-api-smoke.cjs
 *.sh
 *.ps1
 *.sql
@@ -222,6 +225,14 @@ testsprite_tests/**/*.md
 # =====================================================
 *.sql
 !supabase/migrations/*.sql
+!supabase/tests/
+!supabase/tests/catalog-audit.sql
+!supabase/tests/function-audit.sql
+!supabase/tests/all-table-read.sql
+!supabase/tests/live-rls.sql
+!supabase/tests/social-flows.sql
+!supabase/tests/premium-purchase.sql
+!supabase/tests/private-profile.sql
 
 # =====================================================
 # ARQUIVOS DE TESTE E DEBUG
@@ -326,3 +337,5 @@ RESUMO_CORRECOES_*.md
 # - scripts/start-dev.js (script de desenvolvimento necessário)
 # - .cursorrules (regras do Cursor)
 # - .gitignore (este arquivo)
+!docs/
+!docs/database-audit-20261001.md

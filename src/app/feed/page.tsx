@@ -19,7 +19,6 @@ import { InstagramPostSkeleton } from "@/components/ui/skeleton";
 import { EditPostModal } from "@/components/timeline/EditPostModal";
 import { FeedSearchHeader } from "@/components/feed/FeedSearchHeader";
 import { useFeedSearch } from "@/hooks/useFeedSearch";
-import { usePremiumNotifications } from "@/hooks/usePremiumNotifications";
 import { useStories } from "@/hooks/useStories";
 import { StoryViewer } from "@/components/stories/StoryViewer";
 import { CreateStoryModal } from "@/components/stories/CreateStoryModal";
@@ -114,7 +113,6 @@ export default function FeedPage() {
   });
 
   useTimelineRealtime();
-  usePremiumNotifications();
 
   const { trendingPosts } = usePostRanking({
     location_city: profile?.location_city,

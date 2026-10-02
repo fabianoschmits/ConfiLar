@@ -1,5 +1,7 @@
 # Auditoria do sistema — 01/10/2026
 
+> Atualização: a pendência de execução SQL descrita neste relatório foi resolvida após configurar o token de gerenciamento. Consulte [a auditoria do banco](database-audit-20261001.md) para o estado atual, migrações aplicadas e testes reais de RLS.
+
 ## Resultado e limites
 
 Foram revisados os fluxos de navegação, autenticação, classificados, reações do feed, compartilhamento, mensagens, pontos, pagamentos, administração e exclusão de conta. A inspeção automatizada percorreu 556 arquivos de código e identificou referências a 65 tabelas e 30 RPCs. Isso não substitui uma auditoria completa de segurança ou testes de todos os fluxos em produção.
